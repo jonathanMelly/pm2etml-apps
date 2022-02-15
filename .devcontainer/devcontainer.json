@@ -13,6 +13,7 @@
 		// "ryannaddy.laravel-artisan",
 		// "onecentlin.laravel5-snippets",
 		// "onecentlin.laravel-blade"
+		"cweijan.vscode-mysql-client2",
 	],
 	"remoteUser": "sail",
 	// "forwardPorts": [],
