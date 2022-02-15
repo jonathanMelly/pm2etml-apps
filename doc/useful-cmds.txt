@@ -1,0 +1,2 @@
+Mode maintenance
+php artisan down --render="errors::503" --secret="007" --refresh=15
