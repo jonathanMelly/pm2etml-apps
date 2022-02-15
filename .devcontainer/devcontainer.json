@@ -14,6 +14,7 @@
 		// "onecentlin.laravel5-snippets",
 		// "onecentlin.laravel-blade"
 		"cweijan.vscode-mysql-client2",
+		"donjayamanne.git-extension-pack"
 	],
 	"remoteUser": "sail",
 	// "forwardPorts": [],
