@@ -3,7 +3,8 @@
 #cd $PWD probably useless
 log=storage/logs/deploy-$(date +%F_%Hh%mm%Ss).log
 php='/opt/php81/bin/php'
-composer install --optimize-autoloader --no-dev --no-interaction 2>&1 >> $log
+composer=/opt/php81/bin/php /usr/lib64/plesk-9.0/composer.phar
+$composer install --optimize-autoloader --no-dev --no-interaction 2>&1 >> $log
 #TODO Regenerate key ??
 $php artisan migrate --no-interaction --force 2>&1 >> $log
 $php artisan optimize:clear 2>&1 >> $log
