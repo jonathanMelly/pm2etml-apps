@@ -1,9 +1,9 @@
 #!/bin/bash
 #Should be called upon deployment (prod)
 #cd $PWD probably useless
-log=storage/logs/deploy-$(date +%F_%Hh%mm%Ss).log
+log=storage/logs/deploy-$(date +%F_%Hh%MM%Ss).log
 php='/opt/php81/bin/php'
-composer=/opt/php81/bin/php /usr/lib64/plesk-9.0/composer.phar
+composer="$php /usr/lib64/plesk-9.0/composer.phar"
 $composer install --optimize-autoloader --no-dev --no-interaction 2>&1 >> $log
 #TODO Regenerate key ??
 $php artisan migrate --no-interaction --force 2>&1 >> $log
