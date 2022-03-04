@@ -1,4 +1,7 @@
 #!/bin/bash
+#TODO BEFORE RELEASE TAG
+#npx mix --production OU npm run prod
+
 #Should be called upon deployment (prod)
 #cd $PWD probably useless
 log=storage/logs/deploy-$(date +%F_%Hh%MM%Ss).log
