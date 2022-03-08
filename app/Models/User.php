@@ -19,9 +19,9 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'firstname',
+        'lastname',
+        'email'
     ];
 
     /**
@@ -30,7 +30,6 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $hidden = [
-        'password',
         'remember_token',
     ];
 
@@ -40,6 +39,15 @@ class User extends Authenticatable
      * @var array<string, string>
      */
     protected $casts = [
-        'email_verified_at' => 'datetime',
+
     ];
+
+    ///Overrides password with default as only used by o365
+    //Added to avoid any issues with others modules deps (sessionHandling for instance...)
+    public function getAuthPassword()
+    {
+        return "o365-external";
+    }
+
+
 }

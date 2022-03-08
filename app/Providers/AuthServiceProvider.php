@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -31,5 +32,18 @@ class AuthServiceProvider extends ServiceProvider
         Gate::before(function ($user, $ability) {
             return $user->hasRole('root') ? true : null;
         });
+
+
+        //Sets dummy password check any other place than prod
+        Auth::provider('o365-eloquent-mix', function ($app, array $config) {
+            if (app()->environment('production')) {
+                return new O365EloquantMixUserProvider($config['model']);
+            }
+            else{
+                return new O365EloquantMixTestUserProvider($config['model']);
+            }
+        });
+
+
     }
 }
