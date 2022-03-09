@@ -15,23 +15,13 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
 {
 
     /**
-     * Register services.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        Log::info(__CLASS__ . "registered");
-    }
-
-    /**
      * Bootstrap services.
      *
      * @return void
      */
     public function boot()
     {
-    //
+        Log::info(__CLASS__ . "booted");
     }
 
     /**
@@ -54,13 +44,13 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
      *
      * @return bool
      */
-    function validateCredentials(\Illuminate\Contracts\Auth\Authenticatable $user, array $credentials) : bool
+    function validateCredentials(\Illuminate\Contracts\Auth\Authenticatable $user, array $credentials)
     {
 
         $plain = $credentials['password'];
         $username = $credentials['username'];
 
-        $imap_stream = @imap_open('{'.env('LOGIN_SMTP_ENDPOINT', 'smtp')."/imap/ssl/authuser=$username}", $username, $plain, OP_HALFOPEN, 1);
+        $imap_stream = @imap_open('{'.env('LOGIN_SMTP_ENDPOINT')."/imap/ssl/authuser=$username}", $username, $plain, OP_HALFOPEN, 1);
         if ($imap_stream === false) {
             return false;
         }
