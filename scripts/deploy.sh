@@ -10,13 +10,13 @@ composer="$php /usr/lib64/plesk-9.0/composer.phar"
 $composer install --optimize-autoloader --no-dev --no-interaction 2>&1 >> $log
 #TODO Regenerate key ??
 
-$migrate=migrate
+migrateCmd="migrate"
 #staging resets DB
 if [ -n $1 ] && [$1 = "staging" ]; then
     echo "resetting staging DB" >> $log
-    $migrate=migrate:fresh --seed
+    migrateCmd="migrate:fresh --seed"
 fi
-$php artisan $migrate --no-interaction --force 2>&1 >> $log
+$php artisan $migrateCmd --no-interaction --force 2>&1 >> $log
 
 $php artisan optimize:clear 2>&1 >> $log
 $php artisan optimize 2>&1 >> $log
