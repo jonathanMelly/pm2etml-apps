@@ -26,7 +26,7 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
     {
         $this->model = $model;
         $this->endpoint = $endpoint;
-        Log::info(__CLASS__ . " built");
+        Log::info(get_class($this) . " built");
     }
 
     /**
