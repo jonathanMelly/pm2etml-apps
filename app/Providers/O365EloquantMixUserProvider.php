@@ -15,16 +15,6 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
 {
 
     /**
-     * Bootstrap services.
-     *
-     * @return void
-     */
-    public function boot()
-    {
-        Log::info(__CLASS__ . "booted");
-    }
-
-    /**
      * Create a new database user provider.
      *
      * @param  \Illuminate\Contracts\Hashing\Hasher  $hasher
@@ -34,6 +24,7 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
     public function __construct($model)
     {
         $this->model = $model;
+        Log::info(__CLASS__ . "built");
     }
 
     /**
@@ -50,7 +41,10 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
         $plain = $credentials['password'];
         $username = $credentials['username'];
 
-        $imap_stream = @imap_open('{'.env('LOGIN_SMTP_ENDPOINT')."/imap/ssl/authuser=$username}", $username, $plain, OP_HALFOPEN, 1);
+        $imap_endpoint = '{'.env('LOGIN_SMTP_ENDPOINT')."/imap/ssl/authuser=$username}";
+        Log::debug("Login tentative from $username on ".$imap_endpoint);
+
+        $imap_stream = @imap_open($imap_endpoint, $username, $plain, OP_HALFOPEN, 1);
         if ($imap_stream === false) {
             return false;
         }
