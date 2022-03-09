@@ -12,7 +12,7 @@ $composer install --optimize-autoloader --no-dev --no-interaction 2>&1 >> $log
 
 migrateCmd="migrate"
 #staging resets DB
-if [ -n $1 ] && [$1 = "staging" ]; then
+if [ -n $1 ] && [ $1 = "staging" ]; then
     echo "resetting staging DB" >> $log
     migrateCmd="migrate:fresh --seed"
 fi
