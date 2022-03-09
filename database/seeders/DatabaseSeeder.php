@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
         collect($seeds)->each(function($seeder){
             $exitCode = Artisan::call('db:seed', [
                 '--class' => $seeder,
+                '--force'
             ]);
             if($exitCode<0)
             {
