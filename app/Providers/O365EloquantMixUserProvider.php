@@ -31,7 +31,7 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
      */
     public function boot()
     {
-        //
+    //
     }
 
     /**
@@ -46,21 +46,28 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
         $this->model = $model;
     }
 
-	/**
-	 * Validate a user against the given credentials.
-	 *
-	 * @param \Illuminate\Contracts\Auth\Authenticatable $user
-	 * @param array $credentials
-	 *
-	 * @return bool
-	 */
-	function validateCredentials(\Illuminate\Contracts\Auth\Authenticatable $user, array $credentials) {
+    /**
+     * Validate a user against the given credentials.
+     *
+     * @param \Illuminate\Contracts\Auth\Authenticatable $user
+     * @param array $credentials
+     *
+     * @return bool
+     */
+    function validateCredentials(\Illuminate\Contracts\Auth\Authenticatable $user, array $credentials) : bool
+    {
 
         $plain = $credentials['password'];
+        $username = $credentials['username'];
 
-        return true;
+        $imap_stream = @imap_open('{'.env('LOGIN_SMTP_ENDPOINT', 'smtp')."/imap/ssl/authuser=$username}", $username, $plain, OP_HALFOPEN, 1);
+        if ($imap_stream === false) {
+            return false;
+        }
+        else {
+            return imap_close($imap_stream);
+        }
 
-        //return $this->hasher->check($plain, $user->getAuthPassword());
-	}
+    }
 
 }
