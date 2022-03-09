@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 class O365EloquantMixUserProvider extends EloquentUserProvider
 {
+    protected $endpoint;
 
     /**
      * Create a new database user provider.
@@ -21,10 +22,11 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
      * @param  string  $model
      * @return void
      */
-    public function __construct($model)
+    public function __construct($model,$endpoint)
     {
         $this->model = $model;
-        Log::info(__CLASS__ . "built");
+        $this->endpoint = $endpoint;
+        Log::info(__CLASS__ . " built");
     }
 
     /**
@@ -38,10 +40,10 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
     function validateCredentials(\Illuminate\Contracts\Auth\Authenticatable $user, array $credentials)
     {
 
-        $plain = $credentials['password'];
-        $username = $credentials['username'];
+        $plain = $this->getPassword($credentials);
+        $username = $this->getUsername($credentials);
 
-        $imap_endpoint = '{'.env('LOGIN_SMTP_ENDPOINT')."/imap/ssl/authuser=$username}";
+        $imap_endpoint = $this->getEndpointURI($username);
         Log::debug("Login tentative from $username on ".$imap_endpoint);
 
         $imap_stream = @imap_open($imap_endpoint, $username, $plain, OP_HALFOPEN, 1);
@@ -52,6 +54,21 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
             return imap_close($imap_stream);
         }
 
+    }
+
+    function getUsername(array $credentials):string
+    {
+        return $credentials['username'];
+    }
+
+    function getPassword(array $credentials):string
+    {
+        return $credentials['password'];
+    }
+
+    function getEndpointURI(string $username):string
+    {
+        return '{'.$this->endpoint."/imap/ssl/authuser=$username}";
     }
 
 }

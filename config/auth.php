@@ -64,6 +64,12 @@ return [
         'users' => [
             'driver' => 'o365-eloquent-mix',
             'model' => App\Models\User::class,
+            /**
+             * https://laravel.com/docs/5.4/configuration#accessing-configuration-values
+             * If you execute the config:cache command during your deployment process,
+             * you should be sure that you are only calling the env function from within
+             * your configuration files. */
+            'endpoint' => env('LOGIN_SMTP_ENDPOINT'),
         ],
     ],
 

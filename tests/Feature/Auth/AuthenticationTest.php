@@ -24,7 +24,7 @@ class AuthenticationTest extends TestCase
 
         $response = $this->post('/login', [
             'username' => $user->username,
-            'password' => 'pentest',
+            'password' => env('DASHBOARD_PASSWORD'), /**WARNING, env is working int TEST because there is no cache !!!!!! (not working in prod) */
         ]);
 
 

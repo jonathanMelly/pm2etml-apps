@@ -37,10 +37,10 @@ class AuthServiceProvider extends ServiceProvider
         //Sets dummy password check any other place than prod
         Auth::provider('o365-eloquent-mix', function ($app, array $config) {
             if (app()->environment('production')) {
-                return new O365EloquantMixUserProvider($config['model']);
+                return new O365EloquantMixUserProvider($config['model'],$config['endpoint']);
             }
             else{
-                return new O365EloquantMixTestUserProvider($config['model']);
+                return new O365EloquantMixTestUserProvider($config['model'],$config['endpoint']);
             }
         });
 
