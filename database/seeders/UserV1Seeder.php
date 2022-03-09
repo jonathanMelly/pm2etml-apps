@@ -20,7 +20,8 @@ class UserV1Seeder extends Seeder
         $user = User::create([
             'firstname' => 'jonathan',
             'lastname' => 'melly',
-            'email' => 'jonathan.melly@eduvaud.ch',
+            'email' => 'jonathan.melly@gmail.com',
+            'username' => 'jonathan.melly@eduvaud.ch'
         ]);
     }
 }

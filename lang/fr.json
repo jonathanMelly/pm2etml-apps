@@ -162,6 +162,7 @@
     "Two Factor Authentication": "Double authentification",
     "Two factor authentication is now enabled. Scan the following QR code using your phone's authenticator application.": "L'authentification à deux facteurs est maintenant activée. Enregistrez ce QR code dans votre application d'authentification.",
     "Unauthorized": "Non autorisé",
+    "Username": "Nom d’utilisateur",
     "Update Password": "Mettre à jour le mot de passe",
     "Update your account's profile information and email address.": "Modifier le profil associé à votre compte ainsi que votre adresse e-mail.",
     "Use a recovery code": "Utilisez un code de récupération",

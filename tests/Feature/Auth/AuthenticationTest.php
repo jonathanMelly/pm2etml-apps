@@ -23,12 +23,32 @@ class AuthenticationTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->post('/login', [
-            'email' => $user->email,
+            'username' => $user->username,
             'password' => 'pentest',
         ]);
 
+
         $this->assertAuthenticated();
         $response->assertRedirect(RouteServiceProvider::HOME);
+        if($this->hasFailed())
+        {
+            $this->fail($response);
+        }
+
+    }
+
+    public function test_users_can_not_authenticate_with_invalid_domain()
+    {
+        $user = User::factory()->create(['username'=>'bob@microsoft.com']);
+
+        $response = $this->post('/login', [
+            'username' => $user->username,
+            'password' => 'pentest',
+        ]);
+
+
+        $this->assertGuest();
+
     }
 
     public function test_users_can_not_authenticate_with_invalid_password()
