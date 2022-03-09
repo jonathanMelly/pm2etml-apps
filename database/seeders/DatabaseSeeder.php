@@ -27,6 +27,10 @@ class DatabaseSeeder extends Seeder
             {
                 Log::error("Cannot seed $seeder");
             }
+            else
+            {
+                Log::info("Seed $seeder successfully executed");
+            }
         });
 
         // \App\Models\User::factory(10)->create();
