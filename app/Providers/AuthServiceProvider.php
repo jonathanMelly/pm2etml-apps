@@ -6,8 +6,8 @@ use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvid
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
 
-use App\Providers\O365EloquantMixTestUserProvider;
-use App\Providers\O365EloquantMixUserProvider;
+use App\Services\O365EloquantMixTestUserProvider;
+use App\Services\O365EloquantMixUserProvider;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -45,7 +45,7 @@ class AuthServiceProvider extends ServiceProvider
         //Sets dummy password check any other place than prod
         Auth::provider('o365-eloquent-mix', function ($app, array $config) {
             if ($this->eup == null) {
-                $eupClassName = app()->environment('production') ?
+                $eupClassName = $app->environment('production') ?
                     O365EloquantMixUserProvider::class :
                     O365EloquantMixTestUserProvider::class;
                 $this->eup = new $eupClassName($config['model'], $config['endpoint']);

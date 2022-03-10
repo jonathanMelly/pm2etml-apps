@@ -4,7 +4,7 @@
  * Use Eloquent model for data and o365 for password check...
  */
 
-namespace App\Providers;
+namespace App\Services;
 
 use Illuminate\Support\Facades\Log;
 
