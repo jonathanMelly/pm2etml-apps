@@ -7,6 +7,7 @@
         </x-slot>
 
         <!-- Session Status -->
+        <!-- To be used for ex. with, in your controller, return redirect('home')->with("success", "Your message"); -->
         <x-auth-session-status class="mb-4" :status="session('status')" />
 
         <!-- Validation Errors -->
