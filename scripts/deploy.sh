@@ -5,19 +5,23 @@ log=storage/logs/deploy-$(date +%F_%Hh%MM%Ss).log
 php='/opt/php81/bin/php'
 composer="$php /usr/lib64/plesk-9.0/composer.phar"
 
-#Set MAINTENANCE MODE (ideally this should be done before replacing files but currently azure devops webhook does not support custom json payload...)
+#Set MAINTENANCE MODE
+#A)using artisan-remote (ideally this should be done before replacing files but currently azure devops webhook does not support custom json payload...)
 #website=$(basename $PWD)
 #api_url="https://$website/pilotage/commands/invoke"
 #token=$(grep PILOTAGE_API_KEY .env | awk -F'=' '{print $2}')
 #header="Content-type: application/json\nAuthorization: Bearer $token"
 #curl -X POST -H "$header" -d '{"name":"down"}' $api_url 2>&1 >> $log
-$php artisan down 2>&1 >> $log
 
-#Backup current APP with DB
-$php artisan backup:run
+#B)using local artisan
+#This will fail on FIRST deploy but as there was nothing before it’s not a problem
+$php artisan down 2>&1 >> $log
 
 $composer install --optimize-autoloader --no-dev --no-interaction 2>&1 >> $log
 #TODO Regenerate key ??
+
+#Backup DB
+$php artisan backup:run --only-db
 
 migrateCmd="migrate"
 #staging resets DB
