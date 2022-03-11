@@ -8,9 +8,13 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Services\O365EloquantMixTestUserProvider;
 use App\Services\O365EloquantMixUserProvider;
+use Illuminate\Support\Facades\Log;
 
 class AuthServiceProvider extends ServiceProvider
 {
+
+    const O365_DRIVER_NAME = 'o365-eloquent-mix';
+
     /**
      * The policy mappings for the application.
      *
@@ -43,13 +47,14 @@ class AuthServiceProvider extends ServiceProvider
 
 
         //Sets dummy password check any other place than prod
-        Auth::provider('o365-eloquent-mix', function ($app, array $config) {
+        Auth::provider($this::O365_DRIVER_NAME, function ($app, array $config) {
             if ($this->eup == null) {
                 $eupClassName = $app->environment('production') ?
                     O365EloquantMixUserProvider::class :
                     O365EloquantMixTestUserProvider::class;
                 $this->eup = new $eupClassName($config['model'], $config['endpoint']);
             }
+            Log::debug('['.__CLASS__.'] '.$eupClassName ." set for ".$this::O365_DRIVER_NAME." with endpoint ".$config['endpoint']);
             return $this->eup;
         });
 

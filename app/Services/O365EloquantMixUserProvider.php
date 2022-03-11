@@ -26,7 +26,6 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
     {
         $this->model = $model;
         $this->endpoint = $endpoint;
-        Log::info(get_class($this) . " built");
     }
 
     /**
@@ -44,10 +43,13 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
         $username = $this->getUsername($credentials);
 
         $imap_endpoint = $this->getEndpointURI($username);
-        Log::debug("Login tentative from $username on ".$imap_endpoint);
 
         $imap_stream = @imap_open($imap_endpoint, $username, $plain, OP_HALFOPEN, 1);
         if ($imap_stream === false) {
+
+            $error = var_export(imap_errors(), true);
+            Log::info("Login tentative from $username on ".$imap_endpoint ." failed: ".$error);
+
             return false;
         }
         else {
