@@ -20,7 +20,7 @@ composer="$php /usr/lib64/plesk-9.0/composer.phar"
 $php artisan down 2>&1 >> $log
 
 # 2>&1 doesn’t seem to work with composer....
-$composer install --optimize-autoloader --no-dev --no-interaction --no-ansi 2>>$log >>$log
+$composer install --optimize-autoloader --no-dev --no-interaction 2>>$log >>$log
 #TODO Regenerate key ??
 
 #Backup DB
