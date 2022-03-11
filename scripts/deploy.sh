@@ -3,6 +3,8 @@
 
 log=storage/logs/deploy-$(date +%F_%Hh%MM%Ss).log
 php='/opt/php81/bin/php'
+
+#TODO use already installed composer with php8... (kreativmedia)
 composer="$php /usr/lib64/plesk-9.0/composer.phar"
 
 #Set MAINTENANCE MODE
@@ -17,7 +19,8 @@ composer="$php /usr/lib64/plesk-9.0/composer.phar"
 #This will fail on FIRST deploy but as there was nothing before it’s not a problem
 $php artisan down 2>&1 >> $log
 
-$composer install --optimize-autoloader --no-dev --no-interaction --no-ansi 2>&1 >> $log
+# 2>&1 doesn’t seem to work with composer....
+$composer install --optimize-autoloader --no-dev --no-interaction --no-ansi 2>>$log >>$log
 #TODO Regenerate key ??
 
 #Backup DB
