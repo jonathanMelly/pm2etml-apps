@@ -17,11 +17,11 @@ composer="$php /usr/lib64/plesk-9.0/composer.phar"
 #This will fail on FIRST deploy but as there was nothing before it’s not a problem
 $php artisan down 2>&1 >> $log
 
-$composer install --optimize-autoloader --no-dev --no-interaction 2>&1 >> $log
+$composer install --optimize-autoloader --no-dev --no-interaction --no-ansi 2>&1 >> $log
 #TODO Regenerate key ??
 
 #Backup DB
-$php artisan backup:run --only-db
+$php artisan backup:run --only-db 2>&1 >> $log
 
 migrateCmd="migrate"
 #staging resets DB
