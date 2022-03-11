@@ -1,19 +1,28 @@
 #!/bin/bash
-#TODO BEFORE RELEASE TAG
-#npx mix --production OU npm run prod
-
 #Should be called upon deployment (prod)
-#cd $PWD probably useless
+
 log=storage/logs/deploy-$(date +%F_%Hh%MM%Ss).log
 php='/opt/php81/bin/php'
 composer="$php /usr/lib64/plesk-9.0/composer.phar"
+
+#Set MAINTENANCE MODE (ideally this should be done before replacing files but currently azure devops webhook does not support custom json payload...)
+#website=$(basename $PWD)
+#api_url="https://$website/pilotage/commands/invoke"
+#token=$(grep PILOTAGE_API_KEY .env | awk -F'=' '{print $2}')
+#header="Content-type: application/json\nAuthorization: Bearer $token"
+#curl -X POST -H "$header" -d '{"name":"down"}' $api_url 2>&1 >> $log
+$php artisan down 2>&1 >> $log
+
+#Backup current APP with DB
+$php artisan backup:run
+
 $composer install --optimize-autoloader --no-dev --no-interaction 2>&1 >> $log
 #TODO Regenerate key ??
 
 migrateCmd="migrate"
 #staging resets DB
 if [ -n $1 ] && [ $1 = "staging" ]; then
-    echo "resetting staging DB" >> $log
+    echo "resetting+seeding staging DB" >> $log
     migrateCmd="migrate:fresh --seed"
 fi
 $php artisan $migrateCmd --no-interaction --force 2>&1 >> $log
@@ -28,5 +37,5 @@ $php artisan permission:cache-reset 2>&1 >> $log
 #$php artisan route:cache 2>&1 >> $log
 $php artisan view:cache 2>&1 >> $log
 
-#TODO put back site online [add put it offline with azure devops web hook]
-#curl ...
+#Put back site online
+$php artisan up 2>&1 >> $log
