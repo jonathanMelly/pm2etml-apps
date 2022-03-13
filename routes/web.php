@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,10 +15,28 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::redirect("/","/dashboard");
+Route::redirect("/","dashboard");
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth'])->name('dashboard');
+//Authenticated
+Route::middleware('auth')->group(function () {
 
-require __DIR__.'/auth.php';
+    Route::get('dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+
+    //AUTH RELATED
+    Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
+        ->name('password.confirm');
+    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
+    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
+        ->name('logout');
+});
+
+//LOGIN
+Route::middleware('guest')->group(function () {
+    Route::get('login', [AuthenticatedSessionController::class, 'create'])
+        ->name('login');
+    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+
+});
+
