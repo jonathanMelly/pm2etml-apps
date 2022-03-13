@@ -2,9 +2,7 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use App\Models\User;
 
 class UserV1Seeder extends Seeder
@@ -16,12 +14,20 @@ class UserV1Seeder extends Seeder
      */
     public function run()
     {
-        //
-        $user = User::create([
-            'firstname' => 'jonathan',
-            'lastname' => 'melly',
-            'email' => 'jonathan.melly@gmail.com',
-            'username' => 'jonathan.melly@eduvaud.ch'
-        ]);
+        $user = User::where('email','jonathan.melly@gmail.com')->first();
+        if($user ===null) {
+            //
+            $user = User::create([
+                'firstname' => 'jonathan',
+                'lastname' => 'melly',
+                'email' => 'jonathan.melly@gmail.com',
+                'username' => 'jonathan.melly@eduvaud.ch'
+            ]);
+        }
+        //empty
+        $user->syncRoles([]);
+
+        //fill
+        $user->assignRole('prof');
     }
 }

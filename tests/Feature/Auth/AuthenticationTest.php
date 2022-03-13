@@ -4,12 +4,11 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
 {
-    use RefreshDatabase;
+    //use RefreshDatabase;
 
     public function test_login_screen_can_be_rendered()
     {
@@ -41,7 +40,7 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create(['username'=>'bob@microsoft.com']);
 
-        $response = $this->post('/login', [
+        $this->post('/login', [
             'username' => $user->username,
             'password' => 'pentest',
         ]);

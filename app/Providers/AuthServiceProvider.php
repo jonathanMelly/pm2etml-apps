@@ -54,7 +54,7 @@ class AuthServiceProvider extends ServiceProvider
                     O365EloquantMixTestUserProvider::class;
                 $this->eup = new $eupClassName($config['model'], $config['endpoint']);
             }
-            Log::debug('['.__CLASS__.'] '.$eupClassName ." set for ".$this::O365_DRIVER_NAME." with endpoint ".$config['endpoint']);
+            Log::debug('['.__CLASS__.'] '.$this->eup::class ." set for ".$this::O365_DRIVER_NAME." with endpoint ".$config['endpoint']);
             return $this->eup;
         });
 
