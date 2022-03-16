@@ -7,6 +7,7 @@ use App\Models\User;
 
 class UserV1Seeder extends Seeder
 {
+
     /**
      * Run the database seeds.
      *
@@ -14,20 +15,29 @@ class UserV1Seeder extends Seeder
      */
     public function run()
     {
-        $user = User::where('email','jonathan.melly@gmail.com')->first();
+        $this->createOrUpdateUser("prof@prof.com","prof@eduvaud.ch","prof","esseur","prof");
+        $this->createOrUpdateUser("root@r.com","root@eduvaud.ch","ro","ot","root");
+        $this->createOrUpdateUser("mp@mp.com","mp@eduvaud.ch","ro","ot","mp");
+    }
+
+    public function createOrUpdateUser($email,$username,$fn,$ln,$role)
+    {
+        $user = User::where('email',$email)->first();
         if($user ===null) {
             //
             $user = User::create([
-                'firstname' => 'jonathan',
-                'lastname' => 'melly',
-                'email' => 'jonathan.melly@gmail.com',
-                'username' => 'jonathan.melly@eduvaud.ch'
+                'firstname' => $fn,
+                'lastname' => $ln,
+                'email' => $email,
+                'username' => $username
             ]);
         }
-        //empty
+
+        //reset
         $user->syncRoles([]);
 
         //fill
-        $user->assignRole('prof');
+        $user->assignRole($role);
     }
+
 }

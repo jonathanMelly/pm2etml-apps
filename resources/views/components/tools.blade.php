@@ -1,5 +1,5 @@
 <div class="grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-    @role('prof')
+    @can('tools.teacher')
     <x-tools-card>
         <x-slot name="title">FAQ</x-slot>
         <x-slot name="link">https://dis.section-inf.ch</x-slot>
@@ -23,7 +23,7 @@
             <x-tools-card-tag>PHP</x-tools-card-tag>
         </x-slot>
     </x-tools-card>
-    @endrole
+    @endcan
 
 
     <x-tools-card>
