@@ -51,6 +51,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUsername($value)
  * @method static \Illuminate\Database\Query\Builder|User withTrashed()
  * @method static \Illuminate\Database\Query\Builder|User withoutTrashed()
+ * @mixin \Eloquent
  */
 class User extends Model implements AuthenticatableContract,AuthorizableContract
 {
@@ -93,5 +94,14 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
         return "o365-external";
     }
 
+    public function isAdmin():bool
+    {
+        return $this->hasRole('root');
+    }
+
+    public function getInitials():string
+    {
+        return $this->firstname[0].$this->lastname[0];
+    }
 
 }
