@@ -70,7 +70,7 @@ class Job extends Model
         'priority'=> JobPriority::class
     ];
 
-    public static function publishedPosts(): Job|\Illuminate\Database\Eloquent\Builder
+    public static function publishedJobs(): Job|\Illuminate\Database\Eloquent\Builder
     {
         return Job::where('published_date','<=',now());
     }

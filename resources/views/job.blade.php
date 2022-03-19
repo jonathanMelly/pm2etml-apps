@@ -5,10 +5,9 @@
         </h2>
     </x-slot>
 
-    <div class="py-6">
+    <div class="py-6 ">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 sm:gap-2 md:gap-4">
 
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 grid grid-cols-1 gap-4">
-            Voici les jobs disponibles:
             @forelse ($jobs as  $job)
                 <x-job-card :job="$job" />
             @empty
