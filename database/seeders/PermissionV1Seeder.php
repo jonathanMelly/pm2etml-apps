@@ -22,41 +22,58 @@ class PermissionV1Seeder extends Seeder
 
         DB::transaction(function () {
 
-            // create permissions
+            ##
+            #create permissions
+            #
+
             #Job related permissions
             Permission::create(['name' => 'jobs.create']);
-            $pjview = Permission::create(['name' => 'jobs.view']); //assumes view all
+            $permision_job_view = Permission::create(['name' => 'jobs.view']); //assumes view all
             Permission::create(['name' => 'jobs.edit']);
             Permission::create(['name' => 'jobs.trash']);
             Permission::create(['name' => 'jobs.restore']);
             Permission::create(['name' => 'jobs.admin']); //can do on all items (not only his)
-            $pjobs = Permission::create(['name' => 'jobs']);
+            $permission_jobs = Permission::create(['name' => 'jobs']);
+            $permission_jobs_for_teachers = Permission::create(['name' => 'jobs.create,view,edit,trash,restore']);
+
+            #Contracts
+            $permission_contract_create = Permission::create(['name' => 'contracts.create']);
+            $permission_contracts_view = Permission::create(['name' => 'contracts.view']); //assumes view all
+            Permission::create(['name' => 'contracts.edit']);
+            Permission::create(['name' => 'contracts.trash']);
+            Permission::create(['name' => 'contracts.restore']);
+            Permission::create(['name' => 'contracts.admin']); //can do on all items (not only his)
+            $permission_contracts = Permission::create(['name' => 'contracts']);
 
             //tools list
-            $ptoolsteacher = Permission::create(['name' => 'tools.teacher']);
+            $permission_tools_for_teachers = Permission::create(['name' => 'tools.teacher']);
 
-            //jobs for teachers
-            $pprof = Permission::create(['name' => 'jobs.create,view,edit,trash,restore']);
+            ##
+            #create roles and assign created permissions
+            ##
 
-            //Apply for a job
-            $papply = Permission::create(['name' => 'jobs-apply']);
-
-            // create roles and assign created permissions
+            $eleve = Role::create(['name' => 'eleve'])
+                ->givePermissionTo(
+                    $permision_job_view,
+                    $permission_contract_create
+                );
 
             // this can be done as separate statements
             $prof = Role::create(['name' => 'prof'])
-                ->givePermissionTo([$pprof,$ptoolsteacher]);
+                ->givePermissionTo(
+                    $permission_jobs_for_teachers,
+                    $permission_tools_for_teachers
+                );
 
             //MP/Doyen, ...
             $mp = Role::create(['name' => 'mp'])
-                ->givePermissionTo($pjobs);
+                ->givePermissionTo(
+                    $permission_jobs,
+                    $permission_contracts
+                );
 
             $mp = Role::create(['name' => 'doyen']);
                 //->givePermissionTo();
-
-            // or may be done by chaining
-            $eleve = Role::create(['name' => 'eleve'])
-                ->givePermissionTo([$pjview, $papply]);
 
             #Super Admin
             Role::create(['name' => 'root']);

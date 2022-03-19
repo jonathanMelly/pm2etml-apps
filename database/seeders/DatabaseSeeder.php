@@ -16,7 +16,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $seeds = [PermissionResetSeeder::class,PermissionV1Seeder::class,UserV1Seeder::class];
+        $seeds = [
+            PermissionResetSeeder::class,
+            PermissionV1Seeder::class,
+            UserV1Seeder::class,
+            JobSeeder::class];
 
         collect($seeds)->each(function($seeder){
             $exitCode = Artisan::call('db:seed', [

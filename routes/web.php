@@ -24,6 +24,20 @@ Route::middleware('auth')->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
+    Route::get('/jobs',
+        [\App\Http\Controllers\JobController::class,'index'])
+        ->name('jobs');
+
+    //Files (images) handling (avoid any injected script in image as returning the file as file !
+    Route::get('/dmz-assets/{file}', [ function ($file) {
+        $path = storage_path('dmz-assets/'.$file);
+
+        if (file_exists($path)) {
+            return response()->file($path, array('Content-Type' => mime_content_type($path)));
+        }
+        abort(404);
+    }]);
+
     //AUTH RELATED
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
         ->name('password.confirm');

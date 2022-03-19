@@ -17,7 +17,7 @@ class UserFactory extends Factory
      */
     public function definition()
     {
-        $fn = $this->faker->firstName();
+        $fn = $this->faker->unique()->firstName;
         $ln= $this->faker->lastName();
 
         //$email = $fn.$ln.'@'.$faker->safeEmailDomain;

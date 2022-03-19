@@ -21,7 +21,7 @@ $php artisan down 2>&1 >> $log
 
 # 2>&1 doesn’t seem to work with composer....
 $composer install --optimize-autoloader --no-dev --no-interaction 2>>$log >>$log
-#TODO Regenerate key ??
+#TODO Regenerate key ??
 
 #Backup DB
 $php artisan backup:run --only-db 2>&1 >> $log
@@ -43,6 +43,13 @@ $php artisan permission:cache-reset 2>&1 >> $log
 #done by optimize
 #$php artisan route:cache 2>&1 >> $log
 $php artisan view:cache 2>&1 >> $log
+
+//creats directory if needed
+dmz_dir="storage/dmz-assets"
+if [ ! -d "${dmz_dir}" ]; then
+    echo "Creating $dmz_dir directory"
+    mkdir "${dmz_dir}"
+fi
 
 #Put back site online
 $php artisan up 2>&1 >> $log

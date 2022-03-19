@@ -17,21 +17,19 @@ class UserV1Seeder extends Seeder
     {
         $this->createOrUpdateUser("prof@prof.com","prof@eduvaud.ch","prof","esseur","prof");
         $this->createOrUpdateUser("root@r.com","root@eduvaud.ch","ro","ot","root");
-        $this->createOrUpdateUser("mp@mp.com","mp@eduvaud.ch","ro","ot","mp");
+        $this->createOrUpdateUser("mp@mp.com","mp@eduvaud.ch","mp","rincipal","mp");
+
+        User::factory()->count(30)->create();
     }
 
     public function createOrUpdateUser($email,$username,$fn,$ln,$role)
     {
-        $user = User::where('email',$email)->first();
-        if($user ===null) {
-            //
-            $user = User::create([
+        $user = User::firstOrCreate([
                 'firstname' => $fn,
                 'lastname' => $ln,
                 'email' => $email,
                 'username' => $username
             ]);
-        }
 
         //reset
         $user->syncRoles([]);
