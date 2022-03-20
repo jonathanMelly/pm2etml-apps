@@ -45,6 +45,7 @@ class JobFactory extends Factory
             'priority' => $this->faker->numberBetween(JobPriority::cases()[0]->value,JobPriority::cases()[count(JobPriority::cases())-1]->value),
             'description' => $this->faker->realText(150),
             'max_workers' => $this->faker->numberBetween(1,5),
+            'required_xp_years' => $this->faker->numberBetween(0,3),
         ];
     }
 }

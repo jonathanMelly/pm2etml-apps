@@ -17,8 +17,8 @@ class JobController extends Controller
     public function index(): \Illuminate\Contracts\View\View
     {
         $jobs = Job::publishedJobs()
-            ->orderBy('priority')
             ->orderBy('required_xp_years')
+            ->orderBy('priority')
             ->get();
         return view('job')->with(compact('jobs'));
     }
