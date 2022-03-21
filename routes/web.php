@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
+use App\Http\Controllers\DmzAssetController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,14 +30,7 @@ Route::middleware('auth')->group(function () {
         ->name('jobs');
 
     //Files (images) handling (avoid any injected script in image as returning the file as file !
-    Route::get('/dmz-assets/{file}', [ function ($file) {
-        $path = storage_path('dmz-assets/'.$file);
-
-        if (file_exists($path)) {
-            return response()->file($path, array('Content-Type' => mime_content_type($path)));
-        }
-        abort(404);
-    }]);
+    Route::get('/dmz-assets/{file}', DmzAssetController::class);
 
     //AUTH RELATED
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
