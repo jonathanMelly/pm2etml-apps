@@ -103,5 +103,9 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
     {
         return $this->firstname[0].$this->lastname[0];
     }
+    public function getFirstnameL():string
+    {
+        return $this->firstname.' '.$this->lastname[0].'.';
+    }
 
 }

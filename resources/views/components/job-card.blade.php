@@ -34,8 +34,8 @@
         <p>{{ $job->description }}</p>
         <div class="card-actions justify-end">
             <i class="text-primary">{{__('Clients')}}: </i>
-            @foreach(array_map(function($el){ return $el['firstname']; }, $job->clients->toArray()) as $client)
-                <button class="btn btn-primary btn-outline btn-xs">{{ $client }}</button>
+            @foreach($job->clients as $client)
+                <button class="btn btn-primary btn-outline btn-xs">{{ $client->getFirstnameL() }}</button>
             @endforeach
 
         </div>
