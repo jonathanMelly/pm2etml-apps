@@ -1,7 +1,7 @@
 @props(['active','li'])
 
 @php
-$classes = 'btn btn-ghost normal-case mx-2' . (($active??false)?' btn-active':'');
+$classes = (($active??false)?' btn-active':'');
 @endphp
 
 {!! $li?'<li>':'' !!}
