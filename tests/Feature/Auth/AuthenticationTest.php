@@ -23,9 +23,8 @@ class AuthenticationTest extends TestCase
 
         $response = $this->post('/login', [
             'username' => $user->username,
-            'password' => $this->GetValidPassword(), /**WARNING, env is working int TEST because there is no cache !!!!!! (not working in prod) */
+            'password' => $this->GetValidPassword(),
         ]);
-
 
         $this->assertAuthenticated();
         $response->assertRedirect(RouteServiceProvider::HOME);
@@ -57,6 +56,18 @@ class AuthenticationTest extends TestCase
         $this->post('/login', [
             'email' => $user->email,
             'password' => 'wrong-password',
+        ]);
+
+        $this->assertGuest();
+    }
+
+    public function test_users_can_not_authenticate_with_small_password()
+    {
+        $user = User::factory()->create();
+
+        $this->post('/login', [
+            'email' => $user->email,
+            'password' => '123456',
         ]);
 
         $this->assertGuest();

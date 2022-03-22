@@ -19,6 +19,6 @@ abstract class TestCase extends BaseTestCase
 
     public function GetValidPassword():string
     {
-        return env('DASHBOARD_PASSWORD','pentest');
+        return config('auth.fake_password');
     }
 }
