@@ -1,6 +1,7 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+<nav x-data="{ open: false }" class="">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16">
+        <div class="sm:h-2"></div>
         <div class="navbar bg-base-100 mb-40 shadow-xl rounded-box justify-between">
             <div class="shrink-0 flex items-center">
                 <a href="{{ route('dashboard') }}">

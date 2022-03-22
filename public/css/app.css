@@ -13887,6 +13887,9 @@ body[dir="rtl"] .checkbox:checked,
 .mb-40 {
   margin-bottom: 10rem;
 }
+.mt-5 {
+  margin-top: 1.25rem;
+}
 .block {
   display: block;
 }
@@ -14559,6 +14562,14 @@ body[dir="rtl"] .checkbox:checked,
     margin-left: 0px;
   }
 
+  .sm\:mt-2 {
+    margin-top: 0.5rem;
+  }
+
+  .sm\:mt-5 {
+    margin-top: 1.25rem;
+  }
+
   .sm\:block {
     display: block;
   }
@@ -14573,6 +14584,14 @@ body[dir="rtl"] .checkbox:checked,
 
   .sm\:h-20 {
     height: 5rem;
+  }
+
+  .sm\:h-5 {
+    height: 1.25rem;
+  }
+
+  .sm\:h-2 {
+    height: 0.5rem;
   }
 
   .sm\:max-w-md {
