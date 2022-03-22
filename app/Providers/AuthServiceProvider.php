@@ -49,9 +49,7 @@ class AuthServiceProvider extends ServiceProvider
         //Sets dummy password check any other place than prod
         Auth::provider($this::O365_DRIVER_NAME, function ($app, array $config) {
             if ($this->eup == null) {
-                $eupClassName = $app->environment('production') ?
-                    O365EloquantMixUserProvider::class :
-                    O365EloquantMixTestUserProvider::class;
+                $eupClassName = $config['authenticator'];
                 $this->eup = new $eupClassName($config['model'], $config['endpoint']);
             }
             Log::debug('['.__CLASS__.'] '.$this->eup::class ." set for ".$this::O365_DRIVER_NAME." with endpoint ".$config['endpoint']);
