@@ -18,20 +18,22 @@
     </head>
     <body class="font-sans antialiased">
 
-        <div class="min-h-screen bg-base-200">
+        <div class="min-h-screen bg-base-200 flex flex-col">
             @include('layouts.navigation')
-
-{{--            <!-- Page Heading -->
-            <header class="bg-primary shadow">
-                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-primary-content">
-                    {{ $header }}
-                </div>
-            </header>--}}
 
             <!-- Page Content -->
             <main>
                 {{ $slot }}
             </main>
+
+            <div class="py-2">
+                <footer class="sm:mx-6 footer-center bg-base-300 text-base-content rounded-box text-xs">
+                    <div>
+                        <p>Copyright © {{date('Y')}} - All right reserved by PM2ETML</p>
+                    </div>
+                </footer>
+            </div>
         </div>
+
     </body>
 </html>
