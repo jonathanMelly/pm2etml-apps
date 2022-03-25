@@ -33,9 +33,9 @@
         </h2>
         <p>{{ $job->description }}</p>
         <div class="card-actions justify-end">
-            <i class="text-primary">{{__('Clients')}}: </i>
-            @foreach($job->clients as $client)
-                <button class="btn btn-primary btn-outline btn-xs">{{ $client->getFirstnameL() }}</button>
+            <i class="text-primary">{{__('Providers')}}: </i>
+            @foreach($job->providers as $provider)
+                <button class="btn btn-primary btn-outline btn-xs">{{ $provider->getFirstnameL() }}</button>
             @endforeach
 
         </div>

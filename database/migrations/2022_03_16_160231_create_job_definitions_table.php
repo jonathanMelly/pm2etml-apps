@@ -2,7 +2,7 @@
 
 use App\Enums\JobPriority;
 use App\Models\User;
-use App\Models\Job;
+use App\Models\JobDefinition;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -40,13 +40,13 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        //Store clients of a job
-        Schema::create('clients', function (Blueprint $table) {
+        //Store providers of a job
+        Schema::create('job_definition_user', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
             $table->foreignIdFor(User::class);
-            $table->foreignIdFor(Job::class);
-            $table->unique(array('user_id', 'job_id'));
+            $table->foreignIdFor(JobDefinition::class);
+            $table->unique(array('user_id', 'job_definition_id'));
         });
 
     }
@@ -63,6 +63,6 @@ return new class extends Migration
 
     public function table():string
     {
-        return app(Job::class)->getTable();
+        return app(JobDefinition::class)->getTable();
     }
 };

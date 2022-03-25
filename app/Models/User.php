@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\ContractRole;
 use Illuminate\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
@@ -107,6 +110,22 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
     public function getFirstnameL():string
     {
         return $this->firstname.' '.$this->lastname[0].'.';
+    }
+
+    /**
+     * @return HasMany
+     */
+    public function workerContracts() : hasMany
+    {
+        return $this->hasMany(Contract::class)->withPivotValue('role',ContractRole::WORKER->value);
+    }
+
+    /**
+     * @return BelongsToMany
+     */
+    public function jobDefinitions(): BelongsToMany
+    {
+        return $this->belongsToMany(JobDefinition::class);
     }
 
 }

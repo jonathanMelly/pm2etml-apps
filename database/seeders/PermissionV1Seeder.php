@@ -26,7 +26,7 @@ class PermissionV1Seeder extends Seeder
             #create permissions
             #
 
-            #Job related permissions
+            #JobDefinition related permissions
             Permission::create(['name' => 'jobs.create']);
             $permision_job_view = Permission::create(['name' => 'jobs.view']); //assumes view all
             Permission::create(['name' => 'jobs.edit']);

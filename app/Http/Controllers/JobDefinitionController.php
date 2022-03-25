@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Job;
+use App\Models\JobDefinition;
 use App\Http\Requests\StoreJobRequest;
 use App\Http\Requests\UpdateJobRequest;
 
-class JobController extends Controller
+class JobDefinitionController extends Controller
 {
 
     /**
@@ -16,11 +16,11 @@ class JobController extends Controller
      */
     public function index(): \Illuminate\Contracts\View\View
     {
-        $jobs = Job::publishedJobs()
+        $definitions = JobDefinition::published()
             ->orderBy('required_xp_years')
             ->orderBy('priority')
             ->get();
-        return view('job')->with(compact('jobs'));
+        return view('job-definition')->with(compact('definitions'));
     }
 
     /**
@@ -47,10 +47,10 @@ class JobController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Job  $job
+     * @param  \App\Models\JobDefinition  $job
      * @return \Illuminate\Http\Response
      */
-    public function show(Job $job)
+    public function show(JobDefinition $job)
     {
         //
     }
@@ -58,10 +58,10 @@ class JobController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Job  $job
+     * @param  \App\Models\JobDefinition  $job
      * @return \Illuminate\Http\Response
      */
-    public function edit(Job $job)
+    public function edit(JobDefinition $job)
     {
         //
     }
@@ -70,10 +70,10 @@ class JobController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \App\Http\Requests\UpdateJobRequest  $request
-     * @param  \App\Models\Job  $job
+     * @param  \App\Models\JobDefinition  $job
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateJobRequest $request, Job $job)
+    public function update(UpdateJobRequest $request, JobDefinition $job)
     {
         //
     }
@@ -81,10 +81,10 @@ class JobController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Job  $job
+     * @param  \App\Models\JobDefinition  $job
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Job $job)
+    public function destroy(JobDefinition $job)
     {
         //
     }

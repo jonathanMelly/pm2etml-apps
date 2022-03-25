@@ -6,9 +6,9 @@ use App\Enums\JobPriority;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Job>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\JobDefinition>
  */
-class JobFactory extends Factory
+class JobDefinitionFactory extends Factory
 {
     /**
      * Define the model's default state.
