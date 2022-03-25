@@ -113,14 +113,25 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
     }
 
     /**
+     *
      * @return HasMany
      */
-    public function workerContracts() : hasMany
+    public function contractsAsAWorker() : BelongsToMany
     {
-        return $this->hasMany(Contract::class)->withPivotValue('role',ContractRole::WORKER->value);
+        return $this->belongsToMany(Contract::class)->withPivotValue('role',ContractRole::WORKER->value);
     }
 
     /**
+     *
+     * @return HasMany
+     */
+    public function contractsAsAClient() : BelongsToMany
+    {
+        return $this->belongsToMany(Contract::class)->withPivotValue('role',ContractRole::CLIENT->value);
+    }
+
+    /**
+     * Tells of which jobDefinition this user is a provider
      * @return BelongsToMany
      */
     public function jobDefinitions(): BelongsToMany

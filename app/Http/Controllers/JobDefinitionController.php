@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\JobDefinition;
-use App\Http\Requests\StoreJobRequest;
+use App\Http\Requests\StoreJobDefinitionRequest;
 use App\Http\Requests\UpdateJobRequest;
 
 class JobDefinitionController extends Controller
@@ -36,10 +36,10 @@ class JobDefinitionController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreJobRequest  $request
+     * @param  \App\Http\Requests\StoreJobDefinitionRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreJobRequest $request)
+    public function store(StoreJobDefinitionRequest $request)
     {
         //
     }
