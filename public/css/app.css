@@ -14110,6 +14110,15 @@ body[dir="rtl"] .checkbox:checked,
 .border-opacity-50 {
   --tw-border-opacity: 0.5;
 }
+.border-opacity-25 {
+  --tw-border-opacity: 0.25;
+}
+.border-opacity-10 {
+  --tw-border-opacity: 0.1;
+}
+.border-opacity-20 {
+  --tw-border-opacity: 0.2;
+}
 .bg-white {
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
@@ -14446,6 +14455,12 @@ body[dir="rtl"] .checkbox:checked,
 }
 .hover\:border-opacity-100:hover {
   --tw-border-opacity: 1;
+}
+.hover\:border-opacity-75:hover {
+  --tw-border-opacity: 0.75;
+}
+.hover\:border-opacity-30:hover {
+  --tw-border-opacity: 0.3;
 }
 .hover\:bg-gray-700:hover {
   --tw-bg-opacity: 1;

@@ -2,7 +2,7 @@
     <!-- Primary Navigation Menu -->
     <div class="sm:mx-6 h-16">
         <div class="sm:h-2"></div>
-        <div class="navbar bg-base-100 mb-40 shadow-xl rounded-box justify-between border-primary border-2 border-opacity-50 hover:border-opacity-100">
+        <div class="navbar bg-base-100 mb-40 shadow-xl rounded-box justify-between border-primary border-2 border-opacity-20 hover:border-opacity-30">
             <div class="shrink-0 flex items-center">
                 <a href="{{ route('dashboard') }}">
                     <x-application-logo class="block h-10 w-auto fill-current text-gray-600" />
