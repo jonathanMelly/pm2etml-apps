@@ -66,7 +66,8 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
         'firstname',
         'lastname',
         'email',
-        'username'
+        'username',
+        'last_logged_at'
     ];
 
     /**

@@ -53,6 +53,10 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        //update login ts
+        $this->user()->last_logged_at = now()->toDateTime();
+        $this->user()->save();
+
         RateLimiter::clear($this->throttleKey());
     }
 
