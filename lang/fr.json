@@ -185,5 +185,12 @@
     "rd": "ème",
     "th": "ème",
     "Mandatory": "Obligatoire",
-    "year": "année"
+    "Recommended": "Recommandé",
+    "Highly_recommended": "Recommandé++",
+    "Free": "Libre",
+    "year": "année",
+    "Experience": "Expérience",
+    "Priority": "Priorité",
+    "Providers": "Fournisseurs",
+    "Market place": "Marché de l’emploi"
 }
