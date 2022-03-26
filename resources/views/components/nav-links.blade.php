@@ -3,7 +3,7 @@
 @php
     $links = [
         'dashboard'=> __('Dashboard'),
-        'jobs'=> __('Jobs')
+        'jobs'=> __('MarketPlace')
     ];
 @endphp
 
