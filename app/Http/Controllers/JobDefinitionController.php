@@ -9,6 +9,12 @@ use App\Http\Requests\UpdateJobRequest;
 class JobDefinitionController extends Controller
 {
 
+    public function __construct()
+    {
+        //map rbac authorization from policyClass
+        $this->authorizeResource(JobDefinition::class,'job');
+    }
+
     /**
      * Display a listing of the resource.
      *

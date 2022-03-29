@@ -32,7 +32,7 @@ class PermissionV1Seeder extends Seeder
             Permission::create(['name' => 'jobs.edit']);
             Permission::create(['name' => 'jobs.trash']);
             Permission::create(['name' => 'jobs.restore']);
-            Permission::create(['name' => 'jobs.admin']); //can do on all items (not only his)
+            //Permission::create(['name' => 'jobs.admin']); //can do on all items (not only his) [not used, as wildcard jobs...]
             $permission_jobs = Permission::create(['name' => 'jobs']);
             $permission_jobs_for_teachers = Permission::create(['name' => 'jobs.create,view,edit,trash,restore']);
 
@@ -42,7 +42,7 @@ class PermissionV1Seeder extends Seeder
             Permission::create(['name' => 'contracts.edit']);
             Permission::create(['name' => 'contracts.trash']);
             Permission::create(['name' => 'contracts.restore']);
-            Permission::create(['name' => 'contracts.admin']); //can do on all items (not only his)
+            //Permission::create(['name' => 'contracts.admin']); //can do on all items (not only his) [duplicate with jobs wildcard]
             $permission_contracts = Permission::create(['name' => 'contracts']);
 
             //tools list
