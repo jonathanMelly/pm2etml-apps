@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="{{session('theme')??'light'}}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -26,7 +26,7 @@
                 {{ $slot }}
             </main>
 
-            <div class="py-2">
+            <div class="sm:mb-2 mb-1 sm:mt-3 mt-2">
                 <footer class="sm:mx-6 footer-center bg-base-300 text-base-content rounded-box text-xs">
                     <div>
                         <p>Copyright © {{date('Y')}} - All right reserved by PM2ETML</p>
