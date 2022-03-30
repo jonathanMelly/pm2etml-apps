@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="py-6">
+
 
         <div class="sm:mx-6 flex flex-col gap-4">
 
@@ -30,14 +30,14 @@
             </div>
 
             {{-- JOKE--}}
-            <div class="bg-gradient-to-r from-warning to-secondary overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 border-b border-gray-200">
+            <div class="bg-gradient-to-r from-secondary/50 to-base-100 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6">
                     <div class="prose">
-                        <h1 class="text-primary-content">{{__('A bit of fun')}}</h1>
+                        <h1 class="text-secondary-content">{{__('A bit of fun')}}</h1>
                     </div>
                     <x-joke />
                 </div>
             </div>
         </div>
-    </div>
+
 </x-app-layout>

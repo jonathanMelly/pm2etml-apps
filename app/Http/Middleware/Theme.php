@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Cookie;
 use Illuminate\Http\Request;
 
 class Theme
@@ -17,20 +18,40 @@ class Theme
     public function handle(Request $request, Closure $next)
     {
         $session = $request->session();
-        $theme = $request->input('theme');
+        $specificTheme = $request->input('theme');
+        $cookie=null;
 
-        if($theme!==null || !$session->exists('theme'))
+        if($specificTheme===null)
         {
-            if($theme=='reset')
+            $specificTheme = $request->cookie('theme');
+        }
+        else
+        {
+            //reset
+            if($specificTheme==='reset')
             {
-                $theme=null;
+                $cookie=Cookie::forget('theme');
+                $specificTheme=null;
             }
-            //set default theme to current season
-            $session->put('theme',$theme??$this->timestampToTheme(now()));
+            else
+            {
+                $cookie=Cookie::forever('theme',$specificTheme);
+            }
         }
 
 
+        //no theme or them switched asked
+        if(!$session->exists('theme') || $session->get('theme')!==$specificTheme)
+        {
+            $session->put('theme',$specificTheme ?? $this->timestampToTheme(now()));
+        }
+
+        if($cookie!=null)
+        {
+            return $next($request)->withCookie($cookie);
+        }
         return $next($request);
+
     }
 
     private function timestampToTheme(\DateTime $dateTime): string{
