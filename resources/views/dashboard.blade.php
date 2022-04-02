@@ -33,9 +33,17 @@
             <div class="bg-gradient-to-r from-secondary/50 to-base-100 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     <div class="prose">
-                        <h1 class="text-secondary-content">{{__('A bit of fun')}}</h1>
+                        <h1 class="text-secondary-content">{{__('A bit of inspiration')}}</h1>
                     </div>
-                    <x-joke />
+                    <p class="mt-2">
+                        <i class="fa-solid fa-quote-left"></i>
+                        Quand les membres d’une tribu se rassemblent en un même lieu, les inspirations
+                        mutuelles s’intensifient. Dans tous les domaines, des groupes d’individus ont
+                        suscité l’innovation sous l’effet de leurs influences réciproques et de l’impulsion collective.
+                        <i class="fa-solid fa-quote-right"></i>
+                    </p>
+                    <i class="text-xs">Sir Ken Robinson (L’Élément, p.143)</i>
+{{--                    <x-joke />--}}
                 </div>
             </div>
         </div>
