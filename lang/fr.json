@@ -192,5 +192,12 @@
     "Experience": "Expérience",
     "Priority": "Priorité",
     "Providers": "Fournisseurs",
-    "Market place": "Marché de l’emploi"
+    "Market place": "Marché de l’emploi",
+    "Application details": "Détails pour la postulation",
+    "Start date": "Date de début",
+    "End date": "Date de fin",
+    "Client": "Client",
+    "Please fix the following issues": "Veuillez corriger les erreurs suivantes",
+    "Invalid data, please check":"Données invalides, veuillez contrôler les informations fournies",
+    "Apply": "Postuler"
 }

@@ -7,15 +7,12 @@ use Illuminate\Testing\TestResponse;
 
 beforeEach(function()
 {
-    $this->seed(PermissionV1Seeder::class);
     $this->seed(UserV1Seeder::class);
 });
 
 test('Prof can see FAQ tool and url shortener', function () {
     //Given
-    $prof = User::factory()->create();
-    $prof->syncRoles(['prof']);
-    $this->be($prof);
+    $prof = $this->CreateUser(roles: 'prof');
 
     //When
     $response = $this->get('/dashboard');
@@ -27,9 +24,7 @@ test('Prof can see FAQ tool and url shortener', function () {
 
 test('Root can see FAQ tool and url shortener', function () {
     //Given
-    $prof = User::factory()->create();
-    $prof->syncRoles(['root']);
-    $this->be($prof);
+    $prof = $this->CreateUser(roles: 'root');
 
     //When
     $response = $this->get('/dashboard');
@@ -47,9 +42,7 @@ function assertSeeAll(TestResponse $response)
 
 test('Eleve cannot see FAQ tool/url shortener but git', function () {
     //Given
-    $eleve = User::factory()->create();
-    $eleve->syncRoles([]);
-    $this->be($eleve);
+    $eleve = $this->CreateUser(roles:'eleve');
 
     //When
     $response = $this->get('/dashboard');

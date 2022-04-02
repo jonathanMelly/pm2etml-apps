@@ -1,3 +1,7 @@
+@props([
+    'viewOnly' => true,
+    'job'
+])
 @php
     use \App\Enums\JobPriority;
     /*
@@ -13,13 +17,14 @@
     if($job->priority === JobPriority::MANDATORY)
     {
         //$badgePriority = '<div class="badge badge-sm badge-error">'.__('Mandatory').'</div>';
-        $mandatoryBadge = '<span class="indicator-item badge badge-secondary">'.__('Mandatory').'</span>';
+        $mandatoryBadge = '<span class="indicator-item badge badge-secondary bg-opacity-50">'.__('Mandatory').'</span>';
     }
     //$badge = '<div class="badge badge-success">'.$job->priority->name.'</div>';
     //
     //$badgePriority = str_replace(['TYPE','VALUE'],[$priorityType,__($job->priority->name)],$badge);
     $requiredYears = $job->required_xp_years +1;
-    $badgeYears = ['info','success','warning','neutral'][$job->required_xp_years];
+    $yearStyle = ['info','success','warning','neutral'][$job->required_xp_years];
+    $priorityStyle = ['error','warning','accent','neutral'][$job->priority->value];
 
     if(config('custom.hide-job-image'))
     {
@@ -35,7 +40,13 @@
 
 @endphp
 
-<div class="card card-compact w-auto bg-base-100 shadow-xl">
+@if($viewOnly)
+    <div class="card card-compact w-auto bg-base-100 shadow-xl">
+@else
+    <a class="card card-compact w-auto bg-base-100 shadow-xl hover:bg-gradient-to-b hover:from-primary/25 hover:to-base-100"
+       href="{{ route('jobs-apply-for',['jobDefinition'=>$job]) }}">
+@endif
+
 
     <div class="indicator self-center mt-3">
         {!!  $mandatoryBadge??'' !!}
@@ -60,7 +71,7 @@
                 {{__('Priority')}}
             </div>
             <div class="col-span-2 justify-start items-center">
-                <progress class="progress progress-warning w-20" value="{{\App\Enums\JobPriority::last()->value-$job->priority->value}}" max="{{\App\Enums\JobPriority::last()->value}}"></progress><span class="text-xs">&nbsp;({{__(Str::ucfirst(Str::lower($job->priority->name)))}})</span>
+                <progress class="progress progress-{{$priorityStyle}} w-20" value="{{\App\Enums\JobPriority::last()->value-$job->priority->value}}" max="{{\App\Enums\JobPriority::last()->value}}"></progress><span class="text-xs">&nbsp;({{__(Str::ucfirst(Str::lower($job->priority->name)))}})</span>
             </div>
 
             <div class="flex justify-end content-center text-sm pr-1">
@@ -72,12 +83,16 @@
 
         </div>
         <div class="card-actions justify-end">
-            <i class="text-primary">{{__('Providers')}}: </i>
+            <i class="text-accent">{{__('Providers')}}: </i>
             @foreach($job->providers as $provider)
-                <button class="btn btn-primary btn-outline btn-xs">{{ $provider->getFirstnameL() }}</button>
+                <button class="btn btn-accent btn-outline btn-xs">{{ $provider->getFirstnameL() }}</button>
             @endforeach
 
         </div>
     </div>
-</div>
+@if($viewOnly)
+    </div>
+@else
+    </a>
+@endif
 

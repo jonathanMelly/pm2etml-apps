@@ -46,6 +46,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Query\Builder|JobDefinition withTrashed()
  * @method static \Illuminate\Database\Query\Builder|JobDefinition withoutTrashed()
  * @mixin \Eloquent
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $providers
+ * @property-read int|null $providers_count
+ * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereDeletedAt($value)
  */
 class JobDefinition extends Model
 {

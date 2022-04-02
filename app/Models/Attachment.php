@@ -26,6 +26,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereStoragePath($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property-read \App\Models\JobDefinition|null $jobDefinition
+ * @method static \Illuminate\Database\Query\Builder|Attachment onlyTrashed()
+ * @method static \Illuminate\Database\Query\Builder|Attachment withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|Attachment withoutTrashed()
  */
 class Attachment extends Model
 {

@@ -18,8 +18,11 @@
     </head>
     <body class="font-sans antialiased">
 
-        <div class="min-h-screen bg-base-200 flex flex-col">
+        <div class="min-h-screen bg-base-100 flex flex-col">
             @include('layouts.navigation')
+
+
+                <x-flash-messages />
 
             <!-- Page Content -->
             <main>

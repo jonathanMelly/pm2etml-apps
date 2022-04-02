@@ -46,6 +46,7 @@ class JobDefinitionFactory extends Factory
             'description' => $this->faker->realText(150),
             'max_workers' => $this->faker->numberBetween(1,5),
             'required_xp_years' => $this->faker->numberBetween(0,3),
+            'image' => $this->faker->imageUrl()
         ];
     }
 }

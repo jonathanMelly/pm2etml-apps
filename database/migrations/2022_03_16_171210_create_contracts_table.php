@@ -22,6 +22,9 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->unsignedTinyInteger("status")->default(ContractStatus::REGISTERED->value);
+            $table->dateTime('status_timestamp')->default(now());
+            $table->dateTime('start_date');
+            $table->dateTime('end_date');
             $table->foreignIdFor(JobDefinition::class);
             $table->softDeletes();
         });

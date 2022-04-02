@@ -18,13 +18,14 @@ class UserV1Seeder extends Seeder
         $this->createOrUpdateUser("prof@prof.com","prof@eduvaud.ch","prof","esseur","prof");
         $this->createOrUpdateUser("root@r.com","root@eduvaud.ch","ro","ot","root");
         $this->createOrUpdateUser("mp@mp.com","mp@eduvaud.ch","mp","rincipal","mp");
+        $this->createOrUpdateUser("padawan@mp.com","padawan@eduvaud.ch","pada","wan","eleve");
 
         User::factory()->count(30)->create();
     }
 
-    public function createOrUpdateUser($email,$username,$fn,$ln,$role)
+    public function createOrUpdateUser($email,$username,$fn,$ln,...$roles)
     {
-        $user = User::firstOrCreate([
+        $user = User::updateOrCreate([
                 'firstname' => $fn,
                 'lastname' => $ln,
                 'email' => $email,
@@ -35,7 +36,7 @@ class UserV1Seeder extends Seeder
         $user->syncRoles([]);
 
         //fill
-        $user->assignRole($role);
+        $user->assignRole($roles);
     }
 
 }

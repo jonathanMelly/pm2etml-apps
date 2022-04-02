@@ -6,6 +6,17 @@ module.exports = {
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
     ],
+    safelist:[
+        'progress-error',
+        'progress-info',
+        'progress-warning',
+        'progress-accent',
+        'progress-neutral',
+        'alert-success',
+        'alert-info',
+        'alert-warning',
+        'alert-error'
+    ],
 
     theme: {
         extend: {

@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="">
+<nav x-data="{ open: false }" class="sm:mb-5 mb-2">
     <!-- Primary Navigation Menu -->
     <div class="sm:mx-6 h-16">
         <div class="sm:h-2"></div>

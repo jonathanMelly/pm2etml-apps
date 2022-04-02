@@ -12,7 +12,7 @@ class JobDefinitionController extends Controller
     public function __construct()
     {
         //map rbac authorization from policyClass
-        $this->authorizeResource(JobDefinition::class,'job');
+        $this->authorizeResource(JobDefinition::class,'jobDefinition');
     }
 
     /**

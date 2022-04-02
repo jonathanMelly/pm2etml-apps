@@ -55,6 +55,14 @@ use Spatie\Permission\Traits\HasRoles;
  * @method static \Illuminate\Database\Query\Builder|User withTrashed()
  * @method static \Illuminate\Database\Query\Builder|User withoutTrashed()
  * @mixin \Eloquent
+ * @property string|null $last_logged_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Contract[] $contractsAsAClient
+ * @property-read int|null $contracts_as_a_client_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Contract[] $contractsAsAWorker
+ * @property-read int|null $contracts_as_a_worker_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\JobDefinition[] $jobDefinitions
+ * @property-read int|null $job_definitions_count
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereLastLoggedAt($value)
  */
 class User extends Model implements AuthenticatableContract,AuthorizableContract
 {

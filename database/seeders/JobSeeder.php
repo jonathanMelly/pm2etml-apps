@@ -29,7 +29,7 @@ class JobSeeder extends Seeder
                 $job->image=$imgName;
         })->afterCreating(
             function (JobDefinition $job) use($faker) {
-                $client = User::find($faker->numberBetween(1,User::count()/2-1));
+                $client = User::findOrFail($faker->numberBetween(1,User::count()/2-1));
                 $job->providers()->attach($client->id);
                 if(rand(0,1)==0)
                 {

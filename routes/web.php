@@ -23,12 +23,21 @@ Route::redirect("/","dashboard");
 //Authenticated
 Route::middleware('auth')->group(function () {
 
-    Route::get('/dashboard',DashboardController::class)->name('dashboard');
+    Route::get('dashboard',DashboardController::class)->name('dashboard');
 
-    Route::get('/jobs',[JobDefinitionController::class,'index'])->name('jobs');
+    Route::get('jobs',[JobDefinitionController::class,'index'])->name('jobs');
+
+    //The first contains job to be contracted...
+    Route::get('jobs-apply/{jobDefinition}',
+        [\App\Http\Controllers\ContractController::class,'createApply'])
+        ->name('jobs-apply-for');
+    Route::post('jobs-apply',
+        [\App\Http\Controllers\ContractController::class,'storeApply'])
+        ->name('jobs-apply');
+    Route::resource('/contract',\App\Http\Controllers\ContractController::class);
 
     //Files (images) handling (avoid any injected script in image as returning the file as file !
-    Route::get('/dmz-assets/{file}', DmzAssetController::class);
+    Route::get('dmz-assets/{file}', DmzAssetController::class);
 
     //AUTH RELATED
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])

@@ -32,6 +32,7 @@ class PermissionV1Seeder extends Seeder
             Permission::create(['name' => 'jobs.edit']);
             Permission::create(['name' => 'jobs.trash']);
             Permission::create(['name' => 'jobs.restore']);
+            $permission_job_apply = Permission::create(['name' => 'jobs-apply']);//custom for separating apply from students
             //Permission::create(['name' => 'jobs.admin']); //can do on all items (not only his) [not used, as wildcard jobs...]
             $permission_jobs = Permission::create(['name' => 'jobs']);
             $permission_jobs_for_teachers = Permission::create(['name' => 'jobs.create,view,edit,trash,restore']);
@@ -55,7 +56,7 @@ class PermissionV1Seeder extends Seeder
             $eleve = Role::create(['name' => 'eleve'])
                 ->givePermissionTo(
                     $permision_job_view,
-                    $permission_contract_create
+                    $permission_job_apply
                 );
 
             // this can be done as separate statements
