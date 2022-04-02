@@ -28,7 +28,7 @@ class Theme
         else
         {
             //reset
-            if($specificTheme==='reset')
+            if($specificTheme==='auto')
             {
                 $cookie=Cookie::forget('theme');
                 $specificTheme=null;
