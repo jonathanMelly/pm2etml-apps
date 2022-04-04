@@ -12,7 +12,7 @@
 */
 
 uses(Tests\TestCase::class)->in('Feature');
-uses(\Tests\BrowserKitTestCase::class)->in('Feature-BrowserKit');
+//uses(\Tests\BrowserKitTestCase::class)->in('Feature-BrowserKit');
 
 /*
 |--------------------------------------------------------------------------
