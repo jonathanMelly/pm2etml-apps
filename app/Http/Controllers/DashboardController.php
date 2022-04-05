@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Contract;
 use App\Models\User;
 use App\Models\JobDefinition;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -27,7 +28,8 @@ class DashboardController extends Controller
             ->orderBy('priority')
             ->get();
         */
-        $contracts = $user->contractsAsAWorker()->get();
+        $contracts = $user->contractsAsAWorker()->get()->union(
+            $user->contractsAsAClient()->get());
 
 
         return view('dashboard')->with(compact('contracts'));
