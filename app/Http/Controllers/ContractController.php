@@ -8,6 +8,7 @@ use App\Http\Requests\StoreContractRequest;
 use App\Http\Requests\UpdateContractRequest;
 use App\Models\JobDefinition;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 class ContractController extends Controller
@@ -50,9 +51,7 @@ class ContractController extends Controller
 
     public function createApply(JobDefinition $jobDefinition)
     {
-        //TODO check that this user has not yet a contract for this job def
-
-        //apply for a job
+        //form to apply for a job
         return view('job-apply')->with(compact('jobDefinition'));
     }
 
@@ -67,27 +66,37 @@ class ContractController extends Controller
         //SECURITY CHECKS (as this area is opened to students who might want to play with ids...)
         $this->authorize('jobs-apply');
 
-        //Only prof can be client
+        $jobDefinitionId = $request->get('job_definition_id');
+
+        //Only prof and authorized providers can be client
         $client = User::whereId($request->get('client'))->firstOrFail();
-        if(!$client->hasRole(RoleName::TEACHER))
+        if(!$client->hasRole(RoleName::TEACHER) ||
+            !JobDefinition::whereHas('providers', function (Builder $query) use($jobDefinitionId,$client) {
+                $query->where('user_id','=',$client->id)->where('job_definition_id','=',$jobDefinitionId);
+            })->exists())
         {
-            return back()->withErrors('Invalid client (only teachers are allowed)')->withInput();
+            return back()->withErrors(__('Invalid client (only valid providers are allowed)'))->withInput();
         }
         //Only students can be workers
         $user = auth()->user();
         if(!$user->hasRole(RoleName::STUDENT))
         {
-            return back()->withErrors('Invalid worker (only students are allowed)')->withInput();
+            return back()->withErrors(__('Invalid worker (only students are allowed)'))->withInput();
         }
         //END OF SECURITY CHECKS
 
 
         //TODO check that this user has not yet a contract for this job def
 
+        if ($user->contractsAsAWorker()->where('job_definition_id','=',$jobDefinitionId)->exists())
+        {
+            return back()->withErrors(__('You already have/had a contract for this job'))->withInput();
+        }
+
         $contract = Contract::make();
         $contract->start_date = $request->get('start_date');
         $contract->end_date = $request->get('end_date');
-        $contract->jobDefinition()->associate($request->get('job_definition_id'));
+        $contract->jobDefinition()->associate($jobDefinitionId);
 
         //Consistency on error
         DB::transaction(function () use ($contract,$request,$client,$user) {
