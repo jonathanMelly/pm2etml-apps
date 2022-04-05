@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contract;
 use App\Models\JobDefinition;
 use App\Http\Requests\StoreJobDefinitionRequest;
 use App\Http\Requests\UpdateJobRequest;
@@ -23,6 +24,7 @@ class JobDefinitionController extends Controller
     public function index(): \Illuminate\Contracts\View\View
     {
         $definitions = JobDefinition::published()
+            ->whereNotIn('id',auth()->user()->contractsAsAWorker()->select('job_definition_id'))
             ->orderBy('required_xp_years')
             ->orderBy('priority')
             ->get();
