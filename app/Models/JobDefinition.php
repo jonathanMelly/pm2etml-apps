@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use App\Enums\JobPriority;
+use App\Enums\RequiredTimeUnit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use JetBrains\PhpStorm\Pure;
 
 /**
  * App\Models\JobDefinition
@@ -50,6 +52,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $providers
  * @property-read int|null $providers_count
  * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereDeletedAt($value)
+ * @property int $allocated_time
+ * @property RequiredTimeUnit $allocated_time_unit
+ * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereAllocatedTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereAllocatedTimeUnit($value)
  */
 class JobDefinition extends Model
 {
@@ -67,11 +73,14 @@ class JobDefinition extends Model
         'priority',
         'status',
         'published_date',
-        'image'
+        'image',
+        'required_time',
+        'required_time_unit'
     ];
 
     protected $casts = [
-        'priority'=> JobPriority::class
+        'priority'=> JobPriority::class,
+        'allocated_time_unit'=>RequiredTimeUnit::class
     ];
 
     public static function published(): JobDefinition|\Illuminate\Database\Eloquent\Builder
@@ -92,6 +101,11 @@ class JobDefinition extends Model
     public function attachments(): HasMany
     {
         return $this->hasMany(Attachment::class);
+    }
+
+    public function getAllocatedTime(RequiredTimeUnit $targetUnit=RequiredTimeUnit::HOUR) : float
+    {
+        return round(RequiredTimeUnit::Convert($this->allocated_time,$this->allocated_time_unit,$targetUnit),0);
     }
 
 }

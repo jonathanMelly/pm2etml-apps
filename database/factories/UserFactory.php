@@ -17,14 +17,14 @@ class UserFactory extends Factory
      */
     public function definition()
     {
-        $fn = $this->faker->unique()->firstName;
+        $fn = $this->faker->firstName();
         $ln= $this->faker->lastName();
 
         //$email = $fn.$ln.'@'.$faker->safeEmailDomain;
-        $email = strtolower($fn).'.'.strtolower($ln).'@eduvaud.ch';
+        $email = $this->faker->unique()->email;// strtolower($fn).'.'.strtolower($ln).'@eduvaud.ch';
 
         return [
-            'username' => 'p'.$this->faker->randomLetter().$this->faker->unique()->randomNumber(2).$this->faker->lexify('???').'@eduvaud.ch',
+            'username' => 'p'.$this->faker->randomLetter().$this->faker->randomNumber(2).$this->faker->lexify('???').'@eduvaud.ch',
             'firstname' => $fn,
             'lastname' => $ln,
             'email' => $email,

@@ -199,5 +199,9 @@
     "Client": "Client",
     "Please fix the following issues": "Veuillez corriger les erreurs suivantes",
     "Invalid data, please check":"Données invalides, veuillez contrôler les informations fournies",
-    "Apply": "Postuler"
+    "Apply": "Postuler",
+    "Allocated time": "Temps alloué",
+    "Congrats, you have been hired for the job":"Félicitations, vous avez été engagé pour le travail",
+    "Internal tools": "Outils",
+    "My contracts": "Mes contrats"
 }

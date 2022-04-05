@@ -66,19 +66,26 @@
             --}}
         </h2>
         <p>{{ $job->description }}</p>
-        <div class="grid grid-cols-3 border-secondary border border-opacity-50 rounded divide-y divide-dotted divide-secondary">
+        <div class="grid grid-cols-3 border-secondary border border-opacity-50 rounded divide-y divide-dotted divide-secondary {{$viewOnly?'max-w-fit self-center':''}}">
             <div class="flex justify-end content-center text-sm pr-1">
                 {{__('Priority')}}
             </div>
             <div class="col-span-2 justify-start items-center">
-                <progress class="progress progress-{{$priorityStyle}} w-20" value="{{\App\Enums\JobPriority::last()->value-$job->priority->value}}" max="{{\App\Enums\JobPriority::last()->value}}"></progress><span class="text-xs">&nbsp;({{__(Str::ucfirst(Str::lower($job->priority->name)))}})</span>
+                <progress class="progress progress-{{$priorityStyle}} w-20" value="{{\App\Enums\JobPriority::last()->value-$job->priority->value}}" max="{{\App\Enums\JobPriority::last()->value}}"></progress><span class="text-xs">&nbsp;( {{__(Str::ucfirst(Str::lower($job->priority->name)))}} )</span>
             </div>
 
             <div class="flex justify-end content-center text-sm pr-1">
                 {{__('Experience')}}
             </div>
             <div class="col-span-2 justify-start items-center">
-                <progress class="progress progress-info w-20" value="{{$job->required_xp_years}}" max="3"></progress><span class="text-xs">&nbsp;({!! $requiredYears.'<sup>'.__(ordinal($requiredYears)).'</sup>&nbsp;'.__('year')  !!})</span>
+                <progress class="progress progress-info w-20" value="{{$job->required_xp_years}}" max="3"></progress><span class="text-xs">&nbsp;( {!! $requiredYears.'<sup>'.__(ordinal($requiredYears)).'</sup>&nbsp;'.__('year')  !!} )</span>
+            </div>
+
+            <div class="flex justify-end content-center text-sm pr-1">
+                {{__('Allocated time')}}
+            </div>
+            <div class="col-span-2 justify-start items-center">
+                <progress class="progress progress-success w-20" value="{{$job->getAllocatedTime()}}" max="200"></progress><span class="text-xs">&nbsp;( {{$job->getAllocatedTime(\App\Enums\RequiredTimeUnit::HOUR)}}h / {{$job->getAllocatedTime(\App\Enums\RequiredTimeUnit::PERIOD)}}p )</span>
             </div>
 
         </div>

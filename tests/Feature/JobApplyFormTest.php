@@ -34,7 +34,7 @@ class JobApplyFormTest extends BrowserKitTestCase
             ->select($prof->id, 'client')
             ->press(__('Apply'))
             ->seePageIs('/dashboard')
-            ->seeText('Congrats, you have been hired for the job')
+            ->seeText(__('Congrats, you have been hired for the job'))
         ;
     }
 }

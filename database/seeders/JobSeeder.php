@@ -9,6 +9,7 @@ use Faker\Generator;
 use Illuminate\Container\Container;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
 
 class JobSeeder extends Seeder
 {
@@ -29,11 +30,12 @@ class JobSeeder extends Seeder
                 $job->image=$imgName;
         })->afterCreating(
             function (JobDefinition $job) use($faker) {
-                $client = User::findOrFail($faker->numberBetween(1,User::count()/2-1));
+                $candidates = User::role('prof')->get();
+                $client = $candidates[($faker->numberBetween(0,$candidates->count()/2-1))];
                 $job->providers()->attach($client->id);
                 if(rand(0,1)==0)
                 {
-                    $client = User::find($faker->numberBetween(User::count()/2,User::count()));
+                    $client = $candidates[($faker->numberBetween($candidates->count()/2,$candidates->count()-1))];;
                     $job->providers()->attach($client->id);
                 }
 
