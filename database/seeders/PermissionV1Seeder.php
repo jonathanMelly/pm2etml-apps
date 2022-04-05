@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\RoleName;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
@@ -53,31 +54,31 @@ class PermissionV1Seeder extends Seeder
             #create roles and assign created permissions
             ##
 
-            $eleve = Role::create(['name' => 'eleve'])
+            $eleve = Role::create(['name' => RoleName::STUDENT])
                 ->givePermissionTo(
                     $permision_job_view,
                     $permission_job_apply
                 );
 
             // this can be done as separate statements
-            $prof = Role::create(['name' => 'prof'])
+            $prof = Role::create(['name' => RoleName::TEACHER])
                 ->givePermissionTo(
                     $permission_jobs_for_teachers,
                     $permission_tools_for_teachers
                 );
 
             //MP/Doyen, ...
-            $mp = Role::create(['name' => 'mp'])
+            $mp = Role::create(['name' => RoleName::PRINCIPAL])
                 ->givePermissionTo(
                     $permission_jobs,
                     $permission_contracts
                 );
 
-            $mp = Role::create(['name' => 'doyen']);
+            $mp = Role::create(['name' => RoleName::DEAN]);
                 //->givePermissionTo();
 
             #Super Admin
-            Role::create(['name' => 'root']);
+            Role::create(['name' => RoleName::ADMIN]);
         #should be handled by AuthServiceProvider
         #$role->givePermissionTo(Permission::all());
         });

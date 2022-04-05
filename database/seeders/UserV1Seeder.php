@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\RoleName;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 
@@ -30,7 +31,7 @@ class UserV1Seeder extends Seeder
         //Creates 250 students
         foreach(User::factory()->count(250)->create() as $user)
         {
-            $user->assignRole('eleve');
+            $user->assignRole(RoleName::STUDENT);
         }
     }
 

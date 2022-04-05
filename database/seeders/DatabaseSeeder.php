@@ -16,24 +16,33 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+        echo "Starting seeding\n";
+
         $seeds = [
             PermissionResetSeeder::class,
             PermissionV1Seeder::class,
             UserV1Seeder::class,
-            JobSeeder::class];
+            JobSeeder::class,
+            ContractSeeder::class];
 
         collect($seeds)->each(function($seeder){
+
+            echo "-->Seeding ".basename($seeder);
+
             $exitCode = Artisan::call('db:seed', [
                 '--class' => $seeder,
-                '--force' => true
+                '--force' => true,
+                //'-vvv' does not bring more output
             ]);
             if($exitCode<0)
             {
-                Log::error("Cannot seed $seeder");
+                echo " ==> \e[0;31mKO\e[0m\n";
+                Log::error("$seeder KO");
             }
             else
             {
-                Log::info("Seed $seeder successfully executed");
+                echo " ==> \e[0;32mOK\e[0m\n";
+                Log::info("$seeder OK");
             }
         });
 

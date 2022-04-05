@@ -41,7 +41,7 @@ class JobDefinitionFactory extends Factory
 
         return [
             'name' => $this->faker->randomElement($names).' Version '.$this->faker->randomDigit().'.'.$this->faker->randomDigit(),
-            'published_date' => $this->faker->date,
+            'published_date' => $this->faker->dateTimeBetween('-365 days','+1 day'),
             'priority' => $this->faker->numberBetween(JobPriority::cases()[0]->value,JobPriority::cases()[count(JobPriority::cases())-1]->value),
             'description' => $this->faker->realText(150),
             'max_workers' => $this->faker->numberBetween(1,5),

@@ -42,7 +42,7 @@ function assertSeeAll(TestResponse $response)
 
 test('Eleve cannot see FAQ tool/url shortener but git', function () {
     //Given
-    $eleve = $this->CreateUser(roles:'eleve');
+    $eleve = $this->CreateUser(roles:\App\Enums\RoleName::STUDENT);
 
     //When
     $response = $this->get('/dashboard');

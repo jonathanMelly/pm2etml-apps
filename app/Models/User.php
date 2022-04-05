@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ContractRole;
+use App\Enums\RoleName;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -108,7 +109,7 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
 
     public function isAdmin():bool
     {
-        return $this->hasRole('root');
+        return $this->hasRole(RoleName::ADMIN);
     }
 
     public function getInitials():string

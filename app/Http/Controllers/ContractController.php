@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\RoleName;
 use App\Models\Contract;
 use App\Http\Requests\StoreContractRequest;
 use App\Http\Requests\UpdateContractRequest;
@@ -68,13 +69,13 @@ class ContractController extends Controller
 
         //Only prof can be client
         $client = User::whereId($request->get('client'))->firstOrFail();
-        if(!$client->hasRole('prof'))
+        if(!$client->hasRole(RoleName::TEACHER))
         {
             return back()->withErrors('Invalid client (only teachers are allowed)')->withInput();
         }
         //Only students can be workers
         $user = auth()->user();
-        if(!$user->hasRole('eleve'))
+        if(!$user->hasRole(RoleName::STUDENT))
         {
             return back()->withErrors('Invalid worker (only students are allowed)')->withInput();
         }

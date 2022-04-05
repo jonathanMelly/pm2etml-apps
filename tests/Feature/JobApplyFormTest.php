@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\RoleName;
 use App\Models\JobDefinition;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -17,7 +18,7 @@ class JobApplyFormTest extends BrowserKitTestCase
      */
     public function test_user_can_apply_for_a_job()
     {
-        $this->CreateUser(roles: 'eleve');
+        $this->CreateUser(roles: RoleName::STUDENT);
         $prof = $this->CreateUser(false,'prof');
 
         $job = JobDefinition::factory()

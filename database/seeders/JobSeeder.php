@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\RoleName;
 use App\Models\JobDefinition;
 use App\Models\User;
 use Database\Factories\JobDefinitionFactory;
@@ -30,15 +31,18 @@ class JobSeeder extends Seeder
                 $job->image=$imgName;
         })->afterCreating(
             function (JobDefinition $job) use($faker) {
-                $candidates = User::role('prof')->get();
-                $client = $candidates[($faker->numberBetween(0,$candidates->count()/2-1))];
+
+                $count = 10;
+
+                $candidates = User::role(RoleName::TEACHER)->orderBy('id')->limit($count)->get();
+                $client = $candidates[rand(0,$count/2-1)];
                 $job->providers()->attach($client->id);
                 if(rand(0,1)==0)
                 {
-                    $client = $candidates[($faker->numberBetween($candidates->count()/2,$candidates->count()-1))];;
+                    $client = $candidates[rand($count/2,$count-1)];
                     $job->providers()->attach($client->id);
                 }
 
-        })->count(10)->create();
+        })->count(12)->create();
     }
 }
