@@ -17,35 +17,33 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property ContractStatus $status
- * @property int $job_id
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $clients
- * @property-read int|null $clients_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $workers
- * @property-read int|null $workers_count
- * @method static \Database\Factories\ContractFactory factory(...$parameters)
- * @method static \Illuminate\Database\Eloquent\Builder|Contract newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Contract newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Contract query()
- * @method static \Illuminate\Database\Eloquent\Builder|Contract whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Contract whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Contract whereJobId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Contract whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Contract whereUpdatedAt($value)
- * @mixin \Eloquent
  * @property string $status_timestamp
  * @property string $start_date
  * @property string $end_date
  * @property int $job_definition_id
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $clients
+ * @property-read int|null $clients_count
  * @property-read \App\Models\JobDefinition|null $jobDefinition
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $workers
+ * @property-read int|null $workers_count
+ * @method static \Database\Factories\ContractFactory factory(...$parameters)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract newQuery()
  * @method static \Illuminate\Database\Query\Builder|Contract onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Contract whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Contract whereEndDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Contract whereJobDefinitionId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Contract whereStartDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Contract whereStatusTimestamp($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract whereUpdatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|Contract withTrashed()
  * @method static \Illuminate\Database\Query\Builder|Contract withoutTrashed()
+ * @mixin \Eloquent
  */
 class Contract extends Model
 {

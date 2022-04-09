@@ -15,21 +15,20 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string $name
  * @property string $storage_path
- * @property-read \App\Models\JobDefinition|null $job
+ * @property-read \App\Models\JobDefinition|null $jobDefinition
  * @method static \Database\Factories\AttachmentFactory factory(...$parameters)
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment newQuery()
+ * @method static \Illuminate\Database\Query\Builder|Attachment onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment query()
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereStoragePath($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereUpdatedAt($value)
- * @mixin \Eloquent
- * @property-read \App\Models\JobDefinition|null $jobDefinition
- * @method static \Illuminate\Database\Query\Builder|Attachment onlyTrashed()
  * @method static \Illuminate\Database\Query\Builder|Attachment withTrashed()
  * @method static \Illuminate\Database\Query\Builder|Attachment withoutTrashed()
+ * @mixin \Eloquent
  */
 class Attachment extends Model
 {

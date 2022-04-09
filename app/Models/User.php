@@ -29,6 +29,13 @@ use Spatie\Permission\Traits\HasRoles;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property string|null $last_logged_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Contract[] $contractsAsAClient
+ * @property-read int|null $contracts_as_a_client_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Contract[] $contractsAsAWorker
+ * @property-read int|null $contracts_as_a_worker_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\JobDefinition[] $jobDefinitions
+ * @property-read int|null $job_definitions_count
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection|\Illuminate\Notifications\DatabaseNotification[] $notifications
  * @property-read int|null $notifications_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Permission\Models\Permission[] $permissions
@@ -49,6 +56,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereFirstname($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereLastLoggedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLastname($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereRememberToken($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
@@ -56,14 +64,6 @@ use Spatie\Permission\Traits\HasRoles;
  * @method static \Illuminate\Database\Query\Builder|User withTrashed()
  * @method static \Illuminate\Database\Query\Builder|User withoutTrashed()
  * @mixin \Eloquent
- * @property string|null $last_logged_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Contract[] $contractsAsAClient
- * @property-read int|null $contracts_as_a_client_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Contract[] $contractsAsAWorker
- * @property-read int|null $contracts_as_a_worker_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\JobDefinition[] $jobDefinitions
- * @property-read int|null $job_definitions_count
- * @method static \Illuminate\Database\Eloquent\Builder|User whereLastLoggedAt($value)
  */
 class User extends Model implements AuthenticatableContract,AuthorizableContract
 {

@@ -23,19 +23,25 @@ use JetBrains\PhpStorm\Pure;
  * @property JobPriority $priority
  * @property int $max_workers
  * @property string|null $published_date
+ * @property int $allocated_time
+ * @property RequiredTimeUnit $allocated_time_unit
  * @property string $image
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Attachment[] $attachments
  * @property-read int|null $attachments_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $clients
- * @property-read int|null $clients_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Contract[] $contracts
  * @property-read int|null $contracts_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $providers
+ * @property-read int|null $providers_count
  * @method static \Database\Factories\JobDefinitionFactory factory(...$parameters)
  * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition newQuery()
  * @method static \Illuminate\Database\Query\Builder|JobDefinition onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition query()
+ * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereAllocatedTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereAllocatedTimeUnit($value)
  * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereDescription($value)
  * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereImage($value)
@@ -48,14 +54,6 @@ use JetBrains\PhpStorm\Pure;
  * @method static \Illuminate\Database\Query\Builder|JobDefinition withTrashed()
  * @method static \Illuminate\Database\Query\Builder|JobDefinition withoutTrashed()
  * @mixin \Eloquent
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $providers
- * @property-read int|null $providers_count
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereDeletedAt($value)
- * @property int $allocated_time
- * @property RequiredTimeUnit $allocated_time_unit
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereAllocatedTime($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereAllocatedTimeUnit($value)
  */
 class JobDefinition extends Model
 {
