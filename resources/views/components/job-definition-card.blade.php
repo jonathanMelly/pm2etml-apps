@@ -34,7 +34,7 @@
     else
     {
         $image='<figure class="mt-1">
-        <img class="object-scale-down" src="/dmz-assets/'.$job->image.'" alt="'. $job->name.'" />
+        <img class="object-scale-down" src="'.img($job->image).'" alt="'. $job->name.'" />
         </figure>';
     }
 
