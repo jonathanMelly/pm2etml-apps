@@ -23,7 +23,7 @@
     }
 
 @endphp
-<tr>
+<tr class="{{$loop->odd?'active':''}}">
     <td>
         <div class="flex items-center space-x-3">
             <div class="avatar">

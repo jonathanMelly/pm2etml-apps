@@ -10,7 +10,7 @@
 
             <tbody>
             @foreach($contracts as $contract)
-                <x-worker-contract-list-element :contract="$contract" />
+                <x-worker-contract-list-element :contract="$contract" :loop="$loop" />
             @endforeach
             </tbody>
 
