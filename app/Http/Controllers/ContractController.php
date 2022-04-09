@@ -105,7 +105,8 @@ class ContractController extends Controller
         });
 
         return redirect('/dashboard')
-            ->with('success',__('Congrats, you have been hired for the job'));
+            ->with('success',__('Congrats, you have been hired for the job'))
+            ->with('contractId',$contract->id);
     }
 
     /**

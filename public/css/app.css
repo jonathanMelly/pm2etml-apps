@@ -13914,6 +13914,14 @@ body[dir="rtl"] .checkbox:checked,
   right: 7%;
   box-shadow: 0 0 0 2px hsl(var(--b1));
 }
+.badge-primary {
+  --tw-border-opacity: 1;
+  border-color: hsl(var(--p) / var(--tw-border-opacity));
+  --tw-bg-opacity: 1;
+  background-color: hsl(var(--p) / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: hsl(var(--pc) / var(--tw-text-opacity));
+}
 .badge-secondary {
   --tw-border-opacity: 1;
   border-color: hsl(var(--s) / var(--tw-border-opacity));
@@ -14451,6 +14459,21 @@ body[dir="rtl"] .checkbox:checked,
 .mb-1 {
   margin-bottom: 0.25rem;
 }
+.-ml-10 {
+  margin-left: -2.5rem;
+}
+.-mt-5 {
+  margin-top: -1.25rem;
+}
+.-mt-2 {
+  margin-top: -0.5rem;
+}
+.ml-5 {
+  margin-left: 1.25rem;
+}
+.-mt-3 {
+  margin-top: -0.75rem;
+}
 .block {
   display: block;
 }
@@ -14495,6 +14518,9 @@ body[dir="rtl"] .checkbox:checked,
 }
 .h-24 {
   height: 6rem;
+}
+.h-32 {
+  height: 8rem;
 }
 .max-h-fit {
   max-height: -webkit-fit-content;
@@ -14551,6 +14577,9 @@ body[dir="rtl"] .checkbox:checked,
 }
 .w-48 {
   width: 12rem;
+}
+.w-32 {
+  width: 8rem;
 }
 .max-w-6xl {
   max-width: 72rem;

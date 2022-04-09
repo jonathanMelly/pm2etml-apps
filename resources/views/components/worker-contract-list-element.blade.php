@@ -32,7 +32,12 @@
                 </div>
             </div>
             <div>
-                <div class="font-bold">{{$contract->jobDefinition->name}}</div>
+                <div class="indicator">
+                    @if(session('contractId')==$contract->id)
+                    <span class="indicator-item indicator-start badge badge-primary -mt-2 text-xs">{{__('new')}}</span>
+                    @endif
+                    <div class="grid place-items-center font-bold">{{$contract->jobDefinition->name}}</div>
+                </div>
             </div>
         </div>
     </td>
