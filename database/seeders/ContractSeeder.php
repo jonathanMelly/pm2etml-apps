@@ -24,21 +24,27 @@ class ContractSeeder extends Seeder
     {
         $faker = Container::getInstance()->make(Generator::class);
 
-        $jobs=10;
-        $contracts_per_job=[2,5];
+        $jobs = [0,5];
+        //First 10 users always have some contracts
+        $usersWithJobs = [10, 100];
 
-        foreach (JobDefinition::published()->limit($jobs)->get() as $job)
+        $user=0;
+        foreach (User::role(RoleName::STUDENT)
+                     ->orderBy('id')
+                     ->limit($faker->numberBetween($usersWithJobs[0], $usersWithJobs[1]))
+                     ->get()
+                 as $worker)
         {
-            $client = $job->providers[0];
-            foreach(User::role(RoleName::STUDENT)
-                        ->orderBy('id')
-                        ->limit($faker->numberBetween($contracts_per_job[0],$contracts_per_job[1]))
-                        ->get()
-                    as $worker)
+            foreach (JobDefinition::published()
+                        //first 10 users always have a minimum of 5
+                         ->limit($faker->numberBetween($user++<10?5:$jobs[0], $jobs[1]))
+                         ->get() as $job)
             {
+                $client = $job->providers[0];
+
                 $contract = Contract::make();
                 $contract->start_date = $faker->dateTimeThisMonth;
-                $contract->end_date = $faker->dateTimeBetween($contract->start_date,'+3 months');
+                $contract->end_date = $faker->dateTimeBetween($contract->start_date, '+3 months');
                 $contract->jobDefinition()->associate($job->id);
 
                 $contract->status = ContractStatus::cases()[array_rand(ContractStatus::cases())];
