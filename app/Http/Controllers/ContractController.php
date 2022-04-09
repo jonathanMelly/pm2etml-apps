@@ -86,8 +86,7 @@ class ContractController extends Controller
         //END OF SECURITY CHECKS
 
 
-        //TODO check that this user has not yet a contract for this job def
-
+        //check that this user has not yet a contract for this job def
         if ($user->contractsAsAWorker()->where('job_definition_id','=',$jobDefinitionId)->exists())
         {
             return back()->withErrors(__('You already have/had a contract for this job'))->withInput();

@@ -19,4 +19,12 @@ if(!function_exists('img'))
         return '/dmz-assets/'.$file;
     }
 }
+if(!function_exists('allocationDetails'))
+{
+    function allocationDetails(\App\Models\JobDefinition $job):string
+    {
+        return $job->getAllocatedTime(\App\Enums\RequiredTimeUnit::HOUR).'h / '
+            . $job->getAllocatedTime(\App\Enums\RequiredTimeUnit::PERIOD).'p';
+    }
+}
 

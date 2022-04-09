@@ -206,5 +206,14 @@
     "My contracts": "Mes contrats",
     "You already have/had a contract for this job": "Vous avez déjà un contrat pour ce job",
     "Invalid client (only valid providers are allowed)": "Client invalide (seuls les fournisseurs officiels sont autorisés)",
-    "Invalid worker (only students are allowed)": "Postulation invalide (seuls les élèves peuvent postuler)"
+    "Invalid worker (only students are allowed)": "Postulation invalide (seuls les élèves peuvent postuler)",
+    "No contracts, you may apply at": "Aucun contrat, voir les opportunités sur le",
+    "Start": "Début",
+    "End": "Fin",
+    "Progress": "Progression",
+    "A bit of inspiration": "Un peu d’inspiration",
+    "days": "jours",
+    "day": "jour",
+    "Yet": "Encore",
+    "Remaining time": "Temps restant"
 }

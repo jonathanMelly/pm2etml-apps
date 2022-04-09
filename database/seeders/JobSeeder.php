@@ -25,9 +25,17 @@ class JobSeeder extends Seeder
 
         JobDefinition::factory()->afterMaking(
             function (JobDefinition $job) use ($faker) {
-                $img = $faker->image(null, 350, 350);
-                $imgName = basename($img);
-                rename($img,storage_path('dmz-assets/').$imgName);
+                if(app()->environment('testing'))
+                {
+                    $imgName = $faker->imageUrl(350, 350);
+                }
+                else
+                {
+                    $img = $faker->image(null, 350, 350);
+                    $imgName = basename($img);
+                    rename($img,storage_path('dmz-assets/').$imgName);
+                }
+
                 $job->image=$imgName;
         })->afterCreating(
             function (JobDefinition $job) use($faker) {

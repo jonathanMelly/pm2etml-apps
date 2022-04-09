@@ -9,13 +9,25 @@
                     <div class="prose pb-2 -p-6">
                         <h1 class="text-base-content">{{__('My contracts')}}</h1>
                     </div>
-                    <div class="grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                        @forelse ($contracts as  $contract)
-                            <x-job-definition-card :job="$contract->jobDefinition" />
-                        @empty
-                            <p>{{ __('No contracts') }}</p>
-                        @endforelse
-                    </div>
+
+                    {{-- CONTRACTS AS WORKERS --}}
+                    @role('eleve')
+                    @if($workerContracts->isEmpty())
+                        <p>{{__('No contracts, you may apply at')}} <a class="link-secondary" href="{{route('jobs')}}">{{__('Market place')}}</a></p>
+                    @else
+                        <x-worker-contract-list :contracts="$workerContracts" />
+                    @endempty
+                    @endrole
+
+                    {{-- CONTRATS AS CLIENT --}}
+                    @role('prof')
+                    @if($clientContracts->isEmpty())
+                        <p>{{__('No contracts')}}</p>
+                    @else
+                        <x-client-contract-list :contracts="$clientContracts" />
+                    @endempty
+                    @endrole
+
                 </div>
             </div>
 

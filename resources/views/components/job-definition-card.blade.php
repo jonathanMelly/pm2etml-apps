@@ -85,7 +85,7 @@
                 {{__('Allocated time')}}
             </div>
             <div class="col-span-2 justify-start items-center">
-                <progress class="progress progress-success w-20" value="{{$job->getAllocatedTime()}}" max="200"></progress><span class="text-xs">&nbsp;( {{$job->getAllocatedTime(\App\Enums\RequiredTimeUnit::HOUR)}}h / {{$job->getAllocatedTime(\App\Enums\RequiredTimeUnit::PERIOD)}}p )</span>
+                <progress class="progress progress-success w-20" value="{{$job->getAllocatedTime()}}" max="200"></progress><span class="text-xs">&nbsp;( {{allocationDetails($job)}} )</span>
             </div>
 
         </div>

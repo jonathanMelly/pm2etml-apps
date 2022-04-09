@@ -28,10 +28,10 @@ class DashboardController extends Controller
             ->orderBy('priority')
             ->get();
         */
-        $contracts = $user->contractsAsAWorker()->get()->union(
-            $user->contractsAsAClient()->get());
+        $workerContracts = $user->contractsAsAWorker()->orderByDesc('end_date')->orderByDesc('start_date')->get();
+        $clientContracts = $user->contractsAsAClient()->orderByDesc('end_date')->orderByDesc('start_date')->get();
 
 
-        return view('dashboard')->with(compact('contracts'));
+        return view('dashboard')->with(compact('workerContracts','clientContracts'));
     }
 }

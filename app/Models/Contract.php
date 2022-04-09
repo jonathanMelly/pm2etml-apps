@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\ContractRole;
 use App\Enums\ContractStatus;
+use App\SwissFrenchDateFormat;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -62,8 +64,11 @@ class Contract extends Model
     ];
 
     protected $casts=[
-        'status' => ContractStatus::class
+        'status' => ContractStatus::class,
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
     ];
+
 
     public function clients(): BelongsToMany
     {

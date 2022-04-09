@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\BrowserKitTestCase;
 use Tests\TestCase;
+use function PHPUnit\Framework\assertNotEmpty;
 
 class JobApplyFormTest extends BrowserKitTestCase
 {
@@ -88,6 +89,29 @@ class JobApplyFormTest extends BrowserKitTestCase
             ->press(__('Apply'))
             ->seePageIs($this->formPage)
             ->seeText(__('Invalid client (only valid providers are allowed)'))
+        ;
+    }
+
+    /**
+     * A basic feature test example.
+     *
+     * @return void
+     */
+    public function test_user_cannot_apply_with_end_date_in_the_past()
+    {
+        $startDate = now();
+        $endDate = now()->subDay();
+        self::assertNotEquals($startDate,$endDate);
+
+        //ok
+        $this->visit($this->formPage)
+            ->type($startDate, 'start_date')
+            ->type($endDate, 'end_date')
+            ->type($this->job->id, 'job_definition_id')
+            ->select($this->teacher->id, 'client')
+            ->press(__('Apply'))
+            ->seePageIs($this->formPage)
+            ->seeText(__('validation.after_or_equal', ['attribute' => 'end date', 'date' => 'start date']))
         ;
     }
 }
