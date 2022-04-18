@@ -31,7 +31,7 @@
 
             <div class="flex-none">
                 <div class="dropdown dropdown-end">
-                    <label tabindex="0" class="btn btn-ghost btn-circle avatar online placeholder @role(\App\Enums\RoleName::TEACHER) ring ring-primary @endrole">
+                    <label tabindex="0" class="btn btn-ghost btn-circle avatar online placeholder @role(\App\Constants\RoleName::TEACHER) ring ring-primary @endrole">
                         <div class="bg-neutral-focus text-neutral-content rounded-full w-10">
                             <span class="text-xl">{{ Auth::user()->getInitials() }}</span>
                         </div>

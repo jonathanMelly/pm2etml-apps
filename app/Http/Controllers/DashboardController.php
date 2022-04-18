@@ -2,10 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Contract;
-use App\Models\User;
-use App\Models\JobDefinition;
-use Illuminate\Database\Query\Builder;
+use App\Constants\RoleName;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -28,10 +25,17 @@ class DashboardController extends Controller
             ->orderBy('priority')
             ->get();
         */
-        $workerContracts = $user->contractsAsAWorker()->orderByDesc('end_date')->orderByDesc('start_date')->get();
-        $clientContracts = $user->contractsAsAClient()->orderByDesc('end_date')->orderByDesc('start_date')->get();
+
+        $contracts= ($user->hasRole(RoleName::TEACHER)?
+            $user->contractsAsAClient(): $user->contractsAsAWorker())
+
+            ->with('jobDefinition') //eager load definitions as always needed
+            ->orderByDesc('end')
+            ->orderByDesc('start')
+
+            ->get();
 
 
-        return view('dashboard')->with(compact('workerContracts','clientContracts'));
+        return view('dashboard')->with(compact('contracts'));
     }
 }

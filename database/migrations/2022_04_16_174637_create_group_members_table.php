@@ -1,0 +1,41 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create(\App\Enums\CustomPivotTableNames::GROUP_USER->value, function (Blueprint $table) {
+            $table->id();
+
+            $uniques = [];
+            $uniques[]=$table->foreignIdFor(\App\Models\User::class);
+            $uniques[]=$table->foreignIdFor(\App\Models\Group::class);
+
+            $table->unsignedTinyInteger('type')->default(\App\Enums\GroupMemberType::STUDENT->value);
+            $table->timestamps();
+            $table->softDeletes();
+
+            //One user (teacher or student) is unique in the group
+            $table->unique(collect($uniques)->pluck('name')->toArray());
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists(\App\Enums\CustomPivotTableNames::GROUP_USER->value);
+    }
+};

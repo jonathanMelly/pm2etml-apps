@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\RoleName;
-use App\Models\Contract;
+use App\Constants\RoleName;
 use App\Http\Requests\StoreContractRequest;
 use App\Http\Requests\UpdateContractRequest;
+use App\Models\Contract;
 use App\Models\JobDefinition;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -68,7 +68,7 @@ class ContractController extends Controller
 
         $jobDefinitionId = $request->get('job_definition_id');
 
-        //Only prof and authorized providers can be client
+        //Only teachers and authorized providers can be client
         $client = User::whereId($request->get('client'))->firstOrFail();
         if(!$client->hasRole(RoleName::TEACHER) ||
             !JobDefinition::whereHas('providers', function (Builder $query) use($jobDefinitionId,$client) {
@@ -93,15 +93,15 @@ class ContractController extends Controller
         }
 
         $contract = Contract::make();
-        $contract->start_date = $request->get('start_date');
-        $contract->end_date = $request->get('end_date');
+        $contract->start = $request->get('start_date');
+        $contract->end = $request->get('end_date');
         $contract->jobDefinition()->associate($jobDefinitionId);
 
         //Consistency on error
         DB::transaction(function () use ($contract,$request,$client,$user) {
             $contract->save();
             $contract->clients()->attach($client->id);
-            $contract->workers()->attach($user->id);//set worker
+            $contract->workers()->attach($user->groupMember()->id);//set worker
         });
 
         return redirect('/dashboard')

@@ -2,19 +2,20 @@
 
 namespace App\Models;
 
-use App\Enums\ContractRole;
-use App\Enums\RoleName;
+use App\Constants\RoleName;
+use App\Enums\CustomPivotTableNames;
 use Illuminate\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Foundation\Auth\Access\Authorizable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\Access\Authorizable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -32,8 +33,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $last_logged_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Contract[] $contractsAsAClient
  * @property-read int|null $contracts_as_a_client_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Contract[] $contractsAsAWorker
- * @property-read int|null $contracts_as_a_worker_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\GroupMember[] $groupMembers
+ * @property-read int|null $group_members_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\JobDefinition[] $jobDefinitions
  * @property-read int|null $job_definitions_count
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection|\Illuminate\Notifications\DatabaseNotification[] $notifications
@@ -45,25 +46,27 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
  * @property-read int|null $tokens_count
  * @method static \Database\Factories\UserFactory factory(...$parameters)
- * @method static \Illuminate\Database\Eloquent\Builder|User newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|User newQuery()
+ * @method static Builder|User newModelQuery()
+ * @method static Builder|User newQuery()
  * @method static \Illuminate\Database\Query\Builder|User onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder|User permission($permissions)
- * @method static \Illuminate\Database\Eloquent\Builder|User query()
- * @method static \Illuminate\Database\Eloquent\Builder|User role($roles, $guard = null)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereEmail($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereFirstname($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereLastLoggedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereLastname($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereRememberToken($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereUsername($value)
+ * @method static Builder|User permission($permissions)
+ * @method static Builder|User query()
+ * @method static Builder|User role($roles, $guard = null)
+ * @method static Builder|User whereCreatedAt($value)
+ * @method static Builder|User whereDeletedAt($value)
+ * @method static Builder|User whereEmail($value)
+ * @method static Builder|User whereFirstname($value)
+ * @method static Builder|User whereId($value)
+ * @method static Builder|User whereLastLoggedAt($value)
+ * @method static Builder|User whereLastname($value)
+ * @method static Builder|User whereRememberToken($value)
+ * @method static Builder|User whereUpdatedAt($value)
+ * @method static Builder|User whereUsername($value)
  * @method static \Illuminate\Database\Query\Builder|User withTrashed()
  * @method static \Illuminate\Database\Query\Builder|User withoutTrashed()
  * @mixin \Eloquent
+ * @noinspection PhpFullyQualifiedNameUsageInspection
+ * @noinspection PhpUnnecessaryFullyQualifiedNameInspection
  */
 class User extends Model implements AuthenticatableContract,AuthorizableContract
 {
@@ -122,30 +125,56 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
     }
 
     /**
-     *
-     * @return HasMany
-     */
-    public function contractsAsAWorker() : BelongsToMany
-    {
-        return $this->belongsToMany(Contract::class)->withPivotValue('role',ContractRole::WORKER->value);
-    }
-
-    /**
-     *
-     * @return HasMany
-     */
-    public function contractsAsAClient() : BelongsToMany
-    {
-        return $this->belongsToMany(Contract::class)->withPivotValue('role',ContractRole::CLIENT->value);
-    }
-
-    /**
      * Tells of which jobDefinition this user is a provider
      * @return BelongsToMany
      */
     public function jobDefinitions(): BelongsToMany
     {
         return $this->belongsToMany(JobDefinition::class);
+    }
+
+    public function groupMembers():HasMany
+    {
+        return $this->hasMany(GroupMember::class);
+    }
+
+    /**
+     *
+     * @return BelongsToMany
+     */
+    public function contractsAsAClient() : BelongsToMany
+    {
+        return $this->belongsToMany(Contract::class,CustomPivotTableNames::CONTRACT_USER->value);
+    }
+
+    /**
+     *
+     * @param null $periodId
+     * @return BelongsToMany
+     */
+    public function contractsAsAWorker($periodId=null): BelongsToMany
+    {
+        return $this->groupMember($periodId)->workerContracts();
+    }
+
+    public function groupMember($periodId=null): GroupMember
+    {
+        //get current period as default
+        $periodId = $periodId??AcademicPeriod::current();
+
+        // PERF COMMENT
+        // After some basic tests, it’s not obvious if eloquent whereHas (extensively use SQL exist)
+        // is less performant than a traditional inner join version... Thus the elegant way has been
+        // choosen...
+
+        /* @var $result GroupMember */
+        $result = $this->groupMembers()
+            ->whereHas('group.academicPeriod',fn($q)=>$q
+                ->whereId($periodId))
+            ->firstOrFail(); //
+
+        return $result;
+
     }
 
 }

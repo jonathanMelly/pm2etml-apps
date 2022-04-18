@@ -1,6 +1,6 @@
 @php
-    $totalProgress = $contract->start_date->diffInDays($contract->end_date);
-    $currentProgress =  $contract->start_date->diffInDays(now());
+    $totalProgress = $contract->start->diffInDays($contract->end);
+    $currentProgress =  $contract->start->diffInDays(now());
 
     if($currentProgress<0)
     {
@@ -42,10 +42,10 @@
         </div>
     </td>
     <td>
-        {{$contract->start_date->format(\App\SwissFrenchDateFormat::FORMAT)}}
+        {{$contract->start->format(\App\SwissFrenchDateFormat::FORMAT)}}
     </td>
     <td>
-        {{$contract->end_date->format(\App\SwissFrenchDateFormat::FORMAT)}}
+        {{$contract->end->format(\App\SwissFrenchDateFormat::FORMAT)}}
     </td>
     <td class="text-center">
         <div class="radial-progress" style="--value:{{$progressPercentage}};--size:3rem;--thickness: 2px">{{$progressPercentage}}%</div>

@@ -2,14 +2,14 @@
 
 namespace Tests\Feature;
 
-use App\Enums\RoleName;
+use App\Constants\RoleName;
+use App\Models\AcademicPeriod;
+use App\Models\Group;
+use App\Models\GroupMember;
 use App\Models\JobDefinition;
-use Database\Seeders\PermissionV1Seeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
+use Database\Seeders\GroupSeeder;
+use Illuminate\Support\Facades\Artisan;
 use Tests\BrowserKitTestCase;
-use Tests\TestCase;
-use function PHPUnit\Framework\assertNotEmpty;
 
 class JobApplyFormTest extends BrowserKitTestCase
 {
@@ -24,7 +24,15 @@ class JobApplyFormTest extends BrowserKitTestCase
     public function setUpLocal()
     {
         $this->afterApplicationCreated(function() {
-            $this->CreateUser(roles: RoleName::STUDENT);
+
+            $exitCode = Artisan::call('db:seed', [
+                '--class' => GroupSeeder::class, // as students mainly exists in real class for 1 year...
+                '--force' => true,
+                //'-vvv' does not bring more output
+            ]);
+
+            $student = $this->CreateUser(roles: RoleName::STUDENT);
+
             $this->teacher = $this->CreateUser(false,'prof');
 
             $this->job = JobDefinition::factory()

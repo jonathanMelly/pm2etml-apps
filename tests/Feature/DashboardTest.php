@@ -2,7 +2,6 @@
 
 use App\Models\User;
 use Database\Seeders\JobSeeder;
-use Database\Seeders\PermissionV1Seeder;
 use Database\Seeders\UserV1Seeder;
 use Illuminate\Testing\TestResponse;
 
@@ -13,7 +12,7 @@ beforeEach(function()
 
 test('Prof can see FAQ tool and url shortener', function () {
     //Given
-    $prof = $this->CreateUser(roles: 'prof');
+    $prof = $this->CreateUser(roles: \App\Constants\RoleName::TEACHER);
 
     //When
     $response = $this->get('/dashboard');
@@ -23,9 +22,9 @@ test('Prof can see FAQ tool and url shortener', function () {
 
 });
 
-test('Root can see FAQ tool and url shortener', function () {
+test('Root teacher can see FAQ tool and url shortener', function () {
     //Given
-    $prof = $this->CreateUser(roles: 'root');
+    $prof = $this->CreateUser(true,\App\Constants\RoleName::ADMIN,\App\Constants\RoleName::TEACHER);
 
     //When
     $response = $this->get('/dashboard');
@@ -43,7 +42,8 @@ function assertSeeAll(TestResponse $response)
 
 test('Eleve cannot see FAQ tool/url shortener but git', function () {
     //Given
-    $eleve = $this->CreateUser(roles:\App\Enums\RoleName::STUDENT);
+    $eleve = $this->CreateUser(roles: \App\Constants\RoleName::STUDENT);
+
 
     //When
     $response = $this->get('/dashboard');
@@ -56,7 +56,7 @@ test('Eleve cannot see FAQ tool/url shortener but git', function () {
 
 test('Eleve see his contracts as a worker', function () {
     //Given
-    $eleve = User::role(\App\Enums\RoleName::STUDENT)->firstOrFail();
+    $eleve = User::role(\App\Constants\RoleName::STUDENT)->firstOrFail();
     $this->be($eleve);
     $this->seed(JobSeeder::class);
     $this->seed(ContractSeeder::class);

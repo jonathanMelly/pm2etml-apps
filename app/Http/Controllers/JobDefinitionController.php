@@ -7,6 +7,7 @@ use App\Models\JobDefinition;
 use App\Http\Requests\StoreJobDefinitionRequest;
 use App\Http\Requests\UpdateJobRequest;
 
+
 class JobDefinitionController extends Controller
 {
 
@@ -17,6 +18,7 @@ class JobDefinitionController extends Controller
     }
 
     /**
+     * aka MarketPlace
      * Display a listing of the resource.
      *
      * @return \Illuminate\Contracts\View\View
@@ -27,6 +29,7 @@ class JobDefinitionController extends Controller
             ->whereNotIn('id',auth()->user()->contractsAsAWorker()->select('job_definition_id'))
             ->orderBy('required_xp_years')
             ->orderBy('priority')
+            ->with('providers')
             ->get();
         return view('job-definition')->with(compact('definitions'));
     }

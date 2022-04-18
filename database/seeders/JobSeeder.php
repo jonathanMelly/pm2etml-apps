@@ -2,15 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Enums\RoleName;
+use App\Constants\RoleName;
 use App\Models\JobDefinition;
 use App\Models\User;
-use Database\Factories\JobDefinitionFactory;
 use Faker\Generator;
 use Illuminate\Container\Container;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 
 class JobSeeder extends Seeder
 {

@@ -54,6 +54,8 @@ use JetBrains\PhpStorm\Pure;
  * @method static \Illuminate\Database\Query\Builder|JobDefinition withTrashed()
  * @method static \Illuminate\Database\Query\Builder|JobDefinition withoutTrashed()
  * @mixin \Eloquent
+ * @noinspection PhpFullyQualifiedNameUsageInspection
+ * @noinspection PhpUnnecessaryFullyQualifiedNameInspection
  */
 class JobDefinition extends Model
 {

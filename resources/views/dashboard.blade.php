@@ -11,20 +11,20 @@
                     </div>
 
                     {{-- CONTRACTS AS WORKERS --}}
-                    @role('eleve')
-                    @if($workerContracts->isEmpty())
+                    @role(\App\Constants\RoleName::STUDENT)
+                    @if($contracts->isEmpty())
                         <p>{{__('No contracts, you may apply at')}} <a class="link-secondary" href="{{route('jobs')}}">{{__('Market place')}}</a></p>
                     @else
-                        <x-worker-contract-list :contracts="$workerContracts" />
+                        <x-worker-contract-list :contracts="$contracts" />
                     @endempty
                     @endrole
 
                     {{-- CONTRATS AS CLIENT --}}
-                    @role('prof')
-                    @if($clientContracts->isEmpty())
+                    @role(\App\Constants\RoleName::TEACHER)
+                    @if($contracts->isEmpty())
                         <p>{{__('No contracts')}}</p>
                     @else
-                        <x-client-contract-list :contracts="$clientContracts" />
+                        <x-client-contract-list :contracts="$contracts" />
                     @endempty
                     @endrole
 
