@@ -34,6 +34,18 @@ test('Root teacher can see FAQ tool and url shortener', function () {
 
 });
 
+test('Root only can see FAQ tool and url shortener', function () {
+    //Given
+    $prof = $this->CreateUser(true,\App\Constants\RoleName::ADMIN);
+
+    //When
+    $response = $this->get('/dashboard');
+
+    //Then
+    assertSeeAll($response);
+
+});
+
 function assertSeeAll(TestResponse $response)
 {
     $response->assertSeeText("dis.section-inf.ch");

@@ -26,16 +26,33 @@ class DashboardController extends Controller
             ->get();
         */
 
-        $contracts= ($user->hasRole(RoleName::TEACHER)?
-            $user->contractsAsAClient(): $user->contractsAsAWorker())
 
-            ->with('jobDefinition') //eager load definitions as always needed
-            ->orderByDesc('end')
-            ->orderByDesc('start')
+        $view = view('dashboard');
 
-            ->get();
+        if($user->hasAnyRole(RoleName::TEACHER,RoleName::STUDENT))
+        {
+            if($user->hasRole(RoleName::TEACHER))
+            {
+                $query =  $user->contractsAsAClient();
+            }
+            else
+            {
+                $query = $user->contractsAsAWorker();
+            }
 
+            $contracts = $query->with('jobDefinition') //eager load definitions as always needed
 
-        return view('dashboard')->with(compact('contracts'));
+                ->orderByDesc('end')
+                ->orderByDesc('start')
+
+                ->get();
+
+            return $view->with(compact('contracts'));
+        }
+        else
+        {
+            return $view;
+        }
+
     }
 }

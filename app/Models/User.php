@@ -150,14 +150,23 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
     /**
      *
      * @param null $periodId
-     * @return BelongsToMany
+     * @return BelongsToMany | Builder
      */
-    public function contractsAsAWorker($periodId=null): BelongsToMany
+    public function contractsAsAWorker($periodId=null): BelongsToMany | Builder
     {
-        return $this->groupMember($periodId)->workerContracts();
+        $groupMember = $this->groupMember($periodId);
+        if($groupMember===null)
+        {
+            return Contract::whereNull('id');
+        }
+        else
+        {
+            return $groupMember->workerContracts();
+        }
+
     }
 
-    public function groupMember($periodId=null): GroupMember
+    public function groupMember($periodId=null): GroupMember | null
     {
         //get current period as default
         $periodId = $periodId??AcademicPeriod::current();
@@ -171,7 +180,16 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
         $result = $this->groupMembers()
             ->whereHas('group.academicPeriod',fn($q)=>$q
                 ->whereId($periodId))
-            ->firstOrFail(); //
+            ->first();
+
+        /*
+        if($result===null)
+        {
+            //This may happen when looking for history when no data is available for the given period
+            info('User with id='.$this->id.' has no entry in table '.tbl(GroupMember::class).' for the period with id='.$periodId);
+            return GroupMember::make();
+        }
+        */
 
         return $result;
 
