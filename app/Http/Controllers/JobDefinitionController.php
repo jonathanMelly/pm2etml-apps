@@ -28,6 +28,7 @@ class JobDefinitionController extends Controller
         $definitions = JobDefinition::published()->orWhere->available()
             ->whereNotIn('id',auth()->user()->contractsAsAWorker()->select('job_definition_id'))
             ->orderBy('required_xp_years')
+            ->orderByDesc('one_shot')
             ->orderBy('priority')
             ->with('providers')
             ->get();

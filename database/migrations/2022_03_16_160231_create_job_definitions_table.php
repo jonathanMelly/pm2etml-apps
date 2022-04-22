@@ -41,6 +41,8 @@ return new class extends Migration
             //stores image path
             $table->string('image');
 
+            $table->boolean('one_shot')->default(false);
+
             $table->softDeletes();
         });
 

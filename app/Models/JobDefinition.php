@@ -35,6 +35,7 @@ use JetBrains\PhpStorm\Pure;
  * @property-read int|null $contracts_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $providers
  * @property-read int|null $providers_count
+ * @method static Builder|JobDefinition available()
  * @method static \Database\Factories\JobDefinitionFactory factory(...$parameters)
  * @method static Builder|JobDefinition hasNestedUsingJoins($relations, $operator = '>=', $count = 1, $boolean = 'and', ?\Closure $callback = null)
  * @method static Builder|JobDefinition joinNestedRelationship(string $relationships, $callback = null, $joinType = 'join', $useAlias = false, bool $disableExtraConditions = false)
@@ -104,7 +105,8 @@ class JobDefinition extends Model
         'published_date',
         'image',
         'required_time',
-        'required_time_unit'
+        'required_time_unit',
+        'one_shot'
     ];
 
     protected $casts = [
@@ -115,6 +117,12 @@ class JobDefinition extends Model
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('published_date','<=',now());
+    }
+
+    public function scopeAvailable(Builder $query): Builder
+    {
+        return $query->where('one_shot','=',false)
+            ->orWhereDoesntHave('contracts');
     }
 
     public function contracts(): HasMany
@@ -138,7 +146,7 @@ class JobDefinition extends Model
 
     #[Pure] public function getAllocatedTime(RequiredTimeUnit $targetUnit = RequiredTimeUnit::HOUR): float
     {
-        return round(RequiredTimeUnit::Convert($this->allocated_time,$this->allocated_time_unit,$targetUnit),0);
+        return round(RequiredTimeUnit::Convert($this->allocated_time, $this->allocated_time_unit, $targetUnit), 0);
     }
 
     #[Pure] public function getAllocationDetails(): string

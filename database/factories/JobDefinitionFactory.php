@@ -48,6 +48,7 @@ class JobDefinitionFactory extends Factory
             'required_xp_years' => $this->faker->numberBetween(0,3),
             'image' => $this->faker->imageUrl(),
             'allocated_time' => $this->faker->numberBetween(5,200),
+            'one_shot' => $this->faker->boolean(20)
 
         ];
     }

@@ -43,7 +43,7 @@
 @if($viewOnly)
     <div class="card card-compact w-auto bg-base-100 shadow-xl">
 @else
-    <a class="card card-compact w-auto bg-base-100 shadow-xl hover:bg-gradient-to-b hover:from-primary/25 hover:to-base-100"
+    <a class="card card-compact {{$job->one_shot?'border border-accent':''}} w-auto bg-base-100 shadow-xl hover:bg-gradient-to-b hover:from-primary/25 hover:to-base-100"
        href="{{ route('jobs-apply-for',['jobDefinition'=>$job]) }}">
 @endif
 
