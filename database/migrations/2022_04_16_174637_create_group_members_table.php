@@ -20,6 +20,8 @@ return new class extends Migration
             $uniques[]=$table->foreignIdFor(\App\Models\User::class);
             $uniques[]=$table->foreignIdFor(\App\Models\Group::class);
 
+            collect($uniques)->each(fn($foreign)=>$foreign->constrained());
+
             $table->unsignedTinyInteger('type')->default(\App\Enums\GroupMemberType::STUDENT->value);
             $table->timestamps();
             $table->softDeletes();

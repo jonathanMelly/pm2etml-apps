@@ -26,7 +26,7 @@ return new class extends Migration
             $table->dateTime('status_timestamp')->default(now());
             $table->dateTime('start');
             $table->dateTime('end');
-            $table->foreignIdFor(JobDefinition::class);
+            $table->foreignIdFor(JobDefinition::class)->constrained();
             $table->softDeletes();
         });
 
@@ -37,6 +37,8 @@ return new class extends Migration
 
             $uniques[]=$table->foreignIdFor(Contract::class);
             $uniques[]=$table->foreignIdFor(GroupMember::class);
+
+            collect($uniques)->each(fn($foreign)=>$foreign->constrained());
 
             //Only 1 role allowed for now
             $table->unique(collect($uniques)->pluck('name')->toArray());
@@ -49,6 +51,8 @@ return new class extends Migration
 
             $uniques[]=$table->foreignIdFor(Contract::class);
             $uniques[]=$table->foreignIdFor(User::class);
+
+            collect($uniques)->each(fn($foreign)=>$foreign->constrained());
 
 
             //Only 1 role allowed for now

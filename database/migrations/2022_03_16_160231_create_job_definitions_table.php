@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\CustomPivotTableNames;
 use App\Enums\JobPriority;
 use App\Models\User;
 use App\Models\JobDefinition;
@@ -44,11 +45,11 @@ return new class extends Migration
         });
 
         //Store providers of a job
-        Schema::create('job_definition_user', function (Blueprint $table) {
+        Schema::create(CustomPivotTableNames::USER_JOB_DEFINITION->value, function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->foreignIdFor(User::class);
-            $table->foreignIdFor(JobDefinition::class);
+            $table->foreignIdFor(User::class)->constrained();
+            $table->foreignIdFor(JobDefinition::class)->constrained();
             $table->unique(array('user_id', 'job_definition_id'));
         });
 
@@ -62,6 +63,7 @@ return new class extends Migration
     public function down()
     {
         Schema::dropIfExists($this->table());
+        Schema::dropIfExists(CustomPivotTableNames::USER_JOB_DEFINITION->value);
     }
 
     public function table():string

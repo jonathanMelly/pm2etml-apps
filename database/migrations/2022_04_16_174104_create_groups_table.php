@@ -19,6 +19,8 @@ return new class extends Migration
             $uniques[]=$table->foreignIdFor(\App\Models\GroupName::class);
             $uniques[]=$table->foreignIdFor(\App\Models\AcademicPeriod::class);
 
+            collect($uniques)->each(fn($foreign)=>$foreign->constrained());
+
             $table->unique(collect($uniques)->pluck('name')->toArray());
 
             $table->timestamps();

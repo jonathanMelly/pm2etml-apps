@@ -19,6 +19,7 @@ return new class extends Migration
             $table->timestamps();
             $table->string('name');
             $table->string('storage_path');
+            $table->foreignIdFor(\App\Models\JobDefinition::class)->constrained();
         });
     }
 

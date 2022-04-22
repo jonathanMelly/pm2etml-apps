@@ -130,7 +130,7 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
      */
     public function jobDefinitions(): BelongsToMany
     {
-        return $this->belongsToMany(JobDefinition::class);
+        return $this->belongsToMany(JobDefinition::class,CustomPivotTableNames::USER_JOB_DEFINITION->value);
     }
 
     public function groupMembers():HasMany
@@ -157,7 +157,7 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
         $groupMember = $this->groupMember($periodId);
         if($groupMember===null)
         {
-            return Contract::whereNull('id');
+            return Contract::whereNull('id');//empty result
         }
         else
         {

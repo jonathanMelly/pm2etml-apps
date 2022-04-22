@@ -95,7 +95,9 @@ class JobDefinition extends Model
 
     public function providers(): BelongsToMany
     {
-        return $this->belongsToMany(User::class)/*->as("providers")*/->withTimestamps();
+        return $this->belongsToMany(User::class, CustomPivotTableNames::USER_JOB_DEFINITION->value)
+            /*->as("providers")*/
+            ->withTimestamps();
     }
 
     public function attachments(): HasMany
