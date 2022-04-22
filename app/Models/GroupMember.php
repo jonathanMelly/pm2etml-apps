@@ -21,8 +21,8 @@ use function Symfony\Component\String\b;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \App\Models\Group|null $group
- * @property-read \App\Models\User|null $user
+ * @property-read \App\Models\Group $group
+ * @property-read \App\Models\User $user
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Contract[] $workerContracts
  * @property-read int|null $worker_contracts_count
  * @method static \Illuminate\Database\Eloquent\Builder|GroupMember newModelQuery()

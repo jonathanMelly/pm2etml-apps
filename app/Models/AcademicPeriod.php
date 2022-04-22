@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Période scolaire (année.
- *
+ * 
  * .. ou si nécessaire, semestre, même trimestre...)
  *
  * @property int $id

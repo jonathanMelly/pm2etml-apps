@@ -25,7 +25,7 @@ class JobDefinitionController extends Controller
      */
     public function index(): \Illuminate\Contracts\View\View
     {
-        $definitions = JobDefinition::published()
+        $definitions = JobDefinition::published()->orWhere->available()
             ->whereNotIn('id',auth()->user()->contractsAsAWorker()->select('job_definition_id'))
             ->orderBy('required_xp_years')
             ->orderBy('priority')

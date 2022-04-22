@@ -1,29 +1,10 @@
 @php
-    $totalProgress = $contract->start->diffInDays($contract->end);
-    $currentProgress =  $contract->start->diffInDays(now());
-
-    if($currentProgress<0)
-    {
-        $currentProgress=0;
-    }
-    else if($currentProgress>$totalProgress)
-    {
-        $currentProgress=$totalProgress;
-    }
-    if($totalProgress>0)
-    {
-        $progressPercentage = round($currentProgress/$totalProgress * 100);
-        $remainingDays = $totalProgress-$currentProgress;
-    }
-    //if contract starts and finishes the same day (TODO: in hours instead of day...)
-    else
-    {
-        $progressPercentage=99;
-        $remainingDays=1;
-    }
+    $progress = $contract->getProgress();
+    $progressPercentage = $progress['percentage'];
+    $remainingDays = $progress['remainingDays'];
 
 @endphp
-<tr class="{{$loop->odd?'active':''}}">
+<tr>
     <td>
         <div class="flex items-center space-x-3">
             <div class="avatar">
@@ -42,6 +23,9 @@
         </div>
     </td>
     <td>
+        {{collect($contract->clients)->transform(fn ($user)=>$user->getFirstnameL())->join(',')}}
+    </td>
+    <td>
         {{$contract->start->format(\App\SwissFrenchDateFormat::FORMAT)}}
     </td>
     <td>
@@ -53,7 +37,7 @@
     <td class="text-center">
     {{$contract->jobDefinition->getAllocationDetails()}}
     </td>
-    <td class="text-center">
+    <td class="text-right">
         @if($progressPercentage<100)
             {{$remainingDays}} {{$remainingDays>1?__('days'):__('day')}}
         @else

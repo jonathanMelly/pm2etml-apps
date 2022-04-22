@@ -19,10 +19,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \App\Models\AcademicPeriod|null $academicPeriod
+ * @property-read \App\Models\AcademicPeriod $academicPeriod
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\GroupMember[] $groupMembers
  * @property-read int|null $group_members_count
- * @property-read \App\Models\GroupName|null $groupName
+ * @property-read \App\Models\GroupName $groupName
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $users
  * @property-read int|null $users_count
  * @method static \Illuminate\Database\Eloquent\Builder|Group newModelQuery()

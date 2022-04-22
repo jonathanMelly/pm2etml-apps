@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\ContractSeeder;
 use Database\Seeders\JobSeeder;
 use Database\Seeders\UserV1Seeder;
 use Illuminate\Testing\TestResponse;
@@ -66,7 +67,7 @@ test('Eleve cannot see FAQ tool/url shortener but git', function () {
     $response->assertSeeText("git.section-inf.ch");
 });
 
-test('Eleve see his contracts as a worker', function () {
+test('Student see his contracts as a worker', function () {
     //Given
     $eleve = User::role(\App\Constants\RoleName::STUDENT)->firstOrFail();
     $this->be($eleve);
@@ -83,6 +84,31 @@ test('Eleve see his contracts as a worker', function () {
     foreach ($contracts as $contract)
     {
         $response->assertSeeText($contract->jobDefinition->name);
+    }
+
+});
+
+test('Teacher see his contracts as a client', function () {
+    //Given
+    $this->seed(JobSeeder::class);
+    $this->seed(ContractSeeder::class);
+
+    $teacher = User::role(\App\Constants\RoleName::TEACHER)->first();
+    $this->be($teacher);
+
+
+    $jobDefinition = \App\Models\JobDefinition::first();
+    $contracts = $teacher->contractsAsAClientForJob($jobDefinition)->get();
+    \PHPUnit\Framework\assertGreaterThan(0,$contracts->count());
+
+    //When
+    $response = $this->get('/dashboard');
+
+    //Then
+    $response->assertSeeText($jobDefinition->name);
+    foreach ($contracts as $contract)
+    {
+        $response->assertSeeText($contract->workers[0]->user->getFirstnameL());
     }
 
 });

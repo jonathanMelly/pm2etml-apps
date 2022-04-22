@@ -20,6 +20,8 @@ class JobSeeder extends Seeder
     {
         $faker = Container::getInstance()->make(Generator::class);
 
+        $total=0;
+
         JobDefinition::factory()->afterMaking(
             function (JobDefinition $job) use ($faker) {
                 if(app()->environment('testing'))
@@ -35,12 +37,19 @@ class JobSeeder extends Seeder
 
                 $job->image=$imgName;
         })->afterCreating(
-            function (JobDefinition $job) use($faker) {
+            function (JobDefinition $job) use($faker,$total) {
 
                 $count = 10;
 
                 $candidates = User::role(RoleName::TEACHER)->orderBy('id')->limit($count)->get();
-                $client = $candidates[rand(0,$count/2-1)];
+                $client = $candidates[rand(1,$count/2-1)];
+
+                if($total++<3 || rand(0,10)<7)
+                {
+                    $job->providers()->attach($candidates[0]->id);//often put base teacher (for easier testing)
+                }
+
+
                 $job->providers()->attach($client->id);
                 if(rand(0,1)==0)
                 {
@@ -48,6 +57,6 @@ class JobSeeder extends Seeder
                     $job->providers()->attach($client->id);
                 }
 
-        })->count(12)->create();
+        })->count(app()->environment('testing')?5:21)->create();
     }
 }

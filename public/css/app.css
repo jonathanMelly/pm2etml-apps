@@ -13286,14 +13286,6 @@ body[dir="rtl"] .checkbox:checked,
   --tw-text-opacity: 1;
   color: hsl(var(--sf, var(--s)) / var(--tw-text-opacity));
 }
-.link-accent {
-  --tw-text-opacity: 1;
-  color: hsl(var(--a) / var(--tw-text-opacity));
-}
-.link-accent:hover {
-  --tw-text-opacity: 1;
-  color: hsl(var(--af, var(--a)) / var(--tw-text-opacity));
-}
 .link:focus {
   outline: 2px solid transparent;
   outline-offset: 2px;
@@ -13726,6 +13718,18 @@ body[dir="rtl"] .checkbox:checked,
 .table :where(tbody th, tbody td) {
   --tw-bg-opacity: 1;
   background-color: hsl(var(--b1) / var(--tw-bg-opacity));
+}
+.table-zebra tbody tr th:first-child, .table-zebra tbody tr td:first-child {
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+}
+.table-zebra tbody tr th:last-child, .table-zebra tbody tr td:last-child {
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+.table-zebra tbody tr:nth-child(even) th, .table-zebra tbody tr:nth-child(even) td {
+  --tw-bg-opacity: 1;
+  background-color: hsl(var(--b2, var(--b1)) / var(--tw-bg-opacity));
 }
 :root .prose {
   --tw-prose-body: hsla(var(--bc)/.8);
@@ -14423,6 +14427,9 @@ body[dir="rtl"] .checkbox:checked,
 .ml-4 {
   margin-left: 1rem;
 }
+.-mt-2 {
+  margin-top: -0.5rem;
+}
 .mt-2 {
   margin-top: 0.5rem;
 }
@@ -14459,21 +14466,6 @@ body[dir="rtl"] .checkbox:checked,
 .mb-1 {
   margin-bottom: 0.25rem;
 }
-.-ml-10 {
-  margin-left: -2.5rem;
-}
-.-mt-5 {
-  margin-top: -1.25rem;
-}
-.-mt-2 {
-  margin-top: -0.5rem;
-}
-.ml-5 {
-  margin-left: 1.25rem;
-}
-.-mt-3 {
-  margin-top: -0.75rem;
-}
 .block {
   display: block;
 }
@@ -14501,6 +14493,9 @@ body[dir="rtl"] .checkbox:checked,
 .h-20 {
   height: 5rem;
 }
+.h-12 {
+  height: 3rem;
+}
 .h-8 {
   height: 2rem;
 }
@@ -14513,14 +14508,8 @@ body[dir="rtl"] .checkbox:checked,
 .h-6 {
   height: 1.5rem;
 }
-.h-12 {
-  height: 3rem;
-}
 .h-24 {
   height: 6rem;
-}
-.h-32 {
-  height: 8rem;
 }
 .max-h-fit {
   max-height: -webkit-fit-content;
@@ -14539,6 +14528,9 @@ body[dir="rtl"] .checkbox:checked,
 .w-full {
   width: 100%;
 }
+.w-12 {
+  width: 3rem;
+}
 .w-8 {
   width: 2rem;
 }
@@ -14553,9 +14545,6 @@ body[dir="rtl"] .checkbox:checked,
 }
 .w-96 {
   width: 24rem;
-}
-.w-12 {
-  width: 3rem;
 }
 .w-24 {
   width: 6rem;
@@ -14577,9 +14566,6 @@ body[dir="rtl"] .checkbox:checked,
 }
 .w-48 {
   width: 12rem;
-}
-.w-32 {
-  width: 8rem;
 }
 .max-w-6xl {
   max-width: 72rem;
@@ -14772,6 +14758,18 @@ body[dir="rtl"] .checkbox:checked,
   --tw-border-opacity: 1;
   border-color: hsl(var(--p) / var(--tw-border-opacity));
 }
+.border-info {
+  --tw-border-opacity: 1;
+  border-color: hsl(var(--in) / var(--tw-border-opacity));
+}
+.border-warning {
+  --tw-border-opacity: 1;
+  border-color: hsl(var(--wa) / var(--tw-border-opacity));
+}
+.border-accent {
+  --tw-border-opacity: 1;
+  border-color: hsl(var(--a) / var(--tw-border-opacity));
+}
 .border-opacity-20 {
   --tw-border-opacity: 0.2;
 }
@@ -14813,6 +14811,22 @@ body[dir="rtl"] .checkbox:checked,
 .bg-neutral-focus {
   --tw-bg-opacity: 1;
   background-color: hsl(var(--nf, var(--n)) / var(--tw-bg-opacity));
+}
+.bg-neutral {
+  --tw-bg-opacity: 1;
+  background-color: hsl(var(--n) / var(--tw-bg-opacity));
+}
+.bg-secondary {
+  --tw-bg-opacity: 1;
+  background-color: hsl(var(--s) / var(--tw-bg-opacity));
+}
+.bg-slate-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(241 245 249 / var(--tw-bg-opacity));
+}
+.bg-black {
+  --tw-bg-opacity: 1;
+  background-color: rgb(0 0 0 / var(--tw-bg-opacity));
 }
 .bg-opacity-50 {
   --tw-bg-opacity: 0.5;
@@ -14899,11 +14913,11 @@ body[dir="rtl"] .checkbox:checked,
 .pr-1 {
   padding-right: 0.25rem;
 }
-.pl-2 {
-  padding-left: 0.5rem;
-}
 .text-center {
   text-align: center;
+}
+.text-right {
+  text-align: right;
 }
 .font-sans {
   font-family: Nunito, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -14931,11 +14945,11 @@ body[dir="rtl"] .checkbox:checked,
 .font-medium {
   font-weight: 500;
 }
-.font-semibold {
-  font-weight: 600;
-}
 .font-bold {
   font-weight: 700;
+}
+.font-semibold {
+  font-weight: 600;
 }
 .uppercase {
   text-transform: uppercase;
@@ -15446,16 +15460,16 @@ body[dir="rtl"] .checkbox:checked,
 }
 @media (min-width: 1280px) {
 
+  .xl\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .xl\:grid-cols-4 {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .xl\:grid-cols-5 {
     grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-
-  .xl\:grid-cols-3 {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 @media (min-width: 1536px) {

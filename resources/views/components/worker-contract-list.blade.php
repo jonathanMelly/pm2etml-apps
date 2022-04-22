@@ -1,6 +1,6 @@
-<div>
+
     <div class="overflow-x-auto">
-        <table class="table table-compact w-full">
+        <table class="table table-compact table-zebra w-full">
             <!-- head -->
             <thead>
                 <tr>
@@ -10,7 +10,7 @@
 
             <tbody>
             @foreach($contracts as $contract)
-                <x-worker-contract-list-element :contract="$contract" :loop="$loop" />
+                <x-worker-contract-list-element :contract="$contract" />
             @endforeach
             </tbody>
 
@@ -24,4 +24,4 @@
         </table>
     </div>
 
-</div>
+

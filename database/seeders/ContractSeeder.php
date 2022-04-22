@@ -22,9 +22,9 @@ class ContractSeeder extends Seeder
     {
         $faker = Container::getInstance()->make(Generator::class);
 
-        $jobs = [0,5];
+        $jobs = [0,app()->environment('testing')?2:5];
         //First 10 users always have some contracts
-        $usersWithJobs = [10, app()->environment('test')?11:100];
+        $usersWithJobs = [10, app()->environment('testing')?11:100];
 
         $user=0;
         foreach (User::role(RoleName::STUDENT)

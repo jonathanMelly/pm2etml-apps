@@ -147,6 +147,21 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
         return $this->belongsToMany(Contract::class,CustomPivotTableNames::CONTRACT_USER->value);
     }
 
+    //Filter and order contracts for the current client for a given job
+    public function contractsAsAClientForJob(JobDefinition $job): Contract|Builder
+    {
+        return Contract::orderByPowerJoins('workers.group.groupName.name')
+
+            ->join(tbl(User::class),'group_members.user_id','=','users.id')
+            ->orderBy('users.lastname')->orderBy('users.firstname')
+
+            ->with('workers.user')
+            ->with('workers.group.groupName')
+
+            ->where('job_definition_id','=',$job->id)
+            ->whereHas('clients',fn($q)=>$q->where(tbl(User::class).'.id','=',$this->id));
+    }
+
     /**
      *
      * @param null $periodId

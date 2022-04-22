@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\CustomPivotTableNames;
 use App\Enums\JobPriority;
 use App\Enums\RequiredTimeUnit;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -34,23 +36,50 @@ use JetBrains\PhpStorm\Pure;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $providers
  * @property-read int|null $providers_count
  * @method static \Database\Factories\JobDefinitionFactory factory(...$parameters)
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition newQuery()
+ * @method static Builder|JobDefinition hasNestedUsingJoins($relations, $operator = '>=', $count = 1, $boolean = 'and', ?\Closure $callback = null)
+ * @method static Builder|JobDefinition joinNestedRelationship(string $relationships, $callback = null, $joinType = 'join', $useAlias = false, bool $disableExtraConditions = false)
+ * @method static Builder|JobDefinition joinRelation($relationName, $callback = null, $joinType = 'join', $useAlias = false, bool $disableExtraConditions = false)
+ * @method static Builder|JobDefinition joinRelationship($relationName, $callback = null, $joinType = 'join', $useAlias = false, bool $disableExtraConditions = false)
+ * @method static Builder|JobDefinition joinRelationshipUsingAlias($relationName, $callback = null, bool $disableExtraConditions = false)
+ * @method static Builder|JobDefinition leftJoinRelation($relation, $callback = null, $useAlias = false, bool $disableExtraConditions = false)
+ * @method static Builder|JobDefinition leftJoinRelationship($relation, $callback = null, $useAlias = false, bool $disableExtraConditions = false)
+ * @method static Builder|JobDefinition leftJoinRelationshipUsingAlias($relationName, $callback = null, bool $disableExtraConditions = false)
+ * @method static Builder|JobDefinition newModelQuery()
+ * @method static Builder|JobDefinition newQuery()
  * @method static \Illuminate\Database\Query\Builder|JobDefinition onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition query()
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereAllocatedTime($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereAllocatedTimeUnit($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereDescription($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereImage($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereMaxWorkers($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition wherePriority($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition wherePublishedDate($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereRequiredXpYears($value)
- * @method static \Illuminate\Database\Eloquent\Builder|JobDefinition whereUpdatedAt($value)
+ * @method static Builder|JobDefinition orderByLeftPowerJoins($sort, $direction = 'asc')
+ * @method static Builder|JobDefinition orderByLeftPowerJoinsAvg($sort, $direction = 'asc')
+ * @method static Builder|JobDefinition orderByLeftPowerJoinsCount($sort, $direction = 'asc')
+ * @method static Builder|JobDefinition orderByLeftPowerJoinsMax($sort, $direction = 'asc')
+ * @method static Builder|JobDefinition orderByLeftPowerJoinsMin($sort, $direction = 'asc')
+ * @method static Builder|JobDefinition orderByLeftPowerJoinsSum($sort, $direction = 'asc')
+ * @method static Builder|JobDefinition orderByPowerJoins($sort, $direction = 'asc', $aggregation = null, $joinType = 'join')
+ * @method static Builder|JobDefinition orderByPowerJoinsAvg($sort, $direction = 'asc')
+ * @method static Builder|JobDefinition orderByPowerJoinsCount($sort, $direction = 'asc')
+ * @method static Builder|JobDefinition orderByPowerJoinsMax($sort, $direction = 'asc')
+ * @method static Builder|JobDefinition orderByPowerJoinsMin($sort, $direction = 'asc')
+ * @method static Builder|JobDefinition orderByPowerJoinsSum($sort, $direction = 'asc')
+ * @method static Builder|JobDefinition powerJoinDoesntHave($relation, $boolean = 'and', ?\Closure $callback = null)
+ * @method static Builder|JobDefinition powerJoinHas($relation, $operator = '>=', $count = 1, $boolean = 'and', $callback = null)
+ * @method static Builder|JobDefinition powerJoinWhereHas($relation, $callback = null, $operator = '>=', $count = 1)
+ * @method static Builder|JobDefinition published()
+ * @method static Builder|JobDefinition query()
+ * @method static Builder|JobDefinition rightJoinRelation($relation, $callback = null, $useAlias = false, bool $disableExtraConditions = false)
+ * @method static Builder|JobDefinition rightJoinRelationship($relation, $callback = null, $useAlias = false, bool $disableExtraConditions = false)
+ * @method static Builder|JobDefinition rightJoinRelationshipUsingAlias($relationName, $callback = null, bool $disableExtraConditions = false)
+ * @method static Builder|JobDefinition whereAllocatedTime($value)
+ * @method static Builder|JobDefinition whereAllocatedTimeUnit($value)
+ * @method static Builder|JobDefinition whereCreatedAt($value)
+ * @method static Builder|JobDefinition whereDeletedAt($value)
+ * @method static Builder|JobDefinition whereDescription($value)
+ * @method static Builder|JobDefinition whereId($value)
+ * @method static Builder|JobDefinition whereImage($value)
+ * @method static Builder|JobDefinition whereMaxWorkers($value)
+ * @method static Builder|JobDefinition whereName($value)
+ * @method static Builder|JobDefinition wherePriority($value)
+ * @method static Builder|JobDefinition wherePublishedDate($value)
+ * @method static Builder|JobDefinition whereRequiredXpYears($value)
+ * @method static Builder|JobDefinition whereUpdatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|JobDefinition withTrashed()
  * @method static \Illuminate\Database\Query\Builder|JobDefinition withoutTrashed()
  * @mixin \Eloquent
@@ -83,14 +112,16 @@ class JobDefinition extends Model
         'allocated_time_unit'=>RequiredTimeUnit::class
     ];
 
-    public static function published(): JobDefinition|\Illuminate\Database\Eloquent\Builder
+    public function scopePublished(Builder $query): Builder
     {
-        return JobDefinition::where('published_date','<=',now());
+        return $query->where('published_date','<=',now());
     }
 
     public function contracts(): HasMany
     {
         return $this->hasMany(Contract::class);
+        //->with('workers.group.groupName',fn($q)=>$q->orderBy('name'))
+        //->with('workers.user',fn($q)=>$q->orderBy('lastname')->orderBy('firstname'));
     }
 
     public function providers(): BelongsToMany

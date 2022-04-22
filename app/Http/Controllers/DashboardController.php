@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Constants\RoleName;
+use App\Models\AcademicPeriod;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -17,15 +18,6 @@ class DashboardController extends Controller
     {
 
         $user = auth()->user();
-        /*
-        //$user->
-        $jobs = JobDefinition::published()
-            //->where('')
-            ->orderBy('required_xp_years')
-            ->orderBy('priority')
-            ->get();
-        */
-
 
         $view = view('dashboard');
 
@@ -33,21 +25,34 @@ class DashboardController extends Controller
         {
             if($user->hasRole(RoleName::TEACHER))
             {
-                $query =  $user->contractsAsAClient();
+
+                $query = $user->jobDefinitions()
+                    //Filter contracts with current client (as a job has various possible providers)
+                    ->whereHas('contracts.clients',fn($q)=>$q->where('user_id','=',$user->id))
+
+                    //Filter Period
+                    ->whereHas('contracts.workers.group.academicPeriod',
+                        fn($q)=>$q->whereId(AcademicPeriod::current()));
+
+                $jobs = $query->get();
+
+                return $view->with(compact('jobs'));
             }
             else
             {
-                $query = $user->contractsAsAWorker();
+                $query = $user->contractsAsAWorker()
+                    ->with('jobDefinition') //eager load definitions as needed on UI
+                    ->with('clients') //eager load clients as needed on UI
+
+                    ->orderByDesc('end')
+                    ->orderByDesc('start');
+
+                $contracts = $query->get();
+
+                return $view->with(compact('contracts'));
             }
 
-            $contracts = $query->with('jobDefinition') //eager load definitions as always needed
 
-                ->orderByDesc('end')
-                ->orderByDesc('start')
-
-                ->get();
-
-            return $view->with(compact('contracts'));
         }
         else
         {

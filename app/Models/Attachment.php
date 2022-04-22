@@ -15,7 +15,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string $name
  * @property string $storage_path
- * @property-read \App\Models\JobDefinition|null $jobDefinition
+ * @property int $job_definition_id
+ * @property-read \App\Models\JobDefinition $jobDefinition
  * @method static \Database\Factories\AttachmentFactory factory(...$parameters)
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment newQuery()
@@ -23,6 +24,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment query()
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereJobDefinitionId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereStoragePath($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereUpdatedAt($value)

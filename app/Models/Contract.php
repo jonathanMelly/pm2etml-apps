@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use JetBrains\PhpStorm\ArrayShape;
+use Kirschbaum\PowerJoins\PowerJoins;
 
 /**
  * App\Models\Contract
@@ -27,14 +29,40 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $clients
  * @property-read int|null $clients_count
- * @property-read \App\Models\JobDefinition|null $jobDefinition
+ * @property-read \App\Models\JobDefinition $jobDefinition
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\GroupMember[] $workers
  * @property-read int|null $workers_count
  * @method static \Database\Factories\ContractFactory factory(...$parameters)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract hasNestedUsingJoins($relations, $operator = '>=', $count = 1, $boolean = 'and', ?\Closure $callback = null)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract joinNestedRelationship(string $relationships, $callback = null, $joinType = 'join', $useAlias = false, bool $disableExtraConditions = false)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract joinRelation($relationName, $callback = null, $joinType = 'join', $useAlias = false, bool $disableExtraConditions = false)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract joinRelationship($relationName, $callback = null, $joinType = 'join', $useAlias = false, bool $disableExtraConditions = false)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract joinRelationshipUsingAlias($relationName, $callback = null, bool $disableExtraConditions = false)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract leftJoinRelation($relation, $callback = null, $useAlias = false, bool $disableExtraConditions = false)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract leftJoinRelationship($relation, $callback = null, $useAlias = false, bool $disableExtraConditions = false)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract leftJoinRelationshipUsingAlias($relationName, $callback = null, bool $disableExtraConditions = false)
  * @method static \Illuminate\Database\Eloquent\Builder|Contract newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Contract newQuery()
  * @method static \Illuminate\Database\Query\Builder|Contract onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract orderByLeftPowerJoins($sort, $direction = 'asc')
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract orderByLeftPowerJoinsAvg($sort, $direction = 'asc')
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract orderByLeftPowerJoinsCount($sort, $direction = 'asc')
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract orderByLeftPowerJoinsMax($sort, $direction = 'asc')
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract orderByLeftPowerJoinsMin($sort, $direction = 'asc')
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract orderByLeftPowerJoinsSum($sort, $direction = 'asc')
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract orderByPowerJoins($sort, $direction = 'asc', $aggregation = null, $joinType = 'join')
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract orderByPowerJoinsAvg($sort, $direction = 'asc')
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract orderByPowerJoinsCount($sort, $direction = 'asc')
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract orderByPowerJoinsMax($sort, $direction = 'asc')
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract orderByPowerJoinsMin($sort, $direction = 'asc')
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract orderByPowerJoinsSum($sort, $direction = 'asc')
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract powerJoinDoesntHave($relation, $boolean = 'and', ?\Closure $callback = null)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract powerJoinHas($relation, $operator = '>=', $count = 1, $boolean = 'and', $callback = null)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract powerJoinWhereHas($relation, $callback = null, $operator = '>=', $count = 1)
  * @method static \Illuminate\Database\Eloquent\Builder|Contract query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract rightJoinRelation($relation, $callback = null, $useAlias = false, bool $disableExtraConditions = false)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract rightJoinRelationship($relation, $callback = null, $useAlias = false, bool $disableExtraConditions = false)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract rightJoinRelationshipUsingAlias($relationName, $callback = null, bool $disableExtraConditions = false)
  * @method static \Illuminate\Database\Eloquent\Builder|Contract whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Contract whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Contract whereEnd($value)
@@ -52,7 +80,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Contract extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, PowerJoins;
 
     /**
      * The attributes that are mass assignable.
@@ -79,14 +107,45 @@ class Contract extends Model
             ->withTimestamps();
     }
 
+    //Many workers = group project
     public function workers(): BelongsToMany
     {
         return $this->belongsToMany(GroupMember::class,CustomPivotTableNames::CONTRACT_GROUP_MEMBER->value)
-            ->withTimestamps();
+            ->with('user')
+            ->withTimestamps()
+            ;
     }
 
     public function jobDefinition(): BelongsTo
     {
         return $this->belongsTo(JobDefinition::class);
+    }
+
+    #[ArrayShape(['percentage' => "float|int", 'remainingDays' => "int"])] public function getProgress(): array
+    {
+        $totalProgress = $this->start->diffInDays($this->end);
+        $currentProgress =  $this->start->diffInDays(now());
+
+        if($currentProgress<0)
+        {
+            $currentProgress=0;
+        }
+        else if($currentProgress>$totalProgress)
+        {
+            $currentProgress=$totalProgress;
+        }
+        if($totalProgress>0)
+        {
+            $progressPercentage = round($currentProgress/$totalProgress * 100);
+            $remainingDays = $totalProgress-$currentProgress;
+        }
+        //if contract starts and finishes the same day (TODO: in hours instead of day...)
+        else
+        {
+            $progressPercentage=99;
+            $remainingDays=1;
+        }
+
+        return ['percentage'=>$progressPercentage,'remainingDays'=>$remainingDays];
     }
 }
