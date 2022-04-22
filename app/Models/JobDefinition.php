@@ -105,9 +105,15 @@ class JobDefinition extends Model
         return $this->hasMany(Attachment::class);
     }
 
-    public function getAllocatedTime(RequiredTimeUnit $targetUnit=RequiredTimeUnit::HOUR) : float
+    #[Pure] public function getAllocatedTime(RequiredTimeUnit $targetUnit = RequiredTimeUnit::HOUR): float
     {
         return round(RequiredTimeUnit::Convert($this->allocated_time,$this->allocated_time_unit,$targetUnit),0);
+    }
+
+    #[Pure] public function getAllocationDetails(): string
+    {
+        return $this->getAllocatedTime() . 'h / '
+            . $this->getAllocatedTime(RequiredTimeUnit::PERIOD) . 'p';
     }
 
 }

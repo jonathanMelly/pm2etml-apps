@@ -50,8 +50,8 @@
     <td class="text-center">
         <div class="radial-progress" style="--value:{{$progressPercentage}};--size:3rem;--thickness: 2px">{{$progressPercentage}}%</div>
     </td>
-    <td>
-    {{allocationDetails($contract->jobDefinition)}}
+    <td class="text-center">
+    {{$contract->jobDefinition->getAllocationDetails()}}
     </td>
     <td class="text-center">
         @if($progressPercentage<100)

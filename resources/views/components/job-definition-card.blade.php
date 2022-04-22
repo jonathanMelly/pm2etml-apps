@@ -85,7 +85,8 @@
                 {{__('Allocated time')}}
             </div>
             <div class="col-span-2 justify-start items-center">
-                <progress class="progress progress-success w-20" value="{{$job->getAllocatedTime()}}" max="200"></progress><span class="text-xs">&nbsp;( {{allocationDetails($job)}} )</span>
+                <progress class="progress progress-success w-20" value="{{$job->getAllocatedTime()}}" max="200"></progress>
+                <span class="text-xs">&nbsp;( {{$job->getAllocationDetails()}} )</span>
             </div>
 
         </div>
