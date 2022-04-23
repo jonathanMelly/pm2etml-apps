@@ -10,10 +10,11 @@
         "production": "mix --production"
     },
     "devDependencies": {
+        "@alpinejs/collapse": "^3.10.2",
         "@fortawesome/fontawesome-free": "^6.1.0",
         "@tailwindcss/forms": "^0.4.0",
         "@tailwindcss/typography": "^0.5.2",
-        "alpinejs": "^3.4.2",
+        "alpinejs": "^3.10.2",
         "autoprefixer": "^10.4.2",
         "axios": "^0.25",
         "laravel-mix": "^6.0.6",
