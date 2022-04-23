@@ -7,7 +7,7 @@ php='/opt/php81/bin/php'
 #TODO use already installed composer with php8... (kreativmedia)
 composer="$php /usr/lib64/plesk-9.0/composer.phar"
 
-#Set MAINTENANCE MODE
+#Set MAINTENANCE MODE
 #A)using artisan-remote (ideally this should be done before replacing files but currently azure devops webhook does not support custom json payload...)
 #website=$(basename $PWD)
 #api_url="https://$website/pilotage/commands/invoke"
@@ -44,7 +44,7 @@ $php artisan permission:cache-reset 2>&1 >> $log
 #$php artisan route:cache 2>&1 >> $log
 $php artisan view:cache 2>&1 >> $log
 
-//creats directory if needed
+#creates directory if needed
 dmz_dir="storage/dmz-assets"
 if [ ! -d "${dmz_dir}" ]; then
     echo "Creating $dmz_dir directory"
