@@ -21,14 +21,10 @@
     <td>
         {{$contract->end->format(\App\SwissFrenchDateFormat::FORMAT)}}
     </td>
-    <td class="text-center">
-        <div class="radial-progress"
-             style="--value:{{$progressPercentage}};--size:3rem;--thickness: 2px">{{$progressPercentage}}%
-        </div>
+    <td class="w-36">
+        <progress class="progress progress-success w-36" value="{{$progressPercentage}}" max="100"></progress> ({{$progressPercentage}}%)
     </td>
-    <td class="text-center">
-        {{$job->getAllocationDetails()}}
-    </td>
+
     <td class="text-right">
         @if($progressPercentage<100)
             {{$remainingDays}} {{$remainingDays>1?__('days'):__('day')}}

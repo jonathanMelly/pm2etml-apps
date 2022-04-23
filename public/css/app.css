@@ -14662,6 +14662,15 @@ body[dir="rtl"] .checkbox:checked,
 .w-48 {
   width: 12rem;
 }
+.w-56 {
+  width: 14rem;
+}
+.w-32 {
+  width: 8rem;
+}
+.w-36 {
+  width: 9rem;
+}
 .max-w-6xl {
   max-width: 72rem;
 }

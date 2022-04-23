@@ -12,6 +12,9 @@
             </div>
         </div>
     </td>
+    <td class="text-center">
+        <i class="fa-solid fa-fire-burner"></i> {{$job->getAllocationDetails()}}
+    </td>
     <td>
         <i class="fa-solid fa-calendar-day"></i> {{\Illuminate\Support\Carbon::parse($job->min_start)->format(\App\SwissFrenchDateFormat::FORMAT)}}
     </td>

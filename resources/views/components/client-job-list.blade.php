@@ -15,7 +15,7 @@
 
                 {{-- CONTRACTS DETAILS TABLE --}}
                 <tr x-show="show{{$job->id}}" x-transition.opacity>
-                    <td colspan="5">
+                    <td colspan="6">
                         <table class="table table-compact table-zebra w-full">
                             <!-- head -->
                             <thead>
@@ -25,9 +25,10 @@
                                         <input type="checkbox" class="checkbox" name="contractsForJob{{$job->id}}">
                                     </label>
                                 </td>
+
                                 <th><i class="fa-solid fa-people-roof"></i> {{__('Group')}}</th>
                                 <th><i class="fa-solid fa-sack-dollar"></i> {{__('Worker(s)')}}</th>
-                                <x-contract-list-header />
+                                <x-contract-list-header :effort="false" />
                             </tr>
                             </thead>
 
