@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('group_names', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->unsignedTinyInteger('year')->default(1);
             $table->timestamps();
             $table->softDeletes();
         });

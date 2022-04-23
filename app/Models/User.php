@@ -160,18 +160,10 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
             ->with('workers.user')
             ->with('workers.group.groupName')
 
+            ->orderByPowerJoins('workers.group.groupName.year')
             ->orderByPowerJoins('workers.group.groupName.name')
             ->orderByPowerJoins('workers.user.lastname')
             ->orderByPowerJoins('workers.user.firstname');
-
-            //->join(tbl(User::class),'group_members.user_id','=','users.id')
-            //->orderBy('users.lastname')->orderBy('users.firstname')
-
-
-
-
-
-            //->powerJoinWhereHas('clients',fn($q)=>$q->where(tbl(User::class).'.id','=',$this->id));
     }
 
     /**

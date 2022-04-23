@@ -8,7 +8,7 @@
                 </tr>
             </thead>
 
-            <tbody x-data="{ show{{$jobs->first()->id}}:true,{{$jobs->values()->skip(1)->transform(fn($job,$key) =>'show'.$job->id.':false,')}} }">
+            <tbody x-data="{ show{{$jobs->first()->id}}:true,{{$jobs->values()->skip(1)->transform(fn($job) =>'show'.$job->id.':false')->join(',')}} }">
             @foreach($jobs as $job)
                 {{-- JOB DESCRIPTION --}}
                 <x-client-job-list-element :job="$job" />
