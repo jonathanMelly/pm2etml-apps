@@ -2,7 +2,6 @@
     $progress = $contract->getProgress();
     $progressPercentage = $progress['percentage'];
     $remainingDays = $progress['remainingDays'];
-
 @endphp
 <tr>
     <td>

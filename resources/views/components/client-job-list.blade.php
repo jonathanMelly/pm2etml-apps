@@ -8,13 +8,13 @@
                 </tr>
             </thead>
 
-            <tbody>
+            <tbody x-data="{ show{{$jobs->first()->id}}:true,{{$jobs->values()->skip(1)->transform(fn($job,$key) =>'show'.$job->id.':false,')}} }">
             @foreach($jobs as $job)
-                @php
-                    $contracts = auth()->user()->contractsAsAClientForJob($job)->get();
-                @endphp
+                {{-- JOB DESCRIPTION --}}
                 <x-client-job-list-element :job="$job" />
-                <tr>
+
+                {{-- CONTRACTS DETAILS TABLE --}}
+                <tr x-show="show{{$job->id}}" x-transition.opacity>
                     <td colspan="5">
                         <table class="table table-compact table-zebra w-full">
                             <!-- head -->
@@ -32,7 +32,7 @@
                             </thead>
 
                             <tbody>
-                            @foreach($contracts as $contract)
+                            @foreach(auth()->user()->contractsAsAClientForJob($job)->get() as $contract)
                                 <x-client-contract-list-element :job="$job" :contract="$contract" />
                             @endforeach
                             </tbody>
