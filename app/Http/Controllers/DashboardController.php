@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Constants\RoleName;
 use App\Models\AcademicPeriod;
+use App\Models\Contract;
+use App\Models\JobDefinition;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -25,16 +27,22 @@ class DashboardController extends Controller
         {
             if($user->hasRole(RoleName::TEACHER))
             {
+                $sqlQuery = "
+                select jd.*,min(c.start) as min_start,max(c.end) as max_end,count(c.id) as contracts_count from job_definitions jd
+                    inner join contracts c on c.job_definition_id=jd.id
+                    inner join contract_client cc on cc.contract_id=c.id and cc.user_id=?
 
-                $query = $user->jobDefinitions()
-                    //Filter contracts with current client (as a job has various possible providers)
-                    ->whereHas('contracts.clients',fn($q)=>$q->where('user_id','=',$user->id))
+                    inner join contract_worker cw on cw.contract_id=c.id
+                        inner join group_members gm on cw.group_member_id=gm.id
+                            inner join groups g on gm.group_id=g.id
+                                inner join academic_periods ap on g.academic_period_id=ap.id and ap.id=?
 
-                    //Filter Period
-                    ->whereHas('contracts.workers.group.academicPeriod',
-                        fn($q)=>$q->whereId(AcademicPeriod::current()));
+                    group by c.job_definition_id
 
-                $jobs = $query->get();
+                    order by min(c.`end`)
+                ";
+
+                $jobs= JobDefinition::fromQuery($sqlQuery,[$user->id,AcademicPeriod::current()]);
 
                 return $view->with(compact('jobs'));
             }

@@ -28,6 +28,7 @@ use JetBrains\PhpStorm\Pure;
  * @property int $allocated_time
  * @property RequiredTimeUnit $allocated_time_unit
  * @property string $image
+ * @property int $one_shot
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Attachment[] $attachments
  * @property-read int|null $attachments_count
@@ -37,37 +38,11 @@ use JetBrains\PhpStorm\Pure;
  * @property-read int|null $providers_count
  * @method static Builder|JobDefinition available()
  * @method static \Database\Factories\JobDefinitionFactory factory(...$parameters)
- * @method static Builder|JobDefinition hasNestedUsingJoins($relations, $operator = '>=', $count = 1, $boolean = 'and', ?\Closure $callback = null)
- * @method static Builder|JobDefinition joinNestedRelationship(string $relationships, $callback = null, $joinType = 'join', $useAlias = false, bool $disableExtraConditions = false)
- * @method static Builder|JobDefinition joinRelation($relationName, $callback = null, $joinType = 'join', $useAlias = false, bool $disableExtraConditions = false)
- * @method static Builder|JobDefinition joinRelationship($relationName, $callback = null, $joinType = 'join', $useAlias = false, bool $disableExtraConditions = false)
- * @method static Builder|JobDefinition joinRelationshipUsingAlias($relationName, $callback = null, bool $disableExtraConditions = false)
- * @method static Builder|JobDefinition leftJoinRelation($relation, $callback = null, $useAlias = false, bool $disableExtraConditions = false)
- * @method static Builder|JobDefinition leftJoinRelationship($relation, $callback = null, $useAlias = false, bool $disableExtraConditions = false)
- * @method static Builder|JobDefinition leftJoinRelationshipUsingAlias($relationName, $callback = null, bool $disableExtraConditions = false)
  * @method static Builder|JobDefinition newModelQuery()
  * @method static Builder|JobDefinition newQuery()
  * @method static \Illuminate\Database\Query\Builder|JobDefinition onlyTrashed()
- * @method static Builder|JobDefinition orderByLeftPowerJoins($sort, $direction = 'asc')
- * @method static Builder|JobDefinition orderByLeftPowerJoinsAvg($sort, $direction = 'asc')
- * @method static Builder|JobDefinition orderByLeftPowerJoinsCount($sort, $direction = 'asc')
- * @method static Builder|JobDefinition orderByLeftPowerJoinsMax($sort, $direction = 'asc')
- * @method static Builder|JobDefinition orderByLeftPowerJoinsMin($sort, $direction = 'asc')
- * @method static Builder|JobDefinition orderByLeftPowerJoinsSum($sort, $direction = 'asc')
- * @method static Builder|JobDefinition orderByPowerJoins($sort, $direction = 'asc', $aggregation = null, $joinType = 'join')
- * @method static Builder|JobDefinition orderByPowerJoinsAvg($sort, $direction = 'asc')
- * @method static Builder|JobDefinition orderByPowerJoinsCount($sort, $direction = 'asc')
- * @method static Builder|JobDefinition orderByPowerJoinsMax($sort, $direction = 'asc')
- * @method static Builder|JobDefinition orderByPowerJoinsMin($sort, $direction = 'asc')
- * @method static Builder|JobDefinition orderByPowerJoinsSum($sort, $direction = 'asc')
- * @method static Builder|JobDefinition powerJoinDoesntHave($relation, $boolean = 'and', ?\Closure $callback = null)
- * @method static Builder|JobDefinition powerJoinHas($relation, $operator = '>=', $count = 1, $boolean = 'and', $callback = null)
- * @method static Builder|JobDefinition powerJoinWhereHas($relation, $callback = null, $operator = '>=', $count = 1)
  * @method static Builder|JobDefinition published()
  * @method static Builder|JobDefinition query()
- * @method static Builder|JobDefinition rightJoinRelation($relation, $callback = null, $useAlias = false, bool $disableExtraConditions = false)
- * @method static Builder|JobDefinition rightJoinRelationship($relation, $callback = null, $useAlias = false, bool $disableExtraConditions = false)
- * @method static Builder|JobDefinition rightJoinRelationshipUsingAlias($relationName, $callback = null, bool $disableExtraConditions = false)
  * @method static Builder|JobDefinition whereAllocatedTime($value)
  * @method static Builder|JobDefinition whereAllocatedTimeUnit($value)
  * @method static Builder|JobDefinition whereCreatedAt($value)
@@ -77,6 +52,7 @@ use JetBrains\PhpStorm\Pure;
  * @method static Builder|JobDefinition whereImage($value)
  * @method static Builder|JobDefinition whereMaxWorkers($value)
  * @method static Builder|JobDefinition whereName($value)
+ * @method static Builder|JobDefinition whereOneShot($value)
  * @method static Builder|JobDefinition wherePriority($value)
  * @method static Builder|JobDefinition wherePublishedDate($value)
  * @method static Builder|JobDefinition whereRequiredXpYears($value)

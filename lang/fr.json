@@ -220,6 +220,7 @@
     "new": "nouveau",
     "Group": "Groupe",
     "Workers": "Employés",
-    "Worker": "Employé"
+    "Worker": "Employé",
+    "Worker(s)" : "Employé(s)"
 
 }

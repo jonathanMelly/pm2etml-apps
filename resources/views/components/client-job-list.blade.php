@@ -13,7 +13,7 @@
                 @php
                     $contracts = auth()->user()->contractsAsAClientForJob($job)->get();
                 @endphp
-                <x-client-job-list-element :job="$job" :contracts="$contracts" />
+                <x-client-job-list-element :job="$job" />
                 <tr>
                     <td colspan="5">
                         <table class="table table-compact table-zebra w-full">
@@ -26,7 +26,7 @@
                                     </label>
                                 </td>
                                 <th><i class="fa-solid fa-people-roof"></i> {{__('Group')}}</th>
-                                <th><i class="fa-solid fa-sack-dollar"></i> {{__('Worker')}}</th>
+                                <th><i class="fa-solid fa-sack-dollar"></i> {{__('Worker(s)')}}</th>
                                 <x-contract-list-header />
                             </tr>
                             </thead>

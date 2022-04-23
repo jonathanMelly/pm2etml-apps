@@ -4,7 +4,7 @@
         <div class="sm:mx-6 flex flex-col gap-4">
 
             {{-- MY CONTRACTS --}}
-            <div class="bg-base-100 overflow-hidden shadow-sm sm:rounded-lg border-secondary border-2 border-opacity-20 hover:border-opacity-30">
+            <div class="bg-base-200 bg-opacity-40 overflow-hidden shadow-sm sm:rounded-lg border-secondary border-2 border-opacity-20 hover:border-opacity-30">
                 <div class="p-6">
                     <div class="prose pb-2 -p-6">
                         <h1 class="text-base-content">{{__('My contracts')}}</h1>
