@@ -150,16 +150,28 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
     //Filter and order contracts for the current client for a given job
     public function contractsAsAClientForJob(JobDefinition $job): Contract|Builder
     {
-        return Contract::orderByPowerJoins('workers.group.groupName.name')
+        $contract_client = CustomPivotTableNames::CONTRACT_USER->value;
+        return Contract::
+            join($contract_client,tbl(Contract::class).'.id','=',$contract_client.'.contract_id')
 
-            ->join(tbl(User::class),'group_members.user_id','=','users.id')
-            ->orderBy('users.lastname')->orderBy('users.firstname')
+            ->where('job_definition_id','=',$job->id)
+            ->where($contract_client . '.user_id','=',$this->id)
 
             ->with('workers.user')
             ->with('workers.group.groupName')
 
-            ->where('job_definition_id','=',$job->id)
-            ->whereHas('clients',fn($q)=>$q->where(tbl(User::class).'.id','=',$this->id));
+            ->orderByPowerJoins('workers.group.groupName.name')
+            ->orderByPowerJoins('workers.user.lastname')
+            ->orderByPowerJoins('workers.user.firstname');
+
+            //->join(tbl(User::class),'group_members.user_id','=','users.id')
+            //->orderBy('users.lastname')->orderBy('users.firstname')
+
+
+
+
+
+            //->powerJoinWhereHas('clients',fn($q)=>$q->where(tbl(User::class).'.id','=',$this->id));
     }
 
     /**
