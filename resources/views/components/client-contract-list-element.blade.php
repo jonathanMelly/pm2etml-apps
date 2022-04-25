@@ -2,18 +2,21 @@
     $progress = $contract->getProgress();
     $progressPercentage = $progress['percentage'];
     $remainingDays = $progress['remainingDays'];
+
+    $workers=collect($contract->workers)->transform(fn ($gm)=>$gm->user->getFirstnameL())->join(',')
 @endphp
 <tr>
     <td>
         <label>
-            <input type="checkbox" class="checkbox" name="contracts[]" value="{{$contract->id}}">
+            <input type="checkbox" class="checkbox" name="job-{{$job->id}}-contracts[]" value="{{$contract->id}}" data-workers="{{$workers}}"
+            @change="massAction=isAnyChecked('job-{{$job->id}}-contracts[]')">
         </label>
     </td>
     <td>
         {{$contract->workers[0]->group->groupName->name}}
     </td>
     <td>
-        {{collect($contract->workers)->transform(fn ($gm)=>$gm->user->getFirstnameL())->join(',')}}
+        {{$workers}}
     </td>
     <td>
         {{$contract->start->format(\App\SwissFrenchDateFormat::FORMAT)}}

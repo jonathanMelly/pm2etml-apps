@@ -1,7 +1,11 @@
 <x-app-layout>
+    @push('custom-scripts')
+        @once
+        <script type="text/javascript" src="{{ URL::asset ('js/helper.js') }}"></script>
+        @endonce
+    @endpush
 
-
-        <div class="sm:mx-6 flex flex-col gap-4">
+    <div class="sm:mx-6 flex flex-col gap-4">
 
             {{-- MY CONTRACTS --}}
             <div class="bg-base-200 bg-opacity-40 overflow-hidden shadow-sm sm:rounded-lg border-secondary border-2 border-opacity-20 hover:border-opacity-30">
@@ -10,7 +14,7 @@
                         <h1 class="text-base-content">{{__('My contracts')}}</h1>
                     </div>
 
-                    {{-- CONTRACTS AS WORKERS --}}
+                    {{-- CONTRACTS AS A WORKER --}}
                     @role(\App\Constants\RoleName::STUDENT)
                     @if($contracts->isEmpty())
                         <p>{{__('No contracts, you may apply at')}} <a class="link-secondary" href="{{route('jobs')}}">{{__('Market place')}}</a></p>
@@ -19,7 +23,7 @@
                     @endempty
                     @endrole
 
-                    {{-- CONTRACTS AS CLIENT --}}
+                    {{-- CLIENTS CONTRACT (current workers) --}}
                     @role(\App\Constants\RoleName::TEACHER)
                     @if($jobs->isEmpty())
                         <p>{{__('No contracts')}}</p>

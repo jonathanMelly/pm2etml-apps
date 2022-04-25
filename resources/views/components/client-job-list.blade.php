@@ -1,40 +1,73 @@
 
-    <div class="overflow-x-auto w-full">
+    <div class="overflow-x-auto w-full" x-data="{contracts:''}">
         <table class="table w-full">
             <!-- head -->
             <thead>
-                <tr>
-                    <x-client-job-list-header />
-                </tr>
+            <tr>
+                <x-client-job-list-header/>
+            </tr>
             </thead>
 
             <tbody x-data="{ show{{$jobs->first()->id}}:true,{{$jobs->values()->skip(1)->transform(fn($job) =>'show'.$job->id.':false')->join(',')}} }">
             @foreach($jobs as $job)
+                <form method="post" action="{{route('contracts.destroyAll')}}" id="job-{{$job->id}}-form">
+                    @method('DELETE')
+                    @csrf
+                    <input type="hidden" name="job_id" value="{{$job->id}}">
                 {{-- JOB DESCRIPTION --}}
-                <x-client-job-list-element :job="$job" />
+                <x-client-job-list-element :job="$job"/>
 
                 {{-- CONTRACTS DETAILS TABLE --}}
-                <tr x-show="show{{$job->id}}" x-transition.opacity>
+                <tr x-show="show{{$job->id}}" x-transition.opacity x-data="{massAction:false}">
                     <td colspan="6">
+
                         <table class="table table-compact table-zebra w-full">
-                            <!-- head -->
                             <thead>
+                            {{-- CONTRACTS MULTI ACTION HEADERS --}}
+                            <tr>
+                                <th colspan="7">
+                                    <div class="flex items-center">
+                                        <div class="mr-2">
+                                            {{__('Selection')}}
+                                        </div>
+                                        <div class="btn-group">
+
+                                            <button type="button" x-bind:disabled="!massAction" class="btn btn-outline btn-xs multi-action-{{$job->id}}"
+                                                    @click="contracts=Array.from(document.getElementsByName('job-{{$job->id}}-contracts[]'))
+                                                    .filter(el=>el.checked)
+                                                    .map(el=>el.getAttribute('data-workers'))">
+                                                <label for="delete-contract-modal-{{$job->id}}">
+                                                    <i class="fa-solid fa-trash mr-1"></i>{{__('Delete')}}
+                                                </label>
+                                            </button>
+
+                                            <button x-bind:disabled="!massAction" class="btn btn-outline btn-primary btn-xs multi-action-{{$job->id}}">
+                                                <i class="fa-solid fa-check mr-1"></i>{{__('Evaluate')}}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </th>
+                            </tr>
+
+                            </thead>
+                            <tbody>
+                            {{-- CONTRACTS HEADERS --}}
                             <tr>
                                 <td>
                                     <label>
-                                        <input type="checkbox" class="checkbox" name="contractsForJob{{$job->id}}">
+                                        <input type="checkbox" class="checkbox" name="contractsForJob{{$job->id}}"
+                                               @click="toggleCheckBoxes('job-{{$job->id}}-contracts[]',$event.target.checked);
+                                               massAction=isAnyChecked('job-{{$job->id}}-contracts[]')">
                                     </label>
                                 </td>
 
                                 <th><i class="fa-solid fa-people-roof"></i> {{__('Group')}}</th>
                                 <th><i class="fa-solid fa-sack-dollar"></i> {{__('Worker(s)')}}</th>
-                                <x-contract-list-header :effort="false" />
+                                <x-contract-list-header :effort="false"/>
                             </tr>
-                            </thead>
 
-                            <tbody>
                             @foreach(auth()->user()->contractsAsAClientForJob($job)->get() as $contract)
-                                <x-client-contract-list-element :job="$job" :contract="$contract" />
+                                <x-client-contract-list-element :job="$job" :contract="$contract"/>
                             @endforeach
                             </tbody>
                             <tfoot>
@@ -43,6 +76,43 @@
                         </table>
                     </td>
                 </tr>
+
+                <input type="checkbox" id="delete-contract-modal-{{$job->id}}" class="modal-toggle">
+                <div class="modal">
+                    <div class="modal-box">
+                        <h3 class="font-bold text-lg">{{__('Do you really want to delete the following contracts ?',)}}</h3>
+                        <p class="py-4">
+
+                        <div class="flex flex-wrap">
+                            <div class="w-1/4">
+                                <i class="fa-solid fa-project-diagram fa-align-center mr-2"></i> <strong> {{__('Project')}}:</strong>
+                            </div>
+                            <div class="w-3/4">
+                                {{$job->name}}
+                            </div>
+                        </div>
+                        </p>
+
+                        <p class="py-4">
+                            <i class="fa-solid fa-users-gear"></i> <strong>{{__("Workers")}} (<span x-text="contracts.length"></span>):</strong>
+                        <ul class="flex flex-wrap">
+                            <template x-for="contract in contracts">
+                                <li x-text="contract" class="w-1/3"></li>
+                            </template>
+                        </ul>
+                        </p>
+
+
+
+                        <div class="modal-action">
+                            <button type="submit" class="btn btn-outline btn-warning" >{{__('Yes')}}</button>
+                            <label for="delete-contract-modal-{{$job->id}}" class="btn">{{__('No')}}</label>
+                        </div>
+
+                    </div>
+                </div>
+                </form>
+
             @endforeach
             </tbody>
 
@@ -51,6 +121,8 @@
             </tfoot>
 
         </table>
+
     </div>
+
 
 

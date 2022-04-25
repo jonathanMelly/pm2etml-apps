@@ -63,7 +63,8 @@ class PermissionV1Seeder extends Seeder
             $prof = Role::create(['name' => RoleName::TEACHER])
                 ->givePermissionTo(
                     $permission_jobs_for_teachers,
-                    $permission_tools_for_teachers
+                    $permission_tools_for_teachers,
+                    $permission_contracts
                 );
 
             //MP/Doyen, ...

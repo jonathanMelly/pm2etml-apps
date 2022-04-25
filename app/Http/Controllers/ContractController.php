@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Constants\RoleName;
+use App\Http\Requests\DestroyAllContractRequest;
 use App\Http\Requests\StoreContractRequest;
 use App\Http\Requests\UpdateContractRequest;
 use App\Models\Contract;
@@ -152,5 +153,10 @@ class ContractController extends Controller
     public function destroy(Contract $contract)
     {
         //
+    }
+
+    public function destroyAll(DestroyAllContractRequest $request)
+    {
+        return "congrats!".var_export($request->all(),true);
     }
 }

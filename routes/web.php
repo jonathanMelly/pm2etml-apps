@@ -34,7 +34,12 @@ Route::middleware('auth')->group(function () {
     Route::post('jobs-apply',
         [\App\Http\Controllers\ContractController::class,'storeApply'])
         ->name('jobs-apply');
-    Route::resource('/contract',\App\Http\Controllers\ContractController::class);
+
+    Route::delete('contracts.destroyAll',[\App\Http\Controllers\ContractController::class,'destroyAll'])
+        ->name('contracts.destroyAll');
+
+    //Add basic CRUD actions for contracts
+    Route::resource('contracts',\App\Http\Controllers\ContractController::class);
 
     //Files (images) handling (avoid any injected script in image as returning the file as file !
     Route::get('dmz-assets/{file}', DmzAssetController::class);

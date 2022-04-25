@@ -210,7 +210,7 @@
     "No contracts, you may apply at": "Aucun contrat, voir les opportunités sur le",
     "Start": "Début",
     "End": "Fin",
-    "Progress": "Progression",
+    "Elapsed time": "Temps écoulé",
     "A bit of inspiration": "Un peu d’inspiration",
     "days": "jours",
     "day": "jour",
@@ -221,6 +221,12 @@
     "Group": "Groupe",
     "Workers": "Employés",
     "Worker": "Employé",
-    "Worker(s)" : "Employé(s)"
+    "Worker(s)" : "Employé(s)",
+    "Evaluate": "Évaluer",
+    "Count": "Total",
+    "Do you really want to delete the following contracts ?": "Êtes-vous sûr de vouloir supprimer les contrats suivants ?",
+    "Project": "Projet",
+    "No": "Non",
+    "Yes": "Oui"
 
 }
