@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\ContractStatus;
 use App\Enums\CustomPivotTableNames;
 use App\Models\Contract;
 use App\Models\GroupMember;
@@ -21,15 +20,16 @@ return new class extends Migration
     {
         Schema::create($this->tables()[0], function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
-            $table->unsignedTinyInteger("status")->default(ContractStatus::REGISTERED->value);
-            $table->dateTime('status_timestamp')->default(now());
+
             $table->dateTime('start');
             $table->dateTime('end');
             $table->boolean('success')
                 ->default(false)
                 ->comment('True if the work has been approved by the client');
+
             $table->foreignIdFor(JobDefinition::class)->constrained();
+
+            $table->timestamps();
             $table->softDeletes();
         });
 

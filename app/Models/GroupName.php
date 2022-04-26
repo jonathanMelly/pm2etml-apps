@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *
  * @property int $id
  * @property string $name
+ * @property int $year
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -31,6 +32,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|GroupName whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|GroupName whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|GroupName whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|GroupName whereYear($value)
  * @method static \Illuminate\Database\Query\Builder|GroupName withTrashed()
  * @method static \Illuminate\Database\Query\Builder|GroupName withoutTrashed()
  * @mixin \Eloquent

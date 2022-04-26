@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Constants\RoleName;
-use App\Enums\ContractStatus;
 use App\Models\Contract;
 use App\Models\JobDefinition;
 use App\Models\User;
@@ -44,8 +43,6 @@ class ContractSeeder extends Seeder
                 $contract->start = $faker->dateTimeThisMonth;
                 $contract->end = $faker->dateTimeBetween($contract->start, '+3 months');
                 $contract->jobDefinition()->associate($job->id);
-
-                $contract->status = ContractStatus::cases()[array_rand(ContractStatus::cases())];
 
                 $contract->save();
                 $contract->clients()->attach($client->id);

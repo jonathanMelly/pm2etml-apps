@@ -3,10 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ContractRole;
-use App\Enums\ContractStatus;
 use App\Enums\CustomPivotTableNames;
-use App\SwissFrenchDateFormat;
-use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,7 +18,7 @@ use Kirschbaum\PowerJoins\PowerJoins;
  * @property int $id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property ContractStatus $status
+ * @property int $status
  * @property string $status_timestamp
  * @property \Illuminate\Support\Carbon $start
  * @property \Illuminate\Support\Carbon $end
@@ -88,14 +85,11 @@ class Contract extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'status',
-        'status_timestamp',
         'start',
         'end'
     ];
 
     protected $casts=[
-        'status' => ContractStatus::class,
         'start' => 'datetime',
         'end' => 'datetime',
     ];
