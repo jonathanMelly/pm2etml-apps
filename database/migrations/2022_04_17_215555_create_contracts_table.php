@@ -23,6 +23,11 @@ return new class extends Migration
 
             $table->dateTime('start');
             $table->dateTime('end');
+
+            $table->dateTime('success_date')
+                ->nullable()->default(null)
+                ->comment('last date of success field change, null=not evaluated');
+
             $table->boolean('success')
                 ->default(false)
                 ->comment('True if the work has been approved by the client');

@@ -16,13 +16,13 @@ use Kirschbaum\PowerJoins\PowerJoins;
  * App\Models\Contract
  *
  * @property int $id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property int $status
- * @property string $status_timestamp
  * @property \Illuminate\Support\Carbon $start
  * @property \Illuminate\Support\Carbon $end
+ * @property string|null $success_date last date of success field change
+ * @property int $success True if the work has been approved by the client
  * @property int $job_definition_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $clients
  * @property-read int|null $clients_count
@@ -66,8 +66,8 @@ use Kirschbaum\PowerJoins\PowerJoins;
  * @method static \Illuminate\Database\Eloquent\Builder|Contract whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Contract whereJobDefinitionId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Contract whereStart($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Contract whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Contract whereStatusTimestamp($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract whereSuccess($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract whereSuccessDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Contract whereUpdatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|Contract withTrashed()
  * @method static \Illuminate\Database\Query\Builder|Contract withoutTrashed()
@@ -141,5 +141,11 @@ class Contract extends Model
         }
 
         return ['percentage'=>$progressPercentage,'remainingDays'=>$remainingDays];
+    }
+
+    function evaluate($success)
+    {
+        $this->success=$success;
+        $this->success_date=now();
     }
 }
