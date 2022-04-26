@@ -10,7 +10,8 @@
 
             <tbody x-data="{ show{{$jobs->first()->id}}:true,{{$jobs->values()->skip(1)->transform(fn($job) =>'show'.$job->id.':false')->join(',')}} }">
             @foreach($jobs as $job)
-                <form method="post" action="{{route('contracts.destroyAll')}}" id="job-{{$job->id}}-form">
+                <form method="post" action="{{route('contracts.destroyAll')}}" id="job-{{$job->id}}-form"
+                      x-on:submit.prevent>
                     @method('DELETE')
                     @csrf
                     <input type="hidden" name="job_id" value="{{$job->id}}">
@@ -32,16 +33,17 @@
                                         </div>
                                         <div class="btn-group">
 
-                                            <button type="button" x-bind:disabled="!massAction" class="btn btn-outline btn-xs multi-action-{{$job->id}}"
+                                            <button type="button" x-bind:disabled="!massAction" class="btn btn-outline btn-error btn-xs multi-action-{{$job->id}}"
                                                     @click="contracts=Array.from(document.getElementsByName('job-{{$job->id}}-contracts[]'))
                                                     .filter(el=>el.checked)
-                                                    .map(el=>el.getAttribute('data-workers'))">
+                                                    .map(el=>el.getAttribute('data-workers'));
+                                                        setTimeout(()=>document.querySelector('#job-{{$job->id}}-submit').disabled=false,3000)">
                                                 <label for="delete-contract-modal-{{$job->id}}">
                                                     <i class="fa-solid fa-trash mr-1"></i>{{__('Delete')}}
                                                 </label>
                                             </button>
 
-                                            <button x-bind:disabled="!massAction" class="btn btn-outline btn-primary btn-xs multi-action-{{$job->id}}">
+                                            <button x-bind:disabled="!massAction" class="btn btn-outline btn-success btn-xs multi-action-{{$job->id}}">
                                                 <i class="fa-solid fa-check mr-1"></i>{{__('Evaluate')}}
                                             </button>
                                         </div>
@@ -105,8 +107,11 @@
 
 
                         <div class="modal-action">
-                            <button type="submit" class="btn btn-outline btn-warning" >{{__('Yes')}}</button>
-                            <label for="delete-contract-modal-{{$job->id}}" class="btn">{{__('No')}}</label>
+                            <button id="job-{{$job->id}}-submit" disabled @click="document.querySelector('#job-{{$job->id}}-form').submit()"
+                                    type="button" class="btn btn-outline btn-error" >{{__('Yes')}}</button>
+
+                            <label for="delete-contract-modal-{{$job->id}}" class="btn"
+                                   @click="document.querySelector('#job-{{$job->id}}-submit').disabled=true">{{__('No')}}</label>
                         </div>
 
                     </div>
