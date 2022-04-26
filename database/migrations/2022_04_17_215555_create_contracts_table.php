@@ -39,7 +39,7 @@ return new class extends Migration
             $table->timestamps();
 
             $uniques[]=$table->foreignIdFor(Contract::class);
-            $uniques[]=$table->foreignIdFor(GroupMember::class)->constrained();
+            $uniques[]=$table->foreignIdFor(GroupMember::class);
 
             collect($uniques)->each(fn($foreign)=>$foreign->constrained()->cascadeOnDelete()->cascadeOnUpdate());
 
