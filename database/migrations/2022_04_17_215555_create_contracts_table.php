@@ -26,6 +26,9 @@ return new class extends Migration
             $table->dateTime('status_timestamp')->default(now());
             $table->dateTime('start');
             $table->dateTime('end');
+            $table->boolean('success')
+                ->default(false)
+                ->comment('True if the work has been approved by the client');
             $table->foreignIdFor(JobDefinition::class)->constrained();
             $table->softDeletes();
         });
