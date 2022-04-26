@@ -36,9 +36,9 @@ return new class extends Migration
             $table->timestamps();
 
             $uniques[]=$table->foreignIdFor(Contract::class);
-            $uniques[]=$table->foreignIdFor(GroupMember::class);
+            $uniques[]=$table->foreignIdFor(GroupMember::class)->constrained();
 
-            collect($uniques)->each(fn($foreign)=>$foreign->constrained());
+            collect($uniques)->each(fn($foreign)=>$foreign->constrained()->cascadeOnDelete()->cascadeOnUpdate());
 
             //Only 1 role allowed for now
             $table->unique(collect($uniques)->pluck('name')->toArray());
@@ -52,7 +52,7 @@ return new class extends Migration
             $uniques[]=$table->foreignIdFor(Contract::class);
             $uniques[]=$table->foreignIdFor(User::class);
 
-            collect($uniques)->each(fn($foreign)=>$foreign->constrained());
+            collect($uniques)->each(fn($foreign)=>$foreign->constrained()->cascadeOnDelete()->cascadeOnUpdate());
 
 
             //Only 1 role allowed for now
