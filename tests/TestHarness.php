@@ -15,7 +15,7 @@ trait TestHarness
      * @before
      * @return void
      */
-    public function SetupDbData()
+    public function setupDbData()
     {
         $this->afterApplicationCreated(function(){
             $this->seed(PermissionV1Seeder::class);

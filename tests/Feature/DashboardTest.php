@@ -97,7 +97,7 @@ test('Teacher see his contracts as a client', function () {
     $this->be($teacher);
 
 
-    $jobDefinition = \App\Models\JobDefinition::first();
+    $jobDefinition = $teacher->getJobDefinitionsWithActiveContracts(\App\Models\AcademicPeriod::current())->firstOrFail();
     $contracts = $teacher->contractsAsAClientForJob($jobDefinition)->get();
     \PHPUnit\Framework\assertGreaterThan(0,$contracts->count());
 
@@ -108,7 +108,11 @@ test('Teacher see his contracts as a client', function () {
     $response->assertSeeText($jobDefinition->name);
     foreach ($contracts as $contract)
     {
-        $response->assertSeeText($contract->workers[0]->user->getFirstnameL());
+        foreach ($contract->workers as $worker)
+        {
+            $response->assertSeeText($worker->user->getFirstnameL());
+        }
+
     }
 
 });

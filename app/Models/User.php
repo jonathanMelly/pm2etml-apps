@@ -152,6 +152,7 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
     {
         $contract_client = CustomPivotTableNames::CONTRACT_USER->value;
         return Contract::
+            //No power join as using the pivot table as a shortcut than the entire relation
             join($contract_client,tbl(Contract::class).'.id','=',$contract_client.'.contract_id')
 
             ->where('job_definition_id','=',$job->id)
@@ -160,6 +161,7 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
             ->with('workers.user')
             ->with('workers.group.groupName')
 
+            //Contract workers
             ->orderByPowerJoins('workers.group.groupName.year')
             ->orderByPowerJoins('workers.group.groupName.name')
             ->orderByPowerJoins('workers.user.lastname')
