@@ -227,6 +227,7 @@
     "Do you really want to delete the following contracts ?": "Êtes-vous sûr de vouloir supprimer les contrats suivants ?",
     "Project": "Projet",
     "No": "Non",
-    "Yes": "Oui"
+    "Yes": "Oui",
+    ":number contract deleted|:number contracts deleted":":number contrat supprimé|:number contrats supprimés"
 
 }

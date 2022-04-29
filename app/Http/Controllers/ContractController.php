@@ -157,6 +157,18 @@ class ContractController extends Controller
 
     public function destroyAll(DestroyAllContractRequest $request)
     {
-        return "congrats!".var_export($request->all(),true);
+        $user=auth()->user();//Policy ensure required role
+        $jobId = $request->get('job_id');
+        $contracts = $request->get('job-'.$jobId.'-contracts');
+
+        $deleted = Contract::
+            whereHas('jobDefinition',fn($q)=>$q->where(tbl(JobDefinition::class).'.id','=',$jobId))
+            ->whereHas('clients',fn($q)=>$q->where(tbl(User::class).'.id','=',$user->id))
+            ->whereIn(tbl(Contract::class).'.id',$contracts)
+            ->delete();
+
+        return redirect('/dashboard')
+            ->with('success',
+                trans_choice(':number contract deleted|:number contracts deleted',$deleted,['number'=>$deleted]));
     }
 }

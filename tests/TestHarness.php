@@ -22,6 +22,14 @@ trait TestHarness
         });
     }
 
+    public function multiSeed(...$classes)
+    {
+        foreach ($classes as $class)
+        {
+            $this->seed($class);
+        }
+    }
+
     public function CreateUser(bool $be=true, string... $roles)
     {
         $user = User::factory()->create();

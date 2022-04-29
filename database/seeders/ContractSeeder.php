@@ -10,6 +10,7 @@ use App\Models\User;
 use Faker\Generator;
 use Illuminate\Container\Container;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class ContractSeeder extends Seeder
 {
@@ -22,7 +23,7 @@ class ContractSeeder extends Seeder
     {
         $faker = Container::getInstance()->make(Generator::class);
 
-        $jobs = [0,app()->environment('testing')?2:5];
+        $jobs = [0,app()->environment('testing')?5:6];
         //First 10 users always have some contracts
         $usersWithJobs = [10, app()->environment('testing')?11:100];
 
@@ -44,10 +45,15 @@ class ContractSeeder extends Seeder
                 today()->toImmutable()->subDay()
                 :$currentPeriod->end);
 
-            foreach (User::role(RoleName::STUDENT)
-                         ->orderBy('id')
-                         ->limit($faker->numberBetween($usersWithJobs[0], $usersWithJobs[1]))
-                         ->get()
+            $workersQuery = User::role(RoleName::STUDENT)
+                ->orderBy('id')
+                ->limit($faker->numberBetween($usersWithJobs[0], $usersWithJobs[1]))
+                ->whereHas('groupMembers.group.academicPeriod',
+                    fn($q)=>$q->where(tbl(AcademicPeriod::class).'.id','=',AcademicPeriod::current()));
+
+            //$sql = $workersQuery->getQuery()->toSql();
+            $workers = $workersQuery->get();
+            foreach ($workers
                      as $worker)
             {
                 $client = $job->providers[0];

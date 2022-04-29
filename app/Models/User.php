@@ -214,4 +214,32 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
 
     }
 
+    public function getJobDefinitionsWithActiveContracts($academicPeriodId): \Illuminate\Database\Eloquent\Collection
+    {
+        //TODO switch to polymorphic http://novate.co.uk/using-laravel-polymorphic-relationships-for-different-user-profiles/
+        //so that only teacher has this method !
+        if($this->hasRole(RoleName::TEACHER)===false)
+        {
+            throw new \Illuminate\Validation\UnauthorizedException('Only for teacher');
+        }
+
+        //TODO convert into powerRelation to avoid hard-coded table names...
+        $sqlQuery = "
+                select jd.*,min(c.start) as min_start,max(c.end) as max_end,count(c.id) as contracts_count from job_definitions jd
+                    inner join contracts c on c.job_definition_id=jd.id and c.success_date is null
+                    inner join contract_client cc on cc.contract_id=c.id and cc.user_id=?
+
+                    inner join contract_worker cw on cw.contract_id=c.id
+                        inner join group_members gm on cw.group_member_id=gm.id
+                            inner join groups g on gm.group_id=g.id
+                                inner join academic_periods ap on g.academic_period_id=ap.id and ap.id=?
+
+                    group by c.job_definition_id
+
+                    order by min(c.`end`)
+                ";
+
+        return JobDefinition::fromQuery($sqlQuery,[$this->id,$academicPeriodId]);
+    }
+
 }
