@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Période scolaire (année.
- * 
+ *
  * .. ou si nécessaire, semestre, même trimestre...)
  *
  * @property int $id
@@ -62,7 +62,8 @@ class AcademicPeriod extends Model
 
     public static function current(bool $idOnly=true): AcademicPeriod|int
     {
-        return Cache::remember('currentAcademicPeriod'.$idOnly?'Id':'',Carbon::today()->secondsUntilEndOfDay(), function () use($idOnly) {
+        $key = 'currentAcademicPeriod'.($idOnly?'Id':'');
+        return Cache::remember($key,Carbon::today()->secondsUntilEndOfDay(), function () use($idOnly) {
             $today = today(); //don’t try with DB:raw(now()) as it doesn’t work on sqlite used for faster testing...
             $builder = (new static)::whereDate('start','<=',$today)
                 ->whereDate('end','>=',$today);
