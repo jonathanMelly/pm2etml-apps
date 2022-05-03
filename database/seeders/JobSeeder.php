@@ -20,6 +20,7 @@ class JobSeeder extends Seeder
      */
     public function run()
     {
+        $total = app()->environment('testing')?5:21;
         $faker = Container::getInstance()->make(Generator::class);
 
         JobDefinition::factory()->afterMaking(
@@ -37,15 +38,15 @@ class JobSeeder extends Seeder
 
                 $job->image=$imgName;
         })->afterCreating(
-            function (JobDefinition $job) use($faker) {
+            function (JobDefinition $job) use($faker,$total) {
 
-                $count = 10;
+                $clientCounts = 10;
 
-                $candidates = User::role(RoleName::TEACHER)->orderBy('id')->limit($count)->get();
-                $client = $candidates[rand(1,$count/2-1)];
+                $candidates = User::role(RoleName::TEACHER)->orderBy('id')->limit($clientCounts)->get();
+                $client = $candidates[rand(1,$clientCounts/2-1)];
 
-                //First teacher has at least 3 jobs
-                if($this->counter++<3 || rand(0,10)<5)
+                //First teacher has at least 80% of the jobs
+                if($this->counter++<(80/100*$total) || rand(0,10)<5)
                 {
                     $job->providers()->attach($candidates[0]->id);//often put base teacher (for easier testing)
                 }
@@ -54,10 +55,10 @@ class JobSeeder extends Seeder
                 $job->providers()->attach($client->id);
                 if(rand(0,1)==0)
                 {
-                    $client = $candidates[rand($count/2,$count-1)];
+                    $client = $candidates[rand($clientCounts/2,$clientCounts-1)];
                     $job->providers()->attach($client->id);
                 }
 
-        })->count(app()->environment('testing')?5:21)->create();
+        })->count($total)->create();
     }
 }

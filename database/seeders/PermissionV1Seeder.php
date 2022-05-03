@@ -27,15 +27,17 @@ class PermissionV1Seeder extends Seeder
             #
 
             #JobDefinition related permissions
-            Permission::create(['name' => 'jobs.create']);
-            $permision_job_view = Permission::create(['name' => 'jobs.view']); //assumes view all
-            Permission::create(['name' => 'jobs.edit']);
-            Permission::create(['name' => 'jobs.trash']);
-            Permission::create(['name' => 'jobs.restore']);
+            Permission::create(['name' => 'jobDefinitions.create']);
+            $permision_job_view = Permission::create(['name' => 'jobDefinitions.view']); //assumes view all
+
+            Permission::create(['name' => 'jobDefinitions.edit']);
+
+            Permission::create(['name' => 'jobDefinitions.trash']);
+            Permission::create(['name' => 'jobDefinitions.restore']);
             $permission_job_apply = Permission::create(['name' => 'jobs-apply']);//custom for separating apply from students
             //Permission::create(['name' => 'jobs.admin']); //can do on all items (not only his) [not used, as wildcard jobs...]
-            $permission_jobs = Permission::create(['name' => 'jobs']);
-            $permission_jobs_for_teachers = Permission::create(['name' => 'jobs.create,view,edit,trash,restore']);
+            $permission_jobs = Permission::create(['name' => 'jobDefinitions']);
+            $permission_jobs_for_teachers = Permission::create(['name' => 'jobDefinitions.create,view,edit,trash,restore']);
 
             #Contracts
             $permission_contract_create = Permission::create(['name' => 'contracts.create']);
@@ -52,10 +54,10 @@ class PermissionV1Seeder extends Seeder
             ##
             #create roles and assign created permissions
             ##
-
             $eleve = Role::create(['name' => RoleName::STUDENT])
                 ->givePermissionTo(
                     $permision_job_view,
+                    $permission_contract_create,
                     $permission_job_apply
                 );
 

@@ -25,15 +25,15 @@ Route::middleware('auth')->group(function () {
 
     Route::get('dashboard',DashboardController::class)->name('dashboard');
 
-    Route::get('jobs',[JobDefinitionController::class,'index'])->name('jobs');
+    //JOBS
+    Route::resource('jobDefinitions',\App\Http\Controllers\JobDefinitionController::class);
+    Route::get('marketplace',[JobDefinitionController::class,'marketPlace'])
+        ->name('marketplace');
 
-    //The first contains job to be contracted...
+    //CONTRACTS
     Route::get('jobs-apply/{jobDefinition}',
         [\App\Http\Controllers\ContractController::class,'createApply'])
         ->name('jobs-apply-for');
-    Route::post('jobs-apply',
-        [\App\Http\Controllers\ContractController::class,'storeApply'])
-        ->name('jobs-apply');
 
     Route::delete('contracts.destroyAll',[\App\Http\Controllers\ContractController::class,'destroyAll'])
         ->name('contracts.destroyAll');

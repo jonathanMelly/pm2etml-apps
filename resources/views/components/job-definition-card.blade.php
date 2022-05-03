@@ -45,10 +45,15 @@
 @if($viewOnly)
     <div class="card card-compact w-auto bg-base-100 shadow-xl">
 
-    @if($job->providers->contains(Auth::user()))
+    @if($job->providers->contains(Auth::user()) || Auth::user()->can('jobDefinitions'))
     <div class="place-self-end mr-3 mt-2 -mb-6 flex gap-1">
-        @can('jobs.edit')<i class="fa-solid fa-edit"></i>@endcan
-        @can('jobs.trash')<i class="fa-solid fa-trash"></i>@endcan
+        @can(['jobDefinitions.edit'])
+            <a href="{{route('jobDefinitions.edit',$job)}}"><i class="fa-solid fa-edit"></i></a>
+        @endcan
+        @can('jobDefinitions.trash')
+            {{-- TODO use a confirmation popup which has a form post/delete... --}}
+            <a href="{{route('jobDefinitions.destroy',$job)}}"><i class="fa-solid fa-trash"></i></a>
+        @endcan
     </div>
     @endif
 

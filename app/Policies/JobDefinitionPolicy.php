@@ -18,7 +18,7 @@ class JobDefinitionPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->can('jobs.view');
+        return $user->can('jobDefinitions.view');
     }
 
     /**
@@ -28,7 +28,7 @@ class JobDefinitionPolicy
      * @param  \App\Models\JobDefinition  $job
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, JobDefinition $job)
+    public function view(User $user, JobDefinition $jobDefinition)
     {
         //Currently all users can see all jobs...
         return self::viewAny($user);
@@ -42,35 +42,33 @@ class JobDefinitionPolicy
      */
     public function create(User $user)
     {
-        return $user->can('jobs.create');
+        return $user->can('jobDefinitions.create');
     }
 
     /**
      * Determine whether the user can update the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\JobDefinition  $job
+     * @param  \App\Models\JobDefinition  $jobDefinition
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, JobDefinition $job)
+    public function update(User $user, JobDefinition $jobDefinition)
     {
-        if($user->can('jobs.update')){
-            return $user->can('jobs') || $job->providers()->find($user->id)->containsOneItem();
-        }
-
+        return $user->can('jobDefinitions') ||
+            ($user->can('jobDefinitions.edit') && $jobDefinition->providers()->find($user)!==null);
     }
 
     /**
      * Determine whether the user can delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\JobDefinition  $job
+     * @param  \App\Models\JobDefinition  $jobDefinition
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, JobDefinition $job)
+    public function delete(User $user, JobDefinition $jobDefinition)
     {
-        if($user->can('jobs.trash')){
-            return $user->can('jobs') || $job->providers()->find($user->id)->containsOneItem();
+        if($user->can('jobDefinitions.trash')){
+            return $user->can('jobDefinitions') || $jobDefinition->providers()->find($user->id)->containsOneItem();
         }
     }
 
@@ -78,23 +76,23 @@ class JobDefinitionPolicy
      * Determine whether the user can restore the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\JobDefinition  $job
+     * @param  \App\Models\JobDefinition  $jobDefinition
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function restore(User $user, JobDefinition $job)
+    public function restore(User $user, JobDefinition $jobDefinition)
     {
         //same as delete (softdelete = trash)
-        return $this->delete($user,$job);
+        return $this->delete($user,$jobDefinition);
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      *
      * @param  \App\Models\User  $user
-     * @param  \App\Models\JobDefinition  $job
+     * @param  \App\Models\JobDefinition  $jobDefinition
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function forceDelete(User $user, JobDefinition $job)
+    public function forceDelete(User $user, JobDefinition $jobDefinition)
     {
         return false;//no real delete through web interface
     }

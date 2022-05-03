@@ -19,5 +19,5 @@ test('Teacher cannot apply for a job', function () {
     $response->assertDontSeeText('<form>');
 
     //Cannot apply
-    $this->post('/jobs-apply')->assertStatus(403);
+    $this->post('/contracts')->assertStatus(403);
 });

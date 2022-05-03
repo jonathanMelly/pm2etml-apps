@@ -31,7 +31,8 @@ class ContractSeeder extends Seeder
 
         foreach (JobDefinition::published()
                         //first users have the maximum of contracts
-                         ->limit($faker->numberBetween($user++<$usersWithJobs[0]?$jobs[1]:$jobs[0], $jobs[1]))
+                        ->orderBy('id')
+                        ->limit($faker->numberBetween($user++<$usersWithJobs[0]?$jobs[1]:$jobs[0], $jobs[1]))
                          ->get() as $job)
         {
             $currentPeriod = AcademicPeriod::current(false);

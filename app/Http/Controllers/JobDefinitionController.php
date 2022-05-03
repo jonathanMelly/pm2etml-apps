@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Contract;
 use App\Models\JobDefinition;
 use App\Http\Requests\StoreJobDefinitionRequest;
-use App\Http\Requests\UpdateJobRequest;
+use App\Http\Requests\UpdateJobDefinitionRequest;
 
 
 class JobDefinitionController extends Controller
@@ -17,22 +17,28 @@ class JobDefinitionController extends Controller
         $this->authorizeResource(JobDefinition::class,'jobDefinition');
     }
 
-    /**
-     * aka MarketPlace
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Contracts\View\View
-     */
-    public function index(): \Illuminate\Contracts\View\View
+    public function marketPlace()
     {
-        $definitions = JobDefinition::published()->orWhere->available()
+        $definitions = JobDefinition::query()
+            ->where(fn($q)=>$q->published()->orWhere->available())
             ->whereNotIn('id',auth()->user()->contractsAsAWorker()->select('job_definition_id'))
             ->orderBy('required_xp_years')
             ->orderByDesc('one_shot')
             ->orderBy('priority')
             ->with('providers')
             ->get();
-        return view('job-definition')->with(compact('definitions'));
+        return view('marketplace')->with(compact('definitions'));
+    }
+
+    /**
+     * aka MarketPlace
+     * Display a listing of the resource.
+     *
+     */
+    public function index()
+    {
+        $definitions = JobDefinition::all();
+        return $definitions;
     }
 
     /**
@@ -59,10 +65,10 @@ class JobDefinitionController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\JobDefinition  $job
+     * @param  \App\Models\JobDefinition  $jobDefinition
      * @return \Illuminate\Http\Response
      */
-    public function show(JobDefinition $job)
+    public function show(JobDefinition $jobDefinition)
     {
         //
     }
@@ -70,22 +76,23 @@ class JobDefinitionController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\JobDefinition  $job
+     * @param  \App\Models\JobDefinition  $jobDefinition
      * @return \Illuminate\Http\Response
      */
-    public function edit(JobDefinition $job)
+    public function edit(JobDefinition $jobDefinition)
     {
         //
+        //dd('edit');
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateJobRequest  $request
-     * @param  \App\Models\JobDefinition  $job
+     * @param  \App\Http\Requests\UpdateJobDefinitionRequest  $request
+     * @param  \App\Models\JobDefinition  $jobDefinition
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateJobRequest $request, JobDefinition $job)
+    public function update(UpdateJobDefinitionRequest $request, JobDefinition $jobDefinition)
     {
         //
     }
@@ -93,10 +100,10 @@ class JobDefinitionController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\JobDefinition  $job
+     * @param  \App\Models\JobDefinition  $jobDefinition
      * @return \Illuminate\Http\Response
      */
-    public function destroy(JobDefinition $job)
+    public function destroy(JobDefinition $jobDefinition)
     {
         //
     }

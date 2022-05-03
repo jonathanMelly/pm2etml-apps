@@ -1,7 +1,5 @@
 <x-app-layout>
 
-
-
     <div class="sm:mx-6 bg-base-200 rounded-box sm:p-3 p-1">
 
         <div class="pb-2">

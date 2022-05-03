@@ -17,7 +17,7 @@
                     {{-- CONTRACTS AS A WORKER --}}
                     @role(\App\Constants\RoleName::STUDENT)
                     @if($contracts->isEmpty())
-                        <p>{{__('No contracts, you may apply at')}} <a class="link-secondary" href="{{route('jobs')}}">{{__('Market place')}}</a></p>
+                        <p>{{__('No contracts, you may apply at')}} <a class="link-secondary" href="{{route('marketplace')}}">{{__('Market place')}}</a></p>
                     @else
                         <x-worker-contract-list :contracts="$contracts" />
                     @endempty
