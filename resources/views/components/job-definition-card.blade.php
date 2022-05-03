@@ -26,6 +26,8 @@
     $yearStyle = ['info','success','warning','neutral'][$job->required_xp_years];
     $priorityStyle = ['error','warning','accent','neutral'][$job->priority->value];
 
+
+    //faster local tests...
     if(config('custom.hide-job-image'))
     {
         $image='image';
@@ -42,16 +44,28 @@
 
 @if($viewOnly)
     <div class="card card-compact w-auto bg-base-100 shadow-xl">
+
+    @if($job->providers->contains(Auth::user()))
+    <div class="place-self-end mr-3 mt-2 -mb-6 flex gap-1">
+        @can('jobs.edit')<i class="fa-solid fa-edit"></i>@endcan
+        @can('jobs.trash')<i class="fa-solid fa-trash"></i>@endcan
+    </div>
+    @endif
+
 @else
     <a class="card card-compact {{$job->one_shot?'border border-accent':''}} w-auto bg-base-100 shadow-xl hover:bg-gradient-to-b hover:from-primary/25 hover:to-base-100"
        href="{{ route('jobs-apply-for',['jobDefinition'=>$job]) }}">
 @endif
 
 
+
     <div class="indicator self-center mt-3">
         {!!  $mandatoryBadge??'' !!}
         <div class="grid w-24 h-24 place-items-center {{$imageBg??''}}">{!! $image !!}</div>
+
     </div>
+
+
 
 
 

@@ -11,6 +11,8 @@ use Illuminate\Database\Seeder;
 
 class JobSeeder extends Seeder
 {
+    protected int $counter=0;
+
     /**
      * Run the database seeds.
      *
@@ -19,8 +21,6 @@ class JobSeeder extends Seeder
     public function run()
     {
         $faker = Container::getInstance()->make(Generator::class);
-
-        $total=0;
 
         JobDefinition::factory()->afterMaking(
             function (JobDefinition $job) use ($faker) {
@@ -37,14 +37,15 @@ class JobSeeder extends Seeder
 
                 $job->image=$imgName;
         })->afterCreating(
-            function (JobDefinition $job) use($faker,$total) {
+            function (JobDefinition $job) use($faker) {
 
                 $count = 10;
 
                 $candidates = User::role(RoleName::TEACHER)->orderBy('id')->limit($count)->get();
                 $client = $candidates[rand(1,$count/2-1)];
 
-                if($total++<3 || rand(0,10)<7)
+                //First teacher has at least 3 jobs
+                if($this->counter++<3 || rand(0,10)<5)
                 {
                     $job->providers()->attach($candidates[0]->id);//often put base teacher (for easier testing)
                 }

@@ -12992,22 +12992,11 @@ html {
 .btn-success:focus-visible {
   outline: 2px solid hsl(var(--su));
 }
-.btn-warning {
-  --tw-border-opacity: 1;
-  border-color: hsl(var(--wa) / var(--tw-border-opacity));
-  --tw-bg-opacity: 1;
-  background-color: hsl(var(--wa) / var(--tw-bg-opacity));
-  --tw-text-opacity: 1;
-  color: hsl(var(--wac, var(--nc)) / var(--tw-text-opacity));
-}
 .btn-warning:hover, .btn-warning.btn-active {
   --tw-border-opacity: 1;
   border-color: hsl(var(--wa) / var(--tw-border-opacity));
   --tw-bg-opacity: 1;
   background-color: hsl(var(--wa) / var(--tw-bg-opacity));
-}
-.btn-warning:focus-visible {
-  outline: 2px solid hsl(var(--wa));
 }
 .btn-error {
   --tw-border-opacity: 1;
@@ -13316,9 +13305,6 @@ body[dir="rtl"] .checkbox:checked,
 }
 .drawer-toggle:focus-visible ~ .drawer-content .drawer-button.btn-success {
   outline: 2px solid hsl(var(--su));
-}
-.drawer-toggle:focus-visible ~ .drawer-content .drawer-button.btn-warning {
-  outline: 2px solid hsl(var(--wa));
 }
 .drawer-toggle:focus-visible ~ .drawer-content .drawer-button.btn-error {
   outline: 2px solid hsl(var(--er));
@@ -13968,6 +13954,13 @@ body[dir="rtl"] .checkbox:checked,
   padding-right: 0.5rem;
   min-height: 1.5rem;
   font-size: 0.75rem;
+}
+.btn-sm {
+  height: 2rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  min-height: 2rem;
+  font-size: 0.875rem;
 }
 .btn-square:where(.btn-xs) {
   height: 1.5rem;
@@ -14708,6 +14701,21 @@ body[dir="rtl"] .checkbox:checked,
 .mr-1 {
   margin-right: 0.25rem;
 }
+.-mr-5 {
+  margin-right: -1.25rem;
+}
+.-mb-4 {
+  margin-bottom: -1rem;
+}
+.-mb-10 {
+  margin-bottom: -2.5rem;
+}
+.-mb-6 {
+  margin-bottom: -1.5rem;
+}
+.mr-3 {
+  margin-right: 0.75rem;
+}
 .block {
   display: block;
 }
@@ -14937,8 +14945,14 @@ body[dir="rtl"] .checkbox:checked,
   --tw-divide-opacity: 1;
   border-color: hsl(var(--s) / var(--tw-divide-opacity));
 }
+.place-self-end {
+  place-self: end;
+}
 .self-center {
   align-self: center;
+}
+.justify-self-end {
+  justify-self: end;
 }
 .overflow-hidden {
   overflow: hidden;
