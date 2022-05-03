@@ -117,28 +117,37 @@ class Contract extends Model
 
     #[ArrayShape(['percentage' => "float|int", 'remainingDays' => "int"])] public function getProgress(): array
     {
-        $totalProgress = $this->start->diffInDays($this->end);
-        $currentProgress =  $this->start->diffInDays(now());
+        $started  = $this->start <= today();
+        $finished = $this->end < today();
 
-        if($currentProgress<0)
+        //1 day project
+        if($this->start === $this->end)
         {
-            $currentProgress=0;
+            $remainingHours = now()->diffInHours(now()->endOfDay()->toDateTime());
+            $ratio = $remainingHours/24;
+            $remainingDays = round($ratio,2);
+            $progressPercentage = round($ratio * 100);
         }
-        else if($currentProgress>$totalProgress)
+        else if($finished)
         {
-            $currentProgress=$totalProgress;
+            $progressPercentage = 100;
+            $remainingDays = 0;
         }
-        if($totalProgress>0)
+        //in progress
+        else if($started)
         {
+            $totalProgress = $this->start->diffInDays($this->end);
+            $currentProgress = $this->start->diffInDays(now());
             $progressPercentage = round($currentProgress/$totalProgress * 100);
             $remainingDays = $totalProgress-$currentProgress;
         }
-        //if contract starts and finishes the same day (TODO: in hours instead of day...)
+        //starts in the future
         else
         {
-            $progressPercentage=99;
-            $remainingDays=1;
+            $progressPercentage=0;
+            $remainingDays = today()->diffInDays($this->end);
         }
+
 
         return ['percentage'=>$progressPercentage,'remainingDays'=>$remainingDays];
     }
