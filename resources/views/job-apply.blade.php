@@ -6,7 +6,7 @@
 
         @can('jobs-apply')
 
-            <form method="post" action="{{ route('jobs-apply') }}" class="w-auto">
+            <form method="post" action="{{ route('contracts.store') }}" class="w-auto">
                 @csrf
                 <input type="hidden" name="job_definition_id" value="{{$jobDefinition->id}}">
                 <div class="flex flex-row gap-2 sm:min-w-max">

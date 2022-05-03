@@ -48,22 +48,6 @@ class ContractController extends Controller
      */
     public function store(StoreContractRequest $request)
     {
-    }
-
-    public function createApply(JobDefinition $jobDefinition)
-    {
-        //form to apply for a job
-        return view('job-apply')->with(compact('jobDefinition'));
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreContractRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function storeApply(StoreContractRequest $request)
-    {
         //SECURITY CHECKS (as this area is opened to students who might want to play with ids...)
         $this->authorize('jobs-apply');
 
@@ -108,6 +92,12 @@ class ContractController extends Controller
         return redirect('/dashboard')
             ->with('success',__('Congrats, you have been hired for the job'))
             ->with('contractId',$contract->id);
+    }
+
+    public function createApply(JobDefinition $jobDefinition)
+    {
+        //form to apply for a job
+        return view('job-apply')->with(compact('jobDefinition'));
     }
 
     /**
