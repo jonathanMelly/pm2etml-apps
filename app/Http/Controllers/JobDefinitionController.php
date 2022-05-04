@@ -20,7 +20,8 @@ class JobDefinitionController extends Controller
     public function marketPlace()
     {
         $definitions = JobDefinition::query()
-            ->where(fn($q)=>$q->published()->orWhere->available())
+            ->where(fn($q)=>$q->published())
+            ->where(fn($q)=>$q->available())
             ->whereNotIn('id',auth()->user()->contractsAsAWorker()->select('job_definition_id'))
             ->orderBy('required_xp_years')
             ->orderByDesc('one_shot')
