@@ -8,4 +8,4 @@
 <th class="text-center"><i class="fa-solid fa-fire-burner"></i> {{__('Effort')}}</th>
 @endif
 <th class="text-center"><i class="fa-solid fa-stopwatch"></i> {{__('Remaining time')}}</th>
-<th class="text-{{$effort?'left':'right'}}"><i class="fa-solid fa-clipboard-check"></i> {{__('Result')}}</th>
+<th class="text-left"><i class="fa-solid fa-clipboard-check"></i> {{__('Result')}}</th>

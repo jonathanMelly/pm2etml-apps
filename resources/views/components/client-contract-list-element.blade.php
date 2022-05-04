@@ -36,11 +36,11 @@
         @endif
     </td>
 
-    <td class="text-right">
+    <td class="text-left">
         @if($contract->alreadyEvaluated())
             <div class="tooltip" data-tip="{{$contract->success_date}}">
         @endif
-        <i class="fa-solid fa-{{$contract->alreadyEvaluated()?($contract->success?'square-check':'square-xmark'):'person-digging'}}"></i>
+        <i class="ml-7 fa-solid fa-{{$contract->alreadyEvaluated()?($contract->success?'square-check':'square-xmark'):'person-digging'}}"></i>
         @if($contract->alreadyEvaluated())
             </div>
         @endif
