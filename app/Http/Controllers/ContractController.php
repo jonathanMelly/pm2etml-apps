@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Constants\RoleName;
+use App\Http\Requests\ContractEvaluationRequest;
 use App\Http\Requests\DestroyAllContractRequest;
 use App\Http\Requests\StoreContractRequest;
 use App\Http\Requests\UpdateContractRequest;
@@ -160,5 +161,54 @@ class ContractController extends Controller
         return redirect('/dashboard')
             ->with('success',
                 trans_choice(':number contract deleted|:number contracts deleted',$deleted,['number'=>$deleted]));
+    }
+
+    public function evaluate(string $ids)
+    {
+        $this->authorize('contracts.evaluate');
+
+        $contracts = $this->getContractsForEvaluation($ids);
+
+        return view('contracts-evaluate')->with(compact('contracts'));
+    }
+
+    public function evaluateApply(ContractEvaluationRequest $request)
+    {
+
+        $contractsEvaluations = json_decode($request->contractsEvaluations,true);
+        $contracts = $this->getContractsForEvaluation(collect(array_keys($contractsEvaluations))->join(','));
+
+        $updated=0;
+        foreach ($contracts as $contract)
+        {
+            //Handle data with some defensive approach as it comes from plain json
+            $input = $contractsEvaluations[$contract->id];
+            if($input!==null)
+            {
+                if($contract->evaluate(filter_var($input,FILTER_VALIDATE_BOOLEAN)))
+                {
+                    $updated++;
+                }
+            }
+
+        }
+
+        return redirect('/dashboard')
+            ->with('success',
+                trans_choice(':number contract updated|:number contracts updated',$updated,['number'=>$updated]));
+    }
+
+    /**
+     * @param string $ids
+     * @return Contract[]|Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Query\Builder[]|\Illuminate\Support\Collection
+     */
+    protected function getContractsForEvaluation(string $ids): \Illuminate\Support\Collection|array|\Illuminate\Database\Eloquent\Collection
+    {
+        return Contract::query()
+            ->whereIn('id', collect(explode(',', $ids))->filter(fn($el) => is_numeric($el))->toArray())
+            ->whereHas('clients', fn($q) => $q->where('user_id', '=', auth()->user()->id))
+            ->with('workers.user')
+            ->get();
+
     }
 }

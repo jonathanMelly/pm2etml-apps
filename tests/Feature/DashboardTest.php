@@ -83,7 +83,7 @@ test('Student see his contracts as a worker', function () {
     //Then
     foreach ($contracts as $contract)
     {
-        $response->assertSeeText($contract->jobDefinition->name);
+        $response->assertSeeText(Str::words($contract->jobDefinition->name,3));
     }
 
 });
@@ -97,7 +97,9 @@ test('Teacher see his contracts as a client', function () {
     $this->be($teacher);
 
 
-    $jobDefinition = $teacher->getJobDefinitionsWithActiveContracts(\App\Models\AcademicPeriod::current())->firstOrFail();
+    $jobDefinition = $teacher->getJobDefinitionsWithActiveContracts(\App\Models\AcademicPeriod::current())
+        //->where('one_shot','=','false')
+        ->firstOrFail();
     $contracts = $teacher->contractsAsAClientForJob($jobDefinition)->get();
     \PHPUnit\Framework\assertGreaterThan(0,$contracts->count());
 

@@ -16,10 +16,10 @@
         <i class="fa-solid fa-fire-burner"></i> {{$job->getAllocationDetails()}}
     </td>
     <td>
-        <i class="fa-solid fa-calendar-day"></i> {{\Illuminate\Support\Carbon::parse($job->min_start)->format(\App\SwissFrenchDateFormat::FORMAT)}}
+        <i class="fa-solid fa-calendar-day"></i> {{\Illuminate\Support\Carbon::parse($job->min_start)->format(\App\SwissFrenchDateFormat::DATE)}}
     </td>
     <td>
-        <i class="fa-solid fa-calendar-days"></i> {{\Illuminate\Support\Carbon::parse($job->max_end)->format(\App\SwissFrenchDateFormat::FORMAT)}}
+        <i class="fa-solid fa-calendar-days"></i> {{\Illuminate\Support\Carbon::parse($job->max_end)->format(\App\SwissFrenchDateFormat::DATE)}}
     </td>
     <td><i class="fa-solid fa-users"></i> {{$job->contracts_count}}</td>
     <td>

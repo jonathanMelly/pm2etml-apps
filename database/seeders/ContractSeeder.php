@@ -25,7 +25,7 @@ class ContractSeeder extends Seeder
 
         $jobs = [0,app()->environment('testing')?5:6];
         //First 10 users always have some contracts
-        $usersWithJobs = [10, app()->environment('testing')?11:100];
+        $usersWithJobs = [10, app()->environment('testing')?20:100];
 
         $user=0;
 

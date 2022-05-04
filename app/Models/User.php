@@ -228,7 +228,7 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
         //TODO convert into powerRelation to avoid hard-coded table names...
         $sqlQuery = "
                 select jd.*,min(c.start) as min_start,max(c.end) as max_end,count(c.id) as contracts_count from job_definitions jd
-                    inner join contracts c on c.job_definition_id=jd.id and c.success_date is null
+                    inner join contracts c on c.job_definition_id=jd.id
                     inner join contract_client cc on cc.contract_id=c.id and cc.user_id=?
 
                     inner join contract_worker cw on cw.contract_id=c.id

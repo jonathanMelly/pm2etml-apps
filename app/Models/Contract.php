@@ -92,6 +92,7 @@ class Contract extends Model
     protected $casts=[
         'start' => 'datetime',
         'end' => 'datetime',
+        'success_date' => 'datetime'
     ];
 
 
@@ -152,9 +153,19 @@ class Contract extends Model
         return ['percentage'=>$progressPercentage,'remainingDays'=>$remainingDays];
     }
 
-    function evaluate($success)
+    function evaluate($success,$save=true)
     {
         $this->success=$success;
         $this->success_date=now();
+        if($save)
+        {
+            return $this->save();
+        }
+        return true;
+    }
+
+    function alreadyEvaluated():bool
+    {
+        return $this->success_date!==null;
     }
 }

@@ -228,6 +228,10 @@
     "Project": "Projet",
     "No": "Non",
     "Yes": "Oui",
-    ":number contract deleted|:number contracts deleted":":number contrat supprimé|:number contrats supprimés"
-
+    ":number contract deleted|:number contracts deleted":":number contrat supprimé|:number contrats supprimés",
+    ":number contract updated|:number contracts updated":":number contrat mis à jour|:number contrats mis à jour",
+    "Result": "Résultat",
+    "Gave satisfaction":"A donné satisfaction",
+    "Last evaluated": "Évalué le",
+    "Save evaluation results": "Enregistrer les évaluations"
 }

@@ -45,6 +45,7 @@ class PermissionV1Seeder extends Seeder
             Permission::create(['name' => 'contracts.edit']);
             Permission::create(['name' => 'contracts.trash']);
             Permission::create(['name' => 'contracts.restore']);
+            Permission::create(['name' => 'contracts.evaluate']);
             //Permission::create(['name' => 'contracts.admin']); //can do on all items (not only his) [duplicate with jobs wildcard]
             $permission_contracts = Permission::create(['name' => 'contracts']);
 

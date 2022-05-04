@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Artisan;
 use Spatie\Permission\Models\Role;
 use Tests\BrowserKitTestCase;
 
-class ClientContractsDeleteFormTest extends BrowserKitTestCase
+class ClientContractsEvaluateFormTest extends BrowserKitTestCase
 {
 
     /* @var $teacher User */
@@ -40,7 +40,6 @@ class ClientContractsDeleteFormTest extends BrowserKitTestCase
             $this->teacher = User::role(RoleName::TEACHER)->firstOrFail();
             $this->be($this->teacher);
 
-            $this->formPage="/dashboard";
         });
     }
 
@@ -49,25 +48,26 @@ class ClientContractsDeleteFormTest extends BrowserKitTestCase
      *
      * @return void
      */
-    public function test_teacher_can_delete_two_contracts()
+    public function test_teacher_can_evaluate_1_contract()
     {
+        //TODO guarantee enough data to avoid random test crash
+
         /* @var $job JobDefinition */
         $localJob = $this->teacher->getJobDefinitionsWithActiveContracts(AcademicPeriod::current())
             ->firstOrFail();
         $jobId = $localJob->id;
-        $contractIds = $this->teacher->contractsAsAClientForJob($localJob)->take(2)
+        $contractIds = $this->teacher->contractsAsAClientForJob($localJob)
+            //->whereNull('success_date')
+            ->take(2)
             ->get('id')->pluck('id')->toArray();
 
-        $contractFields = 'job-'.$jobId.'-contracts';
 
-        $this->visit($this->formPage)
-            ->submitForm(trans('Yes'), [
-                $contractFields => $contractIds,
-                'job_id' => $jobId
+        $this->visit('/contracts/evaluate/'.(implode(',',$contractIds)))
+            ->submitForm(trans('Save evaluation results'), [
+                'contractsEvaluations' => '{"'.$contractIds[0].'":true,"'.$contractIds[1].'":false}',
             ])
             ->seePageIs('/dashboard')
-            ->seeText('2 contrats supprimés');
-
+            ->seeText('2 contrats mis à jour');
 
     }
 

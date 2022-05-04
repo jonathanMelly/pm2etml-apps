@@ -10,8 +10,7 @@
 
             <tbody x-data="{ show{{$jobs->first()->id}}:true,{{$jobs->values()->skip(1)->transform(fn($job) =>'show'.$job->id.':false')->join(',')}} }">
             @foreach($jobs as $job)
-                <form method="post" action="{{route('contracts.destroyAll')}}" id="job-{{$job->id}}-form"
-                      x-on:submit.prevent>
+                <form method="post" action="{{route('contracts.destroyAll')}}" id="job-{{$job->id}}-form" x-on:submit.prevent>
                     @method('DELETE')
                     @csrf
                     <input type="hidden" name="job_id" value="{{$job->id}}">
@@ -43,7 +42,11 @@
                                                 </label>
                                             </button>
 
-                                            <button x-bind:disabled="!massAction" class="btn btn-outline btn-success btn-xs multi-action-{{$job->id}}">
+                                            <button x-bind:disabled="!massAction" class="btn btn-outline btn-success btn-xs multi-action-{{$job->id}}"
+                                                    @click="cids=Array.from(document.getElementsByName('job-{{$job->id}}-contracts[]'))
+                                                    .filter(el=>el.checked)
+                                                    .map(el=>el.getAttribute('value'))
+                                                    .join();window.location.href='contracts/evaluate/'+cids">
                                                 <i class="fa-solid fa-check mr-1"></i>{{__('Evaluate')}}
                                             </button>
                                         </div>
