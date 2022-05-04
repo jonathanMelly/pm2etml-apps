@@ -20,31 +20,33 @@
             <div>
                 <x-label for="username" :value="__('Username')" />
 
-                <x-input id="username" class="block mt-1 w-full" type="email" name="username" :value="old('username')" required autofocus />
+                <input id="username" placeholder="{{__('Your username')}}"
+                         class="block mt-1 w-full input input-bordered input-primary text-base-content" type="email" name="username" value="{{old('username')}}" required autofocus />
             </div>
 
             <!-- Password -->
             <div class="mt-4">
                 <x-label for="password" :value="__('Password')" />
 
-                <x-input id="password" class="block mt-1 w-full"
+                <input id="password" class="block mt-1 w-full input input-bordered input-secondary text-base-content"
                                 type="password"
                                 name="password"
+                         placeholder="{{__('Your password')}}"
                                 required autocomplete="current-password" />
             </div>
 
             <!-- Remember Me -->
             <div class="block mt-4">
                 <label for="remember_me" class="inline-flex items-center">
-                    <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="remember">
-                    <span class="ml-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+                    <input id="remember_me" type="checkbox" class="checkbox" name="remember">
+                    <span class="ml-2 text-sm text-base-content">{{ __('Remember me') }}</span>
                 </label>
             </div>
 
             <div class="flex items-center justify-end mt-4">
-                <x-button class="ml-3">
+                <button class="btn">
                     {{ __('Log in') }}
-                </x-button>
+                </button>
             </div>
         </form>
     </x-auth-card>
