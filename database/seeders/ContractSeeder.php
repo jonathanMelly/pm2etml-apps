@@ -74,6 +74,12 @@ class ContractSeeder extends Seeder
                 $contract->clients()->attach($client->id);
                 $contract->workers()->attach($worker->groupMember()->id);//set worker
 
+                if($job->one_shot)
+                {
+                    //Only 1 worker for 1 shots
+                    break;
+                }
+
             }
         }
 
