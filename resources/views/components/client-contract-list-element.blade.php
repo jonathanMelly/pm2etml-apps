@@ -25,7 +25,7 @@
         {{$contract->end->format(\App\SwissFrenchDateFormat::DATE)}}
     </td>
     <td class="w-36">
-        <progress class="progress progress-success w-36" value="{{$progressPercentage}}" max="100"></progress> ({{$progressPercentage}}%)
+        <progress class="progress progress-accent w-36" value="{{$progressPercentage}}" max="100"></progress> ({{$progressPercentage}}%)
     </td>
 
     <td class="text-center">
@@ -36,13 +36,15 @@
         @endif
     </td>
 
-    <td class="text-left">
+    <td class="text-left ">
+        <div class="ml-5 w-7 bg-opacity-50 bg-{{$contract->alreadyEvaluated()?($contract->success?'success':'error'):'warning'}}">
         @if($contract->alreadyEvaluated())
             <div class="tooltip" data-tip="{{$contract->success_date}}">
         @endif
-        <i class="ml-7 fa-solid fa-{{$contract->alreadyEvaluated()?($contract->success?'square-check':'square-xmark'):'person-digging'}}"></i>
+        <i class="ml-2 fa-solid fa-{{$contract->alreadyEvaluated()?($contract->success?'square-check':'square-xmark'):'person-digging'}}"></i>
         @if($contract->alreadyEvaluated())
             </div>
         @endif
+        </div>
     </td>
 </tr>

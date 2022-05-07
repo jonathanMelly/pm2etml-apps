@@ -15,7 +15,10 @@ module.exports = {
         'alert-success',
         'alert-info',
         'alert-warning',
-        'alert-error'
+        'alert-error',
+        'bg-success',
+        'bg-error',
+        'bg-warning',
     ],
 
     theme: {

@@ -4,7 +4,7 @@
             <i class="fa-solid fa-xl" :class="show{{$job->id}}?'fa-caret-down':'fa-caret-right'"></i>
             <div class="avatar" >
                 <div class="mask mask-squircle w-12 h-12">
-                    <img src="{{img($job->image)}}" alt="{{$job->name}}" />
+                    <img src="{{dmzImgUrl($job->image)}}" alt="{{$job->name}}" />
                 </div>
             </div>
             <div>

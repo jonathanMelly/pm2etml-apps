@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\RoleName;
 use App\Models\Contract;
 use App\Models\JobDefinition;
 use App\Http\Requests\StoreJobDefinitionRequest;
 use App\Http\Requests\UpdateJobDefinitionRequest;
+use App\Models\User;
 
 
 class JobDefinitionController extends Controller
@@ -49,7 +51,9 @@ class JobDefinitionController extends Controller
      */
     public function create()
     {
-        //
+        //ready for form reuse as edit...
+        $job = new JobDefinition();
+        return $this->createEdit($job);
     }
 
     /**
@@ -60,7 +64,24 @@ class JobDefinitionController extends Controller
      */
     public function store(StoreJobDefinitionRequest $request)
     {
-        //
+        //Use mass assignment ;-)
+        $newJob = JobDefinition::make($request->all());
+
+        //image handling
+        //TODO use base64 in client for easy dragndrop + validation errors
+        $imageName = 'job-'.uniqid().random_int(1,2456).'.'.$request->image_data->extension();
+        $request->image_data
+            //->resize(350, 350, fn ($constraint) => $constraint->aspectRatio())
+            ->move(dmzStoragePath(), $imageName);
+        $newJob->image = $imageName;
+
+        $newJob->save();
+
+        //Handle relations (id must have been attributed)
+        $newJob->providers()->sync($request->providers);
+
+        return redirect(route('marketplace'))
+            ->with('success',__('Job ":job" created',['job'=>$newJob->name]));
     }
 
     /**
@@ -82,8 +103,7 @@ class JobDefinitionController extends Controller
      */
     public function edit(JobDefinition $jobDefinition)
     {
-        //
-        //dd('edit');
+        return $this->createEdit($jobDefinition);
     }
 
     /**
@@ -106,6 +126,22 @@ class JobDefinitionController extends Controller
      */
     public function destroy(JobDefinition $jobDefinition)
     {
-        //
+        $jobDefinition->delete();
+        return redirect(route('marketplace'))
+            ->with('success',__('Job ":job" deleted',['job'=>$jobDefinition->name]));
+    }
+
+    protected function createEdit($jobDefinition)
+    {
+        $providers = User::role(RoleName::TEACHER)
+            ->orderBy('firstname')
+            ->orderBy('lastname')
+            //Skip current user as it will be added on top
+            ->where('id','!=',auth()->user()->id)
+            ->get(['id','firstname','lastname']);
+
+        return view('jobDefinition-create-update')
+            ->with(compact('providers'))
+            ->with('job',$jobDefinition);
     }
 }

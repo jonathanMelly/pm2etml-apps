@@ -36,7 +36,7 @@ return new class extends Migration
             $table->timestamp('published_date')->nullable()->default(null);
 
             $table->unsignedInteger('allocated_time');
-            $table->unsignedTinyInteger('allocated_time_unit')->default(\App\Enums\RequiredTimeUnit::HOUR->value);
+            $table->unsignedTinyInteger('allocated_time_unit')->default(\App\Enums\RequiredTimeUnit::PERIOD->value);
 
             //stores image path
             $table->string('image');

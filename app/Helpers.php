@@ -12,11 +12,19 @@ if(!function_exists('ordinal'))
         return preg_replace('/\d+/','',date("S", mktime(0, 0, 0, 0, $number, 0)));
     }
 }
-if(!function_exists('img'))
+if(!function_exists('dmzImgUrl'))
 {
-    function img(string $file):string
+    function dmzImgUrl(?string $file):string
     {
-        return '/dmz-assets/'.$file;
+        return '/dmz-assets/'.$file??'';
+    }
+}
+
+if(!function_exists('dmzStoragePath'))
+{
+    function dmzStoragePath(?string $file=''):string
+    {
+        return storage_path('dmz-assets/'.$file??'');
     }
 }
 

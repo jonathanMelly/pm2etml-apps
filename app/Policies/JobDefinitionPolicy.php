@@ -68,7 +68,7 @@ class JobDefinitionPolicy
     public function delete(User $user, JobDefinition $jobDefinition)
     {
         if($user->can('jobDefinitions.trash')){
-            return $user->can('jobDefinitions') || $jobDefinition->providers()->find($user->id)->containsOneItem();
+            return $user->can('jobDefinitions') || $jobDefinition->providers()->find($user->id)!==null;
         }
     }
 

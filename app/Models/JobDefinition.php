@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\CustomPivotTableNames;
 use App\Enums\JobPriority;
 use App\Enums\RequiredTimeUnit;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -79,15 +80,15 @@ class JobDefinition extends Model
         'priority',
         'status',
         'published_date',
-        'image',
-        'required_time',
-        'required_time_unit',
+        //'image',
+        'allocated_time',
         'one_shot'
     ];
 
     protected $casts = [
         'priority'=> JobPriority::class,
-        'allocated_time_unit'=>RequiredTimeUnit::class
+        'allocated_time_unit'=>RequiredTimeUnit::class,
+        'published_date'=> 'datetime'
     ];
 
     public function scopePublished(Builder $query): Builder
@@ -122,6 +123,9 @@ class JobDefinition extends Model
 
     #[Pure] public function getAllocatedTime(RequiredTimeUnit $targetUnit = RequiredTimeUnit::HOUR): float
     {
+        if($this->allocated_time===null) {
+            return 0;
+        }
         return round(RequiredTimeUnit::Convert($this->allocated_time, $this->allocated_time_unit, $targetUnit), 0);
     }
 
@@ -129,6 +133,11 @@ class JobDefinition extends Model
     {
         return $this->getAllocatedTime() . 'h / '
             . $this->getAllocatedTime(RequiredTimeUnit::PERIOD) . 'p';
+    }
+
+    public function isPublished():bool
+    {
+        return $this->published_date!==null && $this->published_date<=today();
     }
 
 }
