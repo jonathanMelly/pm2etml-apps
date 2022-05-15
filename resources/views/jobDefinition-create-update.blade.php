@@ -116,7 +116,7 @@
                         <select class="select w-full" name="required_xp_years" id="required_xp_years">
                             @for($i=1;$i<5;$i++)
                                 <option
-                                    value="{{$i-1}}" @selected(old('required_xp_years',$job->required_xp_years)===$i-1)>
+                                    value="{{$i-1}}" @selected(old('required_xp_years',$job->required_xp_years)==$i-1)>
                                     {!!$i.'<sup>'.__(ordinal($i)).'</sup>&nbsp;'.__('year')!!}</option>
                             @endfor
                         </select>
@@ -132,7 +132,7 @@
                             <select class="select w-full" name="priority" id="priority">
                                 @foreach(\App\Enums\JobPriority::cases() as $priority)
                                     <option
-                                        value="{{$priority->value}}" @selected($editMode  &&  old('priority',$job->priority->value)===$priority->value)>
+                                        value="{{$priority->value}}" @selected(old('priority',$editMode?$job->priority->value:-1)==$priority->value)>
                                         {{__(Str::ucfirst(Str::lower($priority->name)))}}</option>
                                 @endforeach
                             </select>
