@@ -31,9 +31,17 @@ class JobSeeder extends Seeder
                 }
                 else
                 {
-                    $img = $faker->image(null, 350, 350);
-                    $imgName = basename($img);
-                    rename($img,storage_path('dmz-assets/').$imgName);
+                    $img = $faker->image(dmzStoragePath(), 350, 350);
+                    //bug with curl an via.placeholder...
+                    if(!$img)
+                    {
+                        $imgName='job-'.$faker->numberBetween(1,2).'.png';
+                    }
+                    else
+                    {
+                        $imgName = basename($img);
+                    }
+
                 }
 
                 $job->image=$imgName;
