@@ -25,7 +25,7 @@ use JetBrains\PhpStorm\Pure;
  * @property int $required_xp_years
  * @property JobPriority $priority
  * @property int $max_workers
- * @property string|null $published_date
+ * @property \Illuminate\Support\Carbon|null $published_date
  * @property int $allocated_time
  * @property RequiredTimeUnit $allocated_time_unit
  * @property string $image
