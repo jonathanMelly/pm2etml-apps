@@ -175,20 +175,28 @@ class ContractController extends Controller
     public function evaluateApply(ContractEvaluationRequest $request)
     {
 
-        $contractsEvaluations = json_decode($request->contractsEvaluations,true);
-        $contracts = $this->getContractsForEvaluation(collect(array_keys($contractsEvaluations))->join(','));
+        $contracts = $this->getContractsForEvaluation(collect($request->contracts)->join(','));
 
         $updated=0;
         foreach ($contracts as $contract)
         {
-            //Handle data with some defensive approach as it comes from plain json
-            $input = $contractsEvaluations[$contract->id];
-            if($input!==null)
+
+            $success = filter_var($request->input('success-'.$contract->id),FILTER_VALIDATE_BOOLEAN);
+            $comment = null;
+            if(!$success)
             {
-                if($contract->evaluate(filter_var($input,FILTER_VALIDATE_BOOLEAN)))
+                $commentAttributeName = 'comment-'.$contract->id;
+                $comment = $request->input($commentAttributeName);
+                if(empty(trim($comment)))
                 {
-                    $updated++;
+                    return back()
+                        ->withErrors([$commentAttributeName => __('Failed jobs must have a clue for improvement')])
+                        ->withInput();
                 }
+            }
+            if($contract->evaluate($success,$comment))
+            {
+                $updated++;
             }
 
         }

@@ -31,6 +31,7 @@ return new class extends Migration
             $table->boolean('success')
                 ->default(false)
                 ->comment('True if the work has been approved by the client');
+            $table->string('success_comment')->nullable();
 
             $table->foreignIdFor(JobDefinition::class)->constrained();
 

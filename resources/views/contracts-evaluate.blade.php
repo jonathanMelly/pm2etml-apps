@@ -1,20 +1,35 @@
+{{--
+ After some trials, to avoid manually handling json data (with old(...) feature), checkboxes have been 'duplicated'
+ with hidden fields so the data, even if false, is still kept...
+ The best would be to have a 2 options (false/true) radio button with toggle UI...
+ --}}
 <x-app-layout>
     @push('custom-scripts')
         <script>
-            var contractsEvaluations = {};
-            function toggle(element)
+            let contractsEvaluations = {};
+            function toggle(id,checked=null)
             {
-                element.classList.remove('bg-'+(element.checked?'error':'success'));
-                element.classList.add('bg-'+(!element.checked?'error':'success'));
+                //let success = hiddenInput.value;
+                let toggleCheckBox = document.querySelector("[name='toggle-"+id+"']");
+                let hidden = document.querySelector("[name='success-"+id+"']");
 
-                contractsEvaluations[element.value]=element.checked;
+                //Copy from hidden (onload) OR get from function parameters (onchange)
+                let success = checked??hidden.value==='true';
 
-                //I tried to do it only on submit but it didn’t seem to work :-(
-                document.querySelector('#contractsEvaluations').value=JSON.stringify(contractsEvaluations)
+                toggleCheckBox.classList.remove('bg-'+(success?'error':'success'));
+                toggleCheckBox.classList.add('bg-'+(!success?'error':'success'));
+
+                hidden.value=success;
+                //Apply value from hidden field (which contains correct old value)
+                if(checked==null)
+                {
+                    toggleCheckBox.checked=success;
+                }
+
             }
 
             document.addEventListener("DOMContentLoaded", function() {
-                document.querySelectorAll('[type=checkbox]').forEach(el=>toggle(el));
+                document.querySelectorAll('[type=checkbox]').forEach(el=>toggle(el.value));
             });
 
         </script>
@@ -31,18 +46,46 @@
                     <th>
                         {{__('Worker(s)')}}
                     </th>
-                    <th>{{__('Gave satisfaction')}}</th>
+                    <th class="w-96 text-center">{{__('Gave satisfaction')}}</th>
                     <th>{{__('Last evaluated')}}</th>
                 </tr>
                 </thead>
                 <tbody>
                 @foreach($contracts as $contract)
-                <tr>
+                    @php
+
+                        //$success = $contract->alreadyEvaluated()?$contract->success:true;
+                        $commentName = 'comment-'.$contract->id;
+                        $successName = 'success-'.$contract->id;
+
+                        $checked = old($successName,$contract->success);
+                    /*
+                        //Has been submitted
+                        if(old('contractsEvaluations',null)!=null)
+                        {
+                            $checked = old('contracts['.$contract->id.']',null)!==null?true:$success;
+                        }
+                        else
+                        {
+                            $checked = $success;
+                        }
+ */
+                    @endphp
+                <tr class="h-16">
                     <td class="">{{$contract->workers->transform(fn($el)=>$el->user->getFirstnameL())->join(',')}}</td>
-                    <td class="text-center">
-                        <input type="checkbox" class="toggle" onchange="toggle(this)"
-                               @checked($contract->alreadyEvaluated()?$contract->success:true)
-                               name="contracts[]" value="{{$contract->id}}">
+                    <td class="text-center" x-data="{checked:{{b2s($checked)}} }" class="w-64">
+                        <input type="hidden" name="contracts[]" value="{{$contract->id}}">
+                        <input type="hidden" name="{{$successName}}" value="{{b2s(old($successName,$contract->success))}}">
+                        <input type="checkbox" class="toggle"
+                               @click="checked=!checked;toggle({{$contract->id}},checked)"
+                               name="toggle-{{$contract->id}}" value="{{$contract->id}}">
+
+                        <textarea placeholder="{{__('What must be improved')}}..."
+                                  class="textarea h-10 pl-1 border-error border text-xs @error($commentName) border-2 border-dashed @enderror" name="{{$commentName}}"
+                                  x-show="!checked">{{old($commentName,$contract->success_comment)}}</textarea>
+                        @error($commentName)
+                        <br /><i class="text-xs text-error">{{$errors->first($commentName)}}</i>
+                        @enderror
                     </td>
                     <td class="text-center">
                         {{$contract->alreadyEvaluated()?
@@ -61,6 +104,9 @@
             <button type="button" class="btn my-2"
                     onclick="document.querySelector('#eval').submit()">
                 {{__('Save evaluation results')}}</button>
+            @foreach($errors as $error)
+                {{$error}}
+            @endforeach
         </div>
 
 

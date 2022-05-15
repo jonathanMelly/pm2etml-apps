@@ -24,7 +24,7 @@ if(!function_exists('dmzStoragePath'))
 {
     function dmzStoragePath(?string $file=''):string
     {
-        return storage_path('dmz-assets/'.$file??'');
+        return storage_path('dmz-assets'.DIRECTORY_SEPARATOR.$file??'');
     }
 }
 
@@ -33,6 +33,19 @@ if(!function_exists('tbl'))
     function tbl($class)
     {
         return app($class)->getTable();
+    }
+}
+
+if(!function_exists('b2s'))
+{
+    function b2s(mixed $boolValue):string
+    {
+        if(!is_bool($boolValue))
+        {
+            $boolValue = filter_var($boolValue,FILTER_VALIDATE_BOOLEAN);
+
+        }
+        return $boolValue?'true':'false';
     }
 }
 

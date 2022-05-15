@@ -67,7 +67,9 @@ class ContractSeeder extends Seeder
 
                 if($end<now())
                 {
-                    $contract->evaluate($faker->boolean(80));
+                    $success = $faker->boolean(80);
+                    $comment = $success?null:'Autonomie, respect des délais, structure du code';
+                    $contract->evaluate($success,$comment);
                 }
 
                 $contract->save();

@@ -18,8 +18,9 @@ use Kirschbaum\PowerJoins\PowerJoins;
  * @property int $id
  * @property \Illuminate\Support\Carbon $start
  * @property \Illuminate\Support\Carbon $end
- * @property string|null $success_date last date of success field change
- * @property int $success True if the work has been approved by the client
+ * @property \Illuminate\Support\Carbon|null $success_date last date of success field change, null=not evaluated
+ * @property bool $success True if the work has been approved by the client
+ * @property string|null $success_comment
  * @property int $job_definition_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -67,6 +68,7 @@ use Kirschbaum\PowerJoins\PowerJoins;
  * @method static \Illuminate\Database\Eloquent\Builder|Contract whereJobDefinitionId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Contract whereStart($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Contract whereSuccess($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Contract whereSuccessComment($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Contract whereSuccessDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Contract whereUpdatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|Contract withTrashed()
@@ -153,10 +155,12 @@ class Contract extends Model
         return ['percentage'=>$progressPercentage,'remainingDays'=>$remainingDays];
     }
 
-    function evaluate($success,$save=true)
+    function evaluate($success,$comment=null,$save=true)
     {
         $this->success=$success;
         $this->success_date=now();
+        $this->success_comment=$comment;
+
         if($save)
         {
             return $this->save();
@@ -167,5 +171,10 @@ class Contract extends Model
     function alreadyEvaluated():bool
     {
         return $this->success_date!==null;
+    }
+
+    function getSuccessAsBoolString()
+    {
+        return $this->success?'true':'false';
     }
 }
