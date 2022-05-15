@@ -67,6 +67,8 @@ class JobDefinitionController extends Controller
         //Use mass assignment ;-)
         $newJob = JobDefinition::make($request->all());
 
+
+
         //image handling
         //TODO use base64 in client for easy dragndrop + validation errors
         $imageName = 'job-'.uniqid().random_int(1,2456).'.'.$request->image_data->extension();
@@ -78,7 +80,8 @@ class JobDefinitionController extends Controller
         $newJob->save();
 
         //Handle relations (id must have been attributed)
-        $newJob->providers()->sync($request->providers);
+        $providers = User::role(RoleName::TEACHER)->whereIn('id',$request->providers)->pluck('id');
+        $newJob->providers()->sync($providers);
 
         return redirect(route('marketplace'))
             ->with('success',__('Job ":job" created',['job'=>$newJob->name]));
