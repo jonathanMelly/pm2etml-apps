@@ -7,6 +7,7 @@ use App\Models\AcademicPeriod;
 use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\JobDefinition;
+use Database\Seeders\AcademicPeriodSeeder;
 use Database\Seeders\GroupSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Tests\BrowserKitTestCase;
@@ -25,15 +26,11 @@ class JobApplyFormTest extends BrowserKitTestCase
     {
         $this->afterApplicationCreated(function() {
 
-            $exitCode = Artisan::call('db:seed', [
-                '--class' => GroupSeeder::class, // as students mainly exists in real class for 1 year...
-                '--force' => true,
-                //'-vvv' does not bring more output
-            ]);
+            $this->multiSeed(AcademicPeriodSeeder::class,GroupSeeder::class);
 
-            $student = $this->CreateUser(roles: RoleName::STUDENT);
+            $student = $this->createUser(roles: RoleName::STUDENT);
 
-            $this->teacher = $this->CreateUser(false,'prof');
+            $this->teacher = $this->createUser(false,'prof');
 
             $this->job = JobDefinition::factory()
                 ->afterCreating(function(JobDefinition $jobD)
@@ -79,7 +76,7 @@ class JobApplyFormTest extends BrowserKitTestCase
 
     public function test_user_cannot_apply_for_a_job_with_unregistered_providers()
     {
-        $otherProvider = $this->CreateUser(false,'prof');
+        $otherProvider = $this->createUser(false,'prof');
 
 
         //ko (already registered)

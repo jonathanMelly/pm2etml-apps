@@ -45,6 +45,8 @@ class Group extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $fillable =['academic_period_id','group_name_id'];
+
     public function groupName():BelongsTo
     {
         return $this->belongsTo(GroupName::class);

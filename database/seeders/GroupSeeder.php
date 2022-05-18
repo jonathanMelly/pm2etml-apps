@@ -8,6 +8,7 @@ use App\Models\GroupName;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
 
 class GroupSeeder extends Seeder
 {
@@ -18,17 +19,6 @@ class GroupSeeder extends Seeder
      */
     public function run()
     {
-        //Periods
-        $currentYear = now()->year;
-        for ($i=-5;$i<1;$i++)
-        {
-            $start = CarbonImmutable::create($currentYear+$i,8,1);
-            $end = $start->addYear()->subDay();
-            AcademicPeriod::create([
-                'start' => $start,
-                'end' => $end
-            ]);
-        }
 
         //Group names
         foreach (['cin1a'=>1,'cin2a'=>2,'cin1b'=>1,'cin2b'=>2,'cid3a'=>3,'cin4b'=>4,'fin1'=>1,'fin2'=>3,'msig'=>1] as $group=>$year)

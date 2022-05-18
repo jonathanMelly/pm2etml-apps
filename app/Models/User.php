@@ -246,4 +246,35 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
         return JobDefinition::fromQuery($sqlQuery,[$this->id,$academicPeriodId]);
     }
 
+    /**
+     * @param int $academicPeriodId
+     * @return float the load percentage
+     */
+    public function getClientLoad(int $academicPeriodId) : array
+    {
+        $contractsForPeriodQuery = Contract::query()
+            ->whereHas('workers.group.academicPeriod',fn($q)=>$q->where(tbl(AcademicPeriod::class).'.id','=',$academicPeriodId));
+        $totalContractsForPeriod = $contractsForPeriodQuery->count('id');
+
+        if($totalContractsForPeriod===0)
+        {
+            $percentage = 0;
+            $currentUserContracts=0;
+        }
+        else
+        {
+            $currentUserContracts = $contractsForPeriodQuery
+                ->whereHas('clients',fn($q)=>$q->where(tbl(User::class).'.id','=',$this->id))
+                ->count('id');
+            $percentage = round($currentUserContracts/$totalContractsForPeriod*100,0);
+        }
+
+        return [
+            'percentage' => $percentage,
+            'mine'=> $currentUserContracts,
+            'total'=> $totalContractsForPeriod
+        ];
+
+    }
+
 }

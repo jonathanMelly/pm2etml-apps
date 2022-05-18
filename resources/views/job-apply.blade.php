@@ -30,8 +30,10 @@
                         <div class="input-group">
                             <select class="select select-bordered w-2/3" name="client">
                                 <option disabled selected>{{__('Client')}}</option>
-                                @foreach($jobDefinition->providers as $client)
-                                    <option value="{{$client->id}}" {{old('client')==$client->id?'selected="selected"':''}}>{{$client->firstname.' '.$client->lastname}}</option>
+                                @foreach($jobDefinition->providers->sortBy(fn($e)=>$e->getClientLoad(\App\Models\AcademicPeriod::current())['percentage']) as $client)
+                                    <option value="{{$client->id}}" {{old('client')==$client->id?'selected="selected"':''}}>
+                                        {{$client->firstname.' '.$client->lastname}} ({{$client->getClientLoad(\App\Models\AcademicPeriod::current())['percentage']}}%)
+                                    </option>
                                 @endforeach
                             </select>
                             <button type="submit" class="btn w-1/3" onclick="this.classList.add('loading')">{{__('Apply')}}</button>

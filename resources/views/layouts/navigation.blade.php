@@ -37,6 +37,14 @@
                         </div>
                     </label>
                     <ul tabindex="0" class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
+                        @can('jobDefinitions.create')
+                        <li>
+                            @php
+                                $load=Auth::user()->getClientLoad(\App\Models\AcademicPeriod::current());
+                            @endphp
+                            {{__('Load:')}} {{$load['percentage']}}% ({{$load['mine']}}/{{$load['total']}})
+                        </li>
+                        @endcan
                         <li>
                             <x-logout-link />
                         </li>

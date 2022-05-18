@@ -43,6 +43,8 @@ class GroupName extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $fillable =['name','year'];
+
     public function groups(): HasMany
     {
         return $this->hasMany(Group::class);

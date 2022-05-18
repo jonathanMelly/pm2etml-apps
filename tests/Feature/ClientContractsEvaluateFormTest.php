@@ -3,18 +3,11 @@
 namespace Tests\Feature;
 
 use App\Constants\RoleName;
-use App\Models\AcademicPeriod;
-use App\Models\Group;
-use App\Models\GroupMember;
-use App\Models\JobDefinition;
 use App\Models\User;
+use Database\Seeders\AcademicPeriodSeeder;
 use Database\Seeders\ContractSeeder;
-use Database\Seeders\GroupSeeder;
 use Database\Seeders\JobSeeder;
-use Database\Seeders\PermissionV1Seeder;
 use Database\Seeders\UserV1Seeder;
-use Illuminate\Support\Facades\Artisan;
-use Spatie\Permission\Models\Role;
 use Tests\BrowserKitTestCase;
 
 class ClientContractsEvaluateFormTest extends BrowserKitTestCase
@@ -32,6 +25,7 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
         $this->afterApplicationCreated(function() {
 
             $this->multiSeed(
+                AcademicPeriodSeeder::class,
                 UserV1Seeder::class,
                 JobSeeder::class,
                 ContractSeeder::class);
@@ -48,26 +42,32 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
      *
      * @return void
      */
-    public function test_teacher_can_evaluate_1_contract()
+    public function test_teacher_can_evaluate_2_contracts_1okAnd1Ko()
     {
-        //TODO guarantee enough data to avoid random test crash
+        $contractsCount=2;
 
-        /* @var $job JobDefinition */
-        $localJob = $this->teacher->getJobDefinitionsWithActiveContracts(AcademicPeriod::current())
-            ->firstOrFail();
-        $jobId = $localJob->id;
-        $contractIds = $this->teacher->contractsAsAClientForJob($localJob)
+        $clientAndJob = $this->createClientWithContracts($contractsCount);
+
+        $this->teacher=$clientAndJob['client'];
+
+        $contractIds = $this->teacher->contractsAsAClientForJob($clientAndJob['job'])
             //->whereNull('success_date')
-            ->take(2)
+            ->take($contractsCount)
             ->get('id')->pluck('id')->toArray();
 
+        $comment = "doit chercher par lui-même 15 minutes avant de demander de l’aide";
 
         $this->visit('/contracts/evaluate/'.(implode(',',$contractIds)))
             ->submitForm(trans('Save evaluation results'), [
-                'contractsEvaluations' => '{"'.$contractIds[0].'":true,"'.$contractIds[1].'":false}',
+                'contracts' => $contractIds,
+                'success-'.$contractIds[0]=>'true',
+                'success-'.$contractIds[1]=>'false',
+                'comment-'.$contractIds[1]=>$comment,
+
             ])
-            ->seePageIs('/dashboard')
-            ->seeText('2 contrats mis à jour');
+            ->seeText($contractsCount.' contrats mis à jour')
+            ->see($comment)
+            ->seePageIs('/dashboard');
 
     }
 

@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
         $seeds = [
             PermissionResetSeeder::class,
             PermissionV1Seeder::class,
+            AcademicPeriodSeeder::class,
             //GroupSeeder::class, => started by UserV1Seeder as it depends on it
             UserV1Seeder::class,
             JobSeeder::class,

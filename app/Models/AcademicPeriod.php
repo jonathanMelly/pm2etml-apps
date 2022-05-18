@@ -49,6 +49,7 @@ class AcademicPeriod extends Model
     use HasFactory, SoftDeletes;
 
     protected $casts = ['start'=>'immutable_date','end'=>'immutable_date'];
+    protected $fillable = ['start','end'];
 
     public function groups():HasMany
     {

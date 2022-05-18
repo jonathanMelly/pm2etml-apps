@@ -8,7 +8,7 @@ use Illuminate\Testing\TestResponse;
 
 beforeEach(function()
 {
-    $this->seed(UserV1Seeder::class);
+    $this->multiseed(\Database\Seeders\AcademicPeriodSeeder::class,UserV1Seeder::class);
 });
 
 test('Prof can see FAQ tool and url shortener', function () {

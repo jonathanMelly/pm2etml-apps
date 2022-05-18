@@ -46,6 +46,8 @@ class GroupMember extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $fillable = ['group_id','user_id'];
+
     public function user():BelongsTo
     {
         return $this->belongsTo(User::class);

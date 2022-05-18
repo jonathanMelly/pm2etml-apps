@@ -9,6 +9,7 @@ use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\JobDefinition;
 use App\Models\User;
+use Database\Seeders\AcademicPeriodSeeder;
 use Database\Seeders\ContractSeeder;
 use Database\Seeders\GroupSeeder;
 use Database\Seeders\JobSeeder;
@@ -35,6 +36,7 @@ class JobDefinitionCreateTest extends BrowserKitTestCase
         $this->afterApplicationCreated(function () {
 
             $this->multiSeed(
+                AcademicPeriodSeeder::class,
                 UserV1Seeder::class,
             //JobSeeder::class,
             //ContractSeeder::class
@@ -55,7 +57,7 @@ class JobDefinitionCreateTest extends BrowserKitTestCase
     public function test_teacher_can_create_a_job()
     {
 
-        $image = $this->faker->image(null, 350, 350);
+        $image = base_path('tests/data/job-1.png');
         $providers = User::role(RoleName::TEACHER)
             //->where('id','>',1)
             ->orderBy('id')
@@ -74,17 +76,19 @@ class JobDefinitionCreateTest extends BrowserKitTestCase
                     'allocated_time'=>25,
                     'one_shot'=>1
                 ],
-                ['file' =>
-                    [
-                    'name' => 'myfile.pdf',
-                    'tmp_name' => $image
-                    ]
+                [
+                    'image_data'=>'job.png',
+                    'image_data-file' =>
+                        [
+                        //'name' => 'job.png',
+                        'tmp_name' => $image
+                        ],
                 ]
             )
-            ->seePageIs('/marketplace')
+            //->seePageIs('/marketplace')
             ->seeText('Emploi "lol" ajouté');
 
-        unlink($image);
+        //unlink($image);
 
         /* @var $createdJob \App\Models\JobDefinition */
         $createdJob = JobDefinition::orderByDesc('id')->first();

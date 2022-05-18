@@ -4,17 +4,12 @@ namespace Tests\Feature;
 
 use App\Constants\RoleName;
 use App\Models\AcademicPeriod;
+use App\Models\Contract;
 use App\Models\Group;
 use App\Models\GroupMember;
+use App\Models\GroupName;
 use App\Models\JobDefinition;
 use App\Models\User;
-use Database\Seeders\ContractSeeder;
-use Database\Seeders\GroupSeeder;
-use Database\Seeders\JobSeeder;
-use Database\Seeders\PermissionV1Seeder;
-use Database\Seeders\UserV1Seeder;
-use Illuminate\Support\Facades\Artisan;
-use Spatie\Permission\Models\Role;
 use Tests\BrowserKitTestCase;
 
 class ClientContractsDeleteFormTest extends BrowserKitTestCase
@@ -23,24 +18,23 @@ class ClientContractsDeleteFormTest extends BrowserKitTestCase
     /* @var $teacher User */
     protected User $teacher;
 
+    protected JobDefinition $job;
+
+    protected int $contractsCount = 2;
+
     /**
      * @before
      * @return void
      */
     public function setUpLocal()
     {
-        $this->afterApplicationCreated(function() {
+        $this->afterApplicationCreated(function () {
+            $clientAndJob = $this->createClientWithContracts($this->contractsCount);
 
-            $this->multiSeed(
-                UserV1Seeder::class,
-                JobSeeder::class,
-                ContractSeeder::class);
+            $this->teacher = $clientAndJob['client'];
+            $this->job = $clientAndJob['job'];
 
-
-            $this->teacher = User::role(RoleName::TEACHER)->firstOrFail();
-            $this->be($this->teacher);
-
-            $this->formPage="/dashboard";
+            $this->formPage = "/dashboard";
         });
     }
 
@@ -51,23 +45,23 @@ class ClientContractsDeleteFormTest extends BrowserKitTestCase
      */
     public function test_teacher_can_delete_two_contracts()
     {
-        /* @var $job JobDefinition */
-        $localJob = $this->teacher->getJobDefinitionsWithActiveContracts(AcademicPeriod::current())
-            ->firstOrFail();
-        $jobId = $localJob->id;
-        $contractIds = $this->teacher->contractsAsAClientForJob($localJob)->take(2)
+
+        $jobId = $this->job->id;
+        $contractIds = $this->teacher->contractsAsAClientForJob($this->job)->take($this->contractsCount)
             ->get('id')->pluck('id')->toArray();
 
-        $contractFields = 'job-'.$jobId.'-contracts';
+        $this->assertEquals($this->contractsCount, sizeof($contractIds));
+
+        $contractFields = 'job-' . $jobId . '-contracts';
 
         $this->visit($this->formPage)
+            ->seeText(trans('Yes'))//on error print the content
             ->submitForm(trans('Yes'), [
                 $contractFields => $contractIds,
                 'job_id' => $jobId
             ])
             ->seePageIs('/dashboard')
-            ->seeText('2 contrats supprimés');
-
+            ->seeText($this->contractsCount . ' contrats supprimés');
 
     }
 

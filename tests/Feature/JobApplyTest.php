@@ -3,6 +3,9 @@
 use App\Models\JobDefinition;
 
 test('Teacher cannot apply for a job', function () {
+
+    $this->seed(\Database\Seeders\AcademicPeriodSeeder::class);
+
     $this->CreateUser(roles: 'prof');
     $prof = $this->CreateUser(false,'prof');
 
