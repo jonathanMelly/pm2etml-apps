@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Constants\FileFormat;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreJobDefinitionRequest extends FormRequest
@@ -29,7 +30,9 @@ class StoreJobDefinitionRequest extends FormRequest
             'description'=>'string|required',
             'required_xp_years'=>'numeric|required',
             'priority'=>'numeric|required',
-            'image_data' => 'image|required|mimes:jpg,png,jpeg,gif,svg,tiff',
+            //These are technical fields, we handle the REQUIRED attribute manually to give a nice message to customer
+            'image_data_b64' => 'string|nullable',
+            'image_data_b64_ext' => 'string|nullable||in:'.FileFormat::getImageFormatsAsCSV(),
             'providers'=>'array'
         ];
     }

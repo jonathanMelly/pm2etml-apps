@@ -57,45 +57,53 @@ class JobDefinitionCreateTest extends BrowserKitTestCase
     public function test_teacher_can_create_a_job()
     {
 
-        $image = base_path('tests/data/job-1.png');
+        $imageRelative = 'tests/data/job-1.png';
+        $imageb64 = 'data:image/png;base64,' . base64_encode(base_path($imageRelative));
         $providers = User::role(RoleName::TEACHER)
             //->where('id','>',1)
             ->orderBy('id')
             ->take(3)
             ->get(['id'])->pluck('id')->toArray();
 
-        $this->visit(route('jobDefinitions.create'))
+        $output = $this->visit(route('jobDefinitions.create'))
             ->submitForm(trans('Publish job offer'),
                 [
-                    'name'=>'lol',
-                    'description'=>'description',
-                    'required_xp_years'=> 1,
-                    'priority'=>0,
-                    'image_data'=>$image,
-                    'providers'=>$providers,
-                    'allocated_time'=>25,
-                    'one_shot'=>1
-                ],
+                    'name' => 'lol',
+                    'description' => 'description',
+                    'required_xp_years' => 1,
+                    'priority' => 0,
+                    'image_data_b64' => $imageb64,
+                    'image_data_b64_ext' => 'png',
+                    'providers' => $providers,
+                    'allocated_time' => 25,
+                    'one_shot' => 1,
+                    'published_date' => today()
+                ]/*, will be useful for attachments ;-)
                 [
                     'image_data'=>'job.png',
                     'image_data-file' =>
                         [
                         //'name' => 'job.png',
-                        'tmp_name' => $image
+                        'tmp_name' => $imageb64
                         ],
-                ]
+                ]*/
             )
-            //->seePageIs('/marketplace')
-            ->seeText('Emploi "lol" ajouté');
+            //
+            ->seeText('Emploi "lol" ajouté')
+            ->seePageIs('/marketplace')
+            ->response->getContent();
+
+        $this->assertMatchesRegularExpression('~/dmz-assets/job-.*\.png~', $output);
+
 
         //unlink($image);
 
         /* @var $createdJob \App\Models\JobDefinition */
         $createdJob = JobDefinition::orderByDesc('id')->first();
-        $this->assertEquals('lol',$createdJob->name);
-        $this->assertEquals('description',$createdJob->description);
-        $this->assertEquals(1,$createdJob->required_xp_years);
-        $this->assertEquals(JobPriority::MANDATORY,$createdJob->priority);
+        $this->assertEquals('lol', $createdJob->name);
+        $this->assertEquals('description', $createdJob->description);
+        $this->assertEquals(1, $createdJob->required_xp_years);
+        $this->assertEquals(JobPriority::MANDATORY, $createdJob->priority);
         $this->assertEquals(25,$createdJob->allocated_time);
         $this->assertEquals(true,$createdJob->one_shot);
         $this->assertEquals($providers,$createdJob->providers()->get()->pluck('id')->toArray());

@@ -6,29 +6,38 @@
     @push('custom-scripts')
         <script>
 
+            {{--
             //(typeof files[i])
             //files[i].name
             //files[i].size
-            function dodrop(event) {
+            --}}
+            function doDropImage(event) {
+
                 let dt = event.dataTransfer;
                 let files = dt.files;
+                let image = files[0];
 
-                return files;
+                imageChange(image);
+
             }
 
-            function doDropImage(event) {
-                let image = dodrop(event)[0];
-
-                if (/\.(jpg|jpeg|gif|svg|png|tiff)$/.test(image.name)) {
+            function imageChange(image)
+            {
+                let imageExtension = new RegExp('({{\App\Constants\FileFormat::getImageFormatsAsRegex()}})', 'gi');
+                if (imageExtension.test(image.name)) {
                     document.querySelector('#image-preview').src = window.URL.createObjectURL(image);
-                    document.querySelector('#image_data').value = image.name;
-                }
+                    //document.querySelector('#image_data').value = image.name;
 
+                    const fr = new FileReader();
+                    fr.onloadend = () => document.querySelector('[name=image_data_b64]').value = fr.result;
+                    fr.readAsDataURL(image);
+
+                    document.querySelector('[name=image_data_b64_ext]').value=image.name.split('.').pop();
+                }
             }
 
-
-            //Idea to keep image...
             {{--
+            //Idea to keep image...
             const input = document.getElementById("selectAvatar");
             const avatar = document.getElementById("avatar");
             const textArea = document.getElementById("textAreaExample");
@@ -170,19 +179,21 @@
                              ondragleave="this.classList.remove('bg-accent')"
                              ondrop="this.classList.remove('bg-accent');event.stopPropagation(); event.preventDefault();doDropImage(event);">
 
-                            <label for="image_data" class="hover:cursor-pointer text-center">
+                            <label for="image" class="hover:cursor-pointer text-center">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
                                 <strong>{{__('Choose a file')}}</strong> <span>{{__('or drag it here')}}</span>.
                             </label>
-                            <input class="hidden" id="image_data" name="image_data" type="file" accept="image/*"
-                                   onchange="document.querySelector('#image-preview').src=window.URL.createObjectURL(event.target.files[0]);"
-                                   value="{{$job->image}}"
+                            {{-- Will be used on manually clicking, thus --}}
+                            <input class="hidden" id="image" type="file" accept="image/*"
+                                   onchange="imageChange(event.target.files[0]);"
                             >
+                            <input type="hidden" name="image_data_b64">
+                            <input type="hidden" name="image_data_b64_ext">
 
                             <img id="image-preview" class="min-h-[7rem] max-h-min"
                                  src="{{$editMode?dmzImgUrl($job->image):''}}">
-                            {{old('image_data')}}
-                            @error('image_data')
+
+                            @error('image')
                             <p class="text-error text-xs italic mt-1">{{ $message }}</p>
                             @enderror
                         </div>
@@ -265,7 +276,7 @@
                 <div class="grid h-20 flex-grow card rounded-box justify-items-start content-center">
                     <button name="createOrSave" class="btn btn-success btn-outline my-2"
                             onclick="document.querySelector('#published_date').value='{{now()}}';
-                                document.querySelector('#create-update-form').submit()"
+                                this.closest('form').submit()"
                             type="button">{{__($editMode?'Save modifications':'Publish job offer')}}</button>
                 </div>
             </div>
