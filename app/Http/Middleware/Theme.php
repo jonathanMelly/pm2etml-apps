@@ -43,7 +43,7 @@ class Theme
         //no theme or them switched asked
         if(!$session->exists('theme') || $session->get('theme')!==$specificTheme)
         {
-            $session->put('theme',$specificTheme ?? $this->timestampToTheme(now()));
+            $session->put('theme',$specificTheme ?? self::timestampToTheme(now()));
         }
 
         if($cookie!=null)
@@ -54,7 +54,7 @@ class Theme
 
     }
 
-    private function timestampToTheme(\DateTime $dateTime): string{
+    public static function timestampToTheme(\DateTime $dateTime): string{
         $dayOfTheYear = $dateTime->format('z');
         $h24=$dateTime->format('G');
         $day = $dateTime->format('d');

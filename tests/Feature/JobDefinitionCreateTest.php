@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Constants\FileFormat;
 use App\Constants\RoleName;
 use App\Enums\JobPriority;
 use App\Models\AcademicPeriod;
@@ -58,7 +59,7 @@ class JobDefinitionCreateTest extends BrowserKitTestCase
     {
 
         $imageRelative = 'tests/data/job-1.png';
-        $imageb64 = 'data:image/png;base64,' . base64_encode(base_path($imageRelative));
+        $imageb64 ='data:image/png;base64,' . base64_encode(file_get_contents(base_path($imageRelative)));
         $providers = User::role(RoleName::TEACHER)
             //->where('id','>',1)
             ->orderBy('id')
@@ -73,7 +74,6 @@ class JobDefinitionCreateTest extends BrowserKitTestCase
                     'required_xp_years' => 1,
                     'priority' => 0,
                     'image_data_b64' => $imageb64,
-                    'image_data_b64_ext' => 'png',
                     'providers' => $providers,
                     'allocated_time' => 25,
                     'one_shot' => 1,
@@ -93,7 +93,7 @@ class JobDefinitionCreateTest extends BrowserKitTestCase
             ->seePageIs('/marketplace')
             ->response->getContent();
 
-        $this->assertMatchesRegularExpression('~/dmz-assets/job-.*\.png~', $output);
+        $this->assertMatchesRegularExpression('~/dmz-assets/job-.*\.'.FileFormat::JOB_IMAGE_TARGET_FORMAT.'~', $output);
 
 
         //unlink($image);
@@ -122,6 +122,10 @@ class JobDefinitionCreateTest extends BrowserKitTestCase
             ->seePageIs('/jobDefinitions/create')
             ->seeText('erreur');
 
+    }
+
+    function base64url_encode($s) {
+        return str_replace(array('+', '/'), array('-', '_'), base64_encode($s));
     }
 
 }

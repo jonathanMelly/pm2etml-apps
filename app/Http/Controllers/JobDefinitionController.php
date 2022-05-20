@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Constants\FileFormat;
 use App\Constants\RoleName;
-use App\Models\Contract;
 use App\Models\JobDefinition;
 use App\Http\Requests\StoreJobDefinitionRequest;
 use App\Http\Requests\UpdateJobDefinitionRequest;
 use App\Models\User;
+use Intervention\Image\Facades\Image;
 
 
 class JobDefinitionController extends Controller
@@ -68,25 +68,25 @@ class JobDefinitionController extends Controller
         //Use mass assignment ;-)
         $newJob = JobDefinition::make($request->all());
 
-
         //image handling (custom error message to hide technical fields under image field)
-        if ($request->isNotFilled('image_data_b64') || $request->isNotFilled('image_data_b64_ext')) {
+        if ($request->isNotFilled('image_data_b64')) {
             return back()
                 ->withErrors(['image' => __('validation.required', ['attribute' => 'image'])])->withInput();
         }
-        $image = $request->image_data_b64;
+        $imageDataB64 = $request->image_data_b64;
         //Double-check extensions on base64 part
-        if (!preg_match('~^data:[^/]+/(' . FileFormat::getImageFormatsAsRegex() . ');base64,~', $image, $matches)) {
+        if (!preg_match('~^data:[^/]+/(' . FileFormat::getImageFormatsAsRegex() . ');base64,~', $imageDataB64, $matches)) {
             return back()
                 ->withErrors(['image' => __('Invalid image data, base64 expected with following extensions: ' .
                     FileFormat::getImageFormatsAsCSV())])->withInput();
         }
-        //$extension = $matches[1];
-        //Extension of b64 string is not very accurate...
-        $imageName = 'job-' . uniqid() . random_int(1, 2456) . '.' . $request->image_data_b64_ext;
+
+        $imageName = 'job-' . uniqid() . random_int(1, 2456) . '.'.FileFormat::JOB_IMAGE_TARGET_FORMAT;
 
         //Store image
-        file_put_contents(dmzStoragePath($imageName), file_get_contents($image));
+        Image::make($imageDataB64)
+            ->fit(FileFormat::JOB_IMAGE_WIDTH, FileFormat::JOB_IMAGE_HEIGHT)
+            ->save(dmzStoragePath($imageName), null, FileFormat::JOB_IMAGE_TARGET_FORMAT);
 
         $newJob->image = $imageName;
 
@@ -96,7 +96,6 @@ class JobDefinitionController extends Controller
         //Handle relations (id must have been attributed)
         $providers = User::role(RoleName::TEACHER)->whereIn('id', $request->providers)->pluck('id');
         $newJob->providers()->sync($providers);
-
 
         //Yeah, we made it ;-)
         return redirect(route('marketplace'))

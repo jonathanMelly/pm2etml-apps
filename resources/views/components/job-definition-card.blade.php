@@ -35,8 +35,9 @@
     }
     else
     {
+        $mask = \App\Http\Middleware\Theme::timestampToTheme(now()->toDateTime())=='valentine'?'mask mask-heart':'rounded-md';
         $image='<figure class="mt-1">
-        <img class="object-scale-down" src="'.dmzImgUrl($job->image).'" alt="'. $job->name.'" />
+        <img class="object-scale-down '.$mask.'" src="'.dmzImgUrl($job->image).'" alt="'. $job->name.'" />
         </figure>';
     }
 

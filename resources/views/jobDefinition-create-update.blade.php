@@ -26,13 +26,11 @@
                 let imageExtension = new RegExp('({{\App\Constants\FileFormat::getImageFormatsAsRegex()}})', 'gi');
                 if (imageExtension.test(image.name)) {
                     document.querySelector('#image-preview').src = window.URL.createObjectURL(image);
-                    //document.querySelector('#image_data').value = image.name;
 
                     const fr = new FileReader();
                     fr.onloadend = () => document.querySelector('[name=image_data_b64]').value = fr.result;
                     fr.readAsDataURL(image);
 
-                    document.querySelector('[name=image_data_b64_ext]').value=image.name.split('.').pop();
                 }
             }
 
@@ -183,12 +181,16 @@
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
                                 <strong>{{__('Choose a file')}}</strong> <span>{{__('or drag it here')}}</span>.
                             </label>
+                            <br />
+                            <i class="text-xs text-warning-content bg-warning bg-opacity-50">({{__('Recommended size').': '.
+                                        \App\Constants\FileFormat::JOB_IMAGE_WIDTH.'x'.
+                                        \App\Constants\FileFormat::JOB_IMAGE_HEIGHT}}px)
+                            </i>
                             {{-- Will be used on manually clicking, thus --}}
                             <input class="hidden" id="image" type="file" accept="image/*"
                                    onchange="imageChange(event.target.files[0]);"
                             >
                             <input type="hidden" name="image_data_b64">
-                            <input type="hidden" name="image_data_b64_ext">
 
                             <img id="image-preview" class="min-h-[7rem] max-h-min"
                                  src="{{$editMode?dmzImgUrl($job->image):''}}">

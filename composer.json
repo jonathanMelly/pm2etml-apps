@@ -9,6 +9,7 @@
         "fakerphp/faker": "^1.9.1",
         "fruitcake/laravel-cors": "^2.0.5",
         "guzzlehttp/guzzle": "^7.2",
+        "intervention/image": "^2.7",
         "kirschbaum-development/eloquent-power-joins": "^2.6",
         "laravel/framework": "^9.0",
         "laravel/sanctum": "^2.14",

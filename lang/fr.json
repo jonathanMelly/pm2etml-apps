@@ -255,6 +255,7 @@
     "Job \":job\" deleted": "Emploi \":job\" supprimé",
     "Job \":job\" created": "Emploi \":job\" ajouté",
     "Failed jobs must have a clue for improvement": "Un échec doit proposer des pistes d’amélioration",
-    "What must be improved": "Ce qui doit être amélioré"
+    "What must be improved": "Ce qui doit être amélioré",
+    "Recommended size": "Taille recommandée"
 
 }

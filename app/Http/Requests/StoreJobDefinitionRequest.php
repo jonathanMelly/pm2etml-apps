@@ -32,7 +32,6 @@ class StoreJobDefinitionRequest extends FormRequest
             'priority'=>'numeric|required',
             //These are technical fields, we handle the REQUIRED attribute manually to give a nice message to customer
             'image_data_b64' => 'string|nullable',
-            'image_data_b64_ext' => 'string|nullable||in:'.FileFormat::getImageFormatsAsCSV(),
             'providers'=>'array'
         ];
     }
