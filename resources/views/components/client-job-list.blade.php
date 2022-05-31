@@ -93,7 +93,7 @@
                                 <i class="fa-solid fa-project-diagram fa-align-center mr-2"></i> <strong> {{__('Project')}}:</strong>
                             </div>
                             <div class="w-3/4">
-                                {{$job->name}}
+                                {{$job->title}}
                             </div>
                         </div>
                         </p>

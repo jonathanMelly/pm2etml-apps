@@ -9,7 +9,7 @@
         <div class="flex items-center space-x-3">
             <div class="avatar">
                 <div class="mask mask-squircle w-12 h-12">
-                    <img src="{{dmzImgUrl($contract->jobDefinition->image)}}" alt="{{$contract->jobDefinition->name}}" />
+                    <img src="{{route('dmz-asset',['file'=>$contract->jobDefinition->image->storage_path])}}" alt="{{$contract->jobDefinition->title}}" />
                 </div>
             </div>
             <div>
@@ -17,7 +17,7 @@
                     @if(session('contractId')==$contract->id)
                     <span class="indicator-item indicator-start badge badge-primary -mt-2 text-xs">{{__('new')}}</span>
                     @endif
-                    <div class="lg:font-bold lg:text-base text-xs">{{Str::words($contract->jobDefinition->name,3)}}</div>
+                    <div class="lg:font-bold lg:text-base text-xs">{{Str::words($contract->jobDefinition->title,3)}}</div>
                 </div>
             </div>
         </div>

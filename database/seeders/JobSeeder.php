@@ -2,12 +2,16 @@
 
 namespace Database\Seeders;
 
+use App\Constants\MorphTargets;
 use App\Constants\RoleName;
+use App\Models\Attachment;
 use App\Models\JobDefinition;
+use App\Models\JobDefinitionMainImageAttachment;
 use App\Models\User;
 use Faker\Generator;
 use Illuminate\Container\Container;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Storage;
 
 class JobSeeder extends Seeder
 {
@@ -25,28 +29,40 @@ class JobSeeder extends Seeder
 
         JobDefinition::factory()->afterMaking(
             function (JobDefinition $job) use ($faker) {
+                //
+        })->afterCreating(
+            function (JobDefinition $job) use($faker,$total) {
+
+
                 if(app()->environment('testing'))
                 {
-                    $imgName = $faker->imageUrl(350, 350);
+                    $imgName=$img= 'empty-test';
+                    $size=strlen($img);
                 }
                 else
                 {
-                    $img = $faker->image(dmzStoragePath(), 350, 350);
+                    $img = $faker->image(uploadDisk()->path(attachmentPathInUploadDisk(temporary: true)), 350, 350);
                     //bug with curl an via.placeholder...
                     if(!$img)
                     {
                         $imgName='job-'.$faker->numberBetween(1,2).'.png';
+                        $size=strlen($imgName);
                     }
                     else
                     {
                         $imgName = basename($img);
+                        $size = filesize($img);
                     }
 
                 }
-
-                $job->image=$imgName;
-        })->afterCreating(
-            function (JobDefinition $job) use($faker,$total) {
+                //Do it manually to avoid filesystem pressure...
+                JobDefinitionMainImageAttachment::create([
+                    'name' => 'ori-'.$imgName,
+                    'storage_path' => attachmentPathInUploadDisk($imgName,),
+                    'attachable_id' => $job->id,
+                    'attachable_type' => MorphTargets::MORPH2_JOB_DEFINITION,
+                    'size' => $size
+                ]);
 
                 $clientCounts = 10;
 

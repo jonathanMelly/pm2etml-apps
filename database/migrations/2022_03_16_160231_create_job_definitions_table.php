@@ -20,7 +20,7 @@ return new class extends Migration
         Schema::create($this->table(), function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->string('name');
+            $table->string('title');
             $desc = $table->text('description');
 
             //Does not work with sqlite in memory test db
@@ -38,8 +38,11 @@ return new class extends Migration
             $table->unsignedInteger('allocated_time');
             $table->unsignedTinyInteger('allocated_time_unit')->default(\App\Enums\RequiredTimeUnit::PERIOD->value);
 
-            //stores image path
-            $table->string('image');
+            //remember that attachment is STI (single table inheritance) which is attachments
+            /*$table
+                ->foreignId('image_attachment_id')
+                ->constrained(tbl(\App\Models\Attachment::class))
+                ->cascadeOnUpdate()->cascadeOnDelete();*/
 
             $table->boolean('one_shot')->default(false);
 

@@ -2,26 +2,20 @@
 
 namespace Tests\Feature;
 
-use App\Constants\FileFormat;
 use App\Constants\RoleName;
 use App\Enums\JobPriority;
-use App\Models\AcademicPeriod;
-use App\Models\Group;
-use App\Models\GroupMember;
 use App\Models\JobDefinition;
+use App\Models\JobDefinitionDocAttachment;
+use App\Models\JobDefinitionMainImageAttachment;
 use App\Models\User;
 use Database\Seeders\AcademicPeriodSeeder;
-use Database\Seeders\ContractSeeder;
-use Database\Seeders\GroupSeeder;
-use Database\Seeders\JobSeeder;
-use Database\Seeders\PermissionV1Seeder;
 use Database\Seeders\UserV1Seeder;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Facades\Artisan;
-use Spatie\Permission\Models\Role;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\BrowserKitTestCase;
 
-class JobDefinitionCreateTest extends BrowserKitTestCase
+class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
 {
     use WithFaker;
 
@@ -39,8 +33,6 @@ class JobDefinitionCreateTest extends BrowserKitTestCase
             $this->multiSeed(
                 AcademicPeriodSeeder::class,
                 UserV1Seeder::class,
-            //JobSeeder::class,
-            //ContractSeeder::class
             );
 
 
@@ -57,28 +49,34 @@ class JobDefinitionCreateTest extends BrowserKitTestCase
      */
     public function test_teacher_can_create_a_job()
     {
-
-        $imageRelative = 'tests/data/job-1.png';
-        $imageb64 ='data:image/png;base64,' . base64_encode(file_get_contents(base_path($imageRelative)));
         $providers = User::role(RoleName::TEACHER)
-            //->where('id','>',1)
             ->orderBy('id')
             ->take(3)
             ->get(['id'])->pluck('id')->toArray();
 
+        //Mimic Dropzone upload. BrowserKit needs call('post') instead of post to correctly pass file...
+        $imageId = $this->call('POST',route('job-definition-main-image-attachment.store'),files: [
+            'file' => [UploadedFile::fake()->image('test.png',499,147)],
+        ])->json('id');
+
+        $attachmentId = $this->call('POST',route('job-definition-doc-attachment.store'), files: [
+            'file' => [UploadedFile::fake()->createWithContent('test.zip','not a real zip')],
+        ])->json('id');
+
         $output = $this->visit(route('jobDefinitions.create'))
             ->submitForm(trans('Publish job offer'),
                 [
-                    'name' => 'lol',
+                    'title' => 'lol',
                     'description' => 'description',
                     'required_xp_years' => 1,
                     'priority' => 0,
-                    'image_data_b64' => $imageb64,
+                    'image' => $imageId,
                     'providers' => $providers,
                     'allocated_time' => 25,
                     'one_shot' => 1,
-                    'published_date' => today()
-                ]/*, will be useful for attachments ;-)
+                    'published_date' => today(),
+                    'other_attachments' => json_encode(['test.zip'=>$attachmentId]),
+                ]/*, kept as documentation if needed somewhere else
                 [
                     'image_data'=>'job.png',
                     'image_data-file' =>
@@ -91,22 +89,56 @@ class JobDefinitionCreateTest extends BrowserKitTestCase
             //
             ->seeText('Emploi "lol" ajouté')
             ->seePageIs('/marketplace')
+            ->seeElement('img', ['src' => route('dmz-asset',['file'=>JobDefinitionMainImageAttachment::findOrFail($imageId)->storage_path])])
             ->response->getContent();
-
-        $this->assertMatchesRegularExpression('~/dmz-assets/job-.*\.'.FileFormat::JOB_IMAGE_TARGET_FORMAT.'~', $output);
 
 
         //unlink($image);
 
         /* @var $createdJob \App\Models\JobDefinition */
         $createdJob = JobDefinition::orderByDesc('id')->first();
-        $this->assertEquals('lol', $createdJob->name);
+        $this->assertEquals('lol', $createdJob->title);
         $this->assertEquals('description', $createdJob->description);
         $this->assertEquals(1, $createdJob->required_xp_years);
         $this->assertEquals(JobPriority::MANDATORY, $createdJob->priority);
         $this->assertEquals(25,$createdJob->allocated_time);
         $this->assertEquals(true,$createdJob->one_shot);
         $this->assertEquals($providers,$createdJob->providers()->get()->pluck('id')->toArray());
+        $this->assertEquals($createdJob->id,JobDefinitionDocAttachment::findOrFail($attachmentId)->jobDefinition->id);
+        $this->assertEquals($imageId,$createdJob->image->id);
+
+    }
+
+    //TODO add scenarios with attachments, images , ...
+    public function test_teacher_can_update_a_job()
+    {
+
+        $this->createClientAndJob();
+
+        $response = $this->visit(route('jobDefinitions.edit',['jobDefinition'=>1]))
+            ->submitForm(trans('Save modifications'),
+                [
+                    'title'=>'update-title',
+                    'description' => 'update-desc',
+                    'required_xp_years' => 2,
+                    'priority' => 2,
+                    'image' => 1,
+                    'providers' => [1],
+                    'allocated_time' => 100,
+                    'published_date' => today(),
+                    'other_attachments' => json_encode('{}'),
+                ]
+            );
+
+        $updatedJob = JobDefinition::firstOrFail();
+
+        $response
+            ->seePageIs('/marketplace')
+            ->seeText('Emploi "'.$updatedJob->title.'" mis à jour');
+
+        $this->assertEquals('update-title',$updatedJob->title);
+        $this->assertEquals('update-desc',$updatedJob->description);
+        //TODO more checks
 
     }
 
@@ -116,7 +148,7 @@ class JobDefinitionCreateTest extends BrowserKitTestCase
         $this->visit(route('jobDefinitions.create'))
             ->submitForm(trans('Publish job offer'),
                 [
-                    'name'=>'lol',
+                    'title'=>'lol',
                 ]
             )
             ->seePageIs('/jobDefinitions/create')

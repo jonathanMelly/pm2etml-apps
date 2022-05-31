@@ -46,7 +46,7 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
     {
         $contractsCount=2;
 
-        $clientAndJob = $this->createClientWithContracts($contractsCount);
+        $clientAndJob = $this->createClientAndJob($contractsCount);
 
         $this->teacher=$clientAndJob['client'];
 

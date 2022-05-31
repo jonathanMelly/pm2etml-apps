@@ -1,72 +1,242 @@
 @php
     $editMode = $job->exists;
     $user = auth()->user();
+    $dzI18N='dictDefaultMessage  : "'.__('Choose a file').' '.__('or drag it here').'",
+        dictFallbackMessage : "'.__("Your browser does not support drag'n'drop file uploads.").'",
+        dictFallbackText    : "'.("Please use the fallback form below to upload your files like in the olden daysaaa.").'",
+        dictFileTooBig      : "'.__("File is too big ({{filesize}} MiB). Max filesize: {{maxFilesize}} MiB.").'",
+        dictInvalidFileType : "'.__("You can't upload files of this type.").'",
+        dictResponseError   : "'.__("Server responded with statusCode code.").'",
+        dictCancelUpload    : "'.__("Cancel upload").'",
+        dictCancelUploadConfirmation : "'.__("Are you sure you want to cancel this upload?").'",
+        dictRemoveFile       : "'.__("Remove file").'",
+        dictMaxFilesExceeded : "'.__("You can not upload any more files.").'"
+        ';
 @endphp
 <x-app-layout>
     @push('custom-scripts')
+
+        <link rel="stylesheet" href="{{ asset('css/dropzone.css') }}">
+        <style>
+            {{-- Fix error tooltip position --}}
+            .dropzone .dz-preview .dz-error-message {
+                top: 150px!important;
+            }
+
+            {{-- Disable on max reached to avoid bad sides effects... --}}
+            .dz-max-files-reached {
+                pointer-events: none;
+                cursor: default;
+            }
+            .dz-remove {
+                pointer-events: all; cursor: default;
+            }
+
+            .dropzone .dz-preview.dz-image-preview{background : 0;}
+
+        </style>
+        <script src="{{ asset('js/dropzone-min.js') }}" type="module" defer></script>
+
         <script>
+            {{-- WARNING: the main idea is : what has already been saved is not deleted directly (waits for save button)... --}}
+            {{-- Reloads from old if any errors happened (and happen again), we keep what user asked until then... --}}
+            let otherAttachments= JSON.parse('{!!old('other_attachments','{}')!!}');
+            let anyAttachmentsToDelete=JSON.parse("{{old('any_attachment_to_delete','[]')}}");
+            let image = '{{old('image',$editMode?$job->image->id:'')}}';{{-- always send image id... --}}
 
-            {{--
-            //(typeof files[i])
-            //files[i].name
-            //files[i].size
-            --}}
-            function doDropImage(event) {
-
-                let dt = event.dataTransfer;
-                let files = dt.files;
-                let image = files[0];
-
-                imageChange(image);
-
-            }
-
-            function imageChange(image)
+            function updateFormFields()
             {
-                let imageExtension = new RegExp('({{\App\Constants\FileFormat::getImageFormatsAsRegex()}})', 'gi');
-                if (imageExtension.test(image.name)) {
-                    document.querySelector('#image-preview').src = window.URL.createObjectURL(image);
+                document.querySelector('[name=other_attachments]').value=
+                    JSON.stringify(otherAttachments);
 
-                    const fr = new FileReader();
-                    fr.onloadend = () => document.querySelector('[name=image_data_b64]').value = fr.result;
-                    fr.readAsDataURL(image);
+                document.querySelector('[name=image]').value=image;
 
-                }
+                document.querySelector('[name=any_attachment_to_delete]').value=
+                    JSON.stringify(anyAttachmentsToDelete);
             }
 
-            {{--
-            //Idea to keep image...
-            const input = document.getElementById("selectAvatar");
-            const avatar = document.getElementById("avatar");
-            const textArea = document.getElementById("textAreaExample");
+            let imageZone;
+            let attachmentsZone;
 
-            const convertBase64 = (file) => {
-                return new Promise((resolve, reject) => {
-                    const fileReader = new FileReader();
-                    fileReader.readAsDataURL(file);
+            window.addEventListener('DOMContentLoaded', (event) => {
 
-                    fileReader.onload = () => {
-                        resolve(fileReader.result);
-                    };
+                {{-- Update data regarding optional old values--}}
+                updateFormFields();
 
-                    fileReader.onerror = (error) => {
-                        reject(error);
-                    };
+                attachmentsZone = new Dropzone("#attachments", {
+                    url:"{{route('job-definition-doc-attachment.store')}}",
+                    maxFilesize: {{\App\Constants\FileFormat::JOB_ATTACHMENT_MAX_SIZE_IN_MO}},
+                    acceptedFiles: "{{\App\Constants\FileFormat::getFileFormatsAsCSV(\App\Constants\FileFormat::JOB_DOC_ATTACHMENT_ALLOWED_EXTENSIONS,true)}}",
+                    uploadMultiple: false,
+                    parallelUploads: 5,
+                    maxFiles: {{\App\Constants\FileFormat::JOB_ATTACHMENT_MAX_COUNT}},
+                    headers:{
+                        'x-csrf-token':'{{csrf_token()}}'
+                    },
+                    addRemoveLinks: true,
+                    {!! $dzI18N !!},
+
+                    init: function () {
+                        this.on("addedfile", function(file) {
+                            {{--
+                            //TODO hack CSS to put nice image + filename/size...
+                            //This is fun but needs some CSS tricks to show file name + size
+                            //as the thumbnail hides them by default...
+                            if (!file.type.match(/image.*/)) {
+
+                                //var ext = file.name.split('.').pop();
+
+                                /*
+                                let type = file.type;
+
+                                if(type.includes('pdf'))
+                                {
+                                    this.emit("thumbnail", file, "/img/pdf.svg");
+                                }
+                                else if(type.includes('excel') || type.includes('calc'))
+                                {
+                                    this.emit("thumbnail", file, "/img/excel.svg");
+                                }
+                                else if(type.includes('word'))
+                                {
+                                    this.emit("thumbnail", file, "/img/word.svg");
+                                }
+                                else
+                                {
+                                    this.emit("thumbnail", file, "/img/file.svg");
+                                }
+
+
+                            }
+                            --}}
+                        });
+
+                        this.on("removedfile", function(file) {
+                            {{-- Save delete info for editController if user confirms it...
+                                CorrelationId means that it already hase been saved before for that job definition...
+                             --}}
+                            if(file.hasOwnProperty('correlation_id'))
+                            {
+                                {{--
+                                User wants to remove previous image but has not yet saved changes (button click)...
+                                We do not delete the attachment now and wait for editController to do it
+                                (which let user change his mind without loosing anything)
+                                --}}
+                                anyAttachmentsToDelete.push(file.correlation_id);
+                                Object.entries(otherAttachments).forEach(function([filename, id]){
+                                    if(id==file.correlation_id)
+                                    {
+                                        delete otherAttachments[filename];
+                                    }
+                                });
+                            }
+                            else if(otherAttachments.hasOwnProperty(file.name))
+                            {
+                                axios.delete('{{url('attachments')}}/'+otherAttachments[file.name]);
+                                delete otherAttachments[file.name];
+                            }
+
+                            updateFormFields();
+                        });
+
+                        this.on("success", function (file, response) {
+                            otherAttachments[file.name]=response['id'];
+                            updateFormFields();
+                        });
+                        this.on("error", function (file, response) {
+                            if(typeof response =="object")//comes from xhr or local stuff ?
+                            {
+                                file.previewElement.
+                                    querySelectorAll('.dz-error-message span')[0].
+                                        textContent = response['error']??response['message']??JSON.stringify(response);
+                            }
+
+                        });
+
+                        {{-- Show pending/current ATTACHMENTS --}}
+                        @foreach($pendingAndOrCurrentAttachments as $docAttachment)
+                            let mockFile{{$loop->index}} = {
+                                name: "{{$docAttachment->name}}",
+                                size: {{$docAttachment->size}},
+                                correlation_id:{{$docAttachment->id}}
+                            };
+                            this.emit("addedfile", mockFile{{$loop->index}});
+                            this.emit("complete", mockFile{{$loop->index}});
+
+                            //this.options.maxFiles--;
+                        @endforeach
+
+                    }
                 });
-            };
 
-            const uploadImage = async (event) => {
-                const file = event.target.files[0];
-                const base64 = await convertBase64(file);
-                avatar.src = base64;
-                textArea.innerText = base64;
-            };
+                imageZone = new Dropzone("#image-dz", {
+                    url:"{{route('job-definition-main-image-attachment.store')}}",
+                    maxFilesize: {{\App\Constants\FileFormat::JOB_ATTACHMENT_MAX_SIZE_IN_MO}},
+                    acceptedFiles: "{{\App\Constants\FileFormat::getImageFormatsAsCSV(true)}}",
+                    uploadMultiple: false,
+                    maxFiles: 1,
+                    headers:{
+                        'x-csrf-token':'{{csrf_token()}}'
+                    },
+                    addRemoveLinks: true,
+                    {!! $dzI18N !!},
 
-            input.addEventListener("change", (e) => {
-                uploadImage(e);
+                    init: function () {
+                        this.on("removedfile", function(file) {
+                            if (image != '') {
+                                axios.delete('{{url('attachments')}}/' + image);
+                                image = '';
+                            }
+                            else if(file.hasOwnProperty('correlation_id'))
+                            {
+                                {{--
+                                User wants to remove previous image but has not yet saved changes (button click)...
+                                We do not delete the attachment now and wait for editController to do it
+                                (which let user change his mind without loosing anything)
+                                --}}
+                                anyAttachmentsToDelete.push(file.correlation_id);
+                            }
+                            updateFormFields();
+                        });
+
+                        this.on("success", function (file, response) {
+                            image=response['id'];
+                            updateFormFields();
+                        });
+
+                        this.on("error", function (file, response) {
+                            if(typeof response =="object")//comes from xhr or local stuff ?
+                            {
+                                file.previewElement.
+                                querySelectorAll('.dz-error-message span')[0].
+                                    textContent = response['error']??response['message']??JSON.stringify(response);
+                            }
+
+                        });
+
+                        {{-- Show pending/current IMAGE --}}
+                        @php
+                        //old has priority (=change asked)
+
+                        @endphp
+
+                        @if($pendingOrCurrentImage!=null)
+                            let pendingOrCurrentImage = {
+                                name: "{{$pendingOrCurrentImage->name}}",
+                                size: {{$pendingOrCurrentImage->size}},
+                                correlation_id:{{$pendingOrCurrentImage->id}}
+                            };
+
+                            this.displayExistingFile(pendingOrCurrentImage, "{{attachmentUri($pendingOrCurrentImage)}}");
+                            {{-- Only 1 imae file allowed... --}}
+                            document.querySelector('#image-dz').classList.add('dz-max-files-reached');
+                        @endif
+
+                    }
+                });
+
             });
-             */
-        --}}
+
         </script>
     @endpush
 
@@ -105,11 +275,11 @@
                     <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0">
                         <label class="block uppercase tracking-wide text-base-content text-xs font-bold mb-2"
                                for="name">
-                            {{__('Name')}}
+                            {{__('Title')}}
                         </label>
-                        <input class="input w-full @error('name') border-error @enderror" id="name" name="name"
+                        <input class="input w-full @error('name') border-error @enderror" id="title" name="title"
                                type="text" placeholder="PVMaker : Générateur de procès-verbal"
-                               value="{{old('name',$job->name)}}">
+                               value="{{old('name',$job->title)}}">
                         @error('name')
                         <p class="text-error text-xs italic mt-1">{{ $message }}</p>
                         @enderror
@@ -165,40 +335,21 @@
                         @enderror
                     </div>
                     <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0">
+                        <input type="hidden" name="image">
                         <label class="block uppercase tracking-wide text-base-content text-xs font-bold mb-2"
-                               for="image">
+                               for="image-dz">
                             {{__('Image')}}
                         </label>
+                        <div class="dropzone dropzone-file-area dropzone-img !rounded-box !border-base-300 !border-2 !border-dashed !min-h-[15rem] !max-h-min"
+                             id="image-dz" style="text-align: center">
+                            <div class="dz-message" data-dz-message><i class="fa-solid fa-cloud-arrow-up"></i>
+                                <strong>{{__('Choose one file')}} (image)</strong> <span>{{__('or drag it here')}}</span>.
+                            </div>
 
-                        <div id="image-drop"
-                             class="p-2 rounded-box border-base-300 border-2 border-dashed min-h-[15rem] max-h-min"
-                             ondragenter="this.classList.add('bg-accent');event.stopPropagation(); event.preventDefault();"
-                             ondragover="event.stopPropagation(); event.preventDefault();"
-                             ondragleave="this.classList.remove('bg-accent')"
-                             ondrop="this.classList.remove('bg-accent');event.stopPropagation(); event.preventDefault();doDropImage(event);">
-
-                            <label for="image" class="hover:cursor-pointer text-center">
-                                <i class="fa-solid fa-cloud-arrow-up"></i>
-                                <strong>{{__('Choose a file')}}</strong> <span>{{__('or drag it here')}}</span>.
-                            </label>
-                            <br />
-                            <i class="text-xs text-warning-content bg-warning bg-opacity-50">({{__('Recommended size').': '.
-                                        \App\Constants\FileFormat::JOB_IMAGE_WIDTH.'x'.
-                                        \App\Constants\FileFormat::JOB_IMAGE_HEIGHT}}px)
-                            </i>
-                            {{-- Will be used on manually clicking, thus --}}
-                            <input class="hidden" id="image" type="file" accept="image/*"
-                                   onchange="imageChange(event.target.files[0]);"
-                            >
-                            <input type="hidden" name="image_data_b64">
-
-                            <img id="image-preview" class="min-h-[7rem] max-h-min"
-                                 src="{{$editMode?dmzImgUrl($job->image):''}}">
-
-                            @error('image')
-                            <p class="text-error text-xs italic mt-1">{{ $message }}</p>
-                            @enderror
                         </div>
+                        @error('image')
+                            <p class="text-error text-xs italic mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
                     <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0">
                         <label class="block uppercase tracking-wide text-base-content text-xs font-bold mb-2"
@@ -247,13 +398,33 @@
                             {{__('One shot')}}
                         </label>
                         <input @checked(old('one_shot',$job->one_shot)) id="one_shot" name="one_shot" type="checkbox"
-                               class="toggle" value="1"/>
+                               class="toggle" value="1" />
                         <p class="text-accent-content text-sm italic">
                             {{__('One shot means that as soon as a worker applies for the job, the latter won’t be available to others anymore')}}
                         </p>
                     </div>
 
                 </div>
+
+                {{-- ATTACHMENTS --}}
+                <input type="hidden" name="other_attachments" />
+                <input type="hidden" name="any_attachment_to_delete" />
+                <div class="flex flex-col -mx-3 mb-6">
+                    <div class="w-full px-3 mb-6 md:mb-0">
+                        <label class="block uppercase tracking-wide text-base-content text-xs font-bold mb-2"
+                               for="attachments">
+                            {{__('Attachments')}} ({{__('Specifications')}}, etc.)
+                        </label>
+                        <div class="dropzone dropzone-file-area !rounded-box !border-base-300 !border-2 !border-dashed" id="attachments">
+                            <div class="dz-message" data-dz-message><i class="fa-solid fa-cloud-arrow-up"></i>
+                                <strong>{{__('Choose one or more file(s)')}} (pdf, excel, word)</strong> <span>{{__('or drag them here')}}</span>.
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
             </div>
 
             {{-- Submit buttons --}}
@@ -277,9 +448,13 @@
                 <div class="divider divider-horizontal">{{__($editMode?'':'OR')}}</div>
                 <div class="grid h-20 flex-grow card rounded-box justify-items-start content-center">
                     <button name="createOrSave" class="btn btn-success btn-outline my-2"
-                            onclick="document.querySelector('#published_date').value='{{now()}}';
+                            onclick="
+                                document.querySelector('#published_date').value='{{now()}}';
                                 this.closest('form').submit()"
                             type="button">{{__($editMode?'Save modifications':'Publish job offer')}}</button>
+                    {{-- Cancel not shown to avoid any bad click... if user closes the window without saving, changes are lost...
+                    <a href  class="btn btn-error btn-outline my-2">{{__($editMode?'Cancel modifications':'Cancel job offer')}}</a>
+                     --}}
                 </div>
             </div>
         </div>

@@ -3,11 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Constants\FileFormat;
+use App\Constants\MorphTargets;
 use App\Constants\RoleName;
+use App\Models\Attachment;
 use App\Models\JobDefinition;
-use App\Http\Requests\StoreJobDefinitionRequest;
+use App\Http\Requests\StoreUpdateJobDefinitionRequest;
 use App\Http\Requests\UpdateJobDefinitionRequest;
+use App\Models\JobDefinitionDocAttachment;
+use App\Models\JobDefinitionMainImageAttachment;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
 
 
@@ -17,7 +23,7 @@ class JobDefinitionController extends Controller
     public function __construct()
     {
         //map rbac authorization from policyClass
-        $this->authorizeResource(JobDefinition::class,'jobDefinition');
+        $this->authorizeResource(JobDefinition::class, 'jobDefinition');
     }
 
     public function marketPlace()
@@ -30,6 +36,7 @@ class JobDefinitionController extends Controller
             ->orderByDesc('one_shot')
             ->orderBy('priority')
             ->with('providers')
+            ->with('image')
             ->get();
         return view('marketplace')->with(compact('definitions'));
     }
@@ -54,52 +61,19 @@ class JobDefinitionController extends Controller
     {
         //ready for form reuse as edit...
         $job = new JobDefinition();
+
         return $this->createEdit($job);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreJobDefinitionRequest  $request
+     * @param  \App\Http\Requests\StoreUpdateJobDefinitionRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreJobDefinitionRequest $request)
+    public function store(StoreUpdateJobDefinitionRequest $request)
     {
-        //Use mass assignment ;-)
-        $newJob = JobDefinition::make($request->all());
-
-        //image handling (custom error message to hide technical fields under image field)
-        if ($request->isNotFilled('image_data_b64')) {
-            return back()
-                ->withErrors(['image' => __('validation.required', ['attribute' => 'image'])])->withInput();
-        }
-        $imageDataB64 = $request->image_data_b64;
-        //Double-check extensions on base64 part
-        if (!preg_match('~^data:[^/]+/(' . FileFormat::getImageFormatsAsRegex() . ');base64,~', $imageDataB64, $matches)) {
-            return back()
-                ->withErrors(['image' => __('Invalid image data, base64 expected with following extensions: ' .
-                    FileFormat::getImageFormatsAsCSV())])->withInput();
-        }
-
-        $imageName = 'job-' . uniqid() . random_int(1, 2456) . '.'.FileFormat::JOB_IMAGE_TARGET_FORMAT;
-
-        //Store image
-        Image::make($imageDataB64)
-            ->fit(FileFormat::JOB_IMAGE_WIDTH, FileFormat::JOB_IMAGE_HEIGHT)
-            ->save(dmzStoragePath($imageName), null, FileFormat::JOB_IMAGE_TARGET_FORMAT);
-
-        $newJob->image = $imageName;
-
-        //Save to give an ID and then sync referenced tables
-        $newJob->save();
-
-        //Handle relations (id must have been attributed)
-        $providers = User::role(RoleName::TEACHER)->whereIn('id', $request->providers)->pluck('id');
-        $newJob->providers()->sync($providers);
-
-        //Yeah, we made it ;-)
-        return redirect(route('marketplace'))
-            ->with('success',__('Job ":job" created',['job'=>$newJob->name]));
+        return $this->storeUpdate($request);
     }
 
     /**
@@ -131,9 +105,9 @@ class JobDefinitionController extends Controller
      * @param  \App\Models\JobDefinition  $jobDefinition
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateJobDefinitionRequest $request, JobDefinition $jobDefinition)
+    public function update(StoreUpdateJobDefinitionRequest $request, JobDefinition $jobDefinition)
     {
-        //
+        return $this->storeUpdate($request,$jobDefinition);
     }
 
     /**
@@ -146,7 +120,7 @@ class JobDefinitionController extends Controller
     {
         $jobDefinition->delete();
         return redirect(route('marketplace'))
-            ->with('success',__('Job ":job" deleted',['job'=>$jobDefinition->name]));
+            ->with('success', __('Job ":job" deleted', ['job' => $jobDefinition->title]));
     }
 
     protected function createEdit($jobDefinition)
@@ -158,8 +132,89 @@ class JobDefinitionController extends Controller
             ->where('id','!=',auth()->user()->id)
             ->get(['id','firstname','lastname']);
 
+        list($pendingAndOrCurrentAttachments, $pendingOrCurrentImage) =
+            $this->extractAttachmentState($jobDefinition);
+
         return view('jobDefinition-create-update')
-            ->with(compact('providers'))
+            ->with(compact(
+                'providers',
+                'pendingAndOrCurrentAttachments',
+                'pendingOrCurrentImage'))
             ->with('job',$jobDefinition);
+    }
+
+    protected function storeUpdate(StoreUpdateJobDefinitionRequest $request,
+                                   JobDefinition $jobDefinition=null)
+    {
+        $editMode = $jobDefinition!=null;
+
+        //Group job, attachment,providers in same unit
+        DB::transaction(function () use ($request, &$jobDefinition) {
+            //Save to give an ID and then sync referenced tables
+            if($jobDefinition==null)
+            {
+                //Use mass assignment ;-)
+                $jobDefinition = JobDefinition::create($request->all());
+            }
+            else
+            {
+                $jobDefinition->update($request->all());
+            }
+
+            //First delete any removed attachments (including image)
+            $attachmentIdsToDelete = json_decode($request->input('any_attachment_to_delete'));
+            foreach (Attachment::findMany($attachmentIdsToDelete) as $attachment)
+            {
+                $attachment->delete();
+            }
+
+            //Image
+            $image = $request->input('image');
+            if($jobDefinition->image==null || $jobDefinition->image->id != $image)
+            {
+                JobDefinitionMainImageAttachment::findOrFail($image)
+                    ->attachJobDefinition($jobDefinition);
+            }
+
+            //Handle relations (id must have been attributed)
+            $providers = User::role(RoleName::TEACHER)
+                ->whereIn('id', $request->input('providers'))
+                ->pluck('id');
+            $jobDefinition->providers()->sync($providers);
+
+            //Attachments (already uploaded, we just bind them)
+            $attachmentIds = json_decode($request->input('other_attachments'));
+            foreach (Attachment::findMany(collect($attachmentIds)->values()) as $attachment)
+            {
+                $attachment->attachJobDefinition($jobDefinition);
+            }
+
+        });
+
+        //Yeah, we made it ;-)
+        return redirect(route('marketplace'))
+            ->with('success', __('Job ":job" '.($editMode?'updated':'created'), ['job' => $jobDefinition->title]));
+    }
+
+    /**
+     * @param JobDefinition $jobDefinition
+     * @return array
+     */
+    protected function extractAttachmentState(JobDefinition $jobDefinition): array
+    {
+        $old = old('other_attachments');
+        if ($old == null) {
+            $pendingAttachments = $jobDefinition->attachments->pluck('id');
+        } else {
+            $pendingAttachments = collect(json_decode($old))->values();
+        }
+        $pendingAndOrCurrentAttachments =
+            \App\Models\JobDefinitionDocAttachment::findMany($pendingAttachments);
+
+        $pendingOrCurrentImage =
+            \App\Models\JobDefinitionMainImageAttachment::find(old('image',
+                $jobDefinition->exists?$jobDefinition->image->id:null));
+
+        return array($pendingAndOrCurrentAttachments, $pendingOrCurrentImage);
     }
 }

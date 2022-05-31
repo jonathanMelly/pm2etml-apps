@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\JobDefinition;
+use App\Models\JobDefinitionMainImageAttachment;
 
 test('Teacher cannot apply for a job', function () {
 
@@ -9,10 +10,12 @@ test('Teacher cannot apply for a job', function () {
     $this->CreateUser(roles: 'prof');
     $prof = $this->CreateUser(false,'prof');
 
+    $_this = $this;
     $job = JobDefinition::factory()
-        ->afterCreating(function(JobDefinition $job) use($prof)
+        ->afterCreating(function(JobDefinition $job) use($prof,$_this)
         {
             $job->providers()->attach($prof->id);
+            $_this->createAttachment('storage.png',image:true)->attachJobDefinition($job);
         })
         ->create();
 

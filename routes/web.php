@@ -46,7 +46,18 @@ Route::middleware('auth')->group(function () {
     Route::resource('contracts',\App\Http\Controllers\ContractController::class);
 
     //Files (images) handling (avoid any injected script in image as returning the file as file !
-    Route::get('dmz-assets/{file}', DmzAssetController::class);
+    Route::get(\App\Constants\FileFormat::DMZ_ASSET_URL.'/{file}', [DmzAssetController::class,'getFile'])
+        ->where('file','(.*)')
+        ->name('dmz-asset');
+
+    Route::post('job-image-attachment',\App\Http\Controllers\JobDefinitionMainImageAttachmentController::class)
+        ->name('job-definition-main-image-attachment.store');
+    Route::post('job-doc-attachment',\App\Http\Controllers\JobDefinitionDocAttachmentController::class)
+        ->name('job-definition-doc-attachment.store');
+
+    //For now, destroy is same for any kind of attachment...
+    Route::delete('attachments/{attachment}',[\App\Http\Controllers\AttachmentController::class,'destroy'])
+        ->name('attachment.destroy');
 
     //AUTH RELATED
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])

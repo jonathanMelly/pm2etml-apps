@@ -83,7 +83,7 @@ test('Student see his contracts as a worker', function () {
     //Then
     foreach ($contracts as $contract)
     {
-        $response->assertSeeText(Str::words($contract->jobDefinition->name,3));
+        $response->assertSeeText(Str::words($contract->jobDefinition->title,3));
     }
 
 });
@@ -107,7 +107,7 @@ test('Teacher see his contracts as a client', function () {
     $response = $this->get('/dashboard');
 
     //Then
-    $response->assertSeeText($jobDefinition->name);
+    $response->assertSeeText($jobDefinition->title);
     foreach ($contracts as $contract)
     {
         foreach ($contract->workers as $worker)

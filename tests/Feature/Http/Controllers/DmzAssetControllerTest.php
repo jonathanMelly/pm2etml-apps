@@ -6,20 +6,20 @@ test('DmzAsset is not handled by php engine', function () {
 
     $this->be(User::factory()->create());
     $file='image.php';
-    $path= storage_path('dmz-assets/'.$file);
-    $myfile = fopen($path, "w") or die("Unable to open file!");
+    $path= attachmentPathInUploadDisk($file);
     $txt = "<?php \necho 'not hacked';";
-    fwrite($myfile, $txt);
-    fclose($myfile);
+
+    uploadDisk()->put($path,$txt);
 
     /** @var $response \Symfony\Component\HttpFoundation\BinaryFileResponse */
-    $response = $this->get('/dmz-assets/'.$file);
-    $content = $response->getFile()->getContent();
-
-    unlink($path);
+    $response = $this->get(route('dmz-asset',['file'=>$path]));
 
     $response->assertStatus(200);
+    $content = $response->getFile()->getContent();
     $this->assertEquals($txt,$content);
+
+    //cleanup
+    uploadDisk()->delete($path);
 
 });
 
@@ -28,7 +28,7 @@ test('Non existing dmz-asset returns 404', function () {
     $this->be(User::factory()->create());
 
     /** @var $response \Symfony\Component\HttpFoundation\BinaryFileResponse */
-    $response = $this->get('/dmz-assets/404');
+    $response = $this->get(route('dmz-asset',['file'=>'404']));
 
     $response->assertStatus(404);
 
@@ -38,7 +38,7 @@ test('Non existing dmz-asset returns 404', function () {
 
 test('DmzAsset is protected by auth', function () {
 
-    $response = $this->get('/dmz-assets/image.php');
+    $response = $this->get(route('dmz-asset',['file'=>'image.php']));
 
     $response->assertRedirect('/login');
 });

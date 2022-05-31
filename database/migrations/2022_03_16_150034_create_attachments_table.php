@@ -19,7 +19,16 @@ return new class extends Migration
             $table->timestamps();
             $table->string('name');
             $table->string('storage_path');
-            $table->foreignIdFor(\App\Models\JobDefinition::class)->constrained();
+
+            //Max 4G filesize
+            $table->unsignedMediumInteger('size');
+
+            $table->nullableMorphs('attachable');
+            $table->string('type')->nullable();
+
+            //TODO trigger on insert to guarantee that for attachable_type=image, only 1 attachable_id...??
+
+            $table->softDeletes();
         });
     }
 

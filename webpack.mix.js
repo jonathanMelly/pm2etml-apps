@@ -1,5 +1,7 @@
 const mix = require('laravel-mix');
 
+require('laravel-mix-copy-watched');
+
 /*
  |--------------------------------------------------------------------------
  | Mix Asset Management
@@ -11,11 +13,27 @@ const mix = require('laravel-mix');
  |
  */
 
-mix.js(['resources/js/app.js'], 'public/js')
-    .js('resources/js/helper.js','public/js')
+mix
+    .js(['resources/js/app.js'], 'public/js')
+
     .postCss('resources/css/app.css', 'public/css', [
         require('postcss-import'),
         require('tailwindcss'),
         require('autoprefixer'),
     ])
+
     .sass('resources/sass/app.scss', 'public/css');
+
+//custom js
+mix.copyWatched('resources/js/helper.js','public/js');
+
+//dropzone
+mix
+    //.copyWatched('node_modules/dropzone/dist/basic.css', 'public/css/')
+    //.copyWatched('node_modules/dropzone/dist/basic.css.map', 'public/css/')
+
+    .copyWatched('node_modules/dropzone/dist/dropzone.css.map', 'public/css/')
+    .copyWatched('node_modules/dropzone/dist/dropzone.css', 'public/css/')
+
+    .copyWatched('node_modules/dropzone/dist/dropzone-min.js', 'public/js/')
+    .copyWatched('node_modules/dropzone/dist/dropzone-min.js.map', 'public/js/')

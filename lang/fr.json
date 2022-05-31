@@ -245,6 +245,8 @@
     "Publish job offer": "Publier l’offre d’emploi",
     "Choose a file": "Choisir un fichier",
     "or drag it here": "ou le glisser ici",
+    "Choose one or more file(s)": "Choisir un ou plusieurs fichiers",
+    "or drag them here": "ou les glisser ici",
     "Create a new job": "Créer un nouvel emploi",
     "One shot": "Éphémère",
     "One shot means that as soon as a worker applies for the job, the latter won’t be available to others anymore":
@@ -254,8 +256,20 @@
     "Only published jobs are shown in the marketplace": "Seuls les emplois publiés s’affichent sur la place du marché",
     "Job \":job\" deleted": "Emploi \":job\" supprimé",
     "Job \":job\" created": "Emploi \":job\" ajouté",
+    "Job \":job\" updated": "Emploi \":job\" mis à jour",
     "Failed jobs must have a clue for improvement": "Un échec doit proposer des pistes d’amélioration",
     "What must be improved": "Ce qui doit être amélioré",
-    "Recommended size": "Taille recommandée"
+    "Recommended size": "Taille recommandée",
+    "Title": "Titre",
+    "Attachments": "Pièces jointes",
+    "Specifications": "Cahier des charges",
+    "Remove file": "Retirer",
+    "File is too big ({{filesize}} MiB). Max filesize: {{maxFilesize}} MiB.": "Le fichier est trop volumineux ({{filesize}} MiB). Maximum: {{maxFilesize}} MiB.",
+    "You can't upload files of this type.": "Ce type de fichier n’est pas accepté",
+    "Cancel upload": "Annuler",
+    "You can not upload any more files.": "Nombre maximum d’upload atteint",
+    "Are you sure you want to cancel this upload?":"Êtes-vous certain(e) de vouloir annuler ?",
+    "Publish": "Publier",
+    "Do you really want to delete the following job ?": "Êtes-vous certain(e) de vouloir supprimer cet emploi ?"
 
 }

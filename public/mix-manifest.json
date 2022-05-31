@@ -1,5 +1,9 @@
 {
     "/js/app.js": "/js/app.js",
+    "/css/app.css": "/css/app.css",
     "/js/helper.js": "/js/helper.js",
-    "/css/app.css": "/css/app.css"
+    "/css/dropzone.css.map": "/css/dropzone.css.map",
+    "/css/dropzone.css": "/css/dropzone.css",
+    "/js/dropzone-min.js": "/js/dropzone-min.js",
+    "/js/dropzone-min.js.map": "/js/dropzone-min.js.map"
 }

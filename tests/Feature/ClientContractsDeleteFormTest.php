@@ -2,12 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Constants\RoleName;
-use App\Models\AcademicPeriod;
-use App\Models\Contract;
-use App\Models\Group;
-use App\Models\GroupMember;
-use App\Models\GroupName;
 use App\Models\JobDefinition;
 use App\Models\User;
 use Tests\BrowserKitTestCase;
@@ -29,7 +23,7 @@ class ClientContractsDeleteFormTest extends BrowserKitTestCase
     public function setUpLocal()
     {
         $this->afterApplicationCreated(function () {
-            $clientAndJob = $this->createClientWithContracts($this->contractsCount);
+            $clientAndJob = $this->createClientAndJob($this->contractsCount);
 
             $this->teacher = $clientAndJob['client'];
             $this->job = $clientAndJob['job'];

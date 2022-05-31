@@ -30,15 +30,13 @@
     //faster local tests...
     if(config('custom.hide-job-image'))
     {
-        $image='image';
+        $imageSrc='';
         $imageBg='bg-base-300';
     }
     else
     {
         $mask = \App\Http\Middleware\Theme::timestampToTheme(now()->toDateTime())=='valentine'?'mask mask-heart':'rounded-md';
-        $image='<figure class="mt-1">
-        <img class="object-scale-down '.$mask.'" src="'.dmzImgUrl($job->image).'" alt="'. $job->name.'" />
-        </figure>';
+        $imageSrc=route('dmz-asset',['file'=>$job->image->storage_path]);
     }
 
 @endphp
@@ -59,7 +57,7 @@
             @can('jobDefinitions.trash')
                 <div class="rounded-box hover:bg-error hover:bg-opacity-50">
                     <a @click="document.querySelector('#delete-job-form').action='{{url('jobDefinitions',$job->id)}}';
-            jobNameToDelete='{{$job->name}}';
+            jobNameToDelete='{{$job->title}}';
             setTimeout(()=>document.querySelector('#delete-job-modal-submit').disabled=false,3000)">
 
                         <label for="delete-job-modal" class="hover:cursor-pointer">
@@ -79,14 +77,18 @@
 
                 <div class="indicator self-center mt-3">
                     {!!  $mandatoryBadge??'' !!}
-                    <div class="grid w-24 h-24 place-items-center {{$imageBg??''}}">{!! $image !!}</div>
+                    <div class="grid w-24 h-24 place-items-center {{$imageBg??''}}">
+                        <figure class="mt-1">
+                            <img class="object-scale-down {{$mask??''}}" src="{{$imageSrc}}" alt="{{$job->title}}" />
+                        </figure>
+                    </div>
 
                 </div>
 
 
                 <div class="card-body">
 
-                    <h2 class="card-title">{{ $job->name }}
+                    <h2 class="card-title">{{ $job->title }}
                         {{--
                         <div class="flex flex-col gap-1 items-center">
                         {!! $badgePriority??'' !!}

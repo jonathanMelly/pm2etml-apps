@@ -4,11 +4,11 @@
             <i class="fa-solid fa-xl" :class="show{{$job->id}}?'fa-caret-down':'fa-caret-right'"></i>
             <div class="avatar" >
                 <div class="mask mask-squircle w-12 h-12">
-                    <img src="{{dmzImgUrl($job->image)}}" alt="{{$job->name}}" />
+                    <img src="{{route('dmz-asset',['file'=>$job->image->storage_path])}}" alt="{{$job->title}}" />
                 </div>
             </div>
             <div>
-                <div class="font-bold">{{$job->name}}</div>
+                <div class="font-bold">{{$job->title}}</div>
             </div>
         </div>
     </td>

@@ -2,15 +2,20 @@
 
 namespace Tests;
 
+use App\Constants\DiskNames;
 use App\Constants\RoleName;
 use App\Models\AcademicPeriod;
 use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\GroupName;
 use App\Models\JobDefinition;
+use App\Models\JobDefinitionDocAttachment;
+use App\Models\JobDefinitionMainImageAttachment;
 use App\Models\User;
 use Database\Seeders\AcademicPeriodSeeder;
 use Database\Seeders\PermissionV1Seeder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 trait TestHarness
 {
@@ -18,10 +23,12 @@ trait TestHarness
      * @before
      * @return void
      */
-    public function setupDbData()
+    public function setupDbDataAndStorage()
     {
         $this->afterApplicationCreated(function(){
             $this->seed(PermissionV1Seeder::class);
+            Storage::fake('local');
+            Storage::fake('upload');
         });
     }
 
@@ -56,7 +63,36 @@ trait TestHarness
         return $user;
     }
 
-    public function createClientWithContracts(int $contractsCount):array
+    public function createAttachment(string $name='storage.pdf',bool $image=false,bool $save=true)
+    {
+        $path = attachmentPathInUploadDisk($name,true);
+        $randomSize = rand(1,1024*1024*5);
+        if($image)
+        {
+            $file = UploadedFile::fake()->image('temp',50,49);
+            $file->store($path,DiskNames::UPLOAD);
+
+            $result =JobDefinitionMainImageAttachment::make(['name' => 'ori.png',
+                'storage_path' => $path,'size'=>$file->getSize()]);
+        }
+        else
+        {
+            $file = UploadedFile::fake()->createWithContent($name.'-tmp','test content');
+            $file->store($path,DiskNames::UPLOAD);
+
+            $result = JobDefinitionDocAttachment::make(['name' => $name,
+                'storage_path' => $path,'size'=>$file->getSize()]);
+        }
+
+        if($save)
+        {
+            $result->save();
+        }
+
+        return $result;
+    }
+
+    public function createClientAndJob(int $contractsCount=0):array
     {
         AcademicPeriod::create([
             'start' => today()->subWeek(),
@@ -75,10 +111,16 @@ trait TestHarness
 
         JobDefinition::factory()
             ->afterMaking(function (JobDefinition $job) {
-                $job->image = 'dummy.png';
                 $job->published_date = today()->subWeek();
             })
-            ->afterCreating(fn ($job) => $job->providers()->attach($client->id))
+            ->afterCreating(function (JobDefinition $job) use ($client) {
+                $job->providers()->attach($client->id);
+
+                $job->image()
+                    ->create($this
+                        ->createAttachment(name:'image.png',image:true,save:false)->attributesToArray()
+                    );
+            })
             ->count(1)->create();
 
         $job = JobDefinition::firstOrFail();

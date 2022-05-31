@@ -2,13 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Constants\DiskNames;
 use App\Constants\RoleName;
 use App\Models\AcademicPeriod;
 use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\JobDefinition;
+use App\Models\JobDefinitionMainImageAttachment;
 use Database\Seeders\AcademicPeriodSeeder;
 use Database\Seeders\GroupSeeder;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
 use Tests\BrowserKitTestCase;
 
@@ -36,6 +39,9 @@ class JobApplyFormTest extends BrowserKitTestCase
                 ->afterCreating(function(JobDefinition $jobD)
                 {
                     $jobD->providers()->attach($this->teacher->id);
+
+                    //Image
+                    $this->createAttachment('storage.png',image:true)->attachJobDefinition($jobD);
                 })
                 ->create();
 

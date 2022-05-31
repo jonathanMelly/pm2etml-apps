@@ -219,6 +219,7 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
     public function getJobDefinitionsWithActiveContracts($academicPeriodId): \Illuminate\Database\Eloquent\Collection
     {
         //TODO switch to polymorphic http://novate.co.uk/using-laravel-polymorphic-relationships-for-different-user-profiles/
+        //OR https://github.com/calebporzio/parental
         //so that only teacher has this method !
         if($this->hasRole(RoleName::TEACHER)===false)
         {

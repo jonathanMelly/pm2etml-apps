@@ -1,6 +1,8 @@
 <?php
 
 //currently empty
+use App\Models\Attachment;
+
 if(!function_exists('ordinal'))
 {
     function ordinal(int $number):string
@@ -12,19 +14,41 @@ if(!function_exists('ordinal'))
         return preg_replace('/\d+/','',date("S", mktime(0, 0, 0, 0, $number, 0)));
     }
 }
-if(!function_exists('dmzImgUrl'))
+
+if(!function_exists('uploadDisk'))
 {
-    function dmzImgUrl(?string $file):string
+    function uploadDisk(): \Illuminate\Contracts\Filesystem\Filesystem|\Illuminate\Filesystem\FilesystemAdapter
     {
-        return '/dmz-assets/'.$file??'';
+        return Storage::disk(\App\Constants\DiskNames::UPLOAD);
     }
 }
 
-if(!function_exists('dmzStoragePath'))
+if(!function_exists('attachmentPathInUploadDisk'))
 {
-    function dmzStoragePath(?string $file=''):string
+    function attachmentPathInUploadDisk(?string $file=null, bool $temporary=false, bool $deleted=false):string
     {
-        return storage_path('dmz-assets'.DIRECTORY_SEPARATOR.$file??'');
+        $parts = [];
+        if($temporary)
+        {
+            $parts[]=\App\Constants\FileFormat::ATTACHMENT_TEMPORARY_SUBFOLDER;
+        }
+        if($deleted)
+        {
+            $parts[]=\App\Constants\FileFormat::ATTACHMENT_DELETED_SUBFOLDER;
+        }
+        if($file!=null)
+        {
+            $parts[]=$file;
+        }
+        return implode(DIRECTORY_SEPARATOR,$parts);
+    }
+}
+
+if(!function_exists('attachmentUri'))
+{
+    function attachmentUri(Attachment $attachment):string
+    {
+        return route('dmz-asset',['file'=>$attachment->storage_path]);
     }
 }
 
@@ -48,4 +72,5 @@ if(!function_exists('b2s'))
         return $boolValue?'true':'false';
     }
 }
+
 

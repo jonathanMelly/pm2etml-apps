@@ -19,7 +19,7 @@ use Kirschbaum\PowerJoins\PowerJoins;
  * @property \Illuminate\Support\Carbon $start
  * @property \Illuminate\Support\Carbon $end
  * @property \Illuminate\Support\Carbon|null $success_date last date of success field change, null=not evaluated
- * @property bool $success True if the work has been approved by the client
+ * @property int $success True if the work has been approved by the client
  * @property string|null $success_comment
  * @property int $job_definition_id
  * @property \Illuminate\Support\Carbon|null $created_at

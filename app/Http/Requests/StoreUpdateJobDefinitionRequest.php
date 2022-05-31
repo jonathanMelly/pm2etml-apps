@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use App\Constants\FileFormat;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreJobDefinitionRequest extends FormRequest
+class StoreUpdateJobDefinitionRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,13 +26,15 @@ class StoreJobDefinitionRequest extends FormRequest
     public function rules()
     {
         return [
-            'name'=>'string|required',
-            'description'=>'string|required',
+            'title'=>'required|string|bail',
+            'description'=>'required|string|bail',
             'required_xp_years'=>'numeric|required',
             'priority'=>'numeric|required',
-            //These are technical fields, we handle the REQUIRED attribute manually to give a nice message to customer
-            'image_data_b64' => 'string|nullable',
-            'providers'=>'array'
+            'one_shot'=>'sometimes|int|in:1',
+            'image'=>'required',
+            'other_attachments' => 'json|nullable',
+            'any_attachment_to_delete'=>'json|nullable',
+            'providers'=>'array|required'
         ];
     }
 }

@@ -35,6 +35,11 @@ return [
             'root' => storage_path('app'),
         ],
 
+        \App\Constants\DiskNames::UPLOAD => [
+            'driver' => 'local',
+            'root' => storage_path('app'.DIRECTORY_SEPARATOR.'uploads'),
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
