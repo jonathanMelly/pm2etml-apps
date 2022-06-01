@@ -72,6 +72,9 @@ class JobDefinition extends Model
 {
     use HasFactory,SoftDeletes;
 
+    public const MIN_PERIODS=30;
+    public const MAX_PERIODS=150;
+
     /**
      * The attributes that are mass assignable.
      *

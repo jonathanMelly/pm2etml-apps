@@ -244,13 +244,14 @@
     "OR": "OU",
     "Publish job offer": "Publier l’offre d’emploi",
     "Choose a file": "Choisir un fichier",
+    "Choose one file": "Choisir un fichier",
     "or drag it here": "ou le glisser ici",
     "Choose one or more file(s)": "Choisir un ou plusieurs fichiers",
     "or drag them here": "ou les glisser ici",
     "Create a new job": "Créer un nouvel emploi",
     "One shot": "Éphémère",
     "One shot means that as soon as a worker applies for the job, the latter won’t be available to others anymore":
-        "Éphémère implique que lorsqu’un employeur est engagé pour le travail, ce dernier ne sera plus jamais disponible pour d’autres",
+        "Éphémère implique que lorsqu’un employé est engagé pour le travail, ce dernier ne sera plus jamais disponible pour d’autres",
     "Save modifications": "Sauvegarder les modifications",
     "Edit job": "Modifier l’emploi",
     "Only published jobs are shown in the marketplace": "Seuls les emplois publiés s’affichent sur la place du marché",
@@ -270,6 +271,11 @@
     "You can not upload any more files.": "Nombre maximum d’upload atteint",
     "Are you sure you want to cancel this upload?":"Êtes-vous certain(e) de vouloir annuler ?",
     "Publish": "Publier",
-    "Do you really want to delete the following job ?": "Êtes-vous certain(e) de vouloir supprimer cet emploi ?"
+    "Do you really want to delete the following job ?": "Êtes-vous certain(e) de vouloir supprimer cet emploi ?",
+    "Workload": "Charge de travail",
+    "Small": "Petite",
+    "Medium": "Moyenne",
+    "Large": "Grande",
+    "Skills": "Compétences"
 
 }

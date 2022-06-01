@@ -370,40 +370,47 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col -mx-3 mb-6"
-                     x-data="{time:Math.max({{old('allocated_time',$job->getAllocatedTime())}},20)}">
-                    <div class="w-full px-3 mb-6 md:mb-0">
-                        <label class="block uppercase tracking-wide text-base-content text-xs font-bold mb-2"
-                               for="allocated_time-display">
-                            {{__('Allocated time')}}
-                        </label>
-                        <input id="allocated_time-display" type="range" min="2" max="300" x-model="time" class="range"/>
-
-                    </div>
-
-                    <div class="flex flex-row items-center self-center place-items-center">
-                        <input class="input w-24 text-lg font-bold" name="allocated_time" min="2" max="300"
-                               type="number" x-model="time">
-                        <div class="pl-1 font-bold text-lg">{{__('periods')}}</div>
-                        <div class="ml-1">
-                            (<span x-text="Math.round(time*45/60)"></span> {{__('hours')}})
+                <div class="flex flex-wrap -mx-3 mb-2" x-data="{time:Math.max({{old('allocated_time',$job->getAllocatedTime())}},30)}">
+                    <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0 flex flex-col place-items-center">
+                        <div class="w-full">
+                            <label class="block uppercase tracking-wide text-base-content text-xs font-bold mb-2"
+                                   for="allocated_time-display">
+                                {{__('Workload')}}
+                            </label>
+                            <input id="allocated_time-display" type="range" min="{{\App\Models\JobDefinition::MIN_PERIODS}}" max="{{\App\Models\JobDefinition::MAX_PERIODS}}" x-model="time" class="range" step="{{round((\App\Models\JobDefinition::MAX_PERIODS-\App\Models\JobDefinition::MIN_PERIODS)/2)}}"/>
+                            <div class="w-full flex justify-between text-xs px-2">
+                                <span>{{__('Small')}}</span>
+                                <span>{{__('Medium')}}</span>
+                                <span>{{__('Large')}}</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-row place-items-center mt-2">
+                            <input class="input w-24 text-lg font-bold" name="allocated_time" min="{{\App\Models\JobDefinition::MIN_PERIODS}}" max="{{\App\Models\JobDefinition::MAX_PERIODS}}"
+                                   type="number" x-model="time">
+                            <div class="pl-1 font-bold text-lg">{{__('periods')}}</div>
+                            <div class="ml-1">
+                                (<span x-text="Math.round(time*45/60)"></span> {{__('hours')}})
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="flex flex-col -mx-3 mb-6">
-                    <div class="w-full px-3 mb-6 md:mb-0">
-                        <label class="block uppercase tracking-wide text-base-content text-xs font-bold mb-2"
-                               for="one_shot">
-                            {{__('One shot')}}
-                        </label>
-                        <input @checked(old('one_shot',$job->one_shot)) id="one_shot" name="one_shot" type="checkbox"
-                               class="toggle" value="1" />
-                        <p class="text-accent-content text-sm italic">
-                            {{__('One shot means that as soon as a worker applies for the job, the latter won’t be available to others anymore')}}
-                        </p>
+                    <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0">
+                        <div class="w-full px-3 mb-6 md:mb-0">
+                            <label class="block uppercase tracking-wide text-base-content text-xs font-bold mb-2"
+                                   for="one_shot">
+                                {{__('One shot')}}
+                            </label>
+                            <input @checked(old('one_shot',$job->one_shot)) id="one_shot" name="one_shot" type="checkbox"
+                                   class="toggle" value="1" />
+                            <p class="text-accent-content text-sm italic">
+                                {{__('One shot means that as soon as a worker applies for the job, the latter won’t be available to others anymore')}}
+                            </p>
+                        </div>
                     </div>
-
+                    <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0">
+                        <label class="block uppercase tracking-wide text-base-content text-xs font-bold mb-2">
+                            {{__('Skills')}}
+                        </label>
+                    </div>
                 </div>
 
                 {{-- ATTACHMENTS --}}

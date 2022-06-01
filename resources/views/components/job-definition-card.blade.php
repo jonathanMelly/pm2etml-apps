@@ -150,11 +150,13 @@
                 </div>
 
                 <div class="flex justify-end content-center text-sm pr-1">
-                    {{__('Allocated time')}}
+                    {{__('Workload')}}
                 </div>
                 <div class="col-span-2 justify-start items-center">
-                    <progress class="progress progress-success w-20" value="{{$job->getAllocatedTime()}}"
-                              max="200"></progress>
+                    <progress class="progress progress-success w-20"
+                              min="{{\App\Models\JobDefinition::MIN_PERIODS}}"
+                              value="{{$job->getAllocatedTime(\App\Enums\RequiredTimeUnit::PERIOD)}}"
+                              max="{{\App\Models\JobDefinition::MAX_PERIODS}}"></progress>
                     <span class="text-xs">&nbsp;( {{$job->getAllocationDetails()}} )</span>
                 </div>
 
