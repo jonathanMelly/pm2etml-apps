@@ -2,19 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Constants\FileFormat;
-use App\Constants\MorphTargets;
 use App\Constants\RoleName;
-use App\Models\Attachment;
-use App\Models\JobDefinition;
 use App\Http\Requests\StoreUpdateJobDefinitionRequest;
 use App\Http\Requests\UpdateJobDefinitionRequest;
-use App\Models\JobDefinitionDocAttachment;
+use App\Models\Attachment;
+use App\Models\JobDefinition;
 use App\Models\JobDefinitionMainImageAttachment;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
+use Illuminate\Support\Facades\Session;
 
 
 class JobDefinitionController extends Controller
@@ -42,8 +39,7 @@ class JobDefinitionController extends Controller
     }
 
     /**
-     * aka MarketPlace
-     * Display a listing of the resource.
+     * JSON content
      *
      */
     public function index()
@@ -57,12 +53,12 @@ class JobDefinitionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
         //ready for form reuse as edit...
         $job = new JobDefinition();
 
-        return $this->createEdit($job);
+        return $this->createEdit($request,$job);
     }
 
     /**
@@ -84,7 +80,7 @@ class JobDefinitionController extends Controller
      */
     public function show(JobDefinition $jobDefinition)
     {
-        //
+        return view('jobDefinition-view')->with(compact('jobDefinition'));
     }
 
     /**
@@ -93,9 +89,9 @@ class JobDefinitionController extends Controller
      * @param  \App\Models\JobDefinition  $jobDefinition
      * @return \Illuminate\Http\Response
      */
-    public function edit(JobDefinition $jobDefinition)
+    public function edit(Request $request, JobDefinition $jobDefinition)
     {
-        return $this->createEdit($jobDefinition);
+        return $this->createEdit($request, $jobDefinition);
     }
 
     /**
@@ -118,13 +114,19 @@ class JobDefinitionController extends Controller
      */
     public function destroy(JobDefinition $jobDefinition)
     {
+        //Mark attachments as deleted (do not use mass delete to keep EVENT processing)
+        Attachment::where('attachable_id','=',$jobDefinition->id)
+            ->each(fn($a)=>$a->delete());
+
         $jobDefinition->delete();
         return redirect(route('marketplace'))
             ->with('success', __('Job ":job" deleted', ['job' => $jobDefinition->title]));
     }
 
-    protected function createEdit($jobDefinition)
+    protected function createEdit(Request $request,JobDefinition $jobDefinition)
     {
+        Session::put('start-url',$request->header('referer'));
+
         $providers = User::role(RoleName::TEACHER)
             ->orderBy('firstname')
             ->orderBy('lastname')
@@ -192,8 +194,10 @@ class JobDefinitionController extends Controller
         });
 
         //Yeah, we made it ;-)
-        return redirect(route('marketplace'))
+        $targetUrl = Session::get('start-url')??route('marketplace');
+        return redirect()->to($targetUrl)
             ->with('success', __('Job ":job" '.($editMode?'updated':'created'), ['job' => $jobDefinition->title]));
+
     }
 
     /**

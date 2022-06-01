@@ -6,7 +6,7 @@
 @endphp
 <tr>
     <td>
-        <div class="flex items-center space-x-3">
+        <a class="flex items-center space-x-3" href="{{route('jobDefinitions.show',['jobDefinition'=>$contract->jobDefinition->id])}}">
             <div class="avatar">
                 <div class="mask mask-squircle w-12 h-12">
                     <img src="{{route('dmz-asset',['file'=>$contract->jobDefinition->image->storage_path])}}" alt="{{$contract->jobDefinition->title}}" />
@@ -20,7 +20,7 @@
                     <div class="lg:font-bold lg:text-base text-xs">{{Str::words($contract->jobDefinition->title,3)}}</div>
                 </div>
             </div>
-        </div>
+        </a>
     </td>
     <td>
         {{collect($contract->clients)->transform(fn ($user)=>$user->getFirstnameL())->join(',')}}
@@ -45,14 +45,5 @@
             <i class="fa-solid fa-flag-checkered"></i>
         @endif
     </td>
-    {{-- TODO create a component for that part so that it is not copy/pasted from client contract list --}}
-    <td class="text-left">{{--  overflow-auto doesn’t like right align... --}}
-        @if($contract->alreadyEvaluated())
-            <div class="tooltip" data-tip="{{$contract->success_date}}">
-                @endif
-                <i class="ml-7 fa-solid fa-{{$contract->alreadyEvaluated()?($contract->success?'square-check':'square-xmark'):'person-digging'}}"></i>
-                @if($contract->alreadyEvaluated())
-            </div>
-        @endif
-    </td>
+    <x-contract-list-element-evaluation :contract="$contract" />
 </tr>

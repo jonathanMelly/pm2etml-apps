@@ -18,7 +18,10 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->string('name');
-            $table->string('storage_path');
+
+            //To keep dmz download process hard to hack (get random data with id)
+            //download feature requires searching on that field...
+            $table->string('storage_path')->index();
 
             //Max 4G filesize
             $table->unsignedMediumInteger('size');

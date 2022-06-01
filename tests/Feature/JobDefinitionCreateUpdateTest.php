@@ -160,4 +160,6 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
         return str_replace(array('+', '/'), array('-', '_'), base64_encode($s));
     }
 
+
+    //TODO TEST JOB DELETION !!!
 }

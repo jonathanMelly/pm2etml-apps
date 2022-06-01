@@ -14748,6 +14748,9 @@ body[dir="rtl"] .checkbox:checked,
 .prose > :where(:last-child):not(:where([class~="not-prose"] *)) {
   margin-bottom: 0;
 }
+.static {
+  position: static;
+}
 .fixed {
   position: fixed;
 }
@@ -14756,6 +14759,10 @@ body[dir="rtl"] .checkbox:checked,
 }
 .relative {
   position: relative;
+}
+.sticky {
+  position: -webkit-sticky;
+  position: sticky;
 }
 .top-0 {
   top: 0px;
@@ -14771,6 +14778,12 @@ body[dir="rtl"] .checkbox:checked,
 }
 .z-50 {
   z-index: 50;
+}
+.z-40 {
+  z-index: 40;
+}
+.z-10 {
+  z-index: 10;
 }
 .col-span-2 {
   grid-column: span 2 / span 2;
@@ -14872,6 +14885,27 @@ body[dir="rtl"] .checkbox:checked,
 .mr-1 {
   margin-right: 0.25rem;
 }
+.-mt-5 {
+  margin-top: -1.25rem;
+}
+.mt-20 {
+  margin-top: 5rem;
+}
+.mt-10 {
+  margin-top: 2.5rem;
+}
+.-mt-10 {
+  margin-top: -2.5rem;
+}
+.-mt-12 {
+  margin-top: -3rem;
+}
+.-mt-8 {
+  margin-top: -2rem;
+}
+.mt-5 {
+  margin-top: 1.25rem;
+}
 .block {
   display: block;
 }
@@ -14916,6 +14950,15 @@ body[dir="rtl"] .checkbox:checked,
 }
 .h-6 {
   height: 1.5rem;
+}
+.h-auto {
+  height: auto;
+}
+.h-full {
+  height: 100%;
+}
+.h-0 {
+  height: 0px;
 }
 .max-h-fit {
   max-height: -webkit-fit-content;
@@ -15009,6 +15052,9 @@ body[dir="rtl"] .checkbox:checked,
 }
 .w-48 {
   width: 12rem;
+}
+.w-56 {
+  width: 14rem;
 }
 .max-w-6xl {
   max-width: 72rem;
@@ -15395,6 +15441,9 @@ body[dir="rtl"] .checkbox:checked,
 }
 .pr-4 {
   padding-right: 1rem;
+}
+.pr-2 {
+  padding-right: 0.5rem;
 }
 .text-left {
   text-align: left;
@@ -15977,6 +16026,53 @@ body[dir="rtl"] .checkbox:checked,
   }
 }
 @media (min-width: 1024px) {
+
+  .lg\:menu-horizontal {
+    display: inline-flex;
+    flex-direction: row;
+  }
+
+  .lg\:menu-horizontal :where(li) {
+    flex-direction: row;
+  }
+
+  .lg\:menu-horizontal > :where(li) > :where(ul) {
+    top: 100%;
+    left: initial;
+  }
+
+  .lg\:menu-horizontal :where(li.bordered > *) {
+    border-left-width: 0px;
+    border-bottom-width: 4px;
+  }
+
+  .lg\:menu-horizontal > :where(li:first-child) {
+    border-top-left-radius: inherit;
+    border-top-right-radius: unset;
+    border-bottom-right-radius: unset;
+    border-bottom-left-radius: inherit;
+  }
+
+  .lg\:menu-horizontal > :where(li:first-child) > :where(*:not(ul)) {
+    border-top-left-radius: inherit;
+    border-top-right-radius: unset;
+    border-bottom-right-radius: unset;
+    border-bottom-left-radius: inherit;
+  }
+
+  .lg\:menu-horizontal > :where(li:last-child) {
+    border-top-left-radius: unset;
+    border-top-right-radius: inherit;
+    border-bottom-right-radius: inherit;
+    border-bottom-left-radius: unset;
+  }
+
+  .lg\:menu-horizontal > :where(li:last-child) > :where(*:not(ul)) {
+    border-top-left-radius: unset;
+    border-top-right-radius: inherit;
+    border-bottom-right-radius: inherit;
+    border-bottom-left-radius: unset;
+  }
 
   .lg\:grid-cols-4 {
     grid-template-columns: repeat(4, minmax(0, 1fr));
