@@ -49,7 +49,7 @@ jobs:
       uses: sand4rt/ftp-deployer@v1.4
       with:
         # FTP host URL like: ftp.host.com or sftp.host.com
-        host: ${{ secrets.FTP_HOSTt }}
+        host: ${{ secrets.FTP_HOST }}
         # Ftp username
         username: ${{ secrets.FTP_USER }}
         # Ftp password
