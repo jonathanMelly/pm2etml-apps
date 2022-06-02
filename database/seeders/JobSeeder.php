@@ -41,7 +41,14 @@ class JobSeeder extends Seeder
                 }
                 else
                 {
-                    $img = $faker->image(uploadDisk()->path(attachmentPathInUploadDisk(temporary: true)), 350, 350);
+                    $targetRelativeDir = attachmentPathInUploadDisk(temporary: true);
+                    $disk=uploadDisk();
+                    if($disk->directoryMissing($targetRelativeDir))
+                    {
+                        $disk->makeDirectory($targetRelativeDir);
+                    }
+
+                    $img = $faker->image($disk->path($targetRelativeDir), 350, 350);
                     //bug with curl an via.placeholder...
                     if(!$img)
                     {
