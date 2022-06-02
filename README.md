@@ -6,7 +6,7 @@ Plateforme de mise en relation entre le monde du travail et les apprentis...
 Si vous voulez contribuer au projet, voici comment monter l’environnement de développement.
 
 ### Clone du dépôt
-```bash
+```shell
 git clone git@github.com:jonathanMelly/pm2etml-intranet.git
 ```
 
@@ -19,21 +19,21 @@ OU
 
 - Docker (avec sail, voir docker-compose.yml)
 
-### Dépenedances PHP
+### Dépendances PHP
 Si nécessaire, installer composer (et PHP 8.1 par la même occasion)
-```bash
+```shell
 composer install
 ```
 
 ### Dépendances Javascript
 Si nécessaire, installer NPM
-```bash
+```shell
 npm install
 npm run dev
 ```
 
 ### Fichier de configuration
-```bash
+```shell
 cp .env-example .env
 php artisan key:generate --ansi
 ```
@@ -42,17 +42,17 @@ php artisan key:generate --ansi
 ### Base de données
 Il faut impérativement utiliser MariaDB car le projet se base sur une utilisation particulière de la clause Group By...
 Si besoin, démarrer une instance avec Docker
-```bash
+```shell
 docker run --detach --env MARIADB_ROOT_PASSWORD=123 -p3306:3306  mariadb:10.3.34
 php artisan migrate:fresh --seed
 ```
 
 ## Démarrage de l’application
-```bash
+```shell
 php artisan serve --port 80
 ```
 
 ## Rechargement à chaud des ressources javascript/css
-```bash
+```shell
 npm run watch
 ```
