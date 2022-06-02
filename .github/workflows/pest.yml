@@ -54,8 +54,10 @@ jobs:
         username: ${{ secrets.FTP_USER }}
         # Ftp password
         password: ${{ secrets.FTP_PASS }}
+        local_folder: './'
         # includes
         include: '["coverage_badge.svg"]'
+
         
 
 
