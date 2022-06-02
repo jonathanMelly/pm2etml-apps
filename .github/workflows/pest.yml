@@ -55,7 +55,7 @@ jobs:
         # Ftp password
         password: ${{ secrets.FTP_PASS }}
         # includes
-        include: "coverage_badge.svg"
+        include: "['coverage_badge.svg']"
         
 
 
