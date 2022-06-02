@@ -10,6 +10,8 @@ jobs:
   laravel-tests:
 
     runs-on: ubuntu-latest
+    
+    environment: multi-purpose
 
     steps:
     - uses: shivammathur/setup-php@v2
@@ -47,11 +49,11 @@ jobs:
       uses: sand4rt/ftp-deployer@v1.4
       with:
         # FTP host URL like: ftp.host.com or sftp.host.com
-        host: ${{ secrets.ftp_host }}
+        host: ${{ secrets.FTP_HOSTt }}
         # Ftp username
-        username: ${{ secrets.ftp_user }}
+        username: ${{ secrets.FTP_USER }}
         # Ftp password
-        password: ${{ secrets.ftp_pass }}
+        password: ${{ secrets.FTP_PASS }}
         # includes
         include: coverage_badge.svg
         
