@@ -53,7 +53,7 @@ class JobDefinitionFactory extends Factory
             'allocated_time' => $this->faker->numberBetween(5,200),
             'one_shot' => ($priority>JobPriority::MANDATORY->value?
                 $this->faker->boolean(20):
-                false) // mandatory projects cannot be for 1 single worker !!!
+                false) // mandatory projects cannot be for 1 single worker !!!,
 
         ];
     }

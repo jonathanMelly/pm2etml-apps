@@ -11,6 +11,7 @@ use App\Models\GroupName;
 use App\Models\JobDefinition;
 use App\Models\JobDefinitionDocAttachment;
 use App\Models\JobDefinitionMainImageAttachment;
+use App\Models\Skill;
 use App\Models\User;
 use Database\Seeders\AcademicPeriodSeeder;
 use Database\Seeders\PermissionV1Seeder;
@@ -120,6 +121,8 @@ trait TestHarness
                     ->create($this
                         ->createAttachment(name:'image.png',image:true,save:false)->attributesToArray()
                     );
+
+                $job->skills()->attach(Skill::firstOrCreateFromString('tgroup:tskill'));
             })
             ->count(1)->create();
 

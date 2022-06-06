@@ -76,6 +76,7 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
                     'one_shot' => 1,
                     'published_date' => today(),
                     'other_attachments' => json_encode(['test.zip'=>$attachmentId]),
+                    'skills'=> json_encode(['group:skill'])
                 ]/*, kept as documentation if needed somewhere else
                 [
                     'image_data'=>'job.png',
@@ -97,6 +98,7 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
 
         /* @var $createdJob \App\Models\JobDefinition */
         $createdJob = JobDefinition::orderByDesc('id')->first();
+
         $this->assertEquals('lol', $createdJob->title);
         $this->assertEquals('description', $createdJob->description);
         $this->assertEquals(1, $createdJob->required_xp_years);
@@ -106,6 +108,8 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
         $this->assertEquals($providers,$createdJob->providers()->get()->pluck('id')->toArray());
         $this->assertEquals($createdJob->id,JobDefinitionDocAttachment::findOrFail($attachmentId)->jobDefinition->id);
         $this->assertEquals($imageId,$createdJob->image->id);
+
+        $this->assertStringContainsString('group: skill',$output);
 
     }
 
@@ -127,6 +131,7 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
                     'allocated_time' => 100,
                     'published_date' => today(),
                     'other_attachments' => json_encode('{}'),
+                    'skills'=> json_encode(['group2:skill2'])
                 ]
             );
 
@@ -134,11 +139,13 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
 
         $response
             ->seePageIs('/marketplace')
-            ->seeText('Emploi "'.$updatedJob->title.'" mis à jour');
+            ->seeText('Emploi "'.$updatedJob->title.'" mis à jour')
+            ->seeText('group2: skill2');
 
         $this->assertEquals('update-title',$updatedJob->title);
         $this->assertEquals('update-desc',$updatedJob->description);
-        //TODO more checks
+
+        //TODO more checks ( ...)
 
     }
 

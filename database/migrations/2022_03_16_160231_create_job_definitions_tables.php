@@ -2,6 +2,7 @@
 
 use App\Enums\CustomPivotTableNames;
 use App\Enums\JobPriority;
+use App\Models\Skill;
 use App\Models\User;
 use App\Models\JobDefinition;
 use Illuminate\Database\Migrations\Migration;
@@ -56,6 +57,14 @@ return new class extends Migration
             $table->foreignIdFor(User::class)->constrained();
             $table->foreignIdFor(JobDefinition::class)->constrained();
             $table->unique(array('user_id', 'job_definition_id'));
+        });
+
+        Schema::create('job_definition_skill',function(Blueprint $table)
+        {
+            $table->id();
+            $table->foreignIdFor(JobDefinition::class)->constrained();
+            $table->foreignIdFor(Skill::class)->constrained();
+            $table->unique(array('skill_id', 'job_definition_id'));
         });
 
     }

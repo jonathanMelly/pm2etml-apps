@@ -3,15 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Constants\RoleName;
+use App\Exceptions\DataIntegrityException;
 use App\Http\Requests\StoreUpdateJobDefinitionRequest;
 use App\Http\Requests\UpdateJobDefinitionRequest;
 use App\Models\Attachment;
 use App\Models\JobDefinition;
 use App\Models\JobDefinitionMainImageAttachment;
+use App\Models\Skill;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 
 
 class JobDefinitionController extends Controller
@@ -137,11 +140,15 @@ class JobDefinitionController extends Controller
         list($pendingAndOrCurrentAttachments, $pendingOrCurrentImage) =
             $this->extractAttachmentState($jobDefinition);
 
+        $availableSkills = Skill::query()
+            ->whereNotIn(tbl(Skill::class).'.id',$jobDefinition->skills->pluck('id'))
+            ->get();
+
         return view('jobDefinition-create-update')
             ->with(compact(
                 'providers',
                 'pendingAndOrCurrentAttachments',
-                'pendingOrCurrentImage'))
+                'pendingOrCurrentImage','availableSkills'))
             ->with('job',$jobDefinition);
     }
 
@@ -174,10 +181,15 @@ class JobDefinitionController extends Controller
             $image = $request->input('image');
             if($jobDefinition->image==null || $jobDefinition->image->id != $image)
             {
-                JobDefinitionMainImageAttachment::findOrFail($image)
-                    ->attachJobDefinition($jobDefinition);
+                $image = JobDefinitionMainImageAttachment::findOrFail($image);
+                if($image->attachable_id!=null)
+                {
+                    throw new DataIntegrityException('Image already linked to another job');
+                }
+                $image->attachJobDefinition($jobDefinition);
             }
 
+            //PROVIDERS
             //Handle relations (id must have been attributed)
             $providers = User::role(RoleName::TEACHER)
                 ->whereIn('id', $request->input('providers'))
@@ -190,6 +202,13 @@ class JobDefinitionController extends Controller
             {
                 $attachment->attachJobDefinition($jobDefinition);
             }
+
+            //Skills
+            $submittedSkills = collect(json_decode($request->input('skills')));
+            $skillIds=$submittedSkills
+                ->transform(fn($el)=>Skill::firstOrCreateFromString($el))
+                ->pluck('id');
+            $jobDefinition->skills()->sync($skillIds);
 
         });
 

@@ -42,6 +42,8 @@ use JetBrains\PhpStorm\Pure;
  * @property-read \App\Models\JobDefinitionMainImageAttachment|null $image
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $providers
  * @property-read int|null $providers_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Skill[] $skills
+ * @property-read int|null $skills_count
  * @method static Builder|JobDefinition available()
  * @method static \Database\Factories\JobDefinitionFactory factory(...$parameters)
  * @method static Builder|JobDefinition newModelQuery()
@@ -132,6 +134,11 @@ class JobDefinition extends Model
     {
         return $this->morphOne(related:JobDefinitionMainImageAttachment::class,
             name: 'attachable');
+    }
+
+    public function skills(): BelongsToMany
+    {
+        return $this->belongsToMany(Skill::class);
     }
 
     #[Pure] public function getAllocatedTime(RequiredTimeUnit $targetUnit = RequiredTimeUnit::HOUR): float

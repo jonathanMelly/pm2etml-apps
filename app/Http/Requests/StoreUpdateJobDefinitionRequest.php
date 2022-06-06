@@ -34,7 +34,8 @@ class StoreUpdateJobDefinitionRequest extends FormRequest
             'image'=>'required',
             'other_attachments' => 'json|nullable',
             'any_attachment_to_delete'=>'json|nullable',
-            'providers'=>'array|required'
+            'providers'=>'array|required',
+            'skills'=>'json|nullable'
         ];
     }
 }

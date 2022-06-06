@@ -56,6 +56,7 @@ if(!function_exists('tbl'))
 {
     function tbl($class)
     {
+        //TODO add cache ?
         return app($class)->getTable();
     }
 }

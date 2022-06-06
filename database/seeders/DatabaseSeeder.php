@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             AcademicPeriodSeeder::class,
             //GroupSeeder::class, => started by UserV1Seeder as it depends on it
             UserV1Seeder::class,
+            SkillSeeder::class,
             JobSeeder::class,
             ContractSeeder::class];
 

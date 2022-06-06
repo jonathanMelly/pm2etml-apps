@@ -7,6 +7,7 @@ use App\Constants\RoleName;
 use App\Models\Attachment;
 use App\Models\JobDefinition;
 use App\Models\JobDefinitionMainImageAttachment;
+use App\Models\Skill;
 use App\Models\User;
 use Faker\Generator;
 use Illuminate\Container\Container;
@@ -89,6 +90,13 @@ class JobSeeder extends Seeder
                     $client = $candidates[rand($clientCounts/2,$clientCounts-1)];
                     $job->providers()->attach($client->id);
                 }
+
+                $job->skills()->sync(
+                    $faker->randomElements(
+                        Skill::pluck('id')->toArray(),
+                        $faker->numberBetween(0,Skill::count()-1)
+                    ));
+
 
         })->count($total)->create();
     }

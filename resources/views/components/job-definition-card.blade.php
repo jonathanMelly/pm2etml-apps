@@ -56,8 +56,9 @@
 @endphp
 
 <div class="flex flex-col">
-    @if($job->attachments->isNotEmpty())
-    <div class="z-10 absolute h-0">
+
+    <div class="z-10 absolute h-0 flex flex-row">
+        @if($job->attachments->isNotEmpty())
         <div class="dropdown dropdown-hover">
             <label tabindex="0">
                 <img src="{{url('img/paperclip.svg')}}" class="hover:cursor-pointer h-10" >
@@ -71,8 +72,24 @@
                 @endforeach
             </ul>
         </div>
+        @endif
+        @if($job->skills->isNotEmpty())
+        <div x-data="{ open: false }" @mouseleave="open = false" class="hover:cursor-help">
+            <label tabindex="0">
+                <img @mouseover="open = true" src="{{url('img/badge.svg')}}" class="hover:cursor-help h-10" >
+            </label>
+            <div x-show="open" class="overflow-y-auto rounded-box border-2 border-base-300 bg-base-200 text-base-content w-80 max-h-80">
+                <h2 class="text-center">{{__('Skills')}}</h2>
+                @foreach($job->skills as $skill)
+                    <div class="badge badge-outline gap-2 mx-1 my-1">
+                        {{$skill->getFullName()}}
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
     </div>
-    @endif
+
 
     <{{$cardElement}} class="h-full mt-2 card card-compact {{$job->one_shot?'border border-accent border-dashed':''}} w-auto bg-base-100 shadow-xl {{$cardAdditionalClass}}" {{$cardHref}} >
         {{-- DELETE/EVALUATE BUTTONS --}}
