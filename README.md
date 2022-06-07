@@ -35,16 +35,31 @@ npm run dev
 
 ### Fichier de configuration
 ```shell
-cp .env-example .env
+cp .env.example .env
 php artisan key:generate --ansi
 ```
-*Adapter si nécessaire la configuration avec la base de données*
+
+#### Base de données
+Adapter si nécessaire la configuration (fichier .env) avec la base de données utilisée (voir ci-après avec docker)
+
+##### Mot de passe
+###### Version simple
+Décommenter / Ajouter cette ligne dans le fichier .env
+```text
+FAKE_AUTHENTICATOR_PASSWORD=123456789
+```
+
+###### Version complète
+La fin du fichier [config/auth.php](https://raw.githubusercontent.com/jonathanMelly/pm2etml-intranet/dev/config/auth.php) expose la mécanique utilisée et donc la possibilité d’adapter la configuration selon ses besoins...
 
 ### Base de données
 Il faut impérativement utiliser MariaDB car le projet se base sur une utilisation particulière de la clause Group By...
 Si besoin, démarrer une instance avec Docker
 ```shell
 docker run --detach --env MARIADB_ROOT_PASSWORD=123 -p3306:3306  mariadb:10.3.34
+```
+Puis créer/remplir la base de données
+```shell
 php artisan migrate:fresh --seed
 ```
 
