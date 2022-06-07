@@ -1,0 +1,20 @@
+name: production
+
+on:
+  push:
+    branches: [ prod ]
+  pull_request:
+    branches: [ prod ]
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    environment: production
+
+    steps:
+      - name: Trigger deploy on prod with webhook
+        uses: zzzze/webhook-trigger@v1.0.0
+        with:
+          webhook_url: ${{ secrets.PLESK_WEBHOOK_URL }}
