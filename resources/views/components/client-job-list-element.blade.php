@@ -6,7 +6,7 @@
             <a href="{{route('jobDefinitions.show',['jobDefinition'=>$job->id])}}" class="flex flex-row items-center space-x-3">
                 <div class="avatar" >
                     <div class="mask mask-squircle w-12 h-12">
-                        <img src="{{route('dmz-asset',['file'=>$job->image->storage_path])}}" alt="{{$job->title}}" />
+                        <img src="{{route('dmz-asset',['file'=>$job->image?->storage_path])}}" alt="{{$job->title}}" />
                     </div>
                 </div>
                 <div>

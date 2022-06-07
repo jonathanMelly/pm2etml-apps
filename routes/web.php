@@ -46,7 +46,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('contracts',\App\Http\Controllers\ContractController::class);
 
     //Files (images) handling (avoid any injected script in image as returning the file as file !
-    Route::get(\App\Constants\FileFormat::DMZ_ASSET_URL.'/{file}', [DmzAssetController::class,'getFile'])
+    Route::get(\App\Constants\FileFormat::DMZ_ASSET_URL.'/{file?}', [DmzAssetController::class,'getFile'])
         ->where('file','(.*)')
         ->name('dmz-asset');
 

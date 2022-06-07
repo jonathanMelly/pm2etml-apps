@@ -14,7 +14,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Str;
 
 
 class JobDefinitionController extends Controller
@@ -37,6 +36,8 @@ class JobDefinitionController extends Controller
             ->orderBy('priority')
             ->with('providers')
             ->with('image')
+            ->with('attachments')
+            ->with('skills.skillGroup')
             ->get();
         return view('marketplace')->with(compact('definitions'));
     }
@@ -142,7 +143,11 @@ class JobDefinitionController extends Controller
 
         $availableSkills = Skill::query()
             ->whereNotIn(tbl(Skill::class).'.id',$jobDefinition->skills->pluck('id'))
+            ->with('skillGroup')
             ->get();
+
+        //Force eager load on object given by Laravel on route ...
+        $jobDefinition->load('skills.skillGroup');
 
         return view('jobDefinition-create-update')
             ->with(compact(
@@ -236,7 +241,7 @@ class JobDefinitionController extends Controller
 
         $pendingOrCurrentImage =
             \App\Models\JobDefinitionMainImageAttachment::find(old('image',
-                $jobDefinition->exists?$jobDefinition->image->id:null));
+                $jobDefinition->image?->id));
 
         return array($pendingAndOrCurrentAttachments, $pendingOrCurrentImage);
     }

@@ -36,7 +36,7 @@
     else
     {
         $mask = \App\Http\Middleware\Theme::timestampToTheme(now()->toDateTime())=='valentine'?'mask mask-heart':'rounded-md';
-        $imageSrc=route('dmz-asset',['file'=>$job->image->storage_path]);
+        $imageSrc=route('dmz-asset',['file'=>$job->image?->storage_path]);
     }
 
 

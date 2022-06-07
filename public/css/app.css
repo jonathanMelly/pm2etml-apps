@@ -14726,9 +14726,6 @@ body[dir="rtl"] .checkbox:checked,
 .z-50 {
   z-index: 50;
 }
-.z-20 {
-  z-index: 20;
-}
 .col-span-2 {
   grid-column: span 2 / span 2;
 }
@@ -14762,6 +14759,18 @@ body[dir="rtl"] .checkbox:checked,
   margin-left: 1rem;
   margin-right: 1rem;
 }
+.-my-1 {
+  margin-top: -0.25rem;
+  margin-bottom: -0.25rem;
+}
+.-my-2 {
+  margin-top: -0.5rem;
+  margin-bottom: -0.5rem;
+}
+.my-0 {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
 .ml-3 {
   margin-left: 0.75rem;
 }
@@ -14789,11 +14798,11 @@ body[dir="rtl"] .checkbox:checked,
 .ml-1 {
   margin-left: 0.25rem;
 }
-.mr-2 {
-  margin-right: 0.5rem;
-}
 .ml-2 {
   margin-left: 0.5rem;
+}
+.mr-2 {
+  margin-right: 0.5rem;
 }
 .mt-4 {
   margin-top: 1rem;
@@ -14888,15 +14897,6 @@ body[dir="rtl"] .checkbox:checked,
 .h-6 {
   height: 1.5rem;
 }
-.h-56 {
-  height: 14rem;
-}
-.h-72 {
-  height: 18rem;
-}
-.h-80 {
-  height: 20rem;
-}
 .max-h-fit {
   max-height: -webkit-fit-content;
   max-height: -moz-fit-content;
@@ -14946,6 +14946,15 @@ body[dir="rtl"] .checkbox:checked,
 .w-24 {
   width: 6rem;
 }
+.w-80 {
+  width: 20rem;
+}
+.w-4\/5 {
+  width: 80%;
+}
+.w-1\/5 {
+  width: 20%;
+}
 .w-4 {
   width: 1rem;
 }
@@ -14981,24 +14990,6 @@ body[dir="rtl"] .checkbox:checked,
 }
 .w-48 {
   width: 12rem;
-}
-.w-5\/6 {
-  width: 83.333333%;
-}
-.w-1\/6 {
-  width: 16.666667%;
-}
-.w-0 {
-  width: 0px;
-}
-.w-4\/5 {
-  width: 80%;
-}
-.w-1\/5 {
-  width: 20%;
-}
-.w-80 {
-  width: 20rem;
 }
 .max-w-xl {
   max-width: 36rem;
@@ -15134,9 +15125,6 @@ body[dir="rtl"] .checkbox:checked,
 .self-center {
   align-self: center;
 }
-.overflow-auto {
-  overflow: auto;
-}
 .overflow-hidden {
   overflow: hidden;
 }
@@ -15218,6 +15206,10 @@ body[dir="rtl"] .checkbox:checked,
 .border-transparent {
   border-color: transparent;
 }
+.border-base-300 {
+  --tw-border-opacity: 1;
+  border-color: hsl(var(--b3, var(--b2)) / var(--tw-border-opacity));
+}
 .border-secondary {
   --tw-border-opacity: 1;
   border-color: hsl(var(--s) / var(--tw-border-opacity));
@@ -15225,14 +15217,6 @@ body[dir="rtl"] .checkbox:checked,
 .border-neutral {
   --tw-border-opacity: 1;
   border-color: hsl(var(--n) / var(--tw-border-opacity));
-}
-.border-success {
-  --tw-border-opacity: 1;
-  border-color: hsl(var(--su) / var(--tw-border-opacity));
-}
-.border-base-300 {
-  --tw-border-opacity: 1;
-  border-color: hsl(var(--b3, var(--b2)) / var(--tw-border-opacity));
 }
 .border-opacity-20 {
   --tw-border-opacity: 0.2;
@@ -15280,22 +15264,6 @@ body[dir="rtl"] .checkbox:checked,
   --tw-bg-opacity: 1;
   background-color: rgb(31 41 55 / var(--tw-bg-opacity));
 }
-.bg-accent {
-  --tw-bg-opacity: 1;
-  background-color: hsl(var(--a) / var(--tw-bg-opacity));
-}
-.bg-neutral {
-  --tw-bg-opacity: 1;
-  background-color: hsl(var(--n) / var(--tw-bg-opacity));
-}
-.bg-secondary {
-  --tw-bg-opacity: 1;
-  background-color: hsl(var(--s) / var(--tw-bg-opacity));
-}
-.bg-neutral-content {
-  --tw-bg-opacity: 1;
-  background-color: hsl(var(--nc) / var(--tw-bg-opacity));
-}
 .bg-opacity-50 {
   --tw-bg-opacity: 0.5;
 }
@@ -15304,9 +15272,6 @@ body[dir="rtl"] .checkbox:checked,
 }
 .bg-opacity-40 {
   --tw-bg-opacity: 0.4;
-}
-.bg-opacity-90 {
-  --tw-bg-opacity: 0.9;
 }
 .bg-gradient-to-r {
   background-image: linear-gradient(to right, var(--tw-gradient-stops));
@@ -15371,6 +15336,10 @@ body[dir="rtl"] .checkbox:checked,
 .py-1 {
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
+}
+.py-0 {
+  padding-top: 0px;
+  padding-bottom: 0px;
 }
 .pb-2 {
   padding-bottom: 0.5rem;
@@ -15520,10 +15489,6 @@ body[dir="rtl"] .checkbox:checked,
   --tw-text-opacity: 1;
   color: hsl(var(--sc) / var(--tw-text-opacity));
 }
-.text-neutral {
-  --tw-text-opacity: 1;
-  color: hsl(var(--n) / var(--tw-text-opacity));
-}
 .underline {
   -webkit-text-decoration-line: underline;
           text-decoration-line: underline;
@@ -15622,11 +15587,11 @@ body[dir="rtl"] .checkbox:checked,
 .ease-out {
   transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
 }
-.hover\:cursor-pointer:hover {
-  cursor: pointer;
-}
 .hover\:cursor-help:hover {
   cursor: help;
+}
+.hover\:cursor-pointer:hover {
+  cursor: pointer;
 }
 .hover\:border-opacity-30:hover {
   --tw-border-opacity: 0.3;

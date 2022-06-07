@@ -46,7 +46,7 @@
             {{-- Reloads from old if any errors happened (and happen again), we keep what user asked until then... --}}
             let otherAttachments = JSON.parse('{!!old('other_attachments','{}')!!}');
             let anyAttachmentsToDelete = JSON.parse("{{old('any_attachment_to_delete','[]')}}");
-            let image = '{{old('image',$editMode?$job->image->id:'')}}';{{-- always send image id... --}}
+            let image = '{{old('image',$job->image!=null?$job->image->id:'')}}';{{-- always send image id... --}}
 
             function updateFormFields() {
                 document.querySelector('[name=other_attachments]').value =
@@ -180,16 +180,18 @@
 
                     init: function () {
                         this.on("removedfile", function (file) {
-                            if (image != '') {
-                                axios.delete('{{url('attachments')}}/' + image);
-                                image = '';
-                            } else if (file.hasOwnProperty('correlation_id')) {
+                            if (file.hasOwnProperty('correlation_id')) {
                                 {{--
                                 User wants to remove previous image but has not yet saved changes (button click)...
                                 We do not delete the attachment now and wait for editController to do it
                                 (which let user change his mind without loosing anything)
                                 --}}
                                 anyAttachmentsToDelete.push(file.correlation_id);
+                                image = '';
+                            }
+                            else if (image != '') {
+                                axios.delete('{{url('attachments')}}/' + image);
+                                image = '';
                             }
                             updateFormFields();
                         });
@@ -433,12 +435,12 @@
                                         <label tabindex="0" class="ml-1"><i
                                                     class="fa-solid fa-info-circle fa-xl hover:cursor-help"></i></label>
                                         <ul tabindex="0"
-                                            class="dropdown-content text-xs menu p-2 shadow bg-base-100 rounded-box w-80 max-h-90 overflow-y-auto">
+                                            class="dropdown-content text-xs menu p-2 shadow bg-base-100 rounded-box w-80 max-h-80 overflow-y-auto">
                                             <li class="italic normal-case">{{__("Besides existing skills below, you can add any custom one in format")}} {{__('SKILL_GROUP')}}{{\App\Models\Skill::SEPARATOR}}{{__('SKILL_NAME')}}</li>
                                             <li></li>
                                             @foreach($availableSkills as $skill)
-                                                <li class="whitespace-nowrap normal-case">
-                                                    <a @click="skill='{{$skill->getFullName()}}';addSkill()">{{$skill->getFullName()}}</a>
+                                                <li class="whitespace-nowrap normal-case my-0 py-0">
+                                                    <a class="py-1 my-0" @click="skill='{{$skill->getFullName()}}';addSkill()">{{$skill->getFullName()}}</a>
                                                 </li>
                                             @endforeach
                                         </ul>
@@ -514,7 +516,7 @@
                                for="grid-password">
                             {{__('Publish')}}
                         </label>
-                        <input name="publish" type="checkbox" class="toggle"@checked($job->isPublished())/>
+                        <input name="publish" type="checkbox" class="toggle" @checked($job->isPublished()) >
                         <p class="text-accent-content text-sm italic">{{__('Only published jobs are shown in the marketplace')}}</p>
                     @else
                         <button onclick="document.querySelector('#create-update-form').submit()"
