@@ -1,4 +1,4 @@
-# PM2ETML-INTRANET [![wakatime](https://wakatime.com/badge/user/bf7fcc14-d7d0-41c4-99cb-bbe8ecef41bf/project/4fb00346-5e05-4e6b-a906-57e91c256d09.svg)](https://wakatime.com/badge/user/bf7fcc14-d7d0-41c4-99cb-bbe8ecef41bf/project/4fb00346-5e05-4e6b-a906-57e91c256d09) ![coverage](http://intranet.pm2etml.ch/coverage_badge.svg)
+# PM2ETML-INTRANET [![testing](https://github.com/jonathanMelly/pm2etml-intranet/actions/workflows/test.yml/badge.svg?branch=dev)](https://github.com/jonathanMelly/pm2etml-intranet/actions/workflows/test.yml) ![coverage](http://intranet.pm2etml.ch/coverage_badge.svg) [![wakatime](https://wakatime.com/badge/user/bf7fcc14-d7d0-41c4-99cb-bbe8ecef41bf/project/4fb00346-5e05-4e6b-a906-57e91c256d09.svg)](https://wakatime.com/badge/user/bf7fcc14-d7d0-41c4-99cb-bbe8ecef41bf/project/4fb00346-5e05-4e6b-a906-57e91c256d09)
 
 Plateforme de mise en relation entre le monde du travail et les apprentis...
 
