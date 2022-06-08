@@ -10,4 +10,11 @@ class RoleName
     public const DEAN='doyen';
     public const ADMIN='root';
 
+    public const AVAILABLE_ROLES = [
+        self::STUDENT,
+        self::TEACHER,
+        self::PRINCIPAL,
+        self::DEAN,
+        self::ADMIN];
+
 }
