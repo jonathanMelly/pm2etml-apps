@@ -272,10 +272,10 @@
                                for="name">
                             {{__('Title')}}
                         </label>
-                        <input class="input w-full @error('name') border-error @enderror" id="title" name="title"
+                        <input class="input w-full @error('title') border-error @enderror" id="title" name="title"
                                type="text" placeholder="PVMaker : Générateur de procès-verbal"
-                               value="{{old('name',$job->title)}}">
-                        @error('name')
+                               value="{{old('title',$job->title)}}">
+                        @error('title')
                         <p class="text-error text-xs italic mt-1">{{ $message }}</p>
                         @enderror
                     </div>
