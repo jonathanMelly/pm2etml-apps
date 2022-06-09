@@ -10,7 +10,7 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-1 sm:gap-2 md:gap-3">
             @forelse ($definitions as  $definition)
-                <x-job-definition-card :job="$definition" :view-only="Auth::user()->cannot('jobs-apply')"/>
+                <x-job-definition-card :job="$definition" :view-only="Auth::user()->cannot('jobs-apply') || Auth::user()->isAdmin()"/>
             @empty
                 <p>{{ __('No jobs') }}</p>
             @endforelse
