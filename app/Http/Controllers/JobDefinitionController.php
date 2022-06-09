@@ -129,7 +129,11 @@ class JobDefinitionController extends Controller
 
     protected function createEdit(Request $request,JobDefinition $jobDefinition)
     {
-        Session::put('start-url',$request->header('referer'));
+        //First arrival on form, we store the url the user comes from (to redirect after success)
+        if(!Session::hasOldInput())
+        {
+            Session::put('start-url',$request->header('referer'));
+        }
 
         $providers = User::role(RoleName::TEACHER)
             ->orderBy('firstname')
