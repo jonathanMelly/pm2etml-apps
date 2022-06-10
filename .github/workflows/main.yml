@@ -2,12 +2,12 @@ name: staging
 
 on:
   push:
-    branches: [ dev ]
+    branches: [ main ]
   pull_request:
-    branches: [ dev ]
+    branches: [ main ]
 
 jobs:
-  test-deploy-badge:
+  test-staging-badge:
 
     runs-on: ubuntu-latest
 
