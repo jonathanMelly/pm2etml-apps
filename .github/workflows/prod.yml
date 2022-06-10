@@ -3,8 +3,8 @@ name: production
 on:
   push:
     branches: [ prod ]
-  pull_request:
-    branches: [ prod ]
+  tags:
+    - v*
 
 jobs:
   deploy:
