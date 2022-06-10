@@ -5,6 +5,10 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+    #Disable action for release-please stuff
+    paths-ignore:
+      - 'CHANGELOG.md'
+      - 'version.txt'
 
 jobs:
   test-staging-badge:
