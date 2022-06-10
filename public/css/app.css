@@ -12206,13 +12206,6 @@ html {
   place-items: start;
   gap: 0.5rem;
 }
-.footer-center {
-  place-items: center;
-  text-align: center;
-}
-.footer-center > * {
-  place-items: center;
-}
 @media (min-width: 48rem) {
 
   .footer {
@@ -14708,6 +14701,10 @@ body[dir="rtl"] .checkbox:checked,
 .relative {
   position: relative;
 }
+.sticky {
+  position: -webkit-sticky;
+  position: sticky;
+}
 .top-0 {
   top: 0px;
 }
@@ -14716,6 +14713,12 @@ body[dir="rtl"] .checkbox:checked,
 }
 .left-0 {
   left: 0px;
+}
+.bottom-0 {
+  bottom: 0px;
+}
+.top-\[100vh\] {
+  top: 100vh;
 }
 .z-0 {
   z-index: 0;
@@ -14811,9 +14814,6 @@ body[dir="rtl"] .checkbox:checked,
 .-mt-px {
   margin-top: -1px;
 }
-.mb-1 {
-  margin-bottom: 0.25rem;
-}
 .mb-4 {
   margin-bottom: 1rem;
 }
@@ -14834,6 +14834,9 @@ body[dir="rtl"] .checkbox:checked,
 }
 .ml-5 {
   margin-left: 1.25rem;
+}
+.mb-1 {
+  margin-bottom: 0.25rem;
 }
 .block {
   display: block;
@@ -14889,8 +14892,8 @@ body[dir="rtl"] .checkbox:checked,
 .h-6 {
   height: 1.5rem;
 }
-.h-3 {
-  height: 0.75rem;
+.h-screen {
+  height: 100vh;
 }
 .max-h-fit {
   max-height: -webkit-fit-content;
@@ -14913,6 +14916,44 @@ body[dir="rtl"] .checkbox:checked,
 }
 .min-h-screen {
   min-height: 100vh;
+}
+.min-h-fit {
+  min-height: -webkit-fit-content;
+  min-height: -moz-fit-content;
+  min-height: fit-content;
+}
+.min-h-\[calc\(100\%-10rem\)\] {
+  min-height: calc(100% - 10rem);
+}
+.min-h-\[calc\(100\%_-_10rem\)\] {
+  min-height: calc(100% - 10rem);
+}
+.min-h-\[calc\(100\%_-_10vh\)\] {
+  min-height: calc(100% - 10vh);
+}
+.min-h-\[calc\(100\%\)\] {
+  min-height: calc(100%);
+}
+.min-h-\[calc\(screen-10\)\] {
+  min-height: calc(screen-10);
+}
+.min-h-\[calc\(screen\)\] {
+  min-height: calc(screen);
+}
+.min-h-\[calc\(100vh-10px\)\] {
+  min-height: calc(100vh - 10px);
+}
+.min-h-\[calc\(100vh-10vh\)\] {
+  min-height: calc(100vh - 10vh);
+}
+.min-h-\[calc\(100vh-10rem\)\] {
+  min-height: calc(100vh - 10rem);
+}
+.min-h-\[calc\(100vh-2\.5rem\)\] {
+  min-height: calc(100vh - 2.5rem);
+}
+.min-h-\[calc\(100vh-1\.25rem\)\] {
+  min-height: calc(100vh - 1.25rem);
 }
 .w-5 {
   width: 1.25rem;
@@ -15048,9 +15089,6 @@ body[dir="rtl"] .checkbox:checked,
 }
 .grid-cols-3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-.grid-cols-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .flex-row {
   flex-direction: row;

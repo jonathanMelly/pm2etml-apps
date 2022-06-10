@@ -21,13 +21,13 @@
 <body class="font-sans antialiased">
 
 <div class="min-h-screen bg-base-100 flex flex-col">
-    {{ $top??'' }}
 
-    <main>
+    <main class="min-h-[calc(100vh-2.5rem)]">{{--2.5 matches footer h-5*2--}}
+        {{ $top??'' }}
         {{ $slot }}
     </main>
 
-    <div class="sm:mb-2 mb-1 sm:mt-3 mt-2">
+    <div class="sm:mb-2 mb-1 sm:mt-3 mt-2 h-5">
         <footer class="sm:mx-6 bg-base-300 text-base-content rounded-box text-xs">
             <div class="flex flex-row justify-center content-center gap-1">
                 <div>
