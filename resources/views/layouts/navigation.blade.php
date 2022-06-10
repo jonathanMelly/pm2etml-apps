@@ -36,7 +36,7 @@
                             <span class="text-xl">{{ Auth::user()->getInitials() }}</span>
                         </div>
                     </label>
-                    <ul tabindex="0" class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
+                    <ul tabindex="0" class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box min-w-52">
                         <li class="menu-title">
                             <span>{{__('Infos')}}</span>
                         </li>
@@ -45,7 +45,7 @@
                              @php
                                 $load=Auth::user()->getClientLoad(\App\Models\AcademicPeriod::current());
                             @endphp
-                            <div class="!text-opacity-75">
+                            <div class="!text-opacity-75 whitespace-nowrap">
                                 <i class="fa-solid fa-fire-burner"></i>
                             {{__('Load')}}: {{$load['percentage']}}% ({{$load['mine']}}/{{$load['total']}})
                             </div>
