@@ -26,13 +26,7 @@ $composer install --optimize-autoloader --no-dev --no-interaction >>$log 2>&1
 #Backup DB
 $php artisan backup:run --only-db >> $log 2>&1
 
-migrateCmd="migrate"
-#staging resets DB
-if [ -n $1 ] && [ $1 = "staging" ]; then
-    echo "resetting+seeding staging DB" >> $log
-    migrateCmd="migrate:fresh --seed"
-fi
-$php artisan $migrateCmd --no-interaction --force >> $log 2>&1
+$php artisan migrate --no-interaction --force >> $log 2>&1
 
 $php artisan optimize:clear >> $log 2>&1
 $php artisan optimize >> $log 2>&1
@@ -43,13 +37,6 @@ $php artisan permission:cache-reset >> $log 2>&1
 #done by optimize
 #$php artisan route:cache 2>&1 >> $log
 $php artisan view:cache >> $log 2>&1
-
-#creates directory if needed
-dmz_dir="storage/dmz-assets"
-if [ ! -d "${dmz_dir}" ]; then
-    echo "Creating $dmz_dir directory"
-    mkdir "${dmz_dir}"
-fi
 
 #Put back site online
 $php artisan up >> $log 2>&1
