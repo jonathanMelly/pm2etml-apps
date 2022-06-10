@@ -279,5 +279,6 @@
     "Skills": "Compétences",
     "Besides existing skills below, you can add any custom one in format": "En plus des compétences listées ci-dessous, vous pouvez en ajouter en utilisant le format",
     "SKILL_GROUP": "CENTRE_DE_COMPÉTENCES",
-    "SKILL_NAME": "COMPÉTENCE"
+    "SKILL_NAME": "COMPÉTENCE",
+    "Load": "Charge"
 }

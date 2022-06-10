@@ -37,14 +37,23 @@
                         </div>
                     </label>
                     <ul tabindex="0" class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
+                        <li class="menu-title">
+                            <span>{{__('Infos')}}</span>
+                        </li>
                         @can('jobDefinitions.create')
-                        <li>
-                            @php
+                        <li class="disabled">
+                             @php
                                 $load=Auth::user()->getClientLoad(\App\Models\AcademicPeriod::current());
                             @endphp
-                            {{__('Load:')}} {{$load['percentage']}}% ({{$load['mine']}}/{{$load['total']}})
+                            <div class="!text-opacity-75">
+                                <i class="fa-solid fa-fire-burner"></i>
+                            {{__('Load')}}: {{$load['percentage']}}% ({{$load['mine']}}/{{$load['total']}})
+                            </div>
                         </li>
                         @endcan
+                        <li class="menu-title">
+                            <span>{{__('Actions')}}</span>
+                        </li>
                         <li>
                             <x-logout-link />
                         </li>
