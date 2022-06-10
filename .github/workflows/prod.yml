@@ -1,10 +1,7 @@
 name: production
 
 on:
-  push:
-    branches: [ prod ]
-  tags:
-    - v*
+  release:
 
 jobs:
   deploy:
