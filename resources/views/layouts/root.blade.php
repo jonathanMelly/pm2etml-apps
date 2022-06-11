@@ -34,7 +34,7 @@
                     Copyright © {{date('Y')}} - All right reserved by PM2ETML -
                 </div>
                 <div>
-                    Version {{$version}}
+                    Version {!! $version !!}
                 </div>
                 @env('staging','production')
                     <div>|</div>

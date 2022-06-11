@@ -15,13 +15,38 @@ class RootLayout extends \Illuminate\View\Component
     public function render()
     {
         $version = Cache::rememberForever('version', function () {
+
             $releasedVersionPath = base_path(self::VERSION_FILENAME);
             $wipVersionPath = base_path(self::VERSION_WIP_FILENAME);
 
-            $versionFile=file_exists($wipVersionPath)?
-                $wipVersionPath:$releasedVersionPath;
+            //For release, wip file contains release version
+            $wipShaOrReleaseVersion=file_exists($wipVersionPath)?trim(file_get_contents($wipVersionPath)):null;
+            $releaseVersion=file_exists($releasedVersionPath)?trim(file_get_contents($releasedVersionPath)):null;
 
-            return file_exists($versionFile)? trim(file_get_contents($versionFile)):'unknown';
+            if($releaseVersion!=null)
+            {
+                $releaseVersionWithLink = '<a href="https://github.com/jonathanMelly/pm2etml-intranet/releases/tag/v'.$releaseVersion.'">'.$releaseVersion.'</a>';
+            }
+            else
+            {
+                $releaseVersionWithLink = null;
+            }
+
+            if(app()->environment('local'))
+            {
+                return '/!\DEV/!\ (~'.($releaseVersionWithLink??'unknown').')';
+            }
+            //Release
+            else if($wipShaOrReleaseVersion === $releaseVersion)
+            {
+                return $releaseVersionWithLink;
+            }
+            else
+            {
+                return '[!]STAGING[!] ('.($releaseVersionWithLink??'unknown')
+                    .'#<a href="https://github.com/jonathanMelly/pm2etml-intranet/commit/'.$wipShaOrReleaseVersion.'">'.$wipShaOrReleaseVersion.'</a>)';
+            }
+
         });
 
         return view('layouts.root')->with(compact('version'));
