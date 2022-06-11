@@ -110,7 +110,7 @@ trait TestHarness
 
         $client = $this->createUser(roles:RoleName::TEACHER);
 
-        JobDefinition::factory()
+        $job=JobDefinition::factory()
             ->afterMaking(function (JobDefinition $job) {
                 $job->published_date = today()->subWeek();
             })
@@ -124,9 +124,7 @@ trait TestHarness
 
                 $job->skills()->attach(Skill::firstOrCreateFromString('tgroup:tskill'));
             })
-            ->count(1)->create();
-
-        $job = JobDefinition::firstOrFail();
+            ->count(1)->create()->firstOrFail();
 
         $employees=[];
         for ($i=0;$i<$contractsCount;$i++)

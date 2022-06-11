@@ -25,11 +25,15 @@ class JobDefinitionController extends Controller
         $this->authorizeResource(JobDefinition::class, 'jobDefinition');
     }
 
-    public function marketPlace()
+    public function marketPlace(Request $request)
     {
+        //For filters
+        $providers = User::query()->whereHas('jobDefinitions')->get();
+
         $definitions = JobDefinition::query()
             ->where(fn($q)=>$q->published())
             ->where(fn($q)=>$q->available())
+            ->where(fn($q)=>$q->filter($request))
             ->whereNotIn('id',auth()->user()->contractsAsAWorker()->select('job_definition_id'))
             ->orderBy('required_xp_years')
             ->orderByDesc('one_shot')
@@ -39,7 +43,7 @@ class JobDefinitionController extends Controller
             ->with('attachments')
             ->with('skills.skillGroup')
             ->get();
-        return view('marketplace')->with(compact('definitions'));
+        return view('marketplace')->with(compact('definitions','providers'));
     }
 
     /**

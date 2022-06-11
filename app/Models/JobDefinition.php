@@ -5,18 +5,14 @@ namespace App\Models;
 use App\Enums\CustomPivotTableNames;
 use App\Enums\JobPriority;
 use App\Enums\RequiredTimeUnit;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 use JetBrains\PhpStorm\Pure;
 
 /**
@@ -99,6 +95,57 @@ class JobDefinition extends Model
         'allocated_time_unit'=>RequiredTimeUnit::class,
         'published_date'=> 'datetime'
     ];
+
+    public function scopeFilter(Builder $query, mixed $params)
+    {
+        //Simple ones
+        foreach(['required_xp_years','priority'] as $filter)
+        {
+            if(($input=existsAndNotEmpty($params,$filter))!=null)
+            {
+                //$query->where($filter,'=',$input);
+            }
+        }
+
+        // Sizes
+        if(($input=existsAndNotEmpty($params,'size'))!=null)
+        {
+            //TODO set constants / config for that...
+            //TODO Handle hours/periods...
+            $min = match($input)
+            {
+                default=>0,
+                'md'=>90,
+                'lg'=>120
+            };
+            $max = match($input)
+            {
+                'sm'=>89,
+                'md'=>119,
+                 default=>150
+            };
+            $query->whereBetween('allocated_time',[$min,$max]);
+        }
+
+        if(($input=existsAndNotEmpty($params,'provider'))!=null)
+        {
+            $query->whereHas('providers',fn($q)=>$q->where(tbl(User::class).'.id','=',$input));
+        }
+
+        if(($input=existsAndNotEmpty($params,'fulltext'))!=null)
+        {
+            $query->where(function(Builder $q) use($input){
+                $q->where('title','LIKE','%'.$input.'%');
+                $q->orWhere('description','LIKE','%'.$input.'%');
+                $q->orWhereHas('providers',function($q) use($input){
+                    $q->where(tbl(User::class).'.firstname','LIKE','%'.$input.'%');
+                    $q->orWhere(tbl(User::class).'.lastname','LIKE','%'.$input.'%');
+                });
+            });
+        }
+
+        return $query;
+    }
 
     public function scopePublished(Builder $query): Builder
     {

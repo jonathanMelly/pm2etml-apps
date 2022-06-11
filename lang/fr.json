@@ -280,5 +280,14 @@
     "Besides existing skills below, you can add any custom one in format": "En plus des compétences listées ci-dessous, vous pouvez en ajouter en utilisant le format",
     "SKILL_GROUP": "CENTRE_DE_COMPÉTENCES",
     "SKILL_NAME": "COMPÉTENCE",
-    "Load": "Charge"
+    "Load": "Charge",
+    "Any experience":"Toute expérience",
+    "Any priority": "Toute priorité",
+    "Any size": "Toute taille",
+    "Any provider": "Tous les fournisseurs",
+    "Text search": "Recherche textuelle",
+    "Filter": "Filtrer",
+    "Add a new job": "Ajouter un nouvel emploi",
+    "Type a skill and add it (ENTER or click on +)":"Saisir une compétence, par exemple 'infra:installation linux' et valider avec ENTER ou cliquer sur le bouton +",
+    "View all": "Tout voir"
 }

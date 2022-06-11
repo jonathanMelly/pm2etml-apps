@@ -74,4 +74,16 @@ if(!function_exists('b2s'))
     }
 }
 
+if(!function_exists('existsAndNotEmpty'))
+{
+    function existsAndNotEmpty(ArrayAccess $array,mixed $key)
+    {
+        if(isset($array[$key]) && ($value=trim($array[$key]))!=='')
+        {
+            return $value;
+        }
+        return null;
+    }
+}
+
 

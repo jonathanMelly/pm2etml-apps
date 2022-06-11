@@ -285,13 +285,7 @@
                                for="required_xp_years">
                             {{__('Target audience')}}
                         </label>
-                        <select class="select w-full" name="required_xp_years" id="required_xp_years">
-                            @for($i=1;$i<5;$i++)
-                                <option
-                                        value="{{$i-1}}" @selected(old('required_xp_years',$job->required_xp_years)==$i-1)>
-                                    {!!$i.'<sup>'.__(ordinal($i)).'</sup>&nbsp;'.__('year')!!}</option>
-                            @endfor
-                        </select>
+                        <x-job-select-xp-years class="w-full" :old="old('required_xp_years',$job->required_xp_years)" />
 
                     </div>
 
@@ -301,13 +295,7 @@
                             {{__('Priority')}}
                         </label>
                         <div class="relative">
-                            <select class="select w-full" name="priority" id="priority">
-                                @foreach(\App\Enums\JobPriority::cases() as $priority)
-                                    <option
-                                            value="{{$priority->value}}" @selected(old('priority',$editMode?$job->priority->value:-1)==$priority->value)>
-                                        {{__(Str::ucfirst(Str::lower($priority->name)))}}</option>
-                                @endforeach
-                            </select>
+                            <x-job-select-priority class="w-full" :old="old('priority',$editMode?$job->priority->value:-1)" />
                         </div>
 
                     </div>
