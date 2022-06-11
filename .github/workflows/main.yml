@@ -9,6 +9,7 @@ on:
     paths-ignore:
       - 'CHANGELOG.md'
       - 'version.txt'
+      - '.github/workflows/prod.yml'
 
 jobs:
   test-staging-badge:
