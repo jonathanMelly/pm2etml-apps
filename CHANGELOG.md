@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.1.0...v1.1.1) (2022-06-11)
+
+
+### Bug Fixes
+
+* **deploy:** prod version only shows version (not staging...) ([f4acb40](https://github.com/jonathanMelly/pm2etml-intranet/commit/f4acb40c07f55f1bb314f2cc96bbaec17fd4d80a))
+
 ## [1.1.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.0.0...v1.1.0) (2022-06-11)
 
 
