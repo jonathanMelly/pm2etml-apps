@@ -37,7 +37,7 @@ class RootLayout extends \Illuminate\View\Component
                 return '/!\DEV/!\ (~'.($releaseVersionWithLink??'unknown').')';
             }
             //Release
-            else if($wipShaOrReleaseVersion === $releaseVersion)
+            else if(empty($wipShaOrReleaseVersion) /*prod*/ || $wipShaOrReleaseVersion === $releaseVersion /*staging*/)
             {
                 return $releaseVersionWithLink;
             }
