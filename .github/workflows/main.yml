@@ -3,13 +3,18 @@ name: staging
 on:
   push:
     branches: [ main ]
+    #Disable action for doc change / other env
+    paths-ignore:
+      - '.github/workflows/prod.yml'
+      - 'README.md'
+      - 'doc/*'
   pull_request:
     branches: [ main ]
-    #Disable action for release-please stuff
+    #Disable action for release-please stuff and README
     paths-ignore:
       - 'CHANGELOG.md'
       - 'version.txt'
-      - '.github/workflows/prod.yml'
+      - 'README.md'
 
 jobs:
   test-staging-badge:
