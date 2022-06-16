@@ -11,3 +11,35 @@ jobs:
       - uses: google-github-actions/release-please-action@v3
         with:
           release-type: simple
+          default-branch: main
+
+  deploy release:
+    #TODO release output
+    if: ${{release.output.done}}
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v3
+
+        # Use a prod branch as plesk git deploy doesn’t support tag... (otherwise no need for a dedicated branch to avoid conflicts...)
+        - name: Merge into prod
+          run: |
+            git config --global user.name github-action
+            git config --global email github-action@noreply.com
+            git fetch --unshallow
+            git rebase prod main
+            git push
+        #TODO How to trigger workflow_dispatch
+        #Deploy staging
+        - uses: main.yml
+
+        #Deploy prod
+        - uses: prod.yml
+
+        #Update version to snapshot
+        - name: set next version to snapshot
+          run: |
+            git co main
+            echo "snapshot" > version.txt
+            git stage version.txt
+            git commit -m "set back version to snapshot"
+            git push
