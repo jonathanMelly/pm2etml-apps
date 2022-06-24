@@ -24,3 +24,4 @@ Homestead.json
 /.idea
 /storage/dmz-assets/
 /doc/db-schema-business.mwb.bak
+/sync.ffs_db

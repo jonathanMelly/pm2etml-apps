@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Carbon\Traits\Timestamp;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,6 +22,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\GroupMember[] $groupMembers
  * @property-read int|null $group_members_count
  * @property-read \App\Models\GroupName $groupName
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $leaders
+ * @property-read int|null $leaders_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $users
  * @property-read int|null $users_count
  * @method static \Illuminate\Database\Eloquent\Builder|Group newModelQuery()
@@ -62,6 +63,7 @@ class Group extends Model
         return $this->hasMany(GroupMember::class);
     }
 
+    //Shortcut (not belongstomany as GroupMember is softDelete...)
     public function users():HasManyThrough
     {
         return $this->hasManyThrough(User::class,GroupMember::class);

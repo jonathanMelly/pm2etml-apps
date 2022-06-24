@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Constants\RoleName;
 use App\Enums\CustomPivotTableNames;
+use App\Exceptions\DataIntegrityException;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
@@ -37,6 +38,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read int|null $group_members_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\JobDefinition[] $jobDefinitions
  * @property-read int|null $job_definitions_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Group[] $ledGroups
+ * @property-read int|null $led_groups_count
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection|\Illuminate\Notifications\DatabaseNotification[] $notifications
  * @property-read int|null $notifications_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Permission\Models\Permission[] $permissions
@@ -130,7 +133,8 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
      */
     public function jobDefinitions(): BelongsToMany
     {
-        return $this->belongsToMany(JobDefinition::class,CustomPivotTableNames::USER_JOB_DEFINITION->value);
+        return $this->belongsToMany(JobDefinition::class,CustomPivotTableNames::USER_JOB_DEFINITION->value)
+            ->withTimestamps();
     }
 
     public function groupMembers():HasMany
@@ -144,7 +148,8 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
      */
     public function contractsAsAClient() : BelongsToMany
     {
-        return $this->belongsToMany(Contract::class,CustomPivotTableNames::CONTRACT_USER->value);
+        return $this->belongsToMany(Contract::class,CustomPivotTableNames::CONTRACT_USER->value)
+            ->withTimestamps();
     }
 
     //Filter and order contracts for the current client for a given job
@@ -187,33 +192,89 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
 
     }
 
-    public function groupMember($periodId=null): GroupMember | null
+    public function joinGroup($periodId=null,string $groupName,int $year =null): GroupMember
     {
-        //get current period as default
         $periodId = $periodId??AcademicPeriod::current();
 
+        //In case of a user switching back to a previously associated-then-dissociated group, we just restore it ! (as db won’t allow us to create another...)
+
+        /* @var $trashedJoin GroupMember */
+        $trashedJoin = GroupMember::withTrashed()
+            ->where('user_id','=',$this->id)
+            ->whereHas('group.academicPeriod',fn($q)=>$q->whereId($periodId))
+            ->whereHas('group.groupName',fn($q)=>$q->where('name','=',$groupName))->first();
+
+        if($trashedJoin!==null)
+        {
+            if($trashedJoin->restore())
+            {
+                return $trashedJoin;
+            }
+            else
+            {
+                throw new DataIntegrityException('Cannot restore GroupMember for '.$this->email.' / '.$groupName.' for period '.$periodId);
+            }
+        }
+
+        return $this->groupMembers()->create(
+            [
+                'user_id' => $this->id,
+                'group_id' => \App\Models\Group::firstOrCreate([
+                    'academic_period_id' => $periodId,
+                    'group_name_id' => \App\Models\GroupName::firstOrCreate(['name' => $groupName,'year' => $year??GroupName::guessGroupNameYear($groupName)])->id
+                ])->id
+            ]);
+    }
+
+    public function groupMembersForPeriod($periodId=null): HasMany
+    {
         // PERF COMMENT
         // After some basic tests, it’s not obvious if eloquent whereHas (extensively use SQL exist)
         // is less performant than a traditional inner join version... Thus the elegant way has been
         // choosen...
 
-        /* @var $result GroupMember */
-        $result = $this->groupMembers()
-            ->whereHas('group.academicPeriod',fn($q)=>$q
-                ->whereId($periodId))
-            ->first();
-
-        /*
-        if($result===null)
+        $hasMany = $this->groupMembers();
+        if($periodId!==null)
         {
-            //This may happen when looking for history when no data is available for the given period
-            info('User with id='.$this->id.' has no entry in table '.tbl(GroupMember::class).' for the period with id='.$periodId);
-            return GroupMember::make();
+            $hasMany->whereHas('group.academicPeriod',fn($q)=>$q->whereId($periodId));
         }
-        */
 
-        return $result;
 
+        return $hasMany;
+
+    }
+
+    public function groupMember($periodId=null,$withGroupName=false): GroupMember | null
+    {
+        //get current period as default
+        $periodId = $periodId??AcademicPeriod::current();
+
+        $builder = $this->groupMembersForPeriod($periodId);
+        if($withGroupName)
+        {
+            $builder->with('group.groupName');
+        }
+        return $builder->first();
+    }
+
+    //REMEMBER that GroupMember is mapped as a standard MODEL to be able to use softdelete on it...
+    //So we don’t use belongsToMany or hasManyThrough...
+    public function groups($periodId=null):Builder
+    {
+        $query = Group::query()->whereHas('groupMembers',fn($q)=>$q->where('user_id','=',$this->id));
+        if($periodId!==null)
+        {
+            $query->where('academic_period_id','=',$periodId);
+        }
+        return $query;
+    }
+
+    //A teacher can have multiple groupNames for a given period...
+    //Students should’nt have
+    public function groupNames($periodId=null) : Builder
+    {
+        return GroupName::distinct()->select('name')
+            ->whereIn('id',$this->groups($periodId)->pluck('group_name_id'));
     }
 
     public function getJobDefinitionsWithActiveContracts($academicPeriodId): \Illuminate\Database\Eloquent\Collection
