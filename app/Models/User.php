@@ -38,8 +38,6 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read int|null $group_members_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\JobDefinition[] $jobDefinitions
  * @property-read int|null $job_definitions_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Group[] $ledGroups
- * @property-read int|null $led_groups_count
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection|\Illuminate\Notifications\DatabaseNotification[] $notifications
  * @property-read int|null $notifications_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Permission\Models\Permission[] $permissions
