@@ -17,26 +17,28 @@ composer="$php /usr/lib64/plesk-9.0/composer.phar"
 
 #B)using local artisan
 #This will fail on FIRST deploy but as there was nothing before it’s not a problem
-$php artisan down >> $log 2>&1
+{
+    $php artisan down && \
 
-# 2>&1 doesn’t seem to work with composer....
-$composer install --optimize-autoloader --no-dev --no-interaction >>$log 2>&1
-#TODO Regenerate key ??
+    # 2>&1 doesn’t seem to work with composer....
+    $composer install --optimize-autoloader --no-dev --no-interaction && \
+    #TODO Regenerate key ??
 
-#Backup DB
-$php artisan backup:run --only-db >> $log 2>&1
+    #Backup DB
+    $php artisan backup:run --only-db && \
 
-$php artisan migrate --no-interaction --force >> $log 2>&1
+    $php artisan migrate --no-interaction --force && \
 
-$php artisan optimize:clear >> $log 2>&1
-$php artisan optimize >> $log 2>&1
-#done by optimize
-#$php artisan config:cache 2>&1 >> $log
-$php artisan event:cache >> $log 2>&1
-$php artisan permission:cache-reset >> $log 2>&1
-#done by optimize
-#$php artisan route:cache 2>&1 >> $log
-$php artisan view:cache >> $log 2>&1
+    $php artisan optimize:clear && \
+    $php artisan optimize && \
+    #done by optimize
+    #$php artisan config:cache 2>&1 >> $log
+    $php artisan event:cache && \
+    $php artisan permission:cache-reset && \
+    #done by optimize
+    #$php artisan route:cache 2>&1 >> $log
+    $php artisan view:cache && \
 
-#Put back site online
-$php artisan up >> $log 2>&1
+    #Put back site online
+    $php artisan up
+} >> "$log" 2>&1

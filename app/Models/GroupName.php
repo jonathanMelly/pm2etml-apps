@@ -54,4 +54,18 @@ class GroupName extends Model
     {
         return $this->hasManyThrough(AcademicPeriod::class,Group::class);
     }
+
+    public static function guessGroupNameYear(string $groupName): int
+    {
+        if(str_contains($groupName,'msig'))
+        {
+            return 1;
+        }
+        $numbers = preg_replace('/[^0-9]/', '', $groupName);
+        if($numbers=='')
+        {
+            $numbers=1;
+        }
+        return $numbers;
+    }
 }

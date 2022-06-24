@@ -22,9 +22,16 @@ class SyncUsersCommand extends Command
      */
     protected $description = 'Sync users (create/update) from excel/csv to db:
 
-    Expected headers are: firstname,lastname,email,roles
+    Expected headers are: firstname,lastname,email       ,login        ,roles,groups,period
+    Example:              bob      ,marley  ,b@eduvaud.ch,px@eduvaud.ch,eleve,cin1a ,01.08.2022
+
+    BEWARE: login is mandatory (it used as ID)
+    WARNING: if roles is empty, user won’t have any role
+    INFO: if period is empty, it will get the current one
 
     Supported formats are described in third-party library https://docs.laravel-excel.com/3.1/imports/import-formats.html';
+
+    public const RESULT_HEADERS = ['+ ADDED','# UPDATED','= SAME','/!\\ ERRORS'];
 
     /**
      * Create a new command instance.
@@ -41,7 +48,7 @@ class SyncUsersCommand extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(): int
     {
         $input = $this->argument('input');
         $commit = $this->option('commit');
@@ -62,16 +69,39 @@ class SyncUsersCommand extends Command
             $import = new UsersImport();
             $import->withOutput($this->output)->import($input);
 
+            $errors=[];
+            foreach ($import->failures() as $failure) {
+                $row =$failure->row(); // row that went wrong
+                //$attribute = $failure->attribute(); // either heading key (if using heading row concern) or column index
+                $description=implode(',',$failure->errors()); // Actual error messages from Laravel validator
+                //$value =implode(',',$failure->values()); // The values of the row that has failed.
+
+                $errors[]="Line $row : $description";
+            }
+
+
             //Stats
-            $this->table(['Added','Updated'],[[sizeof($import->added),sizeof($import->updated)]]);
+            $addedCount = count($import->added);
+            $updatedCount = count($import->updated);
+            $sameCount = count($import->same);
+
+            $this->table(self::RESULT_HEADERS,[[$addedCount,$updatedCount,$sameCount,count($errors)]]);
 
             if($this->output->isVerbose())
             {
-                $this->output->section('Added');
-                $this->info(implode(',',$import->added));
+                $this->newLine();
+                $i=0;
+                foreach(['info'=>$import->added,'comment'=>$import->updated,''=>$import->same,'error'=>$errors] as $style=>$report)
+                {
+                    if(count($report)>0)
+                    {
+                        $this->line(self::RESULT_HEADERS[$i], $style);
+                        $this->line(implode(',', $report));
+                        $this->newLine();
+                    }
+                    $i++;
+                }
 
-                $this->output->section('Updated');
-                $this->warn(implode(',',$import->updated));
             }
 
             if($commit && (
@@ -80,13 +110,13 @@ class SyncUsersCommand extends Command
             {
                 DB::commit();
                 $this->output->success('Operations committed');
+                return 0;
             }
             else
             {
                 $this->rollback();
+                return 3;
             }
-
-            return 0;
 
         }
         catch (\Exception $e)

@@ -42,6 +42,7 @@ use JetBrains\PhpStorm\Pure;
  * @property-read int|null $skills_count
  * @method static Builder|JobDefinition available()
  * @method static \Database\Factories\JobDefinitionFactory factory(...$parameters)
+ * @method static Builder|JobDefinition filter(?mixed $params)
  * @method static Builder|JobDefinition newModelQuery()
  * @method static Builder|JobDefinition newQuery()
  * @method static \Illuminate\Database\Query\Builder|JobDefinition onlyTrashed()

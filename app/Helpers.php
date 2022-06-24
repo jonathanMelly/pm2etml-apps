@@ -86,4 +86,11 @@ if(!function_exists('existsAndNotEmpty'))
     }
 }
 
+if(!function_exists('stringNullOrEmpty'))
+{
+    function stringNullOrEmpty(?string $str): bool
+    {
+        return $str===null || trim($str)==='';
+    }
+}
 

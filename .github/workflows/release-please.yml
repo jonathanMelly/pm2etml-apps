@@ -11,7 +11,7 @@ jobs:
       - uses: google-github-actions/release-please-action@v3
         with:
           release-type: simple
-          default-branch: main
+          #default-branch: main
 
   deploy release:
     #TODO release output

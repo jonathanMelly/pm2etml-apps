@@ -22,7 +22,7 @@ return new class extends Migration
 
             collect($uniques)->each(fn($foreign)=>$foreign->constrained());
 
-            $table->unsignedTinyInteger('type')->default(\App\Enums\GroupMemberType::STUDENT->value);
+            $table->unsignedTinyInteger('type')->default(0);
             $table->timestamps();
             $table->softDeletes();
 
