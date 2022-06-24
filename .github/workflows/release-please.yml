@@ -5,16 +5,16 @@ on:
     branches: [ main ]
 
 jobs:
+
   #Base release please workflow
   release-please:
-    runs-on: ubuntu-latest
-    uses: google-github-actions/release-please-action@v3
-    with:
-      release-type: simple
-      #default-branch: main
+    steps:
+      - uses: google-github-actions/release-please-action@v3
+        with:
+          release-type: simple
+          #default-branch: main
 
   deploy-release-to-staging:
-    runs-on: ubuntu-latest
     environment: staging
 
     if: ${{ steps.release.outputs.release_created }}
@@ -25,7 +25,6 @@ jobs:
 
   #There is a 15 minutes timeout for prod real deploy
   deploy-release-to-production:
-    runs-on: ubuntu-latest
     environment: production
     needs: deploy-release-to-staging
 
@@ -37,7 +36,6 @@ jobs:
 
   set-snapshot-version-after-release:
     runs-on: ubuntu-latest
-    environment: staging
 
     if: ${{ steps.release.outputs.release_created }}
 
