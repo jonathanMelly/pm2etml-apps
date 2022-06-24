@@ -23,7 +23,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-deploy-to-staging-badge:
+  test:
 
     runs-on: ubuntu-latest
 
@@ -55,10 +55,6 @@ jobs:
           DB_CONNECTION: sqlite
           DB_DATABASE: database/database.sqlite
         run: php artisan test --coverage-clover clover.xml
-
-      #DEPLOY
-      - uses: ./.github/workflows/deploy.yml
-          secrets: inherit
 
       - name: Generate coverage badge
         # You may pin to the exact commit or the version.
@@ -95,3 +91,10 @@ jobs:
           local_folder: './'
           # includes
           include: '["coverage_badge.svg","version-wip.txt"]'
+
+  deploy-to-staging:
+    runs-on: ubuntu-latest
+    environment: staging
+    needs: test
+    uses: ${{ github.repository }}/.github/workflows/deploy.yml@${{ github.sha }}
+    secrets: inherit

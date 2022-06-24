@@ -5,6 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
+  #Base release please workflow
   release-please:
     runs-on: ubuntu-latest
     uses: google-github-actions/release-please-action@v3
@@ -12,36 +13,9 @@ jobs:
       release-type: simple
       #default-branch: main
 
-  deploy-release-to-staging-and-snapshot:
+  deploy-release-to-staging:
     runs-on: ubuntu-latest
     environment: staging
-
-    if: ${{ steps.release.outputs.release_created }}
-
-    steps:
-        - uses: actions/checkout@v3
-          with:
-            ref:${{ steps.release.outputs.sha }}
-
-        - uses: ./.github/workflows/deploy.yml
-            with:
-              sha: ${{ steps.release.outputs.sha }}
-            secrets:inherit
-
-        #Update version to snapshot
-        - name: set next version to snapshot
-          run: |
-            git config --global user.name github-action
-            git config --global user.email github-action@noreply.com
-            git co main
-            echo "snapshot" > version.txt
-            git stage version.txt
-            git commit -m "chore(release): set back version to snapshot"
-            git push
-
-  deploy-release-to-production:
-    runs-on: ubuntu-latest
-    environment: production
 
     if: ${{ steps.release.outputs.release_created }}
     uses: ${{ github.repository }}/.github/workflows/deploy.yml@${{ steps.release.outputs.sha }}
@@ -49,3 +23,36 @@ jobs:
     with:
       sha: ${{ steps.release.outputs.sha }}
 
+  #There is a 15 minutes timeout for prod real deploy
+  deploy-release-to-production:
+    runs-on: ubuntu-latest
+    environment: production
+    needs: deploy-release-to-staging
+
+    if: ${{ steps.release.outputs.release_created }}
+    uses: ${{ github.repository }}/.github/workflows/deploy.yml@${{ steps.release.outputs.sha }}
+    secrets: inherit
+    with:
+      sha: ${{ steps.release.outputs.sha }}
+
+  set-snapshot-version-after-release:
+    runs-on: ubuntu-latest
+    environment: staging
+
+    if: ${{ steps.release.outputs.release_created }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref:${{ steps.release.outputs.sha }}
+
+      #Update version to snapshot
+      - name: set next version to snapshot
+        run: |
+          git config --global user.name github-action
+          git config --global user.email github-action@noreply.com
+          git co main
+          echo "snapshot" > version.txt
+          git stage version.txt
+          git commit -m "chore(release): set back version to snapshot"
+          git push
