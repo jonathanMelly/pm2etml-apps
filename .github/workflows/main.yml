@@ -95,5 +95,5 @@ jobs:
   deploy-to-staging:
     environment: staging
     needs: test
-    uses: ${{ github.repository }}/.github/workflows/deploy.yml@main
+    uses: jonathanMelly/pm2etml-intranet/.github/workflows/deploy.yml@main
     secrets: inherit
