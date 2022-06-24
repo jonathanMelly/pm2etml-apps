@@ -7,39 +7,45 @@ on:
 jobs:
   release-please:
     runs-on: ubuntu-latest
-    steps:
-      - uses: google-github-actions/release-please-action@v3
-        with:
-          release-type: simple
-          #default-branch: main
+    uses: google-github-actions/release-please-action@v3
+    with:
+      release-type: simple
+      #default-branch: main
 
-  deploy release:
-    #TODO release output
-    if: ${{release.output.done}}
+  deploy-release-to-staging-and-snapshot:
     runs-on: ubuntu-latest
+    environment: staging
+
+    if: ${{ steps.release.outputs.release_created }}
+
     steps:
         - uses: actions/checkout@v3
+          with:
+            ref:${{ steps.release.outputs.sha }}
 
-        # Use a prod branch as plesk git deploy doesn’t support tag... (otherwise no need for a dedicated branch to avoid conflicts...)
-        - name: Merge into prod
-          run: |
-            git config --global user.name github-action
-            git config --global email github-action@noreply.com
-            git fetch --unshallow
-            git rebase prod main
-            git push
-        #TODO How to trigger workflow_dispatch
-        #Deploy staging
-        - uses: main.yml
-
-        #Deploy prod
-        - uses: prod.yml
+        - uses: ./.github/workflows/deploy.yml
+            with:
+              sha: ${{ steps.release.outputs.sha }}
+            secrets:inherit
 
         #Update version to snapshot
         - name: set next version to snapshot
           run: |
+            git config --global user.name github-action
+            git config --global user.email github-action@noreply.com
             git co main
             echo "snapshot" > version.txt
             git stage version.txt
-            git commit -m "set back version to snapshot"
+            git commit -m "chore(release): set back version to snapshot"
             git push
+
+  deploy-release-to-production:
+    runs-on: ubuntu-latest
+    environment: production
+
+    if: ${{ steps.release.outputs.release_created }}
+    uses: ${{ github.repository }}/.github/workflows/deploy.yml@${{ steps.release.outputs.sha }}
+    secrets: inherit
+    with:
+      sha: ${{ steps.release.outputs.sha }}
+

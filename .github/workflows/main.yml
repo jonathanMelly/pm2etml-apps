@@ -23,7 +23,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-staging-badge:
+  test-deploy-to-staging-badge:
 
     runs-on: ubuntu-latest
 
@@ -57,11 +57,8 @@ jobs:
         run: php artisan test --coverage-clover clover.xml
 
       #DEPLOY
-      - name: Trigger deploy on staging with webhook
-        uses: zzzze/webhook-trigger@v1.0.0
-        with:
-          # Endpoint URL
-          webhook_url: ${{ secrets.PLESK_WEBHOOK_URL }}
+      - uses: ./.github/workflows/deploy.yml
+          secrets: inherit
 
       - name: Generate coverage badge
         # You may pin to the exact commit or the version.
