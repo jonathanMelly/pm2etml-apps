@@ -48,6 +48,8 @@ function deploy()
   {
       $php artisan down && \
 
+      git merge --ff-only "$SHA" && \
+
       # 2>&1 doesn’t seem to work with composer....
       $composer install --optimize-autoloader --no-dev --no-interaction && \
       #TODO Regenerate key ??
@@ -70,6 +72,8 @@ function deploy()
       #Put back site online
       $php artisan up
   } >> "$log" 2>&1
+
+  cat "$log"
 }
 ##END MAIN BUSINESS
 
