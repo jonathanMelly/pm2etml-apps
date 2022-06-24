@@ -94,7 +94,7 @@ jobs:
 
   deploy-to-staging:
     needs: test
-    uses: ./.github/workflows/deploy.yml@main
+    uses: ./.github/workflows/deploy.yml
     secrets: inherit
     with:
       environment: staging

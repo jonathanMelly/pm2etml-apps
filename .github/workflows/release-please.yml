@@ -17,7 +17,7 @@ jobs:
   deploy-release-to-staging:
     if: ${{ steps.release.outputs.release_created }}
 
-    uses: ./.github/workflows/deploy.yml@main
+    uses: ./.github/workflows/deploy.yml
     secrets: inherit
     with:
       environment: staging
@@ -26,7 +26,7 @@ jobs:
   #There is a 15 minutes timeout for prod real deploy
   deploy-release-to-production:
 
-    uses: ./.github/workflows/deploy.yml@main
+    uses: ./.github/workflows/deploy.yml
     secrets: inherit
     with:
       environment: production
