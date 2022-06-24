@@ -102,7 +102,8 @@ function confirmDeploy()
 #Remove ./ if present to match git diff and detect if script has been modified
 DEPLOY_SCRIPT_CLEAN=$(echo "$0"| sed -e s~^\./~~)
 UPDATED_REPO=".repo-$SHA"
-echo "Fetching origin" && git fetch && git diff --stat "$SHA" | grep "$DEPLOY_SCRIPT_CLEAN"
+git fetch || exit $?
+git diff --stat "$SHA" | grep "$DEPLOY_SCRIPT_CLEAN"
 LAST=$?
 if [ $LAST -eq 0 ]; then
   echo "/!\DEPLOY SCRIPT UPDATE DETECTED - RUNNING UPDATED VERSION/!\ "
