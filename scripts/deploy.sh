@@ -51,7 +51,7 @@ function deploy()
       git merge --ff-only "$SHA" && \
 
       # 2>&1 doesn’t seem to work with composer....
-      $composer install --optimize-autoloader --no-dev --no-interaction && \
+      $php "$composer" install --optimize-autoloader --no-dev --no-interaction && \
       #TODO Regenerate key ??
 
       #Backup DB
