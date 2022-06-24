@@ -9,7 +9,7 @@ on:
         default: ${{ github.sha }}
         type: string
     secrets:
-      DEPLOY_DIRECTORY:
+      DEPLOY_DIR:
         required: true
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
