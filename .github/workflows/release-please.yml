@@ -18,7 +18,7 @@ jobs:
     environment: staging
 
     if: ${{ steps.release.outputs.release_created }}
-    uses: ${{ github.repository }}/.github/workflows/deploy.yml@${{ steps.release.outputs.sha }}
+    uses: ${{ github.repository }}/.github/workflows/deploy.yml@main
     secrets: inherit
     with:
       sha: ${{ steps.release.outputs.sha }}
@@ -29,7 +29,7 @@ jobs:
     needs: deploy-release-to-staging
 
     if: ${{ steps.release.outputs.release_created }}
-    uses: ${{ github.repository }}/.github/workflows/deploy.yml@${{ steps.release.outputs.sha }}
+    uses: ${{ github.repository }}/.github/workflows/deploy.yml@main
     secrets: inherit
     with:
       sha: ${{ steps.release.outputs.sha }}
