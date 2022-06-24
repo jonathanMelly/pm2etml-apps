@@ -9,19 +9,24 @@ jobs:
   #Base release please workflow
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      sha: ${{ steps.release.outputs.sha }}
     steps:
       - uses: google-github-actions/release-please-action@v3
+        id: release
         with:
           release-type: simple
           #default-branch: main
 
   deploy-release-to-staging:
+    needs: release-please
     uses: ./.github/workflows/deploy.yml
-    if: ${{ steps.release.outputs.release_created }}
+    if: ${{ jobs.release-please.release_created }}
     secrets: inherit
     with:
       environment: staging
-      sha: ${{ steps.release.outputs.sha }}
+      sha: ${{ jobs.release-please.sha }}
 
   #There is a 15 minutes timeout for prod real deploy
   deploy-release-to-production:
@@ -30,10 +35,10 @@ jobs:
     secrets: inherit
     with:
       environment: production
-      sha: ${{ steps.release.outputs.sha }}
+      sha: ${{ jobs.release-please.sha }}
 
   set-snapshot-version-after-release:
-    if: ${{ steps.release.outputs.release_created }}
+    if: ${{ jobs.release-please.release_created }}
     runs-on: ubuntu-latest
 
     steps:
@@ -47,6 +52,7 @@ jobs:
           git config --global user.name github-action
           git config --global user.email github-action@noreply.com
           git co main
+          if [ $(cat version.txt) = 'snapshot' ] ; then exit 0; fi
           echo "snapshot" > version.txt
           git stage version.txt
           git commit -m "chore(release): set back version to snapshot"
