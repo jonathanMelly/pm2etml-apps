@@ -22,23 +22,24 @@ jobs:
   deploy-release-to-staging:
     needs: release-please
     uses: ./.github/workflows/deploy.yml
-    if: ${{ jobs.release-please.release_created }}
+    if: ${{ needs.release-please.release_created }}
     secrets: inherit
     with:
       environment: staging
-      sha: ${{ jobs.release-please.sha }}
+      sha: ${{ needs.release-please.sha }}
 
   #There is a 15 minutes timeout for prod real deploy
   deploy-release-to-production:
-    needs: deploy-release-to-staging
+    needs: [release-please,deploy-release-to-staging]
     uses: ./.github/workflows/deploy.yml
     secrets: inherit
     with:
       environment: production
-      sha: ${{ jobs.release-please.sha }}
+      sha: ${{ needs.release-please.sha }}
 
   set-snapshot-version-after-release:
-    if: ${{ jobs.release-please.release_created }}
+    needs: release-please
+    if: ${{ needs.release-please.release_created }}
     runs-on: ubuntu-latest
 
     steps:
