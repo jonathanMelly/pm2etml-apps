@@ -15,29 +15,26 @@ jobs:
           #default-branch: main
 
   deploy-release-to-staging:
-    environment: staging
-
     if: ${{ steps.release.outputs.release_created }}
-    uses: jonathanMelly/pm2etml-intranet/.github/workflows/deploy.yml@main
+
+    uses: ./.github/workflows/deploy.yml@main
     secrets: inherit
     with:
+      environment: staging
       sha: ${{ steps.release.outputs.sha }}
 
   #There is a 15 minutes timeout for prod real deploy
   deploy-release-to-production:
-    environment: production
-    needs: deploy-release-to-staging
 
-    if: ${{ steps.release.outputs.release_created }}
-    uses: jonathanMelly/pm2etml-intranet/.github/workflows/deploy.yml@main
+    uses: ./.github/workflows/deploy.yml@main
     secrets: inherit
     with:
+      environment: production
       sha: ${{ steps.release.outputs.sha }}
 
   set-snapshot-version-after-release:
-    runs-on: ubuntu-latest
-
     if: ${{ steps.release.outputs.release_created }}
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3

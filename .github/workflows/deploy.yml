@@ -1,6 +1,9 @@
 on:
   workflow_call:
     inputs:
+      environment:
+        required: true
+        type: string
       sha:
         required: false
         default: ${{ github.sha }}
@@ -12,6 +15,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   deploy:
+    environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
       # Courtesy of https://blog.benoitblanchon.fr/github-action-run-ssh-commands/
