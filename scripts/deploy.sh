@@ -35,30 +35,28 @@ function deploy()
 
   composer=$(which composer)
 
-  #Set MAINTENANCE MODE
-  #A)using artisan-remote (ideally this should be done before replacing files but currently azure devops webhook does not support custom json payload...)
-  #website=$(basename $PWD)
-  #api_url="https://$website/pilotage/commands/invoke"
-  #token=$(grep PILOTAGE_API_KEY .env | awk -F'=' '{print $2}')
-  #header="Content-type: application/json\nAuthorization: Bearer $token"
-  #curl -X POST -H "$header" -d '{"name":"down"}' $api_url 2>&1 >> $log
+  composer_install="$php $composer install --optimize-autoloader --no-dev --no-interaction"
 
-  #B)using local artisan
-  #This will fail on FIRST deploy but as there was nothing before it’s not a problem
+  #FIRST install
+  if [ ! -d "vendor" ]; then
+      echo "FIRST INSTALL"
+      {
+        $composer_install && $php artisan key:generate
+      } >> "$log" 2>&1
+  fi
+
+  #STANDARD for each deploy
   {
+      #MAINTENANCE MODE
       $php artisan down && \
 
+      #GIT UPDATE
       git merge --ff-only "$SHA" && \
 
-      # 2>&1 doesn’t seem to work with composer....
-      $php "$composer" install --optimize-autoloader --no-dev --no-interaction && \
-      #TODO Regenerate key ??
+      #COMPOSER UPDATE
+      $composer_install && \
 
-      #Backup DB
-      $php artisan backup:run --only-db && \
-
-      $php artisan migrate --no-interaction --force && \
-
+      #CACHE REGEN
       $php artisan optimize:clear && \
       $php artisan optimize && \
       #done by optimize
@@ -68,6 +66,12 @@ function deploy()
       #done by optimize
       #$php artisan route:cache 2>&1 >> $log
       $php artisan view:cache && \
+
+      #Backup DB
+      $php artisan backup:run --only-db && \
+
+      #Migrate
+      $php artisan migrate --no-interaction --force && \
 
       #Put back site online
       $php artisan up
