@@ -40,19 +40,12 @@ function deploy()
 
   tee="/bin2/tee -a"
 
-  #FIRST install
-  if [ ! -d "vendor" ]; then
-      FIRST_DEPLOY=1
-      echo "FIRST DEPLOY"
-      {
-        $composer_install && $php artisan key:generate --no-interaction --force
-      } 2>&1 | $tee "$log"
-  fi
-
   #STANDARD for each deploy
   {
-      #MAINTENANCE MODE
-      $php artisan down && \
+      #MAINTENANCE MODE (except on first time as artisan has not been installed by composer)
+      if [ -d "vendor" ]; then \
+          $php artisan down && artisan key:generate --no-interaction --force; \
+      fi && \
 
       #GIT UPDATE
       git merge --ff-only "$SHA" && \
@@ -80,13 +73,6 @@ function deploy()
       #Put back site online
       $php artisan up
   } 2>&1 | $tee "$log"
-
-  #On the first time, I have an error on logs if this command is not run...
-  if [ "$FIRST_DEPLOY" = "1" ] ; then
-      {
-          echo "Force dump-autoload on FIRST DEPLOY" && $composer dump-autoload --optimize
-      } 2>&1 | $tee "$log"
-  fi
 
 }
 ##END MAIN BUSINESS
