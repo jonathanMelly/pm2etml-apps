@@ -7,6 +7,8 @@ if [ -z "$SHA" ] || [ "$SHA" = "--help" ] ; then
 fi
 NO_INTERACTION=$2
 
+FIRST_DEPLOY=0
+
 ################ END CONFIG ##########
 
 function reviewAndDelay()
@@ -40,11 +42,10 @@ function deploy()
 
   #FIRST install
   if [ ! -d "vendor" ]; then
-      echo "FIRST INSTALL"
+      FIRST_DEPLOY=1
+      echo "FIRST DEPLOY"
       {
-        #It seems that on first time, dump-autoload must be run even if --optimize-autoloader is active
-        $composer_install && $composer dump-autoload --optimize && \
-        $php artisan key:generate --no-interaction --force
+        $composer_install && $php artisan key:generate --no-interaction --force
       } 2>&1 | $tee "$log"
   fi
 
@@ -79,6 +80,13 @@ function deploy()
       #Put back site online
       $php artisan up
   } 2>&1 | $tee "$log"
+
+  #On the first time, I have an error on logs if this command is not run...
+  if [ "$FIRST_DEPLOY" = "1" ] ; then
+      {
+          echo "Force dump-autoload" && $composer dump-autoload --optimize
+      } 2>&1 | $tee "$log"
+  fi
 
 }
 ##END MAIN BUSINESS
