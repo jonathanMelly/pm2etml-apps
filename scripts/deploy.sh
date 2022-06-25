@@ -42,7 +42,9 @@ function deploy()
   if [ ! -d "vendor" ]; then
       echo "FIRST INSTALL"
       {
-        $composer_install && $php artisan key:generate --no-interaction --force
+        #It seems that on first time, dump-autoload must be run even if --optimize-autoloader is active
+        $composer_install && $composer dump-autoload --optimize && \
+        $php artisan key:generate --no-interaction --force
       } 2>&1 | $tee "$log"
   fi
 
