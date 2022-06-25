@@ -36,7 +36,7 @@
                 <div>
                     Version {!! $version !!}
                 </div>
-                @env('staging','production','local')
+                @env('staging','production')
                     <div>|</div>
                     <a target="_blank" href="https://github.com/jonathanMelly/pm2etml-intranet#readme"><i class="fa-brands fa-github"></i> </a>
 
