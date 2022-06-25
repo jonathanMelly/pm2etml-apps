@@ -25,7 +25,7 @@ class RootLayout extends \Illuminate\View\Component
 
             if($releaseVersion!=null)
             {
-                $releaseVersionWithLink = '<a href="https://github.com/jonathanMelly/pm2etml-intranet/releases/tag/v'.$releaseVersion.'">'.$releaseVersion.'</a>';
+                $releaseVersionWithLink = '<a target="_blank" href="https://github.com/jonathanMelly/pm2etml-intranet/releases/tag/v'.$releaseVersion.'">'.$releaseVersion.'</a>';
             }
             else
             {
@@ -44,7 +44,7 @@ class RootLayout extends \Illuminate\View\Component
             else
             {
                 return '[!]STAGING[!] ('.($releaseVersionWithLink??'unknown')
-                    .'#<a href="https://github.com/jonathanMelly/pm2etml-intranet/commit/'.$wipShaOrReleaseVersion.'">'.$wipShaOrReleaseVersion.'</a>)';
+                    .'#<a target="_blank" href="https://github.com/jonathanMelly/pm2etml-intranet/commit/'.$wipShaOrReleaseVersion.'">'.$wipShaOrReleaseVersion.'</a>)';
             }
 
         });

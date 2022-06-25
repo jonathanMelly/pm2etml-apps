@@ -36,18 +36,21 @@
                 <div>
                     Version {!! $version !!}
                 </div>
-                @env('staging','production')
+                @env('staging','production','local')
                     <div>|</div>
+                    <a target="_blank" href="https://github.com/jonathanMelly/pm2etml-intranet#readme"><i class="fa-brands fa-github"></i> </a>
+
                     <a href="https://github.com/jonathanMelly/pm2etml-intranet/issues" target="_blank">
                         <img class="h-4"
                              src="https://img.shields.io/github/issues-raw/jonathanMelly/pm2etml-intranet?style=plastic?cacheSeconds=54000">{{--15minutes cache--}}
                     </a>
 
-                    <a href="https://github.com/jonathanMelly/pm2etml-intranet#readme" target="_blank">
+                    <a href="https://wakatime.com/@bf7fcc14-d7d0-41c4-99cb-bbe8ecef41bf/projects/ctusfaxkkd" target="_blank">
                         <img class="h-4"
                              src="https://wakatime.com/badge/user/bf7fcc14-d7d0-41c4-99cb-bbe8ecef41bf/project/4fb00346-5e05-4e6b-a906-57e91c256d09.svg"
                              alt="wakatime">
                     </a>
+
                 @endenv
             </div>
         </footer>
