@@ -41,7 +41,7 @@ function deploy()
   if [ ! -d "vendor" ]; then
       echo "FIRST INSTALL"
       {
-        $composer_install && $php artisan key:generate
+        $composer_install && $php artisan key:generate --no-interaction --force
       } >> "$log" 2>&1
   fi
 
