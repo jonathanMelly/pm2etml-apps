@@ -31,18 +31,19 @@ function deploy()
   reviewAndDelay
 
   log=storage/logs/deploy-$(date +%F_%Hh%MM%Ss).log
+
   php='/opt/php81/bin/php'
-
   composer=$(which composer)
-
   composer_install="$php $composer install --optimize-autoloader --no-dev --no-interaction"
+
+  tee="/bin2/tee -a"
 
   #FIRST install
   if [ ! -d "vendor" ]; then
       echo "FIRST INSTALL"
       {
         $composer_install && $php artisan key:generate --no-interaction --force
-      } >> "$log" 2>&1
+      } 2>&1 | $tee "$log"
   fi
 
   #STANDARD for each deploy
@@ -75,9 +76,8 @@ function deploy()
 
       #Put back site online
       $php artisan up
-  } >> "$log" 2>&1
+  } 2>&1 | $tee "$log"
 
-  cat "$log"
 }
 ##END MAIN BUSINESS
 
