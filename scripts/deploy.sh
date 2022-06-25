@@ -84,7 +84,7 @@ function deploy()
   #On the first time, I have an error on logs if this command is not run...
   if [ "$FIRST_DEPLOY" = "1" ] ; then
       {
-          echo "Force dump-autoload" && $composer dump-autoload --optimize
+          echo "Force dump-autoload on FIRST DEPLOY" && $composer dump-autoload --optimize
       } 2>&1 | $tee "$log"
   fi
 
