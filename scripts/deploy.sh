@@ -40,11 +40,15 @@ function deploy()
 
   tee="/bin2/tee -a"
 
+  app_url=$(grep APP_URL .env | awk -F'=' '{print $2}')
+  secret="$app_url"
+  cookie=".tmpcookie"
+
   #STANDARD for each deploy
   {
       #MAINTENANCE MODE (except on first time as artisan has not been installed by composer)
       if [ -d "vendor" ]; then \
-          $php artisan down && artisan key:generate --no-interaction --force; \
+          $php artisan down --secret "$secret" && artisan key:generate --no-interaction --force; \
       fi && \
 
       #GIT UPDATE
@@ -55,13 +59,22 @@ function deploy()
 
       #CACHE REGEN
       $php artisan optimize:clear && \
-      $php artisan optimize && \
-      #done by optimize
-      #$php artisan config:cache 2>&1 >> $log
+
+      #DONE BY OPTIMIZE
+      #Configuration cached successfully!
+      #Route cache cleared!
+      #Routes cached successfully!
+      #Files cached successfully!
+      #/!\WARNING
+      #Because of hosting CHROOT, config:cache must be run under HTTP env
+      #$php artisan optimize && \
+      curl -s -c "$cookie" -b "$cookie" "$app_url/$secret" "$app_url/deploy/optimize" && rm "$cookie" \
+
       $php artisan event:cache && \
       $php artisan permission:cache-reset && \
-      #done by optimize
-      #$php artisan route:cache 2>&1 >> $log
+
+
+
       $php artisan view:cache && \
 
       #Backup DB
