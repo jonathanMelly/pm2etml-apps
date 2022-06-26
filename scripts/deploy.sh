@@ -44,13 +44,18 @@ function deploy()
   secret="$app_url"
   cookie=".tmpcookie"
 
+  #MAINTENANCE MODE (except on first time as artisan has not been installed by composer)
+  {
+      if [ ! -d "vendor" ]; then
+        echo "FIRST DEPLOY, regen app key"
+        $php artisan key:generate --no-interaction --force
+      else
+        $php artisan down --secret "$secret"
+      fi
+  } 2>&1 | $tee "$log"
+
   #STANDARD for each deploy
   {
-      #MAINTENANCE MODE (except on first time as artisan has not been installed by composer)
-      if [ -d "vendor" ]; then \
-          $php artisan down --secret "$secret" && artisan key:generate --no-interaction --force; \
-      fi && \
-
       #GIT UPDATE
       git merge --ff-only "$SHA" && \
 
@@ -68,13 +73,11 @@ function deploy()
       #/!\WARNING
       #Because of hosting CHROOT, config:cache must be run under HTTP env
       #$php artisan optimize && \
-      curl -s -c "$cookie" -b "$cookie" "$app_url/$secret" "$app_url/deploy/optimize" && rm "$cookie" \
+      curl -s -c "$cookie" -b "$cookie" "$app_url/$secret" "$app_url/deploy/optimize" && rm "$cookie" && \
 
+      #RESET remaining caches
       $php artisan event:cache && \
       $php artisan permission:cache-reset && \
-
-
-
       $php artisan view:cache && \
 
       #Backup DB
