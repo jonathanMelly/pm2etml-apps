@@ -8,10 +8,13 @@ beforeEach(function (){
 });
 
 test('Call optimize', function () {
+    /* @var $this \Tests\TestCase */
     /* @var $response \Illuminate\Testing\TestResponse */
     $response = $this->get('deploy/optimize');
 
     $response->assertStatus(200);
-    $response->assertSeeText('Configuration cached successfully!\nRoute cache cleared!\nRoutes cached successfully!\nFiles cached successfully!');
+    $output = $response->getContent();
+
+    $this->assertEquals(\App\Http\Controllers\DeployController::SUCCESS_MESSAGE,$output);
 
 });

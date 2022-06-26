@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Artisan;
 
 class DeployController extends Controller
 {
+    public const SUCCESS_MESSAGE='optimize:clear->OK (Configuration,Route,Files cached successfully!)';
     public function optimize()
     {
         //Should be run with shell_exec https://stackoverflow.com/questions/37726558/artisan-call-output-in-controller
@@ -17,7 +18,7 @@ class DeployController extends Controller
         }
         else
         {
-            return 'Configuration cached successfully!\nRoute cache cleared!\nRoutes cached successfully!\nFiles cached successfully!';
+            return self::SUCCESS_MESSAGE;
         }
     }
 }
