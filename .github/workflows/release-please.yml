@@ -22,11 +22,11 @@ jobs:
   deploy-release-to-staging:
     needs: release-please
     uses: ./.github/workflows/deploy.yml
-    if: ${{ needs.release-please.release_created }}
+    if: ${{ needs.release-please.outputs.release_created }}
     secrets: inherit
     with:
       environment: staging
-      sha: ${{ needs.release-please.sha }}
+      sha: ${{ needs.release-please.outputs.sha }}
 
   #There is a 15 minutes timeout for prod real deploy
   deploy-release-to-production:
@@ -35,11 +35,11 @@ jobs:
     secrets: inherit
     with:
       environment: production
-      sha: ${{ needs.release-please.sha }}
+      sha: ${{ needs.release-please.outputs.sha }}
 
   set-snapshot-version-after-release:
     needs: release-please
-    if: ${{ needs.release-please.release_created }}
+    if: ${{ needs.release-please.outputs.release_created }}
     runs-on: ubuntu-latest
 
     steps:
@@ -56,5 +56,5 @@ jobs:
           if [ $(cat version.txt) = 'snapshot' ] ; then exit 0; fi
           echo "snapshot" > version.txt
           git stage version.txt
-          git commit -m "chore(release): set back version to snapshot"
+          git commit -m "chore(release): set version back to snapshot"
           git push
