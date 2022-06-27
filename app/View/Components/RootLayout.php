@@ -31,7 +31,7 @@ class RootLayout extends \Illuminate\View\Component
 
             $versionText = Str::substr($tag,1);
             $prefixes=[
-                'local'=>'||DEV||',
+                'local'=>'||DEV|| ',
                 'staging'=>'/!\\STAGING/!\\ '
             ];
             if(array_key_exists(app()->environment(),$prefixes))
