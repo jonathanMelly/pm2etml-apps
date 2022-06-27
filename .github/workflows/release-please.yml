@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
-      sha: ${{ steps.release.outputs.sha }}
+      sha: ${{ steps.release.outputs.tag_name }}
     steps:
       - uses: google-github-actions/release-please-action@v3
         id: release
@@ -26,7 +26,7 @@ jobs:
     secrets: inherit
     with:
       environment: staging
-      sha: ${{ needs.release-please.outputs.tag_name }}
+      sha: ${{ needs.release-please.outputs.sha }}
 
   #There is a 15 minutes timeout for prod real deploy
   deploy-release-to-production:
@@ -35,5 +35,5 @@ jobs:
     secrets: inherit
     with:
       environment: production
-      sha: ${{ needs.release-please.outputs.tag_name }}
+      sha: ${{ needs.release-please.outputs.sha }}
 
