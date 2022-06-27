@@ -50,7 +50,7 @@ function deploy()
   {
       if [ ! -d "vendor" ]; then
         echo "FIRST DEPLOY, regen app key"
-        $php artisan key:generate --no-interaction --force
+        $composer_install && $php artisan key:generate --no-interaction --force
       else
         $php artisan down --secret "$secret"
       fi
@@ -62,6 +62,7 @@ function deploy()
       git merge --ff-only "$SHA" && \
 
       #COMPOSER UPDATE
+      #Not needed on first deploy...
       $composer_install && \
 
       #CACHE REGEN
