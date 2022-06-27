@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.2.0...v1.2.1) (2022-06-27)
+
+
+### Bug Fixes
+
+* **version:** shows correct version of app in all environments ([ab70fc1](https://github.com/jonathanMelly/pm2etml-intranet/commit/ab70fc14f365339e700513cec368b5ccda6a260c))
+
 ## [1.2.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.1.1...v1.2.0) (2022-06-26)
 
 
