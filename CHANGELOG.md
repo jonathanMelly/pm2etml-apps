@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.1.1...v1.2.0) (2022-06-26)
+
+
+### Features
+
+* **footer:** add github icon+link and use new window for other links ([18e4262](https://github.com/jonathanMelly/pm2etml-intranet/commit/18e4262efce4d8beddf8b9edc108385c8354a2d0))
+* **users:** ability to sync users with their groups (teacher or student) ([3bcde22](https://github.com/jonathanMelly/pm2etml-intranet/commit/3bcde22cc37679ee140085518f9f3e4bb0a56516))
+
 ## [1.1.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.1.0...v1.1.1) (2022-06-11)
 
 
