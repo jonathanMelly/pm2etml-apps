@@ -3,6 +3,7 @@
 namespace App\View\Components;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class RootLayout extends \Illuminate\View\Component
 {
@@ -16,36 +17,29 @@ class RootLayout extends \Illuminate\View\Component
     {
         $version = Cache::rememberForever('version', function () {
 
-            $releasedVersionPath = base_path(self::VERSION_FILENAME);
-            $wipVersionPath = base_path(self::VERSION_WIP_FILENAME);
+            $tag = shell_exec('git describe --tags');
+            $sha = shell_exec('git rev-parse --short HEAD');
 
-            //For release, wip file contains release version
-            $wipShaOrReleaseVersion=file_exists($wipVersionPath)?trim(file_get_contents($wipVersionPath)):null;
-            $releaseVersion=file_exists($releasedVersionPath)?trim(file_get_contents($releasedVersionPath)):null;
+            //short sha is appended to $tag if it’s not pointing to tag
+            $isRelease = !Str::contains($tag,$sha);
 
-            if($releaseVersion!=null)
+            $href = 'https://github.com/jonathanMelly/pm2etml-intranet/'.
+                ($isRelease ?
+                    'releases/tag/'.$tag  :
+                    'commit/'.$sha
+                );
+
+            $versionText = Str::substr($tag,1);
+            $prefixes=[
+                'local'=>'||DEV||',
+                'staging'=>'/!\\STAGING/!\\ '
+            ];
+            if(array_key_exists(app()->environment(),$prefixes))
             {
-                $releaseVersionWithLink = '<a target="_blank" href="https://github.com/jonathanMelly/pm2etml-intranet/releases/tag/v'.$releaseVersion.'">'.$releaseVersion.'</a>';
-            }
-            else
-            {
-                $releaseVersionWithLink = null;
+                $versionText = $prefixes[app()->environment()] . ' '. $versionText;
             }
 
-            if(app()->environment('local'))
-            {
-                return '/!\DEV/!\ (~'.($releaseVersionWithLink??'unknown').')';
-            }
-            //Release
-            else if(empty($wipShaOrReleaseVersion) /*prod*/ || $wipShaOrReleaseVersion === $releaseVersion /*staging*/)
-            {
-                return $releaseVersionWithLink;
-            }
-            else
-            {
-                return '[!]STAGING[!] ('.($releaseVersionWithLink??'unknown')
-                    .'#<a target="_blank" href="https://github.com/jonathanMelly/pm2etml-intranet/commit/'.$wipShaOrReleaseVersion.'">'.$wipShaOrReleaseVersion.'</a>)';
-            }
+            return '<a target="_blank" href="'.$href.'">'.$versionText.'</a>';
 
         });
 

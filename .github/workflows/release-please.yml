@@ -26,7 +26,7 @@ jobs:
     secrets: inherit
     with:
       environment: staging
-      sha: ${{ needs.release-please.outputs.sha }}
+      sha: ${{ needs.release-please.outputs.tag_name }}
 
   #There is a 15 minutes timeout for prod real deploy
   deploy-release-to-production:
@@ -35,26 +35,5 @@ jobs:
     secrets: inherit
     with:
       environment: production
-      sha: ${{ needs.release-please.outputs.sha }}
+      sha: ${{ needs.release-please.outputs.tag_name }}
 
-  set-snapshot-version-after-release:
-    needs: release-please
-    if: ${{ needs.release-please.outputs.release_created }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref:${{ steps.release.outputs.sha }}
-
-      #Update version to snapshot
-      - name: set next version to snapshot
-        run: |
-          git config --global user.name github-action
-          git config --global user.email github-action@noreply.com
-          git co main
-          if [ $(cat version.txt) = 'snapshot' ] ; then exit 0; fi
-          echo "snapshot" > version.txt
-          git stage version.txt
-          git commit -m "chore(release): set version back to snapshot"
-          git push
