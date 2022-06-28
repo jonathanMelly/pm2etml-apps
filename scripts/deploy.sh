@@ -51,6 +51,8 @@ function deploy()
       if [ ! -d "vendor" ]; then
         echo "FIRST DEPLOY, regen app key"
         $composer_install && $php artisan key:generate --no-interaction --force
+        #Disable next composer install as already done...
+        composer_install=":"
       else
         $php artisan down --secret "$secret"
       fi
