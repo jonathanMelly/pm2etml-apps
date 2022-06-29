@@ -14252,6 +14252,13 @@ body[dir="rtl"] .checkbox:checked,
   --tw-text-opacity: 1;
   color: hsl(var(--sc) / var(--tw-text-opacity));
 }
+.badge-info {
+  border-color: transparent;
+  --tw-bg-opacity: 1;
+  background-color: hsl(var(--in) / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: hsl(var(--inc, var(--nc)) / var(--tw-text-opacity));
+}
 .badge-success {
   border-color: transparent;
   --tw-bg-opacity: 1;
@@ -14857,6 +14864,12 @@ body[dir="rtl"] .checkbox:checked,
 .ml-5 {
   margin-left: 1.25rem;
 }
+.-ml-1 {
+  margin-left: -0.25rem;
+}
+.-ml-2 {
+  margin-left: -0.5rem;
+}
 .block {
   display: block;
 }
@@ -15080,6 +15093,12 @@ body[dir="rtl"] .checkbox:checked,
 .flex-wrap {
   flex-wrap: wrap;
 }
+.flex-nowrap {
+  flex-wrap: nowrap;
+}
+.place-items-end {
+  place-items: end;
+}
 .place-items-center {
   place-items: center;
 }
@@ -15142,8 +15161,14 @@ body[dir="rtl"] .checkbox:checked,
 .place-self-end {
   place-self: end;
 }
+.self-end {
+  align-self: flex-end;
+}
 .self-center {
   align-self: center;
+}
+.justify-self-end {
+  justify-self: end;
 }
 .overflow-hidden {
   overflow: hidden;

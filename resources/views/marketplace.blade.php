@@ -33,10 +33,17 @@
         </form>
     </div>
 
+    <div class="sm:mx-6 flex flex-row flex-wrap items-center justify-between">
     @can('jobDefinitions.create')
-        <a class="sm:mx-6 btn btn-sm btn-secondary btn-outline my-2" href="{{route('jobDefinitions.create')}}"><i
-                class="fa-solid fa-plus fa-lg mr-2"></i>{{__('Add a new job')}}</a>
+        <a class="btn btn-sm btn-secondary btn-outline my-2" href="{{route('jobDefinitions.create')}}">
+            <i class="fa-solid fa-plus fa-lg mr-2"></i>{{__('Add a new job')}}
+        </a>
     @endcan
+        <div class="flex flex-row flex-nowrap badge badge-info bg-opacity-50">
+            <img src="{{url('img/sigma.svg')}}" class="w-6 -ml-2">
+            <div class="ml-1 self-center text-base-content">{{trans_choice(':number project|:number projects',$definitions,['number'=>$definitions->count()])}}</div>
+        </div>
+    </div>
 
     <div class="sm:mx-6 bg-base-200 rounded-box sm:p-3 p-1" x-data="{jobNameToDelete:''}">
 

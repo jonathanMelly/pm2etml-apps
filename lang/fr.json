@@ -289,5 +289,6 @@
     "Filter": "Filtrer",
     "Add a new job": "Ajouter un nouvel emploi",
     "Type a skill and add it (ENTER or click on +)":"Saisir une compétence, par exemple 'infra:installation linux' et valider avec ENTER ou cliquer sur le bouton +",
-    "View all": "Tout voir"
+    "View all": "Tout voir",
+    ":number project|:number projects":":number projet|:number projets"
 }
