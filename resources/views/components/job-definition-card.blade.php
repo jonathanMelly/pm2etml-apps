@@ -58,36 +58,48 @@
 <div class="flex flex-col">
 
     <div class="z-10 absolute h-0 flex flex-row">
-        @if($job->attachments->isNotEmpty())
-        <div class="dropdown dropdown-hover">
-            <label tabindex="0">
-                <img src="{{url('img/paperclip.svg')}}" class="hover:cursor-pointer h-10" >
-            </label>
-            <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-96">
-                @foreach($job->attachments as $docAttachment)
-                    <li>
-                        <a href="{{attachmentUri($docAttachment)}}" download="{{$docAttachment->name}}" ><i class="fa-solid fa-paperclip"></i> {{ Str::limit($docAttachment->name,30,'....'. pathinfo($docAttachment->name)['extension'])}}
-                        </a>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
-        @endif
-        @if($job->skills->isNotEmpty())
-        <div x-data="{ open: false }" @mouseleave="open = false" class="hover:cursor-help">
-            <label tabindex="0">
-                <img @mouseover="open = true" src="{{url('img/badge.svg')}}" class="hover:cursor-help h-10" >
-            </label>
-            <div x-show="open" class="overflow-y-auto rounded-box border-2 border-base-300 bg-base-200 text-base-content w-80 max-h-80">
-                <h2 class="text-center">{{__('Skills')}}</h2>
-                @foreach($job->skills as $skill)
-                    <div class="badge badge-outline gap-2 mx-1 my-1">
-                        {{$skill->getFullName()}}
+        <div class="flex flex-row justify-between w-full">
+            <div class="flex flex-row">
+                @if($job->attachments->isNotEmpty())
+                    <div class="dropdown dropdown-hover">
+                        <label tabindex="0">
+                            <img src="{{url('img/paperclip.svg')}}" class="hover:cursor-pointer h-10" >
+                        </label>
+                        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-96">
+                            @foreach($job->attachments as $docAttachment)
+                                <li>
+                                    <a href="{{attachmentUri($docAttachment)}}" download="{{$docAttachment->name}}" ><i class="fa-solid fa-paperclip mr-1"></i> {{ Str::limit($docAttachment->name,30,'....'. pathinfo($docAttachment->name)['extension'])}}
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
                     </div>
-                @endforeach
+                @endif
+                @if($job->skills->isNotEmpty())
+                        <div class="dropdown dropdown-hover">
+                            <label tabindex="0">
+                                <img src="{{url('img/badge.svg')}}" class="hover:cursor-pointer h-10" >
+                            </label>
+                            <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-96 text-xs">
+                                @foreach($job->skills as $skill)
+                                    <li class="my-[0.2em] py-0">
+                                        <div class="py-0 my-0"><i class="fa-solid fa-check mr-1"></i> {{$skill->getFullName()}}</div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                @endif
             </div>
+
+            <div>
+            @if($job->one_shot)
+                <div class="tooltip" data-tip="{{__('One shot means that as soon as a worker applies for the job, the latter won’t be available to others anymore')}}">
+                <i class="fa-solid fa-meteor fa-xl"></i>
+                </div>
+            @endif
+            </div>
+
         </div>
-        @endif
     </div>
 
 
