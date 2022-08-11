@@ -35,7 +35,7 @@
 
     <div class="sm:mx-6 flex flex-row flex-wrap items-center justify-between">
     @can('jobDefinitions.create')
-        <a class="btn btn-sm btn-secondary btn-outline my-2" href="{{route('jobDefinitions.create')}}">
+        <a class="btn btn-sm btn-primary btn-outline my-2" href="{{route('jobDefinitions.create')}}">
             <i class="fa-solid fa-plus fa-lg mr-2"></i>{{__('Add a new job')}}
         </a>
     @endcan
