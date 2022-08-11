@@ -12894,11 +12894,22 @@ html {
   outline: 2px solid hsl(var(--nf));
   outline-offset: 2px;
 }
+.btn-primary {
+  --tw-border-opacity: 1;
+  border-color: hsl(var(--p) / var(--tw-border-opacity));
+  --tw-bg-opacity: 1;
+  background-color: hsl(var(--p) / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: hsl(var(--pc) / var(--tw-text-opacity));
+}
 .btn-primary:hover, .btn-primary.btn-active {
   --tw-border-opacity: 1;
   border-color: hsl(var(--pf, var(--p)) / var(--tw-border-opacity));
   --tw-bg-opacity: 1;
   background-color: hsl(var(--pf, var(--p)) / var(--tw-bg-opacity));
+}
+.btn-primary:focus-visible {
+  outline: 2px solid hsl(var(--p));
 }
 .btn-secondary {
   --tw-border-opacity: 1;
@@ -12934,11 +12945,22 @@ html {
 .btn-accent:focus-visible {
   outline: 2px solid hsl(var(--a));
 }
+.btn-info {
+  --tw-border-opacity: 1;
+  border-color: hsl(var(--in) / var(--tw-border-opacity));
+  --tw-bg-opacity: 1;
+  background-color: hsl(var(--in) / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: hsl(var(--inc, var(--nc)) / var(--tw-text-opacity));
+}
 .btn-info:hover, .btn-info.btn-active {
   --tw-border-opacity: 1;
   border-color: hsl(var(--in) / var(--tw-border-opacity));
   --tw-bg-opacity: 1;
   background-color: hsl(var(--in) / var(--tw-bg-opacity));
+}
+.btn-info:focus-visible {
+  outline: 2px solid hsl(var(--in));
 }
 .btn-success {
   --tw-border-opacity: 1;
@@ -13284,11 +13306,17 @@ body[dir="rtl"] .checkbox:checked,
 .divider:not(:empty) {
   gap: 1rem;
 }
+.drawer-toggle:focus-visible ~ .drawer-content .drawer-button.btn-primary {
+  outline: 2px solid hsl(var(--p));
+}
 .drawer-toggle:focus-visible ~ .drawer-content .drawer-button.btn-secondary {
   outline: 2px solid hsl(var(--s));
 }
 .drawer-toggle:focus-visible ~ .drawer-content .drawer-button.btn-accent {
   outline: 2px solid hsl(var(--a));
+}
+.drawer-toggle:focus-visible ~ .drawer-content .drawer-button.btn-info {
+  outline: 2px solid hsl(var(--in));
 }
 .drawer-toggle:focus-visible ~ .drawer-content .drawer-button.btn-success {
   outline: 2px solid hsl(var(--su));
@@ -14758,13 +14786,13 @@ body[dir="rtl"] .checkbox:checked,
 .m-2 {
   margin: 0.5rem;
 }
-.mx-1 {
-  margin-left: 0.25rem;
-  margin-right: 0.25rem;
+.my-\[0\.2em\] {
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
 }
-.my-1 {
-  margin-top: 0.25rem;
-  margin-bottom: 0.25rem;
+.my-0 {
+  margin-top: 0px;
+  margin-bottom: 0px;
 }
 .mx-4 {
   margin-left: 1rem;
@@ -14778,25 +14806,13 @@ body[dir="rtl"] .checkbox:checked,
   margin-left: -0.75rem;
   margin-right: -0.75rem;
 }
-.my-0 {
-  margin-top: 0px;
-  margin-bottom: 0px;
+.mx-1 {
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
 }
-.my-\[0\.2\] {
-  margin-top: 0.2;
-  margin-bottom: 0.2;
-}
-.my-\[0\.1em\] {
-  margin-top: 0.1em;
-  margin-bottom: 0.1em;
-}
-.my-\[2px\] {
-  margin-top: 2px;
-  margin-bottom: 2px;
-}
-.my-\[0\.2em\] {
-  margin-top: 0.2em;
-  margin-bottom: 0.2em;
+.my-1 {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
 }
 .ml-3 {
   margin-left: 0.75rem;
@@ -14816,11 +14832,8 @@ body[dir="rtl"] .checkbox:checked,
 .mt-2 {
   margin-top: 0.5rem;
 }
-.-mt-2 {
-  margin-top: -0.5rem;
-}
-.-ml-2 {
-  margin-left: -0.5rem;
+.mr-1 {
+  margin-right: 0.25rem;
 }
 .mr-3 {
   margin-right: 0.75rem;
@@ -14849,17 +14862,20 @@ body[dir="rtl"] .checkbox:checked,
 .ml-2 {
   margin-left: 0.5rem;
 }
+.-ml-2 {
+  margin-left: -0.5rem;
+}
 .ml-1 {
   margin-left: 0.25rem;
 }
 .mb-6 {
   margin-bottom: 1.5rem;
 }
-.mr-1 {
-  margin-right: 0.25rem;
-}
 .ml-5 {
   margin-left: 1.25rem;
+}
+.-mt-2 {
+  margin-top: -0.5rem;
 }
 .block {
   display: block;
@@ -14912,9 +14928,6 @@ body[dir="rtl"] .checkbox:checked,
 .h-12 {
   height: 3rem;
 }
-.max-h-80 {
-  max-height: 20rem;
-}
 .max-h-fit {
   max-height: -webkit-fit-content;
   max-height: -moz-fit-content;
@@ -14924,6 +14937,9 @@ body[dir="rtl"] .checkbox:checked,
   max-height: -webkit-min-content !important;
   max-height: -moz-min-content !important;
   max-height: min-content !important;
+}
+.max-h-80 {
+  max-height: 20rem;
 }
 .min-h-screen {
   min-height: 100vh;
@@ -14958,9 +14974,6 @@ body[dir="rtl"] .checkbox:checked,
 .w-96 {
   width: 24rem;
 }
-.w-80 {
-  width: 20rem;
-}
 .w-24 {
   width: 6rem;
 }
@@ -14972,6 +14985,9 @@ body[dir="rtl"] .checkbox:checked,
 }
 .w-3\/4 {
   width: 75%;
+}
+.w-80 {
+  width: 20rem;
 }
 .w-4\/5 {
   width: 80%;
@@ -15111,11 +15127,11 @@ body[dir="rtl"] .checkbox:checked,
 .gap-4 {
   gap: 1rem;
 }
-.gap-2 {
-  gap: 0.5rem;
-}
 .gap-1 {
   gap: 0.25rem;
+}
+.gap-2 {
+  gap: 0.5rem;
 }
 .space-x-3 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-x-reverse: 0;
@@ -15199,10 +15215,6 @@ body[dir="rtl"] .checkbox:checked,
 .border-neutral {
   --tw-border-opacity: 1;
   border-color: hsl(var(--n) / var(--tw-border-opacity));
-}
-.border-base-300 {
-  --tw-border-opacity: 1;
-  border-color: hsl(var(--b3, var(--b2)) / var(--tw-border-opacity));
 }
 .border-accent {
   --tw-border-opacity: 1;
@@ -15317,6 +15329,10 @@ body[dir="rtl"] .checkbox:checked,
   padding-left: 0.5rem;
   padding-right: 0.5rem;
 }
+.py-0 {
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
 .py-4 {
   padding-top: 1rem;
   padding-bottom: 1rem;
@@ -15329,10 +15345,6 @@ body[dir="rtl"] .checkbox:checked,
   padding-left: 0.75rem;
   padding-right: 0.75rem;
 }
-.py-0 {
-  padding-top: 0px;
-  padding-bottom: 0px;
-}
 .py-1 {
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
@@ -15340,14 +15352,6 @@ body[dir="rtl"] .checkbox:checked,
 .py-6 {
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
-}
-.py-\[0\.1em\] {
-  padding-top: 0.1em;
-  padding-bottom: 0.1em;
-}
-.py-\[2px\] {
-  padding-top: 2px;
-  padding-bottom: 2px;
 }
 .pb-2 {
   padding-bottom: 0.5rem;
@@ -15471,6 +15475,14 @@ body[dir="rtl"] .checkbox:checked,
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+.text-secondary {
+  --tw-text-opacity: 1;
+  color: hsl(var(--s) / var(--tw-text-opacity));
+}
+.text-info {
+  --tw-text-opacity: 1;
+  color: hsl(var(--in) / var(--tw-text-opacity));
 }
 .\!text-opacity-75 {
   --tw-text-opacity: 0.75 !important;

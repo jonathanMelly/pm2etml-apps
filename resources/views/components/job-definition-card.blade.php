@@ -191,9 +191,9 @@
 
             </div>
             <div class="card-actions justify-end">
-                <i class="text-accent">{{__('Providers')}}: </i>
+                <i class="text-info">{{__('Providers')}}: </i>
                 @foreach($job->providers as $provider)
-                    <button class="btn btn-accent btn-outline btn-xs">{{ $provider->getFirstnameL() }}</button>
+                    <a class="btn btn-info btn-outline btn-xs" href="?provider={{$provider->id}}">{{ $provider->getFirstnameL() }}</a>
                 @endforeach
 
             </div>
