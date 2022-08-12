@@ -78,11 +78,11 @@
                 @if($job->skills->isNotEmpty())
                         <div class="dropdown dropdown-hover">
                             <label tabindex="0">
-                                <img src="{{url('img/badge.svg')}}" class="hover:cursor-pointer h-10" >
+                                <img src="{{url('img/badge.svg')}}" class="hover:cursor-help h-10" >
                             </label>
                             <ul tabindex="0" class="dropdown-content p-2 shadow bg-base-100 rounded-box w-96 text-xs">
                                 <li>{{__('Skills')}}</li>
-                                <li></li>
+                                <li class="divider p-0 m-0"></li>
                                 @foreach($job->skills as $skill)
                                     <li class="my-[0.2em] py-0">
                                         <div class="py-0 my-0"><i class="fa-solid fa-check mr-1"></i> {{$skill->getFullName()}}</div>
