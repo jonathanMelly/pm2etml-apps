@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.4.0...v1.4.1) (2022-08-12)
+
+
+### Bug Fixes
+
+* **job filter:** xp and priority filters restored ([ef361bb](https://github.com/jonathanMelly/pm2etml-intranet/commit/ef361bb9bfb891fbbdc6431cc86e12512e45fff9))
+
 ## [1.4.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.3.0...v1.4.0) (2022-08-12)
 
 
