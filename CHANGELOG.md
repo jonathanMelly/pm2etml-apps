@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.4.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.3.0...v1.4.0) (2022-08-12)
+
+
+### Features
+
+* **job drafts:** drafts are shown and can be filtered ([6866793](https://github.com/jonathanMelly/pm2etml-intranet/commit/6866793631afd8ff0b5830f59f8365b276083304))
+* **job:** Allow any teacher to be the client ([0be0542](https://github.com/jonathanMelly/pm2etml-intranet/commit/0be054278e0c2767ce6971a1532da87d61df7e0b))
+* **job:** Cursor help on oneshot tooltip ([8680889](https://github.com/jonathanMelly/pm2etml-intranet/commit/86808898895ab837d3f3400c6d70b36a48a11922))
+* **job:** Separator for skills + better pointer ([9512fdf](https://github.com/jonathanMelly/pm2etml-intranet/commit/9512fdfa62d46a7b2e35b57609869d99a02f45d6))
+* **marketplace:** add meteor icon for oneshot ([a3b4a28](https://github.com/jonathanMelly/pm2etml-intranet/commit/a3b4a285d15669f64871c60b7dc58c9617d2b566))
+* **marketplace:** add title to skills list ([a04d9cf](https://github.com/jonathanMelly/pm2etml-intranet/commit/a04d9cf90911b698bb43f57a07c01a94e3d1287f))
+* **marketplace:** click on provider filters jobs ([bf8c5c5](https://github.com/jonathanMelly/pm2etml-intranet/commit/bf8c5c537017b2a6b463c0aceb1152cdcb061eaf))
+
+
+### Bug Fixes
+
+* **job edit:** oneshot property is properly updated ([779241f](https://github.com/jonathanMelly/pm2etml-intranet/commit/779241fff0fd51c1a86cb6743fb5fd550e9e354a))
+* **job:** Providers title more visible ([e21ee43](https://github.com/jonathanMelly/pm2etml-intranet/commit/e21ee4354623588841ecdb6416c87b84b606c174))
+* **marketplace:** better visibility of job add button ([fff5adf](https://github.com/jonathanMelly/pm2etml-intranet/commit/fff5adf2fb7a1be81e2939588eedffcd539156e6))
+
 ## [1.3.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.2.1...v1.3.0) (2022-06-29)
 
 
