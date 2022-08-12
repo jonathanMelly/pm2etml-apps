@@ -108,13 +108,12 @@ class JobDefinition extends Model
         //Simple ones
         foreach (['required_xp_years', 'priority'] as $filter) {
             if (($input = existsAndNotEmpty($request, $filter)) != null) {
-                //$query->where($filter,'=',$input);
+                $query->where($filter,'=',$input);
             }
         }
 
         // Sizes
         if (($input = existsAndNotEmpty($request, 'size')) != null) {
-            //TODO set constants / config for that...
             //TODO Handle hours/periods...
             $min = match ($input) {
                 default => 0,
