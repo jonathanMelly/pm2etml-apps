@@ -80,7 +80,7 @@ class JobApplyFormTest extends BrowserKitTestCase
         ;
     }
 
-    public function test_user_cannot_apply_for_a_job_with_unregistered_providers()
+    public function test_user_can_apply_for_a_job_with_any_teacher()
     {
         $otherProvider = $this->createUser(false,'prof');
 
@@ -98,8 +98,8 @@ class JobApplyFormTest extends BrowserKitTestCase
             ->type($this->job->id, 'job_definition_id')
             ->select($this->teacher->id, 'client')
             ->press(__('Apply'))
-            ->seePageIs($this->formPage)
-            ->seeText(__('Invalid client (only valid providers are allowed)'))
+            ->seePageIs('/dashboard')
+            ->seeText(__('Congrats, you have been hired for the job'))
         ;
     }
 

@@ -208,4 +208,33 @@ class JobDefinition extends Model
         return $this->published_date!==null && $this->published_date<=today();
     }
 
+
+
+    public function sortUsers(Collection $users, bool $byLoad=true): Collection
+    {
+        $orders = [];
+
+        if ($byLoad)
+        {
+            $orders[]=fn($a, $b) =>
+                $a->getClientLoad(\App\Models\AcademicPeriod::current())['percentage'] <=>
+                $b->getClientLoad(\App\Models\AcademicPeriod::current())['percentage'];
+        }
+        $orders[]=fn($a, $b) => $a['lastname'] <=> $b['lastname'];
+
+        return $users->sortBy($orders)->values();
+    }
+
+    public function getProviders(bool $sortedByLoad = true): Collection
+    {
+        return $this->sortUsers($this->providers,$sortedByLoad);
+    }
+
+    public function getClients(Collection $exclude, bool $sortedByLoad = true): Collection
+    {
+        $clients = User::role(RoleName::TEACHER)->get()->filter(fn($el) => $exclude->doesntContain('id', '=', $el->id));
+
+        return $this->sortUsers($clients,$sortedByLoad);
+    }
+
 }

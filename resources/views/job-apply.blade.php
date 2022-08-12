@@ -30,7 +30,16 @@
                         <div class="input-group">
                             <select class="select select-bordered w-2/3" name="client">
                                 <option disabled selected>{{__('Client')}}</option>
-                                @foreach($jobDefinition->providers->sortBy(fn($e)=>$e->getClientLoad(\App\Models\AcademicPeriod::current())['percentage']) as $client)
+                                @php
+                                    $providers = $jobDefinition->getProviders();
+                                @endphp
+                                @foreach($providers as $client)
+                                    <option value="{{$client->id}}" {{old('client')==$client->id?'selected="selected"':''}}>
+                                        {{$client->firstname.' '.$client->lastname}} ({{$client->getClientLoad(\App\Models\AcademicPeriod::current())['percentage']}}%)
+                                    </option>
+                                @endforeach
+                                <option class="divider p-0 m-0"></option>
+                                @foreach($jobDefinition->getClients($providers) as $client)
                                     <option value="{{$client->id}}" {{old('client')==$client->id?'selected="selected"':''}}>
                                         {{$client->firstname.' '.$client->lastname}} ({{$client->getClientLoad(\App\Models\AcademicPeriod::current())['percentage']}}%)
                                     </option>

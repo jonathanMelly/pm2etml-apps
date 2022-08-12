@@ -56,10 +56,10 @@ class ContractController extends Controller
 
         //Only teachers and authorized providers can be client
         $client = User::whereId($request->get('client'))->firstOrFail();
-        if(!$client->hasRole(RoleName::TEACHER) ||
+        if(!$client->hasRole(RoleName::TEACHER) /* any teacher can be a client... ||
             !JobDefinition::whereHas('providers', function (Builder $query) use($jobDefinitionId,$client) {
                 $query->where('user_id','=',$client->id)->where('job_definition_id','=',$jobDefinitionId);
-            })->exists())
+            })->exists()*/)
         {
             return back()->withErrors(__('Invalid client (only valid providers are allowed)'))->withInput();
         }
