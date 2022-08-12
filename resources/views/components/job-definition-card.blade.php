@@ -193,7 +193,7 @@
 
             </div>
             <div class="card-actions justify-end">
-                <i class="text-info">{{__('Providers')}}: </i>
+                <i class="text-info-content">{{__('Providers')}}: </i>
                 @foreach($job->providers as $provider)
                     <a class="btn btn-info btn-outline btn-xs" href="?provider={{$provider->id}}">{{ $provider->getFirstnameL() }}</a>
                 @endforeach
