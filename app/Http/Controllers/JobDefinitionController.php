@@ -180,8 +180,23 @@ class JobDefinitionController extends Controller
             }
             else
             {
-                $jobDefinition->update($request->all());
+                $data = $request->all();
+
+                //Draft is handled with published_date, thus must be handled manually
+                if(!$request->exists('publish'))
+                {
+                    $data['published_date']=null;
+                }
+
+                //Oneshot is a toggle thus must be handled manually
+                if(!$request->exists('one_shot'))
+                {
+                    $data['one_shot']=false;
+                }
+                $jobDefinition->update($data);
             }
+
+
 
             //First delete any removed attachments (including image)
             $attachmentIdsToDelete = json_decode($request->input('any_attachment_to_delete'));
