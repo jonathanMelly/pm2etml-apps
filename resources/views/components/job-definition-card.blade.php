@@ -40,19 +40,6 @@
     }
 
 
-    if(!$viewOnly)
-    {
-        $cardElement = 'a';
-        $cardAdditionalClass = 'hover:bg-gradient-to-b hover:from-primary/25 hover:to-base-100';
-        $cardHref= 'href='. route('jobs-apply-for',['jobDefinition'=>$job]);
-    }
-    else
-    {
-        $cardElement='div';
-        $cardAdditionalClass='';
-        $cardHref='';
-    }
-
 @endphp
 
 <div class="flex flex-col">
@@ -104,8 +91,9 @@
         </div>
     </div>
 
-
-    <{{$cardElement}} class="h-full mt-2 card card-compact {{$job->one_shot?'border border-accent border-dashed':''}} w-auto bg-base-100 shadow-xl {{$cardAdditionalClass}}" {{$cardHref}} >
+    <div class="h-full mt-2 card card-compact {{$job->one_shot?'border border-opacity-75 border-secondary border-dashed':''}} w-auto bg-base-100 shadow-xl
+                {{!$viewOnly?'hover:bg-gradient-to-b hover:from-primary/25 hover:to-base-100 hover:cursor-pointer':''}}"
+                onclick="{{!$viewOnly?'window.location.href=\''.route('jobs-apply-for',['jobDefinition'=>$job]).'\'':''}}" >
         {{-- DELETE/EVALUATE BUTTONS --}}
         @if($job->providers->contains(Auth::user()) || Auth::user()->can('jobDefinitions'))
             <div class="place-self-end mr-3 mt-2 -mb-6 flex gap-1">
@@ -143,6 +131,11 @@
 
         </div>
 
+        @if(!$job->isPublished())
+            <div class="-skew-y-12 bg-gradient-to-r from-secondary/50 to-secondary text-center">
+                {{__('Draft')}}
+            </div>
+        @endif
 
         <div class="card-body">
 
@@ -200,6 +193,6 @@
 
             </div>
         </div>
-    </{{$cardElement}}>
+    </div>
 
 </div>

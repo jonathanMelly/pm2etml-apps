@@ -23,10 +23,18 @@
                 @endforeach
             </select>
 
+            @can('jobDefinitions.create')
+            <select class="select select-sm" name="draft">
+                <option @selected(request('draft')=='exclude') value="exclude">{{__('Published')}}</option>
+                <option @selected(request('draft')=='include') value="include">{{__('With drafts')}}</option>
+                <option @selected(request('draft')=='only') value="only">{{__('Drafts only')}}</option>
+            </select>
+            @endcan
+
             <input value="{{request('fulltext')}}" name="fulltext" type="text" placeholder="{{__('Text search')}}" class="input input-sm"/>
 
 
-            <button class="btn btn-sm btn-warning">{{__('Filter')}}</button>
+            <button class="btn btn-sm btn-warning bg-opacity-75 hover:bg-opacity-100">{{__('Filter')}}</button>
 
             <button class="btn btn-sm btn-outline" type="button" onclick="window.location.href='{{route('marketplace')}}'">{{__('View all')}}</button>
 

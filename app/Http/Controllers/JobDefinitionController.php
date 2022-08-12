@@ -31,7 +31,7 @@ class JobDefinitionController extends Controller
         $providers = User::query()->whereHas('jobDefinitions')->get();
 
         $definitions = JobDefinition::query()
-            ->where(fn($q)=>$q->published())
+            //->where(fn($q)=>$q->published())
             ->where(fn($q)=>$q->available())
             ->where(fn($q)=>$q->filter($request))
             ->whereNotIn('id',auth()->user()->contractsAsAWorker()->select('job_definition_id'))

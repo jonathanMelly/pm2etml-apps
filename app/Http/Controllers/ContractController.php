@@ -54,6 +54,13 @@ class ContractController extends Controller
 
         $jobDefinitionId = $request->get('job_definition_id');
 
+        /* @var $jobDefinition JobDefinition */
+        $jobDefinition = JobDefinition::whereId($jobDefinitionId)->firstOrFail();
+        if($jobDefinition->published_date==null || $jobDefinition->published_date > today())
+        {
+            return back()->withErrors(__('Cannot apply for a draft job...)'))->withInput();
+        }
+
         //Only teachers and authorized providers can be client
         $client = User::whereId($request->get('client'))->firstOrFail();
         if(!$client->hasRole(RoleName::TEACHER) /* any teacher can be a client... ||

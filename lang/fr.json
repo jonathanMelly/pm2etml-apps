@@ -273,6 +273,7 @@
     "Publish": "Publier",
     "Do you really want to delete the following job ?": "Êtes-vous certain(e) de vouloir supprimer cet emploi ?",
     "Workload": "Charge de travail",
+    "Weak": "Faible",
     "Small": "Petite",
     "Medium": "Moyenne",
     "Large": "Grande",
@@ -290,5 +291,9 @@
     "Add a new job": "Ajouter un nouvel emploi",
     "Type a skill and add it (ENTER or click on +)":"Saisir une compétence, par exemple 'infra:installation linux' et valider avec ENTER ou cliquer sur le bouton +",
     "View all": "Tout voir",
-    ":number project|:number projects":":number projet|:number projets"
+    ":number project|:number projects":":number projet|:number projets",
+    "Published": "Publiés",
+    "With drafts": "Avec brouillons",
+    "Drafts only" : "Seul. brouillons",
+    "Draft": "Brouillon"
 }

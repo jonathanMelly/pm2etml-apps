@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Constants\RoleName;
 use App\Enums\CustomPivotTableNames;
 use App\Enums\JobPriority;
 use App\Enums\RequiredTimeUnit;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use JetBrains\PhpStorm\Pure;
 
 /**
@@ -69,10 +73,12 @@ use JetBrains\PhpStorm\Pure;
  */
 class JobDefinition extends Model
 {
-    use HasFactory,SoftDeletes;
+    use HasFactory, SoftDeletes;
 
-    public const MIN_PERIODS=30;
-    public const MAX_PERIODS=150;
+    public const MIN_PERIODS = 30;
+    public const MAX_PERIODS = 150;
+    const SIZE_MEDIUM_MIN = 90;
+    const SIZE_LARGE_MIN = 120;
 
     /**
      * The attributes that are mass assignable.
@@ -92,57 +98,70 @@ class JobDefinition extends Model
     ];
 
     protected $casts = [
-        'priority'=> JobPriority::class,
-        'allocated_time_unit'=>RequiredTimeUnit::class,
-        'published_date'=> 'datetime'
+        'priority' => JobPriority::class,
+        'allocated_time_unit' => RequiredTimeUnit::class,
+        'published_date' => 'datetime'
     ];
 
-    public function scopeFilter(Builder $query, mixed $params)
+    public function scopeFilter(Builder $query, Request $request)
     {
         //Simple ones
-        foreach(['required_xp_years','priority'] as $filter)
-        {
-            if(($input=existsAndNotEmpty($params,$filter))!=null)
-            {
+        foreach (['required_xp_years', 'priority'] as $filter) {
+            if (($input = existsAndNotEmpty($request, $filter)) != null) {
                 //$query->where($filter,'=',$input);
             }
         }
 
         // Sizes
-        if(($input=existsAndNotEmpty($params,'size'))!=null)
-        {
+        if (($input = existsAndNotEmpty($request, 'size')) != null) {
             //TODO set constants / config for that...
             //TODO Handle hours/periods...
-            $min = match($input)
-            {
-                default=>0,
-                'md'=>90,
-                'lg'=>120
+            $min = match ($input) {
+                default => 0,
+                'md' => self::SIZE_MEDIUM_MIN,
+                'lg' => self::SIZE_LARGE_MIN
             };
-            $max = match($input)
-            {
-                'sm'=>89,
-                'md'=>119,
-                 default=>150
+            $max = match ($input) {
+                'sm' => self::SIZE_MEDIUM_MIN - 1,
+                'md' => self::SIZE_LARGE_MIN - 1,
+                default => self::MAX_PERIODS
             };
-            $query->whereBetween('allocated_time',[$min,$max]);
+            $query->whereBetween('allocated_time', [$min, $max]);
         }
 
-        if(($input=existsAndNotEmpty($params,'provider'))!=null)
-        {
-            $query->whereHas('providers',fn($q)=>$q->where(tbl(User::class).'.id','=',$input));
+        if (($input = existsAndNotEmpty($request, 'provider')) != null) {
+            $query->whereHas('providers', fn($q) => $q->where(tbl(User::class) . '.id', '=', $input));
         }
 
-        if(($input=existsAndNotEmpty($params,'fulltext'))!=null)
-        {
-            $query->where(function(Builder $q) use($input){
-                $q->where('title','LIKE','%'.$input.'%');
-                $q->orWhere('description','LIKE','%'.$input.'%');
-                $q->orWhereHas('providers',function($q) use($input){
-                    $q->where(tbl(User::class).'.firstname','LIKE','%'.$input.'%');
-                    $q->orWhere(tbl(User::class).'.lastname','LIKE','%'.$input.'%');
+        if (($input = existsAndNotEmpty($request, 'fulltext')) != null) {
+            $query->where(function (Builder $q) use ($input) {
+                $q->where('title', 'LIKE', '%' . $input . '%');
+                $q->orWhere('description', 'LIKE', '%' . $input . '%');
+                $q->orWhereHas('providers', function ($q) use ($input) {
+                    $q->where(tbl(User::class) . '.firstname', 'LIKE', '%' . $input . '%');
+                    $q->orWhere(tbl(User::class) . '.lastname', 'LIKE', '%' . $input . '%');
                 });
             });
+        }
+
+        $onlyPublished = true;
+        //Students should not see drafts
+        if (!$request->user()->hasRole(RoleName::STUDENT)) {
+            if (($input = existsAndNotEmpty($request, 'draft')) != null) {
+                if ($input === 'only') {
+                    $query->where(function (Builder $q) {
+                        $q
+                            ->where('published_date', '>', now())
+                            ->orWhereNull('published_date');
+                    });
+                    $onlyPublished = false;
+                } else if ($input === 'include') {
+                    $onlyPublished = false;
+                }
+            }
+        }
+        if ($onlyPublished) {
+            $query->where(fn($q) => $q->published());
         }
 
         return $query;
@@ -150,12 +169,12 @@ class JobDefinition extends Model
 
     public function scopePublished(Builder $query): Builder
     {
-        return $query->where('published_date','<=',now());
+        return $query->where('published_date', '<=', now());
     }
 
     public function scopeAvailable(Builder $query): Builder
     {
-        return $query->where('one_shot','=',false)
+        return $query->where('one_shot', '=', false)
             ->orWhereDoesntHave('contracts');
     }
 
@@ -175,12 +194,12 @@ class JobDefinition extends Model
 
     public function attachments(): MorphMany
     {
-        return $this->morphMany(JobDefinitionDocAttachment::class,'attachable');
+        return $this->morphMany(JobDefinitionDocAttachment::class, 'attachable');
     }
 
-    public function image():MorphOne
+    public function image(): MorphOne
     {
-        return $this->morphOne(related:JobDefinitionMainImageAttachment::class,
+        return $this->morphOne(related: JobDefinitionMainImageAttachment::class,
             name: 'attachable');
     }
 
@@ -191,21 +210,30 @@ class JobDefinition extends Model
 
     #[Pure] public function getAllocatedTime(RequiredTimeUnit $targetUnit = RequiredTimeUnit::HOUR): float
     {
-        if($this->allocated_time===null) {
+        if ($this->allocated_time === null) {
             return 0;
         }
         return round(RequiredTimeUnit::Convert($this->allocated_time, $this->allocated_time_unit, $targetUnit), 0);
     }
 
-    #[Pure] public function getAllocationDetails(): string
+    public function getAllocationDetails(): string
     {
-        return $this->getAllocatedTime() . 'h / '
-            . $this->getAllocatedTime(RequiredTimeUnit::PERIOD) . 'p';
+
+        $allocatedTimeInPeriods = $this->getAllocatedTime(RequiredTimeUnit::PERIOD);
+        if ($allocatedTimeInPeriods < self::SIZE_MEDIUM_MIN) {
+            $size = 'Weak';
+        } else if ($allocatedTimeInPeriods < self::SIZE_LARGE_MIN) {
+            $size = 'Medium';
+        } else {
+            $size = 'Large';
+        }
+
+        return __($size) . ', ~' . $this->getAllocatedTime(RequiredTimeUnit::PERIOD) . 'p';
     }
 
-    public function isPublished():bool
+    public function isPublished(): bool
     {
-        return $this->published_date!==null && $this->published_date<=today();
+        return $this->published_date!==null && $this->published_date->isBefore(Carbon::tomorrow());
     }
 
 

@@ -509,14 +509,14 @@
                     @else
                         <button onclick="document.querySelector('#create-update-form').submit()"
                                 name="draft" value="true"
-                                class="btn btn-warning bg-opacity-75 hover:bg-opacity-100 my-2"
+                                class="btn btn-warning bg-opacity-50 hover:bg-opacity-100 my-2"
                                 type="button">{{__('Save as draft')}}</button>
                     @endif
                 </div>
 
                 <div class="divider divider-horizontal">{{__($editMode?'':'OR')}}</div>
                 <div class="grid h-20 flex-grow card rounded-box justify-items-start content-center">
-                    <button name="createOrSave" class="btn btn-success btn-outline my-2"
+                    <button name="createOrSave" class="btn btn-success bg-opacity-75 hover:bg-opacity-100 my-2"
                             onclick="
                                     document.querySelector('#published_date').value='{{now()}}';
                                     this.closest('form').submit()"
