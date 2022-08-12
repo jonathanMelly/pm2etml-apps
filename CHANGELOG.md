@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.2.1...v1.3.0) (2022-06-29)
+
+
+### Features
+
+* **marketplace:** add counter to show how many jobs are listed ([69d6cee](https://github.com/jonathanMelly/pm2etml-intranet/commit/69d6cee42b8e22edeb4fccf4d48583b0fa7b539a)), closes [#6](https://github.com/jonathanMelly/pm2etml-intranet/issues/6)
+
+
+### Bug Fixes
+
+* **version:** add space for dev ([2d47839](https://github.com/jonathanMelly/pm2etml-intranet/commit/2d47839e44966c482d888de0ec11b3a5f43725a4))
+
 ## [1.2.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.2.0...v1.2.1) (2022-06-27)
 
 
