@@ -95,7 +95,7 @@
 
             <div>
             @if($job->one_shot)
-                <div class="tooltip" data-tip="{{__('One shot means that as soon as a worker applies for the job, the latter won’t be available to others anymore')}}">
+                <div class="tooltip hover:cursor-help" data-tip="{{__('One shot means that as soon as a worker applies for the job, the latter won’t be available to others anymore')}}">
                 <i class="fa-solid fa-meteor fa-xl"></i>
                 </div>
             @endif
