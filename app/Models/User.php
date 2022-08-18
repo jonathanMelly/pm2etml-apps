@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -274,6 +275,17 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
         return GroupName::distinct()->select('name')
             ->whereIn('id',$this->groups($periodId)->pluck('group_name_id'));
     }
+
+    public function getGroupNames($periodId=null,$printable=false):Collection|string
+    {
+        $names= $this->groupNames($periodId)->pluck('name');
+        if($printable)
+        {
+            return $names->transform(fn($el)=>strtoupper($el))->implode(',');
+        }
+        return $names;
+    }
+
 
     public function getJobDefinitionsWithActiveContracts($academicPeriodId): \Illuminate\Database\Eloquent\Collection
     {

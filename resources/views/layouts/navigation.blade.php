@@ -30,16 +30,28 @@
             {{-- END Responsive MENU --}}
 
             <div class="flex-none">
+                <div class="text-xs rounded-box bg-info bg-opacity-25 px-1  mr-2">
+                    {{\App\Models\AcademicPeriod::current(idOnly: false)->printable()}}
+                </div>
                 <div class="dropdown dropdown-end">
                     <label tabindex="0" class="btn btn-ghost btn-circle avatar online placeholder @role(\App\Constants\RoleName::TEACHER) ring ring-primary @endrole">
                         <div class="bg-neutral-focus text-neutral-content rounded-full w-10">
                             <span class="text-xl">{{ Auth::user()->getInitials() }}</span>
                         </div>
                     </label>
-                    <ul tabindex="0" class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box min-w-52">
+                    <ul tabindex="0" class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box min-w-[13rem]">
                         <li class="menu-title">
                             <span>{{__('Infos')}}</span>
                         </li>
+                        @if(Auth::user()->groupMember()!==null)
+                            <li class="disabled">
+                                <div class="!text-opacity-75 whitespace-nowrap">
+                                    <i class="fa-solid fa-people-group"></i>
+                                    {{Auth::user()->getGroupNames(printable:true)}}
+                                </div>
+                            </li>
+                        @endif
+
                         @can('jobDefinitions.create')
                         <li class="disabled">
                              @php

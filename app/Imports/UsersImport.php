@@ -84,7 +84,7 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
             $groupsToAdd = collect();
             //TEACHER custom
             if ($roles->contains(RoleName::TEACHER)) {
-                $currentGroups = $user->groupNames($period->id)->pluck('name');
+                $currentGroups = $user->getGroupNames($period->id);
 
                 $groupsToAdd = $newGroupNameNames->filter(fn($newGroup) => $currentGroups->doesntContain($newGroup));
 
