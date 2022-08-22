@@ -37,21 +37,21 @@ test('Test valid teachers and students import', function() {
     $existing->save();
 
     //WHEN
-    /*
+/*
     $this->withoutMockingConsoleOutput()->artisan('users:sync',[
         'input' => base_path('tests/data/users-import.xlsx'),
         '-v'=>null]);
     dd(Artisan::output());
-    */
+*/
     $this->artisan('users:sync',[
         'input' => base_path('tests/data/users-import.xlsx'),
         '--commit'=>null,
         '-v'=>null])
         ->expectsConfirmation('Commit ?', 'yes')
-        ->expectsOutputToContain('px5@eduvaud.ch')
-        ->expectsOutputToContain('py6@eduvaud.ch')
+        ->expectsOutputToContain('fr@eduvaud.ch')
+        ->expectsOutputToContain('stud2@eduvaud.ch')
         ->expectsOutputToContain('Le champ login est obligatoire')
-        ->expectsOutputToContain('ghost@eduvaud.ch marked as deleted but was never added before -> ignoring')
+        ->expectsOutputToContain('ghost ghost marked as deleted but was never added before -> ignoring')
         ->expectsTable(\App\Console\Commands\SyncUsersCommand::RESULT_HEADERS,[['5','2','8','1','1','1','3']])
         ->assertExitCode(0);
 

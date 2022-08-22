@@ -36,12 +36,12 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
         foreach ($collection as $row) {
 
             //GET DATA
-            /*$firstname = $row['firstname'];
+            $firstname = $row['firstname'];
             $lastname = $row['lastname'];
-            $email = $row['email'];*/
+            /*$email = $row['email'];*/
             $login = $row['login'];
-            $roles = collect(explode(',', $row['roles']))->transform(fn($el)=>strtolower($el));
-            $newGroupNameNames = collect(explode(',', $row['groups']))->transform(fn($el)=>strtolower($el));
+            $roles = collect(explode(',', $row['roles']))->filter()/*removes empty '' entries*/->transform(fn($el)=>strtolower($el));
+            $newGroupNameNames = collect(explode(',', $row['groups']))->filter()->transform(fn($el)=>strtolower($el));
             $period = $row['period'];
             //Get corresponding db period
             if ($period === null || trim($period) === '') {
@@ -59,6 +59,17 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
             $user = User::withTrashed()->firstOrNew(['username' => $login]);
             $isUpdate = $user->id !== null;
 
+            if($isUpdate)
+            {
+                $reportInfo=$user->getFirstnameL();
+            }
+            else
+            {
+                $reportInfo=($firstname??'unknown').' '.($lastname??'unknown');
+            }
+
+            $year = $period->start->year;
+
             //Trash handling
             if(Str::contains($comment,'rupture',true))
             {
@@ -66,19 +77,19 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
                 {
                     if($user->trashed())
                     {
-                        $this->warning[]=$login.' already deleted -> ignoring';
+                        $this->warning[]=$reportInfo.' already deleted -> ignoring';
                     }
                     else
                     {
                         $user->delete(); //soft delete
                         $user->groupMembersForPeriod($period->id)->each(fn($gm)=>$gm->delete());//soft delete association for current period
-                        $this->deleted[] = $login;
+                        $this->deleted[] = $reportInfo;
                     }
 
                 }
                 else
                 {
-                    $this->warning[]=$login.' marked as deleted but was never added before -> ignoring';
+                    $this->warning[]=$reportInfo.' marked as deleted but was never added before -> ignoring';
                 }
 
                 continue;
@@ -86,16 +97,19 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
             else if($isUpdate && $user->trashed())
             {
                 $user->restore();
-                $this->restored[]=$login; //add restore count even if it can also be updated / added / ... (thus 1 person may be counted as restored + updated)
+                $this->restored[]=$reportInfo; //add restore count even if it can also be updated / added / ... (thus 1 person may be counted as restored + updated)
             }
 
             $somethingHasBeenUpdated = false;
 
             //Fill data
             foreach (['firstname', 'lastname', 'email'] as $attribute) {
-                if (!stringNullOrEmpty($row[$attribute]) && $user->getAttribute($attribute) != $row[$attribute]) {
-                    $user->setAttribute($attribute, $row[$attribute]);
+                $old=$user->getAttribute($attribute);
+                $new = $row[$attribute];
+                if (!stringNullOrEmpty($new) && $old != $new) {
+                    $user->setAttribute($attribute, $new);
                     $somethingHasBeenUpdated = true;
+                    $reportInfo .= '['.$attribute.':'.$old.'=>'.$new.']';
                 }
             }
 
@@ -109,17 +123,20 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
             if ($missingRoles->isNotEmpty()) {
                 $user->assignRole($missingRoles);
                 $somethingHasBeenUpdated = true;
+                $reportInfo .= '[role:+'.$missingRoles->implode(',+').']';
             }
 
             $rolesToRemove = collect($user->roles->pluck('name'))->filter(fn($existingRole) => $roles->doesntContain($existingRole));
             if ($rolesToRemove->isNotEmpty()) {
                 $rolesToRemove->each(fn($role) => $user->removeRole($role));
                 $somethingHasBeenUpdated = true;
+                $reportInfo .= '[role:-'.$missingRoles->implode(',-').']';
             }
 
             $groupsToAdd = collect();
             //TEACHER custom
             if ($user->hasRole(RoleName::TEACHER)) {
+                $reportInfo = '<PROF> '.$reportInfo;
                 $currentGroups = $user->getGroupNames($period->id);
 
                 $groupsToAdd = $newGroupNameNames->filter(fn($newGroup) => $currentGroups->doesntContain($newGroup));
@@ -130,21 +147,26 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
                 if ($groupsToRemove->isNotEmpty()) {
                     $user->groupMembersForPeriod($period->id)
                         ->whereHas('group.groupName', fn($q) => $q->whereIn('name', $groupsToRemove))
-                        ->delete();
+                        ->each(fn($gm)=>$gm->delete());
 
                     $somethingHasBeenUpdated = true;
+                    $reportInfo .= '[groups/'.$year.':-'.$groupsToRemove->implode(',-').']';
                 }
 
 
             } //STUDENT custom
             else if ($user->hasRole(RoleName::STUDENT)) {
+                $reportInfo = '<ELEVE> '.$reportInfo;
+
                 //Student should have only 1 groupMember for a given period
                 $currentGroupMember = $user->groupMember($period->id, true);
                 $createGroupMember = false;
                 if ($currentGroupMember !== null) {
                     //Group change
-                    if ($currentGroupMember->group->groupName->name != $newGroupNameNames[0]) {
+                    $name = $currentGroupMember->group->groupName->name;
+                    if ($name != $newGroupNameNames[0]) {
                         $currentGroupMember->delete();
+                        $reportInfo .= '[groups/'.$year.':-'.$name.']';
                         $groupsToAdd = collect([$newGroupNameNames[0]]);
                     }
                     //Else Group is already good, we do nothing ;-)
@@ -157,18 +179,20 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
             if ($groupsToAdd->isNotEmpty()) {
                 $somethingHasBeenUpdated = true;
                 $groupsToAdd->each(fn($groupToAdd) => $user->joinGroup($period->id, $groupToAdd));
+
+                $reportInfo .= '[groups/'.$year.':+'.$groupsToAdd->implode(',+').']';
             }
 
 
             if ($isUpdate) {
                 if ($somethingHasBeenUpdated) {
-                    $this->updated[] = $login;
+                    $this->updated[] = $reportInfo;
                 } else {
-                    $this->same[] = $login;
+                    $this->same[] = $reportInfo;
                 }
 
             } else {
-                $this->added[] = $login;
+                $this->added[] = $reportInfo;
             }
 
         }

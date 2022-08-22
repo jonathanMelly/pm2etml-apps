@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Imports\UsersImport;
+use App\Imports\UsersSheetImport;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -32,6 +32,10 @@ class SyncUsersCommand extends Command
     Supported formats are described in third-party library https://docs.laravel-excel.com/3.1/imports/import-formats.html';
 
     public const RESULT_HEADERS = ['+ ADDED','- REMOVED','# UPDATED','= SAME','* RESTORED','! WARNING','/!\\ ERROR'];
+
+    //For verbose output infos
+    public const OUTPUT_APPEND=0;
+    public const OUTPUT_NEW_LINE=1;
 
     /**
      * Create a new command instance.
@@ -66,9 +70,12 @@ class SyncUsersCommand extends Command
         try {
 
             $this->output->title('Starting import');
-            $import = new UsersImport();
+            $import = new UsersSheetImport();
+            //Excel::import($import, $input);
+
             $import->withOutput($this->output)->import($input);
 
+            $import = $import->firstSheetImport;
             $errors=[];
             foreach ($import->failures() as $failure) {
                 $row =$failure->row(); // row that went wrong
@@ -86,6 +93,8 @@ class SyncUsersCommand extends Command
             $deleted = count($import->deleted);
             $sameCount = count($import->same);
             $restoredCount = count($import->restored);
+            $warningCount=count($import->warning);
+            $errorsCount=count($errors);
 
             $this->table(self::RESULT_HEADERS,[[
                 $addedCount,
@@ -93,21 +102,21 @@ class SyncUsersCommand extends Command
                 $updatedCount,
                 $sameCount,
                 $restoredCount,
-                count($import->warning),
-                count($errors)]]);
+                $warningCount,
+                $errorsCount]]);
 
             if($this->output->isVerbose())
             {
                 $this->newLine();
                 $i=0;
                 foreach([
-                            ['info',$import->added],
-                            ['info',$import->deleted],
-                            ['info',$import->updated],
-                            ['',$import->same],
-                            ['info',$import->restored],
-                            ['comment',$import->warning],
-                            ['error',$errors]
+                            ['info',$import->added,$addedCount,self::OUTPUT_NEW_LINE],
+                            ['info',$import->deleted,$deleted,self::OUTPUT_APPEND],
+                            ['info',$import->updated,$updatedCount,self::OUTPUT_NEW_LINE],
+                            ['',$import->same,$sameCount,self::OUTPUT_APPEND],
+                            ['info',$import->restored,$restoredCount,self::OUTPUT_APPEND],
+                            ['comment',$import->warning,$warningCount,self::OUTPUT_NEW_LINE],
+                            ['error',$errors,$errorsCount,self::OUTPUT_NEW_LINE]
                         ] as $report)
                 {
                     $data = $report[1];
@@ -115,8 +124,17 @@ class SyncUsersCommand extends Command
 
                     if(count($data)>0)
                     {
-                        $this->line(self::RESULT_HEADERS[$i], $style);
-                        $this->line(implode(',', $data));
+                        $this->line(self::RESULT_HEADERS[$i].'['.$report[2].']', $style);
+                        $data=collect($data)->sort();
+                        if($report[3]==self::OUTPUT_NEW_LINE)
+                        {
+                            $data->each(fn($el)=>$this->line('    '.$el));
+                        }
+                        else
+                        {
+                            $this->line($data->implode(','));
+                        }
+
                         $this->newLine();
                     }
                     $i++;
