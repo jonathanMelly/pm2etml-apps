@@ -31,7 +31,7 @@ class SyncUsersCommand extends Command
 
     Supported formats are described in third-party library https://docs.laravel-excel.com/3.1/imports/import-formats.html';
 
-    public const RESULT_HEADERS = ['+ ADDED','# UPDATED','= SAME','/!\\ ERRORS'];
+    public const RESULT_HEADERS = ['+ ADDED','- REMOVED','# UPDATED','= SAME','* RESTORED','! WARNING','/!\\ ERROR'];
 
     /**
      * Create a new command instance.
@@ -83,20 +83,40 @@ class SyncUsersCommand extends Command
             //Stats
             $addedCount = count($import->added);
             $updatedCount = count($import->updated);
+            $deleted = count($import->deleted);
             $sameCount = count($import->same);
+            $restoredCount = count($import->restored);
 
-            $this->table(self::RESULT_HEADERS,[[$addedCount,$updatedCount,$sameCount,count($errors)]]);
+            $this->table(self::RESULT_HEADERS,[[
+                $addedCount,
+                $deleted,
+                $updatedCount,
+                $sameCount,
+                $restoredCount,
+                count($import->warning),
+                count($errors)]]);
 
             if($this->output->isVerbose())
             {
                 $this->newLine();
                 $i=0;
-                foreach(['info'=>$import->added,'comment'=>$import->updated,''=>$import->same,'error'=>$errors] as $style=>$report)
+                foreach([
+                            ['info',$import->added],
+                            ['info',$import->deleted],
+                            ['info',$import->updated],
+                            ['',$import->same],
+                            ['info',$import->restored],
+                            ['comment',$import->warning],
+                            ['error',$errors]
+                        ] as $report)
                 {
-                    if(count($report)>0)
+                    $data = $report[1];
+                    $style = $report[0];
+
+                    if(count($data)>0)
                     {
                         $this->line(self::RESULT_HEADERS[$i], $style);
-                        $this->line(implode(',', $report));
+                        $this->line(implode(',', $data));
                         $this->newLine();
                     }
                     $i++;

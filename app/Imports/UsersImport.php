@@ -23,12 +23,16 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
     public array $added = [];
     public array $updated = [];
     public array $same = [];
+    public array $deleted = [];
+    public array $restored = [];
+    public array $warning = [];
 
     /**
      * @param Collection $collection
      */
     public function collection(Collection $collection)
     {
+
         foreach ($collection as $row) {
 
             //GET DATA
@@ -49,10 +53,42 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
                     )
                 )->firstOrFail();
             }
+            $comment = $row['comment'];
 
             //Look for an existing user
-            $user = User::firstOrNew(['username' => $login]);
+            $user = User::withTrashed()->firstOrNew(['username' => $login]);
             $isUpdate = $user->id !== null;
+
+            //Trash handling
+            if(Str::contains($comment,'rupture',true))
+            {
+                if($isUpdate)
+                {
+                    if($user->trashed())
+                    {
+                        $this->warning[]=$login.' already deleted -> ignoring';
+                    }
+                    else
+                    {
+                        $user->delete(); //soft delete
+                        $user->groupMembersForPeriod($period->id)->each(fn($gm)=>$gm->delete());//soft delete association for current period
+                        $this->deleted[] = $login;
+                    }
+
+                }
+                else
+                {
+                    $this->warning[]=$login.' marked as deleted but was never added before -> ignoring';
+                }
+
+                continue;
+            }
+            else if($isUpdate && $user->trashed())
+            {
+                $user->restore();
+                $this->restored[]=$login; //add restore count even if it can also be updated / added / ... (thus 1 person may be counted as restored + updated)
+            }
+
             $somethingHasBeenUpdated = false;
 
             //Fill data
@@ -83,7 +119,7 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
 
             $groupsToAdd = collect();
             //TEACHER custom
-            if ($roles->contains(RoleName::TEACHER)) {
+            if ($user->hasRole(RoleName::TEACHER)) {
                 $currentGroups = $user->getGroupNames($period->id);
 
                 $groupsToAdd = $newGroupNameNames->filter(fn($newGroup) => $currentGroups->doesntContain($newGroup));
@@ -101,7 +137,7 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
 
 
             } //STUDENT custom
-            else if ($roles->contains(RoleName::STUDENT)) {
+            else if ($user->hasRole(RoleName::STUDENT)) {
                 //Student should have only 1 groupMember for a given period
                 $currentGroupMember = $user->groupMember($period->id, true);
                 $createGroupMember = false;
