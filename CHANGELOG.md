@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.5.0...v1.5.1) (2022-08-22)
+
+
+### Bug Fixes
+
+* **user sync:** better output for diff and look only at 1st sheet ([6ac54f1](https://github.com/jonathanMelly/pm2etml-intranet/commit/6ac54f1c6d44ea5e4c6bffb7069d166d7e50bb4a))
+
 ## [1.5.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.4.1...v1.5.0) (2022-08-22)
 
 
