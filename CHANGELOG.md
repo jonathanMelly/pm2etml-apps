@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.4.1...v1.5.0) (2022-08-22)
+
+
+### Features
+
+* **user sync:** handle deleted/restored users ([fa8979b](https://github.com/jonathanMelly/pm2etml-intranet/commit/fa8979b3a2bd565919cf81bd305475fd822b1732))
+* **user:** added period and class infos ([069f979](https://github.com/jonathanMelly/pm2etml-intranet/commit/069f97950b1bf7f10a08ce81ace8faa1ff56f08b))
+
 ## [1.4.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.4.0...v1.4.1) (2022-08-12)
 
 
