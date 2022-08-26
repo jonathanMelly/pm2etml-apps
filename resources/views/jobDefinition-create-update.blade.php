@@ -354,8 +354,12 @@
                     </div>
                 </div>
 
+                @php
+                    $initialTimeInPeriod = old('allocated_time',$job->getAllocatedTime());
+                @endphp
+
                 <div class="flex flex-wrap -mx-3 mb-2"
-                     x-data="{time:Math.max({{old('allocated_time',$job->getAllocatedTime())}},30)}">
+                     x-data="{time:Math.max({{$initialTimeInPeriod}},30)}">
                     <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0 flex flex-col place-items-center">
                         <div class="w-full">
                             <label class="block uppercase tracking-wide text-base-content text-xs font-bold mb-2"
@@ -376,10 +380,10 @@
                             <input class="input w-24 text-lg font-bold" name="allocated_time"
                                    min="{{\App\Models\JobDefinition::MIN_PERIODS}}"
                                    max="{{\App\Models\JobDefinition::MAX_PERIODS}}"
-                                   type="number" x-model="time">
+                                   type="number" x-model="time" value="{{$initialTimeInPeriod}}{{-- This will be overwritten by alpinejs but provides a way to test initial value --}}">
                             <div class="pl-1 font-bold text-lg">{{__('periods')}}</div>
                             <div class="ml-1">
-                                (<span x-text="Math.round(time*45/60)"></span> {{__('hours')}})
+                                (<span x-text="Math.round(time*45/60)">{{$job->getAllocatedTime(\App\Enums\RequiredTimeUnit::HOUR)}}{{-- This will be overwritten by alpinejs but provides a way to test initial value --}}</span> {{__('hours')}})
                             </div>
                         </div>
                     </div>

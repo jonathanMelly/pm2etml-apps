@@ -124,7 +124,7 @@ trait TestHarness
 
                 $job->skills()->attach(Skill::firstOrCreateFromString('tgroup:tskill'));
             })
-            ->count(1)->create()->firstOrFail();
+            ->count(1)->create()->firstOrFail()->/*without it, default values set in DB are not loaded...*/fresh();
 
         $employees=[];
         for ($i=0;$i<$contractsCount;$i++)

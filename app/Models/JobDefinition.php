@@ -207,7 +207,7 @@ class JobDefinition extends Model
         return $this->belongsToMany(Skill::class);
     }
 
-    #[Pure] public function getAllocatedTime(RequiredTimeUnit $targetUnit = RequiredTimeUnit::HOUR): float
+    #[Pure] public function getAllocatedTime(RequiredTimeUnit $targetUnit = RequiredTimeUnit::PERIOD): float
     {
         if ($this->allocated_time === null) {
             return 0;

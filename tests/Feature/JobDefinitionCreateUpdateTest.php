@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Constants\RoleName;
 use App\Enums\JobPriority;
+use App\Enums\RequiredTimeUnit;
 use App\Models\JobDefinition;
 use App\Models\JobDefinitionDocAttachment;
 use App\Models\JobDefinitionMainImageAttachment;
@@ -144,8 +145,28 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
 
         $this->assertEquals('update-title',$updatedJob->title);
         $this->assertEquals('update-desc',$updatedJob->description);
+        $this->assertEquals('100',$updatedJob->allocated_time);
 
         //TODO more checks ( ...)
+
+    }
+
+    public function test_job_edit_form_has_correct_data()
+    {
+        /* @var $job JobDefinition */
+
+        ['client'=>$client,'job'=>$job]=$this->createClientAndJob();
+        $job->update(['allocated_time' => 23]);
+        $timeInHour = $job->getAllocatedTime(RequiredTimeUnit::HOUR);
+        $timeInPeriod = $job->getAllocatedTime();
+
+        $response = $this->visit(route('jobDefinitions.edit',['jobDefinition'=>$job->id]));
+
+        $response
+            ->seePageIs(route('jobDefinitions.edit',['jobDefinition'=>$job->id]))
+            ->seeInElement('span',$timeInHour)
+            ->seeElement('input',['value'=>$timeInPeriod]);
+
 
     }
 
