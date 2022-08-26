@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.2](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.5.1...v1.5.2) (2022-08-26)
+
+
+### Bug Fixes
+
+* **job edit:** allocated time correctly handled ([db5f52e](https://github.com/jonathanMelly/pm2etml-intranet/commit/db5f52eb2cbcfbee5a1e264530b6d7656fda5797))
+
 ## [1.5.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.5.0...v1.5.1) (2022-08-22)
 
 
