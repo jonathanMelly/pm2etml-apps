@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.3](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.5.2...v1.5.3) (2022-08-29)
+
+
+### Bug Fixes
+
+* **job load:** job edit keeps periods when < 30 ([ce6476c](https://github.com/jonathanMelly/pm2etml-intranet/commit/ce6476c2e7d7f5938491af29632211cf303aed43))
+
 ## [1.5.2](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.5.1...v1.5.2) (2022-08-26)
 
 
