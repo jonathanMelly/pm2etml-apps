@@ -354,12 +354,8 @@
                     </div>
                 </div>
 
-                @php
-                    $initialTimeInPeriod = old('allocated_time',$job->getAllocatedTime());
-                @endphp
-
                 <div class="flex flex-wrap -mx-3 mb-2"
-                     x-data="{time:Math.max({{$initialTimeInPeriod}},30)}">
+                     x-data="{time:{{$initialTimeInPeriod}}}">
                     <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0 flex flex-col place-items-center">
                         <div class="w-full">
                             <label class="block uppercase tracking-wide text-base-content text-xs font-bold mb-2"

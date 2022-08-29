@@ -157,11 +157,17 @@ class JobDefinitionController extends Controller
         //Force eager load on object given by Laravel on route ...
         $jobDefinition->load('skills.skillGroup');
 
+        $initialTimeInPeriod = old('allocated_time',$jobDefinition->getAllocatedTime());
+        if($initialTimeInPeriod==0)
+        {
+            $initialTimeInPeriod = JobDefinition::MIN_PERIODS;
+        }
+
         return view('jobDefinition-create-update')
             ->with(compact(
                 'providers',
                 'pendingAndOrCurrentAttachments',
-                'pendingOrCurrentImage','availableSkills'))
+                'pendingOrCurrentImage','availableSkills','initialTimeInPeriod'))
             ->with('job',$jobDefinition);
     }
 
