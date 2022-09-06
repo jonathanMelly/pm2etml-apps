@@ -56,7 +56,7 @@ class ContractController extends Controller
 
         /* @var $jobDefinition JobDefinition */
         $jobDefinition = JobDefinition::whereId($jobDefinitionId)->firstOrFail();
-        if($jobDefinition->published_date==null || $jobDefinition->published_date > today())
+        if($jobDefinition->published_date==null || $jobDefinition->published_date->isAfter(today()) )
         {
             return back()->withErrors(__('Cannot apply for a draft job...)'))->withInput();
         }
