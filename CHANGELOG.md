@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.6.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.5.3...v1.6.0) (2022-09-06)
+
+
+### Features
+
+* **job:** min periods pass from 30 to 24 ([0a46dc3](https://github.com/jonathanMelly/pm2etml-intranet/commit/0a46dc3d38e2d3eeb287d53c9af9eb3402df4354))
+
+
+### Bug Fixes
+
+* **job apply:** bad date check for upcoming jobs ([1ac95db](https://github.com/jonathanMelly/pm2etml-intranet/commit/1ac95db85d45f4396b7ca50ec6d5b836bd1b8b45))
+
 ## [1.5.3](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.5.2...v1.5.3) (2022-08-29)
 
 
