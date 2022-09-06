@@ -75,7 +75,7 @@ class JobDefinition extends Model
 {
     use HasFactory, SoftDeletes;
 
-    public const MIN_PERIODS = 30;
+    public const MIN_PERIODS = 24;
     public const MAX_PERIODS = 150;
     const SIZE_MEDIUM_MIN = 90;
     const SIZE_LARGE_MIN = 120;
