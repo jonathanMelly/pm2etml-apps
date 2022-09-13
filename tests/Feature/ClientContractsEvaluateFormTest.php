@@ -58,6 +58,7 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
         $comment = "doit chercher par lui-même 15 minutes avant de demander de l’aide";
 
         $this->visit('/contracts/evaluate/'.(implode(',',$contractIds)))
+            ->submitForm(__('Confirm'),['password'=>config('auth.fake_password')])
             ->submitForm(trans('Save evaluation results'), [
                 'contracts' => $contractIds,
                 'success-'.$contractIds[0]=>'true',

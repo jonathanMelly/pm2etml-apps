@@ -38,9 +38,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('contracts.destroyAll',[\App\Http\Controllers\ContractController::class,'destroyAll'])
         ->name('contracts.destroyAll');
 
-    Route::get('contracts/evaluate/{ids}',[\App\Http\Controllers\ContractController::class,'evaluate']);
+    Route::get('contracts/evaluate/{ids}',[\App\Http\Controllers\ContractController::class,'evaluate'])
+        ->middleware('password.confirm');
+
     Route::post('contracts/eval',[\App\Http\Controllers\ContractController::class,'evaluateApply'])
-    ->name('contracts.evaluate');
+        ->name('contracts.evaluate');
 
     //Add basic CRUD actions for contracts
     Route::resource('contracts',\App\Http\Controllers\ContractController::class);

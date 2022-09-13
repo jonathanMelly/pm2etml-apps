@@ -10,6 +10,10 @@
             {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
         </div>
 
+        <!-- Session Status -->
+        <!-- To be used for ex. with, in your controller, return redirect('home')->with("success", "Your message"); -->
+        <x-auth-session-status class="mb-4" :status="session('status')" />
+
         <!-- Validation Errors -->
         <x-auth-validation-errors class="mb-4" :errors="$errors" />
 
@@ -20,7 +24,7 @@
             <div>
                 <x-label for="password" :value="__('Password')" />
 
-                <x-input id="password" class="block mt-1 w-full"
+                <x-input id="password" class="block mt-1 w-full input input-bordered input-secondary text-base-content"
                                 type="password"
                                 name="password"
                                 required autocomplete="current-password" />
