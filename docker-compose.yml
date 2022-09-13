@@ -25,7 +25,7 @@ services:
             - mysql
             - selenium
     mysql:
-        image: 'mysql/mysql-server:8.0'
+        image: 'mariadb:10.3.34'
         ports:
             - '${FORWARD_DB_PORT:-3306}:3306'
         environment:
