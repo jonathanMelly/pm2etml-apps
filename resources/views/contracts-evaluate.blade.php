@@ -53,29 +53,21 @@
                 <tbody>
                 @foreach($contracts as $contract)
                     @php
+                        /* @var $contract \App\Models\Contract */
 
-                        //$success = $contract->alreadyEvaluated()?$contract->success:true;
                         $commentName = 'comment-'.$contract->id;
                         $successName = 'success-'.$contract->id;
 
-                        $checked = old($successName,$contract->success);
-                    /*
-                        //Has been submitted
-                        if(old('contractsEvaluations',null)!=null)
-                        {
-                            $checked = old('contracts['.$contract->id.']',null)!==null?true:$success;
-                        }
-                        else
-                        {
-                            $checked = $success;
-                        }
- */
+                        //By default, contracts are validated (less work for teacher)
+                        $checked = old($successName,$contract->alreadyEvaluated()?$contract->success:true);
+
+
                     @endphp
                 <tr class="h-16">
                     <td class="">{{$contract->workers->transform(fn($el)=>$el->user->getFirstnameL())->join(',')}}</td>
                     <td class="text-center" x-data="{checked:{{b2s($checked)}} }" class="w-64">
                         <input type="hidden" name="contracts[]" value="{{$contract->id}}">
-                        <input type="hidden" name="{{$successName}}" value="{{b2s(old($successName,$contract->success))}}">
+                        <input type="hidden" name="{{$successName}}" value="{{b2s($checked)}}">
                         <input type="checkbox" class="toggle"
                                @click="checked=!checked;toggle({{$contract->id}},checked)"
                                name="toggle-{{$contract->id}}" value="{{$contract->id}}">
