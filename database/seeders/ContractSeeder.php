@@ -65,16 +65,17 @@ class ContractSeeder extends Seeder
                 $contract->end = $end;
                 $contract->jobDefinition()->associate($job->id);
 
-                if($end<now())
-                {
-                    $success = $faker->boolean(80);
-                    $comment = $success?null:'Autonomie, respect des délais, structure du code';
-                    $contract->evaluate($success,$comment);
-                }
 
                 $contract->save();
                 $contract->clients()->attach($client->id);
                 $contract->workers()->attach($worker->groupMember()->id);//set worker
+
+                if($end<now())
+                {
+                    $success = $faker->boolean(80);
+                    $comment = $success?null:'Autonomie, respect des délais, structure du code';
+                    $contract->workers()->where('user_id','=',$worker->id)->firstOrFail()->pivot->evaluate($success,$comment);
+                }
 
                 if($job->one_shot)
                 {

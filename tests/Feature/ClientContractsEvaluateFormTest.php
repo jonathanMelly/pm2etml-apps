@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Constants\RoleName;
 use App\Models\User;
+use App\Models\WorkerContract;
+use App\Models\WorkerContractEvaluationLog;
 use Database\Seeders\AcademicPeriodSeeder;
 use Database\Seeders\ContractSeeder;
 use Database\Seeders\JobSeeder;
@@ -55,20 +57,43 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
             ->take($contractsCount)
             ->get('id')->pluck('id')->toArray();
 
+        $wkIds = WorkerContract::query()->whereIn('contract_id',$contractIds)->pluck('id')->toArray();
+
         $comment = "doit chercher par lui-même 15 minutes avant de demander de l’aide";
 
-        $this->visit('/contracts/evaluate/'.(implode(',',$contractIds)))
+        $logCount = WorkerContractEvaluationLog::query()->count();
+
+        $this->visit('/contracts/evaluate/'.(implode(',',$wkIds)))
             ->submitForm(__('Confirm'),['password'=>config('auth.fake_password')])
             ->submitForm(trans('Save evaluation results'), [
-                'contracts' => $contractIds,
-                'success-'.$contractIds[0]=>'true',
-                'success-'.$contractIds[1]=>'false',
-                'comment-'.$contractIds[1]=>$comment,
+                'workersContracts' => $wkIds,
+                'success-'.$wkIds[0]=>'true',
+                'success-'.$wkIds[1]=>'false',
+                'comment-'.$wkIds[1]=>$comment,
 
             ])
             ->seeText($contractsCount.' contrats mis à jour')
             ->see($comment)
             ->seePageIs('/dashboard');
+
+        //Check trigger
+        $this->assertEquals($logCount + sizeof($contractIds), WorkerContractEvaluationLog::query()->count());
+
+        //check data
+        $this->assertEquals(WorkerContract::whereId($wkIds[0])->firstOrFail()->success,true);
+        $this->assertEquals(WorkerContract::whereId($wkIds[1])->firstOrFail()->success,false);
+        $this->assertEquals(WorkerContract::whereId($wkIds[1])->firstOrFail()->success_comment,$comment);
+    }
+
+    public function testDummy()
+    {
+        $this->createClientAndJob(1);
+        $logCount = WorkerContractEvaluationLog::query()->count();
+        $c=WorkerContract::query()->firstOrFail();
+        $c->evaluate(true);
+        $this->assertEquals(WorkerContract::query()->firstOrFail()->fresh()->success, true);
+        //sleep(3);
+        $this->assertEquals($logCount + 1, WorkerContractEvaluationLog::query()->count());
 
     }
 

@@ -60,6 +60,7 @@ class GroupMember extends Model
 
     public function workerContracts():BelongsToMany
     {
-        return $this->belongsToMany(Contract::class,CustomPivotTableNames::CONTRACT_GROUP_MEMBER->value);
+        return $this->belongsToMany(Contract::class,CustomPivotTableNames::CONTRACT_GROUP_MEMBER->value)
+            ->using(WorkerContract::class);
     }
 }

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use JetBrains\PhpStorm\ArrayShape;
 use Kirschbaum\PowerJoins\PowerJoins;
@@ -79,6 +80,13 @@ use Kirschbaum\PowerJoins\PowerJoins;
  */
 class Contract extends Model
 {
+    /**
+     * WARNING | ATTENTION : même si un contrat peut avoir plusieurs clients / employés
+     * Actuellement, l’évaluation est faite au niveau du contrat (même éval pour tous les employés)!!!
+     * Pour changer cela, il faudrait mettre l’évaluation dans la table CONTRACT_WORKER
+     * voir https://github.com/jonathanMelly/pm2etml-intranet/issues/40
+     */
+
     use HasFactory, SoftDeletes, PowerJoins;
 
     /**
@@ -94,7 +102,6 @@ class Contract extends Model
     protected $casts=[
         'start' => 'datetime',
         'end' => 'datetime',
-        'success_date' => 'datetime'
     ];
 
 
@@ -110,7 +117,18 @@ class Contract extends Model
         return $this->belongsToMany(GroupMember::class,CustomPivotTableNames::CONTRACT_GROUP_MEMBER->value)
             ->with('user')
             ->withTimestamps()
+            ->using(WorkerContract::class)
             ;
+    }
+
+    public function workersContracts(): HasMany
+    {
+        return $this->HasMany(WorkerContract::class);
+    }
+
+    public function getWorkerContract($userid)
+    {
+        return $this->workers->where('user_id','=',$userid)->firstOrFail()->pivot;
     }
 
     public function jobDefinition(): BelongsTo
@@ -155,26 +173,4 @@ class Contract extends Model
         return ['percentage'=>$progressPercentage,'remainingDays'=>$remainingDays];
     }
 
-    function evaluate($success,$comment=null,$save=true)
-    {
-        $this->success=$success;
-        $this->success_date=now();
-        $this->success_comment=$comment;
-
-        if($save)
-        {
-            return $this->save();
-        }
-        return true;
-    }
-
-    function alreadyEvaluated():bool
-    {
-        return $this->success_date!==null;
-    }
-
-    function getSuccessAsBoolString()
-    {
-        return $this->success?'true':'false';
-    }
 }

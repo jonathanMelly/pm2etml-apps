@@ -2,6 +2,7 @@
 
 //currently empty
 use App\Models\Attachment;
+use Carbon\Carbon;
 
 if(!function_exists('ordinal'))
 {
@@ -93,4 +94,59 @@ if(!function_exists('stringNullOrEmpty'))
         return $str===null || trim($str)==='';
     }
 }
+
+if(!function_exists('troolHtml'))
+{
+    function troolHtml(?bool $value): string
+    {
+        if($value===null)
+            return 'n/a';
+
+        return spanColor($value?'green':'red',$value?'Ok':'Ko');
+    }
+}
+
+if(!function_exists('spanColor'))
+{
+    function spanColor(string $color,string $content): string
+    {
+        return '<span style="color:'.$color.'">'.$content.'</span>';
+    }
+}
+
+if(!function_exists('mdSmall'))
+{
+    function mdSmall(?string $str,bool $parenthesis=false): string
+    {
+        if($str==null)
+        {
+            return '';
+        }
+        return '<sup><sub>'.($parenthesis?'(':'').$str.($parenthesis?')':'').'</sub></sup>';
+    }
+}
+
+if(!function_exists('diff'))
+{
+    function diff(mixed $a,mixed $b): string
+    {
+        if($a==$b)
+            return $a;
+
+        return $a.' => '.$b;
+    }
+}
+
+if(!function_exists('df'))
+{
+    function df(?Carbon $date,string $format='d.m.Y H:i:s'): string
+    {
+        if($date===null)
+        {
+            return '';
+        }
+        return date_format($date,$format);
+    }
+}
+
 

@@ -25,6 +25,7 @@ class DashboardController extends Controller
 
         if($user->hasAnyRole(RoleName::TEACHER,RoleName::STUDENT))
         {
+            //Client
             if($user->hasRole(RoleName::TEACHER))
             {
 
@@ -33,10 +34,12 @@ class DashboardController extends Controller
                 return $view->with(compact('jobs'));
             }
             else
+            //Workers
             {
                 $query = $user->contractsAsAWorker()
                     ->with('jobDefinition') //eager load definitions as needed on UI
                     ->with('clients') //eager load clients as needed on UI
+                    ->with('workersContracts')
 
                     ->orderByDesc('end')
                     ->orderByDesc('start');

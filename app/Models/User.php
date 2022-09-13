@@ -164,6 +164,7 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
 
             ->with('workers.user')
             ->with('workers.group.groupName')
+            ->with('workersContracts')
 
             //Contract workers
             ->orderByPowerJoins('workers.group.groupName.year')

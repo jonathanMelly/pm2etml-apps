@@ -7,9 +7,11 @@ use App\Http\Requests\ContractEvaluationRequest;
 use App\Http\Requests\DestroyAllContractRequest;
 use App\Http\Requests\StoreContractRequest;
 use App\Http\Requests\UpdateContractRequest;
+use App\Models\AcademicPeriod;
 use App\Models\Contract;
 use App\Models\JobDefinition;
 use App\Models\User;
+use App\Models\WorkerContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -88,6 +90,13 @@ class ContractController extends Controller
         $contract = Contract::make();
         $contract->start = $request->get('start_date');
         $contract->end = $request->get('end_date');
+        //This shoud be checked in any date update
+        $period = AcademicPeriod::current(false);
+        if($contract->start->isBefore($period->start) || $contract->end->isAfter($period->end))
+        {
+            return back()->withErrors(__('Dates must be within current academic period'))->withInput();
+        }
+
         $contract->jobDefinition()->associate($jobDefinitionId);
 
         //Consistency on error
@@ -139,7 +148,13 @@ class ContractController extends Controller
      */
     public function update(UpdateContractRequest $request, Contract $contract)
     {
-        //
+        //ADAPT THIS WHEN NEEDED
+        //Validate start/end date
+        $period = AcademicPeriod::current(false);
+        if($contract->start->isBefore($period->start) || $contract->end->isAfter($period->end))
+        {
+            return back()->withErrors(__('Dates must be within current academic period'))->withInput();
+        }
     }
 
     /**
@@ -182,31 +197,35 @@ class ContractController extends Controller
     public function evaluateApply(ContractEvaluationRequest $request)
     {
 
-        $contracts = $this->getContractsForEvaluation(collect($request->contracts)->join(','));
+        $contracts = $this->getContractsForEvaluation(collect($request->workersContracts)->join(','),true);
 
         $updated=0;
-        foreach ($contracts as $contract)
+        foreach($contracts as $contract)
         {
-
-            $success = filter_var($request->input('success-'.$contract->id),FILTER_VALIDATE_BOOLEAN);
-            $comment = null;
-            if(!$success)
+            foreach ($contract->workersContracts as $workerContract)
             {
-                $commentAttributeName = 'comment-'.$contract->id;
-                $comment = $request->input($commentAttributeName);
-                if(empty(trim($comment)))
+
+                $success = filter_var($request->input('success-'.$workerContract->id),FILTER_VALIDATE_BOOLEAN);
+                $comment = null;
+                if(!$success)
                 {
-                    return back()
-                        ->withErrors([$commentAttributeName => __('Failed jobs must have a clue for improvement')])
-                        ->withInput();
+                    $commentAttributeName = 'comment-'.$workerContract->id;
+                    $comment = $request->input($commentAttributeName);
+                    if(empty(trim($comment)))
+                    {
+                        return back()
+                            ->withErrors([$commentAttributeName => __('Failed jobs must have a clue for improvement')])
+                            ->withInput();
+                    }
                 }
-            }
-            if($contract->evaluate($success,$comment))
-            {
-                $updated++;
-            }
+                if($workerContract->evaluate($success,$comment))
+                {
+                    $updated++;
+                }
 
+            }
         }
+
 
         return redirect('/dashboard')
             ->with('success',
@@ -217,13 +236,27 @@ class ContractController extends Controller
      * @param string $ids
      * @return Contract[]|Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Query\Builder[]|\Illuminate\Support\Collection
      */
-    protected function getContractsForEvaluation(string $ids): \Illuminate\Support\Collection|array|\Illuminate\Database\Eloquent\Collection
+    protected function getContractsForEvaluation(string $ids,bool $workersContractsIds=false): \Illuminate\Support\Collection|array|\Illuminate\Database\Eloquent\Collection
     {
-        return Contract::query()
-            ->whereIn('id', collect(explode(',', $ids))->filter(fn($el) => is_numeric($el))->toArray())
+        $queryIds = collect(explode(',', $ids))->filter(fn($el) => is_numeric($el))->toArray();
+
+        $query = Contract::query();
+
+        if($workersContractsIds)
+        {
+            $query->whereHas('workersContracts',fn($q)=>$q->whereIn(tbl(WorkerContract::class).'.id',$queryIds));
+        }
+        else
+        {
+            $query->whereIn('id',$queryIds);
+        }
+
+        return $query
             ->whereHas('clients', fn($q) => $q->where('user_id', '=', auth()->user()->id))
             ->with('workers.user')
+            ->with('workersContracts.groupMember')
             ->get();
 
     }
+
 }
