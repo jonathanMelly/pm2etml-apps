@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.7.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.6.0...v1.7.0) (2022-09-16)
+
+
+### Features
+
+* **contract:** track evaluations with daily email digest ([2d1b045](https://github.com/jonathanMelly/pm2etml-intranet/commit/2d1b045aa21ef189a6de64a1a5df88f8a227c0bb))
+* **evaluation:** force password confirmation with 5 minutes timeout ([6dabe81](https://github.com/jonathanMelly/pm2etml-intranet/commit/6dabe8187030f1bb0170ce81f604bf9f92ff94a7))
+
+
+### Bug Fixes
+
+* **evaluation:** default evaluation is success ([364c501](https://github.com/jonathanMelly/pm2etml-intranet/commit/364c50140537c562af0dd9735feb7c386dec9f45))
+
 ## [1.6.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.5.3...v1.6.0) (2022-09-06)
 
 
