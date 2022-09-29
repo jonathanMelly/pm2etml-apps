@@ -70,7 +70,7 @@ return [
              * If you execute the config:cache command during your deployment process,
              * you should be sure that you are only calling the env function from within
              * your configuration files. */
-            'endpoint' => env('AUTHENTICATOR_ENDPOINT'),
+            'endpoint' => env('AUTHENTICATOR_ENDPOINT_V2'),
         ],
     ],
 

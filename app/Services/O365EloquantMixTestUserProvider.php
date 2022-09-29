@@ -19,7 +19,7 @@ class O365EloquantMixTestUserProvider extends O365EloquantMixUserProvider
 	 *
 	 * @return bool
 	 */
-	function validateCredentials(\Illuminate\Contracts\Auth\Authenticatable $user, array $credentials) {
+	function validateCredentials(\Illuminate\Contracts\Auth\Authenticatable $user, array $credentials) : bool {
 
         $plain = $this->getPassword($credentials);
 
