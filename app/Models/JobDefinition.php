@@ -19,58 +19,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use JetBrains\PhpStorm\Pure;
 
-/**
- * App\Models\JobDefinition
- *
- * @property int $id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property string $title
- * @property string $description
- * @property int $required_xp_years
- * @property JobPriority $priority
- * @property int $max_workers
- * @property \Illuminate\Support\Carbon|null $published_date
- * @property int $allocated_time
- * @property RequiredTimeUnit $allocated_time_unit
- * @property int $one_shot
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\JobDefinitionDocAttachment[] $attachments
- * @property-read int|null $attachments_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Contract[] $contracts
- * @property-read int|null $contracts_count
- * @property-read \App\Models\JobDefinitionMainImageAttachment|null $image
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $providers
- * @property-read int|null $providers_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Skill[] $skills
- * @property-read int|null $skills_count
- * @method static Builder|JobDefinition available()
- * @method static \Database\Factories\JobDefinitionFactory factory(...$parameters)
- * @method static Builder|JobDefinition filter(?mixed $params)
- * @method static Builder|JobDefinition newModelQuery()
- * @method static Builder|JobDefinition newQuery()
- * @method static \Illuminate\Database\Query\Builder|JobDefinition onlyTrashed()
- * @method static Builder|JobDefinition published()
- * @method static Builder|JobDefinition query()
- * @method static Builder|JobDefinition whereAllocatedTime($value)
- * @method static Builder|JobDefinition whereAllocatedTimeUnit($value)
- * @method static Builder|JobDefinition whereCreatedAt($value)
- * @method static Builder|JobDefinition whereDeletedAt($value)
- * @method static Builder|JobDefinition whereDescription($value)
- * @method static Builder|JobDefinition whereId($value)
- * @method static Builder|JobDefinition whereMaxWorkers($value)
- * @method static Builder|JobDefinition whereOneShot($value)
- * @method static Builder|JobDefinition wherePriority($value)
- * @method static Builder|JobDefinition wherePublishedDate($value)
- * @method static Builder|JobDefinition whereRequiredXpYears($value)
- * @method static Builder|JobDefinition whereTitle($value)
- * @method static Builder|JobDefinition whereUpdatedAt($value)
- * @method static \Illuminate\Database\Query\Builder|JobDefinition withTrashed()
- * @method static \Illuminate\Database\Query\Builder|JobDefinition withoutTrashed()
- * @mixin \Eloquent
- * @noinspection PhpFullyQualifiedNameUsageInspection
- * @noinspection PhpUnnecessaryFullyQualifiedNameInspection
- */
 class JobDefinition extends Model
 {
     use HasFactory, SoftDeletes;

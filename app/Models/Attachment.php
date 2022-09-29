@@ -14,40 +14,6 @@ use Illuminate\Database\MultipleRecordsFoundException;
 use Illuminate\Support\Facades\Storage;
 use Parental\HasChildren;
 
-/**
- * App\Models\Attachment
- *
- * @property int $id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property string $name
- * @property string $storage_path
- * @property int $size
- * @property string|null $attachable_type
- * @property int|null $attachable_id
- * @property string|null $type
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read Model|\Eloquent $attachable
- * @method static \Illuminate\Database\Eloquent\Builder|Attachment newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Attachment newQuery()
- * @method static \Illuminate\Database\Query\Builder|Attachment onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder|Attachment query()
- * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereAttachableId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereAttachableType($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereSize($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereStoragePath($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereType($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Attachment whereUpdatedAt($value)
- * @method static \Illuminate\Database\Query\Builder|Attachment withTrashed()
- * @method static \Illuminate\Database\Query\Builder|Attachment withoutTrashed()
- * @mixin \Eloquent
- * @noinspection PhpFullyQualifiedNameUsageInspection
- * @noinspection PhpUnnecessaryFullyQualifiedNameInspection
- */
 class Attachment extends Model
 {
     use SoftDeletes, HasChildren;
