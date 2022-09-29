@@ -3,10 +3,10 @@
 namespace App\Console\Commands;
 
 use App\Mail\EvaluationChanged;
-use App\Models\WorkerContractEvaluationLog;
-use App\Models\GroupMember;
 use App\Models\User;
+use App\Models\WorkerContractEvaluationLog;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -58,18 +58,19 @@ class EvaluationReportCommand extends Command
         foreach($logs as $log)
         {
             /* @var $log WorkerContractEvaluationLog */
-            $clients = $log->contract->clients->pluck('email')->implode(',');
-
-            if(!array_key_exists($clients,$contractsPerClient))
+            foreach($log->contract->clients->pluck('email') as $client)
             {
-                $contractsPerClient[$clients]=[];
-            }
+                if(!array_key_exists($client,$contractsPerClient))
+                {
+                    $contractsPerClient[$client]=[];
+                }
 
-            $contractsPerClient[$clients][]=$log;
+                $contractsPerClient[$client][]=$log;
+            }
 
         }
 
-        foreach ($contractsPerClient as $clientEmails=>$logs)
+        foreach ($contractsPerClient as $clientEmail=>$logs)
         {
             $informations = [];
             foreach ($logs as $log)
@@ -97,8 +98,10 @@ class EvaluationReportCommand extends Command
 
             $sortedInfo = collect($informations)->sortBy([['group','asc'],['name','asc']]);
 
-            Mail::to(explode(',',$clientEmails))
+            Mail::to($clientEmail)
                 ->send(new EvaluationChanged($sortedInfo->toArray()));
+
+            Log::info('Evaluation report ['.sizeof($informations).' update(s)] sent to '.$clientEmail);
 
             //Wait for mail to be sent before marked as reported...
             foreach ($logs as $log)
