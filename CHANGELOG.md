@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.8.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.7.0...v1.8.0) (2022-09-29)
+
+
+### Features
+
+* **auth:** use smtp instead of imap for auth (soon dismissed by microsoft) ([d1c4e97](https://github.com/jonathanMelly/pm2etml-intranet/commit/d1c4e9737ad60f970f0d1f86a214c57c43258bd8))
+
+
+### Bug Fixes
+
+* **evaluation mail:** 1 mail per client even with multiple clients for 1 contract ([859a6c1](https://github.com/jonathanMelly/pm2etml-intranet/commit/859a6c1ea433681156b63513e2672abca1867666))
+
 ## [1.7.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.6.0...v1.7.0) (2022-09-16)
 
 
