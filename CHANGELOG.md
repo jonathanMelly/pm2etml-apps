@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.8.0...v1.8.1) (2022-11-03)
+
+
+### Bug Fixes
+
+* **password confirmation:** get username from current user (as not passed through form input) ([e07f256](https://github.com/jonathanMelly/pm2etml-intranet/commit/e07f256832c558641b46a20293bcba465ed1e28c))
+
 ## [1.8.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.7.0...v1.8.0) (2022-09-29)
 
 
