@@ -84,7 +84,7 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
     function validateCredentials(\Illuminate\Contracts\Auth\Authenticatable $user, array $credentials) : bool
     {
         $plain = $this->getPassword($credentials);
-        $username = $this->getUsername($credentials);
+        $username = $this->getUsername($user,$credentials);
 
         return $this->validateCredentialsRaw($username,$plain);
     }
