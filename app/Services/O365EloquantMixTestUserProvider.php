@@ -23,8 +23,9 @@ class O365EloquantMixTestUserProvider extends O365EloquantMixUserProvider
 	function validateCredentials(\Illuminate\Contracts\Auth\Authenticatable $user, array $credentials) : bool {
 
         $plain = $this->getPassword($credentials);
-        $username = $this->getUsername($user,$credentials);
 
+        //This is IMPORTANT to let as it checks standard o365 provider requirements...
+        $username = $this->getUsername($user,$credentials);
         assertNotNull($username);
 
         $validPassword = config('auth.fake_password');
