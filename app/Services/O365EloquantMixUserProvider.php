@@ -6,6 +6,7 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Support\Facades\Log;
 use PHPMailer\PHPMailer\Exception;
@@ -88,8 +89,13 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
         return $this->validateCredentialsRaw($username,$plain);
     }
 
-    function getUsername(array $credentials): string
+    function getUsername(\Illuminate\Contracts\Auth\Authenticatable $user,array $credentials): string
     {
+        if(is_a($user,User::class))
+        {
+            return $user->username;
+        }
+
         return $credentials['username'];
     }
 
@@ -98,8 +104,4 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
         return $credentials['password'];
     }
 
-    function getEndpointURI(string $username): string
-    {
-        return '{' . $this->endpoint . "/imap/ssl/authuser=$username}";
-    }
 }

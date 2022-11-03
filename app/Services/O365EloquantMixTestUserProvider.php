@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Log;
+use function PHPUnit\Framework\assertNotNull;
 
 class O365EloquantMixTestUserProvider extends O365EloquantMixUserProvider
 {
@@ -22,6 +23,9 @@ class O365EloquantMixTestUserProvider extends O365EloquantMixUserProvider
 	function validateCredentials(\Illuminate\Contracts\Auth\Authenticatable $user, array $credentials) : bool {
 
         $plain = $this->getPassword($credentials);
+        $username = $this->getUsername($user,$credentials);
+
+        assertNotNull($username);
 
         $validPassword = config('auth.fake_password');
 
