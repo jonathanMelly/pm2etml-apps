@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.2](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.8.1...v1.8.2) (2022-11-03)
+
+
+### Bug Fixes
+
+* **login:** fixed bad getusername 500 error ([a191159](https://github.com/jonathanMelly/pm2etml-intranet/commit/a1911596b687cac979f93577da633c00da252d6d))
+
 ## [1.8.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.8.0...v1.8.1) (2022-11-03)
 
 
