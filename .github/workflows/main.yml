@@ -67,7 +67,7 @@ jobs:
       - name: Push badge/wip-version to FTP
         # You may pin to the exact commit or the version.
         # uses: sand4rt/ftp-deployer@d10dbc869c419015125bc9bfa5e1267056fb822d
-        uses: sand4rt/ftp-deployer@v1.4
+        uses: sand4rt/ftp-deployer@v1.5
         with:
           # FTP host URL like: ftp.host.com or sftp.host.com
           host: ${{ secrets.BADGE_FTP_HOST }}
