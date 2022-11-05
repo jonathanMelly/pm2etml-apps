@@ -142,7 +142,7 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
 
     }
 
-    public function joinGroup($periodId=null,string $groupName,int $year =null): GroupMember
+    public function joinGroup($periodId,string $groupName,int $year =null): GroupMember
     {
         $periodId = $periodId??AcademicPeriod::current();
 
