@@ -107,7 +107,7 @@
                 @can('jobDefinitions.trash')
                     <div class="rounded-box hover:bg-error hover:bg-opacity-50">
                         <a @click="document.querySelector('#delete-job-form').action='{{url('jobDefinitions',$job->id)}}';
-                    jobNameToDelete='{!! htmlspecialchars($job->title,ENT_COMPAT | ENT_HTML401 | ENT_QUOTES) !!}';
+                    jobNameToDelete='{{safeJsString($job->title)}}';
                     setTimeout(()=>document.querySelector('#delete-job-modal-submit').disabled=false,3000)">
 
                             <label for="delete-job-modal" class="hover:cursor-pointer">

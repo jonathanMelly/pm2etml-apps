@@ -158,5 +158,14 @@ if(!function_exists('sso'))
     }
 }
 
+if(!function_exists('safeJsString'))
+{
+
+    function safeJsString(string $value, $stringDelimiter="'") : string
+    {
+        return str_replace($stringDelimiter,"\\".$stringDelimiter,$value);
+    }
+}
+
 
 
