@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.9.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.8.2...v1.9.0) (2022-11-07)
+
+
+### Features
+
+* **login:** use o365 openid id sso ([0d9a0f4](https://github.com/jonathanMelly/pm2etml-intranet/commit/0d9a0f40f34ee1dd7674aa0186fb0712d8681543))
+
+
+### Bug Fixes
+
+* **job delete:** escape quotes if needed ([9e49e4b](https://github.com/jonathanMelly/pm2etml-intranet/commit/9e49e4b1290325695ecf01c9f96cdee11cfbed09))
+
 ## [1.8.2](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.8.1...v1.8.2) (2022-11-03)
 
 
