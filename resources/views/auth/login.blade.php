@@ -44,10 +44,24 @@
             </div>
 
             <div class="flex items-center justify-end mt-4">
-                <button class="btn">
-                    {{ __('Log in') }}
-                </button>
+
+                <div class="flex flex-col w-full border-opacity-50">
+                    <div class="grid h-20 card rounded-box place-items-center">
+                        <button class="btn">
+                            {{ __('Log in') }}
+                        </button>
+                    </div>
+                    <div class="divider">{{__('OR')}}</div>
+                    <div class="grid h-20 card rounded-box place-items-center">
+                        <a class="btn btn-accent btn-outline" href="/auth/redirect">
+                            <img src="https://www.microsoft.com/favicon.ico" alt="" width="24" height="24">
+                            {{__('Se loguer via le portail eduvaud')}}<sup>beta</sup>
+                        </a>
+                    </div>
+                </div>
+
             </div>
         </form>
     </x-auth-card>
+
 </x-guest-layout>

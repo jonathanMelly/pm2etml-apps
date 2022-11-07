@@ -3,6 +3,7 @@
 //currently empty
 use App\Models\Attachment;
 use Carbon\Carbon;
+use Laravel\Socialite\Facades\Socialite;
 
 if(!function_exists('ordinal'))
 {
@@ -148,5 +149,14 @@ if(!function_exists('df'))
         return date_format($date,$format);
     }
 }
+
+if(!function_exists('sso'))
+{
+    function sso(): Laravel\Socialite\Contracts\Provider
+    {
+        return Socialite::driver('azure');
+    }
+}
+
 
 
