@@ -190,8 +190,9 @@ class ContractController extends Controller
         $this->authorize('contracts.evaluate');
 
         $contracts = $this->getContractsForEvaluation($ids);
+        $job = $contracts->firstOrFail()->jobDefinition;
 
-        return view('contracts-evaluate')->with(compact('contracts'));
+        return view('contracts-evaluate')->with(compact('contracts','job'));
     }
 
     public function evaluateApply(ContractEvaluationRequest $request)

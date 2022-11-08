@@ -38,6 +38,27 @@
         <input type="hidden" id="contractsEvaluations" name="contractsEvaluations" value="">
         <div class="sm:mx-6 bg-base-200 bg-opacity-50 rounded-box sm:p-3 p-1 flex flex-col items-center">
 
+            <div class="stats shadow mb-4">
+
+                <div class="stat">
+                    <div class="stat-figure text-secondary">
+                        <div class="avatar">
+                            <div class="w-24 rounded">
+                                <img src="{{route('dmz-asset',['file'=>$job->image?->storage_path])}}" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-title">
+                        <i class="fa-solid fa-calendar-day"></i> {{\Illuminate\Support\Carbon::parse($contracts->min('start'))->format(\App\SwissFrenchDateFormat::DATE)}}
+                        <i class="fa-solid fa-arrow-right"></i>
+                        <i class="fa-solid fa-calendar-days"></i> {{\Illuminate\Support\Carbon::parse($contracts->max('end'))->format(\App\SwissFrenchDateFormat::DATE)}}
+                    </div>
+                    <div class="stat-value">{{$job->title}}</div>
+                    <div class="stat-desc">{{trans_choice(":number evaluation|:number evaluations",sizeof($contracts),['number'=>sizeof($contracts)])}}</div>
+                </div>
+
+            </div>
+
             <table class="table table-compact table-zebra w-auto">
                 <thead>
                 {{-- CONTRACTS MULTI ACTION HEADERS --}}
