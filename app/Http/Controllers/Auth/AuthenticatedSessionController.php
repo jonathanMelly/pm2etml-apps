@@ -56,6 +56,10 @@ class AuthenticatedSessionController extends Controller
     {
 
         $ssoUser = sso()->user();
+        Log::debug(var_export($ssoUser,true));
+        //$ssoUser->user["userPrincipalName"] may contain o365 identifier for other matching than email if needed
+        //Avatar seems to be null ... Look at https://github.com/SocialiteProviders/Microsoft/blob/master/MicrosoftUser.php#L7
+        //to implement it...
 
         $user = User::query()->where('email','=',$ssoUser->getEmail())->first();
         Log::debug(var_export($user,true));
@@ -67,6 +71,10 @@ class AuthenticatedSessionController extends Controller
                 //TODO handle logout after that...
                 //Expects that redirect uri has form http://...?token=12345
                 //and will return http://...?token=12345&email=bob@kelso.com
+
+                //TODO Store email:token
+
+
                 $customRedirect = Session::pull('sso-uri');
                 return redirect($customRedirect.'&email='.$user->email);
             }
@@ -96,16 +104,8 @@ class AuthenticatedSessionController extends Controller
 
         //Logout SSO if needed
         try {
-            /* @var $sso \SocialiteProviders\Azure\Provider */
-            $sso = sso();
-            $user = $sso->user();
-            if($user!=null)
-            {
-                Log::debug('Sso session, redirecting to sso logout');
-                $azureLogoutUrl = $sso->getLogoutUrl(route('login'));
-                return redirect($azureLogoutUrl);
-            }
-
+            $azureLogoutUrl = sso()->getLogoutUrl(route('login'));
+            return redirect($azureLogoutUrl);
         }
         catch(\Exception $e)
         {
