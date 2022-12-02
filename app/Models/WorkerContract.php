@@ -23,7 +23,7 @@ class WorkerContract extends Pivot
         return $this->belongsTo(GroupMember::class);
     }
 
-    function evaluate($success,$comment=null,$save=true)
+    function evaluate($success,$comment=null,$save=true): bool
     {
         $this->success=$success;
         $this->success_date=now();
@@ -41,7 +41,7 @@ class WorkerContract extends Pivot
         return $this->success!==null;
     }
 
-    function getSuccessAsBoolString()
+    function getSuccessAsBoolString(): string
     {
         if(!$this->alreadyEvaluated())
         {

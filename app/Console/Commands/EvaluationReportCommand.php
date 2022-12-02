@@ -101,7 +101,7 @@ class EvaluationReportCommand extends Command
             Mail::to($clientEmail)
                 ->send(new EvaluationChanged($sortedInfo->toArray()));
 
-            Log::info('Evaluation report ['.sizeof($informations).' update(s)] sent to '.$clientEmail);
+            Log::info('Evaluation report ['.sizeof($informations).' update(s)] sent to '.$clientEmail.']');
 
             //Wait for mail to be sent before marked as reported...
             foreach ($logs as $log)
