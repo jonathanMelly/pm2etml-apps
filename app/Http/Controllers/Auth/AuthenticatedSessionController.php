@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Session;
 
 class AuthenticatedSessionController extends Controller
 {
+    const SSO_BRIDGE_REDIRECT_URI_SESSION_KEY = 'sso-bridge-uri';
+    const SSO_BRIDGE_CORRELATION_ID_PREFIX_CACHE_KEY = "sso-bridge-correlationId:";
+
     /**
      * Display the login view.
      *
@@ -25,12 +28,11 @@ class AuthenticatedSessionController extends Controller
 
     public function ssoRedirect(Request $request)
     {
-        //Handle SSO from external source which MUST give a security token in the URI (will be called back upon success)
-        //Expects that uri has form http://...?token=12345
-        $uri = $request->get('uri');
+        //Handle SSO from external source which MUST give a correlationId saved in session (on external app)
+        $uri = $request->get('redirectUri');
         if(isset($uri))
         {
-            Session::put('sso-uri',$uri);
+            Session::put(self::SSO_BRIDGE_REDIRECT_URI_SESSION_KEY,$uri);
         }
 
         return sso()->redirect();
@@ -66,17 +68,19 @@ class AuthenticatedSessionController extends Controller
 
         if($user!=null)
         {
-            if(Session::exists('sso-uri'))
+            if(Session::exists(self::SSO_BRIDGE_REDIRECT_URI_SESSION_KEY))
             {
-                //TODO handle logout after that...
-                //Expects that redirect uri has form http://...?token=12345
-                //and will return http://...?token=12345&email=bob@kelso.com
 
-                //TODO Store email:token
+                //Expects that redirect uri has form http://...?correlationId=12345
+                //and will return http://...
+                $customRedirect = Session::pull(self::SSO_BRIDGE_REDIRECT_URI_SESSION_KEY);
 
-
-                $customRedirect = Session::pull('sso-uri');
-                return redirect($customRedirect.'&email='.$user->email);
+                //CorrelationId must be kept in session of external app
+                $parts = explode("?correlationId=",$customRedirect);
+                $uri=$parts[0];
+                $correlationId = $parts[1];
+                \Cache::add(self::SSO_BRIDGE_CORRELATION_ID_PREFIX_CACHE_KEY +$correlationId,$user->email);
+                return redirect($uri);
             }
 
             Auth::login($user);

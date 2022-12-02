@@ -78,6 +78,11 @@ Route::middleware('guest')->group(function () {
     Route::get('/auth/redirect', [AuthenticatedSessionController::class,'ssoRedirect']);
     Route::get('/auth/callback',[AuthenticatedSessionController::class,'ssoCallback']);
 
+
+    //sso bridge
+    Route::get('/auth/bridge/check',[\App\Http\Controllers\Auth\SSOBridgeController::class,'check']);
+    Route::get('/auth/bridge/logout',[\App\Http\Controllers\Auth\SSOBridgeController::class,'logout']);
+
     //DEPLOY
     Route::get('deploy/optimize',[\App\Http\Controllers\DeployController::class,'optimize']);
 });
