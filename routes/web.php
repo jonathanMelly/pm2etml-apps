@@ -75,7 +75,7 @@ Route::middleware('guest')->group(function () {
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
     //SSO
-    Route::get('/auth/redirect', [AuthenticatedSessionController::class,'ssoRedirect']);
+    Route::get('/auth/redirect', [AuthenticatedSessionController::class,'ssoRedirect'])->name('sso-redirect');
     Route::get('/auth/callback',[AuthenticatedSessionController::class,'ssoCallback']);
 
 

@@ -23,7 +23,13 @@ class AuthenticatedSessionController extends Controller
      */
     public function create()
     {
-        return view('auth.login');
+        if(!config('auth.sso_only',false))
+        {
+            return view('auth.login');
+        }
+
+        return to_route('sso-redirect');
+
     }
 
     public function ssoRedirect(Request $request)
