@@ -87,8 +87,6 @@ return [
 
     'password_timeout' => 300/*10800*/,
 
-    'fake_password' => env('FAKE_AUTHENTICATOR_PASSWORD','section-inf.2022'),
-
-    'sso_only' => env('SSO_ONLY')
+    'fake_password' => env('FAKE_AUTHENTICATOR_PASSWORD','section-inf.2022')
 
 ];

@@ -71,7 +71,8 @@ Route::middleware('auth')->group(function () {
 
 //LOGIN
 Route::middleware('guest')->group(function () {
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
+    Route::get('login-old', [AuthenticatedSessionController::class, 'create'])->name('login-old');
+    Route::get('login', [AuthenticatedSessionController::class, 'createSso'])->name('login');
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
     //SSO
