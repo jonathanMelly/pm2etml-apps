@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.10.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.9.0...v1.10.0) (2022-12-20)
+
+
+### Features
+
+* **eval review mail:** send only on weekdays and at 7h45 instead of 5h00 ([33a03e0](https://github.com/jonathanMelly/pm2etml-intranet/commit/33a03e075f1492d80f6cb8d4009e324b6c3deac4))
+* **eval:** show project title ([4b69331](https://github.com/jonathanMelly/pm2etml-intranet/commit/4b69331b26f572a226dff58f7bdf97d13f6a5dce)), closes [#44](https://github.com/jonathanMelly/pm2etml-intranet/issues/44)
+* **login:** added env flag sso_only to switch login mode ([02029c7](https://github.com/jonathanMelly/pm2etml-intranet/commit/02029c79e6952b165b700c771867ac8b9074a292))
+* **sso:** first draft of sso bridge ([1fe4aea](https://github.com/jonathanMelly/pm2etml-intranet/commit/1fe4aea53b5f4dd513efbeedc4fe5d8716ce47cb))
+
+
+### Bug Fixes
+
+* **logout:** fix o365 logout ([a89f09b](https://github.com/jonathanMelly/pm2etml-intranet/commit/a89f09b1d199f6fe4f3b54863d3f732aa1af7a4d))
+* **test:** try to fix evaluationReport email test ([850be8d](https://github.com/jonathanMelly/pm2etml-intranet/commit/850be8d9396f9518118b79c8089218882b28c21c))
+
 ## [1.9.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.8.2...v1.9.0) (2022-11-07)
 
 
