@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.10.0...v1.11.0) (2022-12-20)
+
+
+### Features
+
+* **deploy:** added info on deploy phases for log ([11fd9a0](https://github.com/jonathanMelly/pm2etml-intranet/commit/11fd9a0a56eec098d098ee7ee77fba5fe0699806))
+
 ## [1.10.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.9.0...v1.10.0) (2022-12-20)
 
 
