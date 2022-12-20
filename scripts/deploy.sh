@@ -61,13 +61,16 @@ function deploy()
   #STANDARD for each deploy
   {
       #GIT UPDATE
+      echo "-->Git update" && \
       git merge --ff-only "$SHA" && \
 
       #COMPOSER UPDATE
       #Not needed on first deploy...
+      echo "-->Composer install" && \
       $composer_install && \
 
       #CACHE REGEN
+      echo "-->Artisan optimize" && \
       $php artisan optimize:clear && \
 
       #DONE BY OPTIMIZE
@@ -78,20 +81,29 @@ function deploy()
       #/!\WARNING
       #Because of hosting CHROOT, config:cache must be run under HTTP env
       #$php artisan optimize && \
+      echo "-->Web optimize" && \
       $curl -o /dev/null "$app_url/$secret" && $curl "$app_url/deploy/optimize" && rm "$cookie" && \
 
       #RESET remaining caches
+      echo "-->Cache Events" && \
       $php artisan event:cache && \
+      echo "-->Reset permission cache" && \
       $php artisan permission:cache-reset && \
+      echo "-->Cache views" && \
       $php artisan view:cache && \
 
       #Backup DB
+      echo "-->DB backup" && \
       $php artisan backup:run --only-db && \
+      echo "-->DB backup OK" && \
 
       #Migrate
+      echo "-->DB migrate" && \
       $php artisan migrate --no-interaction --force && \
+      echo "-->DB migrate OK" && \
 
       #Put back site online
+      echo "-->Stop Maintenance" && \
       $php artisan up
   } 2>&1 | $tee "$log"
 
