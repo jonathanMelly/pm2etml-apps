@@ -21,13 +21,14 @@ class AuthenticatedSessionController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function create()
+    public function create(Request $request)
     {
-        return view("auth.login");
-    }
+        //old login (used for staging)
+        if(!config('auth.sso_login') || $request->hasAny('standard','old','no-sso','nosso','basic'))
+        {
+            return view("auth.login");
+        }
 
-    public function createSso()
-    {
         return view("auth.login-sso");
     }
 
