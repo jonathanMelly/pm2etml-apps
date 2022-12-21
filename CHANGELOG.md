@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.11.1...v1.12.0) (2022-12-21)
+
+
+### Features
+
+* **deploy:** store get cookie output ([7290d76](https://github.com/jonathanMelly/pm2etml-intranet/commit/7290d76d88f082197435bd7a4d4e4278806bc3a9))
+
 ## [1.11.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.11.0...v1.11.1) (2022-12-21)
 
 
