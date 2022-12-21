@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.14.0...v1.15.0) (2022-12-21)
+
+
+### Features
+
+* **sso-bridge:** add info log for callback ([56a8c25](https://github.com/jonathanMelly/pm2etml-intranet/commit/56a8c256d1c8093510d0415783e6abe0b9db5013))
+
 ## [1.14.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.13.0...v1.14.0) (2022-12-21)
 
 
