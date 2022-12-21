@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.13.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.12.0...v1.13.0) (2022-12-21)
+
+
+### Features
+
+* **deploy:** added some debug info upon cookie process ([78056ef](https://github.com/jonathanMelly/pm2etml-intranet/commit/78056efb84b891946495bc6a6a2212ed2c83b24b))
+
+
+### Bug Fixes
+
+* **deploy:** get only APP_URL config from .env, not use of it ([78056ef](https://github.com/jonathanMelly/pm2etml-intranet/commit/78056efb84b891946495bc6a6a2212ed2c83b24b))
+
 ## [1.12.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.11.1...v1.12.0) (2022-12-21)
 
 
