@@ -40,7 +40,7 @@ function deploy()
 
   tee="/bin2/tee -a"
 
-  app_url=$(grep APP_URL .env | awk -F'=' '{print $2}')
+  app_url=$(grep "APP_URL=" .env | awk -F'=' '{print $2}')
   secret="$RANDOM"
   cookie=".tmpcookie"
 
@@ -81,8 +81,12 @@ function deploy()
       #/!\WARNING
       #Because of hosting CHROOT, config:cache must be run under HTTP env
       #$php artisan optimize && \
+      $urlSecret="$app_url/$secret"
+      $urlOptimize="$app_url/deploy/optimize"
       echo "-->Web optimize" && \
-      echo "---->Auth oookie" && $curl -s -c $cookie -o $cookie.out "$app_url/$secret" && echo "---->Call optimize" && $curl -s -b $cookie "$app_url/deploy/optimize" && rm "$cookie" && \
+      echo "---->Auth cookie at: $urlSecret" && $curl -s -c $cookie -o $cookie.out "$urlSecret" && \
+      && echo "---->Call optimize at: $urlOptimize" && $curl -s -b $cookie "$urlOptimize" && \
+      rm "$cookie" && rm "$cookie.out" \
 
       #RESET remaining caches
       echo "-->Cache Events" && \
