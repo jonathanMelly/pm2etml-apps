@@ -82,7 +82,7 @@ function deploy()
       #Because of hosting CHROOT, config:cache must be run under HTTP env
       #$php artisan optimize && \
       echo "-->Web optimize" && \
-      echo "---->Auth oookie" && $curl -s -c $cookie -o /dev/null "$app_url/$secret" && echo "---->Call optimize" && $curl -s -b $cookie "$app_url/deploy/optimize" && rm "$cookie" && \
+      echo "---->Auth oookie" && $curl -s -c $cookie -o $cookie.out "$app_url/$secret" && echo "---->Call optimize" && $curl -s -b $cookie "$app_url/deploy/optimize" && rm "$cookie" && \
 
       #RESET remaining caches
       echo "-->Cache Events" && \
