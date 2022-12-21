@@ -12,7 +12,7 @@ $_SESSION[SESSION_SSO_KEY]=$ssoCorrelationId;
 
 //Configure URLs
 $LOGIN_CALLBACK_URI="https://" . $_SERVER['SERVER_NAME'] . dirname( $_SERVER['PHP_SELF']) . "/callback.php";
-$SSO_URL= SSO_PORTAL . "/redirect?redirectUri=$LOGIN_CALLBACK_URI?correlationId=$ssoCorrelationId";
+$SSO_URL= SSO_PORTAL . "redirect?redirectUri=$LOGIN_CALLBACK_URI?correlationId=$ssoCorrelationId";
 
 //Redirect to SSO Login
 header("Location: $SSO_URL");
