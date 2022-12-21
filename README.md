@@ -2,6 +2,8 @@
 
 Plateforme de mise en relation entre le monde du travail et les apprentis...
 
+## Bridge SSO
+Voir [SSO](doc/sso-bridge/README.md)
 
 ## Environnement de développement
 Si vous voulez contribuer au projet, voici comment monter l’environnement de développement.
