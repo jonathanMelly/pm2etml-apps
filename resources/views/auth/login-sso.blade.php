@@ -11,11 +11,12 @@
                             <img src="img/unlock.gif" width="125px" />
                         </div>
                         <div class="text-center">
-                            <a class="btn btn-primary" href="{{route('sso-redirect')}}">
+                            <a class="btn btn-primary {{$errors->any()?'btn-disabled':''}}" href="{{route('sso-redirect')}}">
                                 <img src="https://www.microsoft.com/favicon.ico" alt="" width="24" height="24"
                                      class="mr-1.5">
                                 {{__('Authenticate through Eduvaud')}}
                             </a>
+                            <x-auth-validation-errors class="mb-4" :errors="$errors" />
                         </div>
                     </div>
                 </div>
