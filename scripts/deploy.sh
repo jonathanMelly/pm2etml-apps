@@ -85,7 +85,7 @@ function deploy()
       $urlOptimize="$app_url/deploy/optimize"
       echo "-->Web optimize" && \
       echo "---->Auth cookie at: $urlSecret" && $curl -s -c $cookie -o $cookie.out "$urlSecret" && \
-      && echo "---->Call optimize at: $urlOptimize" && $curl -s -b $cookie "$urlOptimize" && \
+      echo "---->Call optimize at: $urlOptimize" && $curl -s -b $cookie "$urlOptimize" && \
       rm "$cookie" && rm "$cookie.out" \
 
       #RESET remaining caches
