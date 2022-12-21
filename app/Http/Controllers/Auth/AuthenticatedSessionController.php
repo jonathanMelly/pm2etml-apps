@@ -65,36 +65,37 @@ class AuthenticatedSessionController extends Controller
 
         $ssoUser = sso()->user();
         Log::debug(var_export($ssoUser,true));
+        $email = $ssoUser->getEmail();
         //$ssoUser->user["userPrincipalName"] may contain o365 identifier for other matching than email if needed
         //Avatar seems to be null ... Look at https://github.com/SocialiteProviders/Microsoft/blob/master/MicrosoftUser.php#L7
         //to implement it...
 
-        $user = User::query()->where('email','=',$ssoUser->getEmail())->first();
-        Log::debug(var_export($user,true));
-
-        if($user!=null)
+        //Bridge ?
+        if(Session::exists(self::SSO_BRIDGE_REDIRECT_URI_SESSION_KEY))
         {
-            if(Session::exists(self::SSO_BRIDGE_REDIRECT_URI_SESSION_KEY))
+            //Expects that redirect uri has form http://...?correlationId=12345
+            //and will return http://...
+            $customRedirect = Session::pull(self::SSO_BRIDGE_REDIRECT_URI_SESSION_KEY);
+
+            //CorrelationId must be kept in session of external app
+            $parts = explode("?correlationId=",$customRedirect);
+            $uri=$parts[0];
+            $correlationId = $parts[1];
+            \Cache::add(self::SSO_BRIDGE_CORRELATION_ID_PREFIX_CACHE_KEY . $correlationId,$email);
+            return redirect($uri);
+        }
+        //Local LOGIN
+        else {
+            $user = User::query()->where('email','=',$email)->first();
+            if($user!=null)
             {
-
-                //Expects that redirect uri has form http://...?correlationId=12345
-                //and will return http://...
-                $customRedirect = Session::pull(self::SSO_BRIDGE_REDIRECT_URI_SESSION_KEY);
-
-                //CorrelationId must be kept in session of external app
-                $parts = explode("?correlationId=",$customRedirect);
-                $uri=$parts[0];
-                $correlationId = $parts[1];
-                \Cache::add(self::SSO_BRIDGE_CORRELATION_ID_PREFIX_CACHE_KEY +$correlationId,$user->email);
-                return redirect($uri);
+                Auth::login($user);
+                return redirect('/dashboard');
             }
-
-            Auth::login($user);
-            return redirect('/dashboard');
         }
 
+        //Default
         return redirect('login')->withErrors(['username' => __('Unknown account')]);
-
 
     }
 
