@@ -41,7 +41,7 @@ function deploy()
   tee="/bin2/tee -a"
 
   app_url=$(grep APP_URL .env | awk -F'=' '{print $2}')
-  secret="$app_url"
+  secret="$RANDOM"
   cookie=".tmpcookie"
 
   curl="curl -s -c $cookie -b $cookie"
@@ -82,7 +82,7 @@ function deploy()
       #Because of hosting CHROOT, config:cache must be run under HTTP env
       #$php artisan optimize && \
       echo "-->Web optimize" && \
-      $curl -o /dev/null "$app_url/$secret" && $curl "$app_url/deploy/optimize" && rm "$cookie" && \
+      $curl "$app_url/$secret" && $curl "$app_url/deploy/optimize" && rm "$cookie" && \
 
       #RESET remaining caches
       echo "-->Cache Events" && \
@@ -104,7 +104,7 @@ function deploy()
 
       #Put back site online
       echo "-->Stop Maintenance" && \
-      $php artisan up
+      $php artisan up || echo "An ERROR occurred, please consult log $log [App is still offline, key=$secret]"
   } 2>&1 | $tee "$log"
 
 }
