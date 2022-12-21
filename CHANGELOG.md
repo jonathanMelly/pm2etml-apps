@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.14.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.13.0...v1.14.0) (2022-12-21)
+
+
+### Features
+
+* **doc:** sso bridge howto ([08b3cdf](https://github.com/jonathanMelly/pm2etml-intranet/commit/08b3cdf6ff88c1150cb512f877855ae4817e1b8c))
+
+
+### Bug Fixes
+
+* **sso-bridge:** fixed error 500 (cache keyname) + split bridge from local login ([e7b4aef](https://github.com/jonathanMelly/pm2etml-intranet/commit/e7b4aef795de44a0669f106ed6651400ebe40cff))
+
 ## [1.13.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.12.0...v1.13.0) (2022-12-21)
 
 
