@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.11.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.11.0...v1.11.1) (2022-12-21)
+
+
+### Bug Fixes
+
+* **deploy:** fix curl optimize deploy issue ([015d053](https://github.com/jonathanMelly/pm2etml-intranet/commit/015d053bf1e28463182d908fcf8a0f29672ce49a))
+* **login:** inform user in cas of unknown account ([fbb80a8](https://github.com/jonathanMelly/pm2etml-intranet/commit/fbb80a8276b9f5542b8b51f0dcc31dfcb386c2b6))
+
 ## [1.11.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.10.0...v1.11.0) (2022-12-20)
 
 
