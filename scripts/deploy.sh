@@ -44,6 +44,9 @@ function deploy()
   secret="$RANDOM"
   cookie=".tmpcookie"
 
+  urlSecret="$app_url/$secret"
+  urlOptimize="$app_url/deploy/optimize"
+
   curl="curl"
 
   #MAINTENANCE MODE (except on first time as artisan has not been installed by composer)
@@ -81,8 +84,6 @@ function deploy()
       #/!\WARNING
       #Because of hosting CHROOT, config:cache must be run under HTTP env
       #$php artisan optimize && \
-      $urlSecret="$app_url/$secret"
-      $urlOptimize="$app_url/deploy/optimize"
       echo "-->Web optimize" && \
       echo "---->Auth cookie at: $urlSecret" && $curl -s -c $cookie -o $cookie.out "$urlSecret" && \
       echo "---->Call optimize at: $urlOptimize" && $curl -s -b $cookie "$urlOptimize" && \
