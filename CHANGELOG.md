@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.16.2...v1.17.0) (2022-12-22)
+
+
+### Features
+
+* **sso-bridge:** correlationId now has TTL (default 10 seconds) ([00e7b6e](https://github.com/jonathanMelly/pm2etml-intranet/commit/00e7b6e28aa2fd1c6f0f8729602372e3e1f5f994))
+
 ## [1.16.2](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.16.1...v1.16.2) (2022-12-22)
 
 
