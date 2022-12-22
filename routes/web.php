@@ -74,17 +74,18 @@ Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
-    //SSO
-    Route::get('/auth/redirect', [AuthenticatedSessionController::class,'ssoRedirect'])->name('sso-redirect');
-    Route::get('/auth/callback',[AuthenticatedSessionController::class,'ssoCallback']);
-
-
-    //sso bridge
-    Route::get('/auth/bridge/check',[\App\Http\Controllers\Auth\SSOBridgeController::class,'check']);
-    Route::get('/auth/bridge/logout',[\App\Http\Controllers\Auth\SSOBridgeController::class,'logout']);
-
-    //DEPLOY
-    Route::get('deploy/optimize',[\App\Http\Controllers\DeployController::class,'optimize']);
 });
+
+//SSO
+Route::get('/auth/redirect', [AuthenticatedSessionController::class,'ssoRedirect'])->name('sso-redirect');
+Route::get('/auth/callback',[AuthenticatedSessionController::class,'ssoCallback']);
+
+
+//sso bridge
+Route::get('/auth/bridge/check',[\App\Http\Controllers\Auth\SSOBridgeController::class,'check']);
+Route::get('/auth/bridge/logout',[\App\Http\Controllers\Auth\SSOBridgeController::class,'logout']);
+
+//DEPLOY
+Route::get('deploy/optimize',[\App\Http\Controllers\DeployController::class,'optimize']);
 
 

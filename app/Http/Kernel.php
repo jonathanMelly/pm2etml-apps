@@ -34,7 +34,12 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
-            // \Illuminate\Session\Middleware\AuthenticateSession::class, --> force reauth on each request...
+
+            //maybe useful to logout other devices upon password change...
+            // [https://laracasts.com/index.php/index.php/discuss/channels/code-review/middleware-authenticatesession-with-multi-guard]
+            // As it is now mostly SSO auth, let's let that commented out...
+            // \Illuminate\Session\Middleware\AuthenticateSession::class,
+
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
