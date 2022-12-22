@@ -11,7 +11,7 @@ $ssoCorrelationId = bin2hex($randomBytes);
 $_SESSION[SESSION_SSO_KEY]=$ssoCorrelationId;
 
 //Configure URLs
-$LOGIN_CALLBACK_URI="https://" . $_SERVER['SERVER_NAME'] . dirname( $_SERVER['PHP_SELF']) . "/callback.php";
+$LOGIN_CALLBACK_URI="http".((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on')?'s':'')."://" . $_SERVER['HTTP_HOST'] . dirname( $_SERVER['PHP_SELF']) . "/callback.php";
 $SSO_URL= SSO_PORTAL . "redirect?redirectUri=$LOGIN_CALLBACK_URI?correlationId=$ssoCorrelationId";
 
 //Redirect to SSO Login
