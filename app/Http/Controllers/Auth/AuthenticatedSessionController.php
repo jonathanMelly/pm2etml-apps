@@ -65,16 +65,15 @@ class AuthenticatedSessionController extends Controller
 
         $ssoUser = sso()->user();
         Log::debug(var_export($ssoUser,true));
-        $ssoUserInfos = $ssoUser["user"];
+        $ssoUserInfos = $ssoUser->user;
 
         //This seems to give usernameo365...
         //$email = $ssoUser->getEmail();
+        //Avatar seems to be null ... Look at https://github.com/SocialiteProviders/Microsoft/blob/master/MicrosoftUser.php#L7
+        //to implement it...
 
         $email = $ssoUserInfos["mail"];
         $username= $ssoUserInfos["userPrincipalName"];
-        //$ssoUser->user["userPrincipalName"] may contain o365 identifier for other matching than email if needed
-        //Avatar seems to be null ... Look at https://github.com/SocialiteProviders/Microsoft/blob/master/MicrosoftUser.php#L7
-        //to implement it...
 
         //Bridge ?
         if(Session::exists(self::SSO_BRIDGE_REDIRECT_URI_SESSION_KEY))
