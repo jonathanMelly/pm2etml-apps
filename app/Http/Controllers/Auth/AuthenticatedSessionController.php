@@ -88,7 +88,7 @@ class AuthenticatedSessionController extends Controller
             $correlationId = $parts[1];
 
             \Cache::add(self::SSO_BRIDGE_CORRELATION_ID_PREFIX_CACHE_KEY . $correlationId,
-                ["username"=>$username,"email"=>$email]);
+                ["username"=>$username,"email"=>$email],config('auth.sso_bridge_session_ttl'));
             Log::info("Redirecting sso-bridge-request with cid $correlationId to $uri");
             return redirect($uri);
         }

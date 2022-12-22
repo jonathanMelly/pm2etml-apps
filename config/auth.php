@@ -89,6 +89,10 @@ return [
 
     'fake_password' => env('FAKE_AUTHENTICATOR_PASSWORD','section-inf.2022'),
 
-    'sso_login' => env('SSO_LOGIN',true)
+    //if false, standard login will be shown (with sso as an option)
+    'sso_login' => env('SSO_LOGIN',true),
+
+    //Time in seconds while the correlationId of an sso login request is valid
+    'sso_bridge_session_ttl'=> env('SSO_BRIDGE_SESSION_TTL',10)
 
 ];
