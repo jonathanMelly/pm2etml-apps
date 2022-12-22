@@ -9,16 +9,24 @@ class DeployController extends Controller
     public const SUCCESS_MESSAGE='optimize->OK (Configuration,Route,Files cached successfully!)';
     public function optimize()
     {
-        //Should be run with shell_exec https://stackoverflow.com/questions/37726558/artisan-call-output-in-controller
-        //To have output... bus still the command works
-        $exitCode = Artisan::call('optimize');
-        if($exitCode>0)
+        if(app()->isDownForMaintenance() || (auth()->hasUser() && auth()->user()->isAdmin()))
         {
-            abort(500,'Cannot optimize');
+            //Should be run with shell_exec https://stackoverflow.com/questions/37726558/artisan-call-output-in-controller
+            //To have output... bus still the command works
+            $exitCode = Artisan::call('optimize');
+            if($exitCode>0)
+            {
+                abort(500,'Cannot optimize');
+            }
+            else
+            {
+                return self::SUCCESS_MESSAGE;
+            }
         }
         else
         {
-            return self::SUCCESS_MESSAGE;
+            abort(403,'Either app must be in maintenance mode to optimize or you need to be logged as Admin');
         }
+
     }
 }
