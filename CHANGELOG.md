@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.2](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.16.1...v1.16.2) (2022-12-22)
+
+
+### Bug Fixes
+
+* **sso-bridge:** avoid double json_encode of sso data ([0d8e26f](https://github.com/jonathanMelly/pm2etml-intranet/commit/0d8e26f60eb0f003adb2bba48fb45f069fb75b1e)), closes [#61](https://github.com/jonathanMelly/pm2etml-intranet/issues/61)
+
 ## [1.16.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.16.0...v1.16.1) (2022-12-22)
 
 
