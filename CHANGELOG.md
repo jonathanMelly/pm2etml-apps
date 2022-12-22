@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.16.0...v1.16.1) (2022-12-22)
+
+
+### Bug Fixes
+
+* **sso:** array/object state ([5d550e8](https://github.com/jonathanMelly/pm2etml-intranet/commit/5d550e8bf36bfb743dbe62f7edaade720ca488df))
+
 ## [1.16.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.15.0...v1.16.0) (2022-12-22)
 
 
