@@ -16,8 +16,9 @@ class SSOBridgeController extends Controller
     public function check(Request $request)
     {
         $correlationId = $request->input("correlationId");
-        $ssoEmail = \Cache::pull(AuthenticatedSessionController::SSO_BRIDGE_CORRELATION_ID_PREFIX_CACHE_KEY . $correlationId,"invalid");
+        $ssoData = \Cache::pull(AuthenticatedSessionController::SSO_BRIDGE_CORRELATION_ID_PREFIX_CACHE_KEY . $correlationId,[
+            "error"=>"invalid correlationId $correlationId"]);
 
-        return json_encode($ssoEmail);
+        return json_encode($ssoData);
     }
 }

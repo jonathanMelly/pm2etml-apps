@@ -65,7 +65,13 @@ class AuthenticatedSessionController extends Controller
 
         $ssoUser = sso()->user();
         Log::debug(var_export($ssoUser,true));
-        $email = $ssoUser->getEmail();
+        $ssoUserInfos = $ssoUser["user"];
+
+        //This seems to give usernameo365...
+        //$email = $ssoUser->getEmail();
+
+        $email = $ssoUserInfos["mail"];
+        $username= $ssoUserInfos["userPrincipalName"];
         //$ssoUser->user["userPrincipalName"] may contain o365 identifier for other matching than email if needed
         //Avatar seems to be null ... Look at https://github.com/SocialiteProviders/Microsoft/blob/master/MicrosoftUser.php#L7
         //to implement it...
@@ -81,13 +87,19 @@ class AuthenticatedSessionController extends Controller
             $parts = explode("?correlationId=",$customRedirect);
             $uri=$parts[0];
             $correlationId = $parts[1];
-            \Cache::add(self::SSO_BRIDGE_CORRELATION_ID_PREFIX_CACHE_KEY . $correlationId,$email);
+
+            \Cache::add(self::SSO_BRIDGE_CORRELATION_ID_PREFIX_CACHE_KEY . $correlationId,
+                json_encode(["username"=>$username,"email"=>$email]));
             Log::info("Redirecting sso-bridge-request with cid $correlationId to $uri");
             return redirect($uri);
         }
         //Local LOGIN
         else {
-            $user = User::query()->where('email','=',$email)->first();
+            //Try to match with email or username as data source is not very accurate (best effort)
+            $user = User::query()
+                ->where('email','=',$email)
+                ->orWhere('username','=',$username)
+                ->first();
             if($user!=null)
             {
                 Auth::login($user);
@@ -96,6 +108,7 @@ class AuthenticatedSessionController extends Controller
         }
 
         //Default
+        Log::warning("Unknown validated SSO account with username=$username and email=$email");
         return redirect('login')->withErrors(['username' => __('Unknown account')]);
 
     }

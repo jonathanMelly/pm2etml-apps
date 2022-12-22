@@ -77,13 +77,13 @@ Route::middleware('guest')->group(function () {
 });
 
 //SSO
-Route::get('/auth/redirect', [AuthenticatedSessionController::class,'ssoRedirect'])->name('sso-redirect');
-Route::get('/auth/callback',[AuthenticatedSessionController::class,'ssoCallback']);
+Route::get('auth/redirect', [AuthenticatedSessionController::class,'ssoRedirect'])->name('sso-redirect');
+Route::get('auth/callback',[AuthenticatedSessionController::class,'ssoCallback']);
 
 
 //sso bridge
-Route::get('/auth/bridge/check',[\App\Http\Controllers\Auth\SSOBridgeController::class,'check']);
-Route::get('/auth/bridge/logout',[\App\Http\Controllers\Auth\SSOBridgeController::class,'logout']);
+Route::get('auth/bridge/check',[\App\Http\Controllers\Auth\SSOBridgeController::class,'check']);
+Route::get('auth/bridge/logout',[\App\Http\Controllers\Auth\SSOBridgeController::class,'logout']);
 
 //DEPLOY
 Route::get('deploy/optimize',[\App\Http\Controllers\DeployController::class,'optimize']);
