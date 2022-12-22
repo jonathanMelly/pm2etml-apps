@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.16.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.15.0...v1.16.0) (2022-12-22)
+
+
+### Features
+
+* **optimize:** only allow optimize when maintenant or admin ([1b7d2c3](https://github.com/jonathanMelly/pm2etml-intranet/commit/1b7d2c3511262d5721902efcc8175b2a57d12ed6)), closes [#21](https://github.com/jonathanMelly/pm2etml-intranet/issues/21)
+* **sso-bridge:** better URI extractor ([d437b8e](https://github.com/jonathanMelly/pm2etml-intranet/commit/d437b8e002cf4363ceb2b062a24f006bf5ef668d))
+
+
+### Bug Fixes
+
+* **sso-bridge:** check cache key fixed ([4e1961e](https://github.com/jonathanMelly/pm2etml-intranet/commit/4e1961e4b72b20d83e6424d9a5d9b443a9594548))
+* **sso-bridge:** split sso-bridge from local auth ([a07f066](https://github.com/jonathanMelly/pm2etml-intranet/commit/a07f0667c4e062bd0d5a3bb39f87481051980c48))
+* **sso:** use correct email/username data from o365 and dispatch for bridge ([37fccf6](https://github.com/jonathanMelly/pm2etml-intranet/commit/37fccf66b3f7405cce2f1b33dfb246492e2f2213))
+
 ## [1.15.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.14.0...v1.15.0) (2022-12-21)
 
 
