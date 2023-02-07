@@ -84,6 +84,13 @@ class AuthenticatedSessionController extends Controller
 
             //CorrelationId must be kept in session of external app
             $parts = explode("?correlationId=",$customRedirect);
+
+            if(sizeof($parts)!=2)
+            {
+                $message = "Unsupported custom redirection URI for sso bridge";
+                Log::warning($message,["redirect"=>$customRedirect]);
+                abort(400,$message);
+            }
             $uri=$parts[0];
             $correlationId = $parts[1];
 
