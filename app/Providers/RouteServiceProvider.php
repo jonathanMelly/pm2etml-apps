@@ -59,5 +59,12 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
+
+        //Based on 500 users with 10 apps and each 5 log tentatives within an hour (at max)
+        //Big number but still could reduce an attack...
+        //To do better, sso should ask for a SECRET...
+        RateLimiter::for('sso', function (Request $request) {
+            return Limit::perHour(25000)->by($request->user()?->id ?: $request->ip());
+        });
     }
 }

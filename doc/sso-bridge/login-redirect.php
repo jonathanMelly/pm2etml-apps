@@ -1,13 +1,11 @@
 <?php
 require_once("sso-config.php");
 
-//Generate random correlationId and store in session
-try {
-    $randomBytes = random_bytes(32);
-} catch (Exception $e) {
-    die("Cannot generate random number : ". $e->getMessage());
+$ssoCorrelationId=@json_decode(@file_get_contents(SSO_PORTAL."bridge/cid"),true)["correlationId"];
+if($ssoCorrelationId=="")
+{
+    die("Cannot initiate SSO");
 }
-$ssoCorrelationId = bin2hex($randomBytes);
 $_SESSION[SESSION_SSO_KEY]=$ssoCorrelationId;
 
 //Configure URLs

@@ -82,7 +82,11 @@ Route::get('auth/callback',[AuthenticatedSessionController::class,'ssoCallback']
 
 
 //sso bridge
-Route::get('auth/bridge/check',[\App\Http\Controllers\Auth\SSOBridgeController::class,'check']);
+Route::get('auth/bridge/cid',[\App\Http\Controllers\Auth\SSOBridgeController::class,'createCorrelationId'])
+    ->name('ssobridge.create-correlation-id')
+    ->middleware('throttle:sso');
+Route::get('auth/bridge/check',[\App\Http\Controllers\Auth\SSOBridgeController::class,'check'])
+    ->middleware('throttle:sso');;
 Route::get('auth/bridge/logout',[\App\Http\Controllers\Auth\SSOBridgeController::class,'logout']);
 
 //DEPLOY
