@@ -22,3 +22,15 @@ test('Call optimize with site up as admin', function () {
     $this->assertEquals(\App\Http\Controllers\DeployController::SUCCESS_MESSAGE,$output);
 
 });
+
+test('Call optimize with site up as not an admin', function () {
+    /* @var $this \Tests\TestCase */
+    /* @var $response \Illuminate\Testing\TestResponse */
+
+    $this->createUser(false,'root');
+
+    $response = $this->get('deploy/optimize');
+
+    $response->assertStatus(403);
+
+});

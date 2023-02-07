@@ -18,4 +18,11 @@ abstract class TestCase extends BaseTestCase
         return config('auth.fake_password');
     }
 
+    //should output stuff in tests as well...
+    public function Output(string $message)
+    {
+        echo $message;
+        ob_flush();
+    }
+
 }
