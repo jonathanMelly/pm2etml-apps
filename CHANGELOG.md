@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.18.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.18.0...v1.18.1) (2023-02-19)
+
+
+### Bug Fixes
+
+* **deploy:** fixed admin rights check for optimize (usefull for prod config change reload) ([1fd8ff2](https://github.com/jonathanMelly/pm2etml-intranet/commit/1fd8ff2fab04bb544f072751885dd9779104bfbe))
+
 ## [1.18.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.17.0...v1.18.0) (2023-02-19)
 
 
