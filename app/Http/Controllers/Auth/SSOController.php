@@ -29,24 +29,9 @@ class SSOController extends Controller
 
     public function check(Request $request)
     {
+        $this->checkApiKey($request);
+
         $correlationId = $request->input(self::SSO_CORRELATION_ID_PARAM_NAME);
-
-        if(Config::get('auth.sso_bridge_api_key_mandatory')) {
-            if ($request->missing(self::SSO_API_KEY_PARAM_NAME))
-            {
-                Log::warning("Missing api key in check sso bridge call",["request"=>$request]);
-                abort(403);
-            }
-            else{
-                $clientToken=$request->input(self::SSO_API_KEY_PARAM_NAME);
-                if($clientToken!=Config::get('auth.sso_bridge_api_key'))
-                {
-                    Log::warning("Bad api key given in check sso bridge call",["request"=>$request]);
-                    abort(403);
-                }
-            }
-        }
-
         $ssoData = \Cache::pull(self::SSO_BRIDGE_CORRELATION_ID_PREFIX_CACHE_KEY . $correlationId,
             ["error"=>"invalid correlationId $correlationId"]);
 
@@ -81,15 +66,6 @@ class SSOController extends Controller
 
             //Bridge request
             if (isset($correlationId)) {
-                if (Config::get('auth.sso_bridge_api_key_mandatory')) {
-                    $token = $request->get(self::SSO_API_KEY_PARAM_NAME);
-                    if ($token != Config::get('auth.sso_bridge_api_key'))
-                    {
-                        Log::warning("Bad token for SSO bridge",["token"=>$token,"request"=>$request]);
-                        abort(403);
-                    }
-                }
-
                 Session::put(self::SSO_BRIDGE_REDIRECT_URI_SESSION_KEY,$redirectUri);
 
                 //Store it for callback
@@ -163,6 +139,8 @@ class SSOController extends Controller
     //Help use consistent correlationId
     public function createCorrelationId(Request $request)
     {
+        $this->checkApiKey($request);
+
         //Generate random correlationId and store in session
         try {
             $randomBytes = random_bytes(32);
@@ -176,5 +154,29 @@ class SSOController extends Controller
             $request->getClientIp()." | ".now()->toDateTimeLocalString(),60*15);
 
         return json_encode([self::SSO_CORRELATION_ID_PARAM_NAME=>$ssoCorrelationId]);
+    }
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    private function checkApiKey(Request $request): void
+    {
+        if(Config::get('auth.sso_bridge_api_key_mandatory')) {
+            if ($request->missing(self::SSO_API_KEY_PARAM_NAME))
+            {
+                Log::warning("Missing mandatory api key in check sso bridge call",["request"=>$request]);
+                abort(403);
+            }
+            else
+            {
+                $clientToken=$request->input(self::SSO_API_KEY_PARAM_NAME);
+                if($clientToken!=Config::get('auth.sso_bridge_api_key'))
+                {
+                    Log::warning("Bad api key given for sso bridge",["request"=>$request]);
+                    abort(403);
+                }
+            }
+        }
     }
 }

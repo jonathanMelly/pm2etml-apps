@@ -1,16 +1,15 @@
 <?php
 require_once("lib-sso.php");
 
-$ssoResult = file_get_contents(SSO_PORTAL."bridge/check?correlationId=".$_SESSION[SESSION_SSO_KEY]);
-$loginInfos=json_decode($ssoResult,true);
+$token="PLEASE ASK FOR IT";
+$cid = $_SESSION[SESSION_SSO_KEY];
+$ssoResult = RetrieveSSOLoginInfos($token,$cid);
 
-if(!array_key_exists("error",$loginInfos))
+if($ssoResult->IsSuccess())
 {
-    //TODO LOGIN user in your app with $email (select * from users where email=$email)...
-    echo "Welcome ".$loginInfos["username"].", you are authenticated (email:".$loginInfos["email"]." )";
-}
-else{
-    die("Login error: ".$loginInfos["error"]);
+    //TODO Auth user in your app (select * from users where email=$ssolResult->email ...)
+    //$email = $ssoResult->email;
+    //$username = $ssoResult->username;
 }
 
 

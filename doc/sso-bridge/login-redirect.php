@@ -2,6 +2,6 @@
 require_once("lib-sso.php");
 
 $apiKey="PLEASE ASK FOR A TOKEN";
-$cid = generateCorrelationId();
+$cid = GenerateCorrelationId($apiKey);
 
-login($cid,$apiKey,["homepage"=>"home.php"]);
+InitiateSSOLogin($cid,["homepage"=>"home.php"]/*Example, can be empty*/);

@@ -4,7 +4,7 @@ test('SSO Bridge : Correlation ID for SSO is well generated and put into cache',
     /* @var $response \Illuminate\Testing\TestResponse */
     /* @var $this \Tests\TestCase */
 
-    $response = $this->get(route('ssobridge.create-correlation-id'));
+    $response = $this->get(route('ssobridge.create-correlation-id',["token"=>"key123"]));
 
     $response->assertStatus(200);
 
@@ -48,20 +48,31 @@ test('SSO Bridge login: correlationId V1 well parsed', function () {
 
 });
 
-test('SSO Bridge login: token not enforced OK', function () {
+test('SSO Bridge check: token not enforced OK', function () {
     /* @var $response \Illuminate\Testing\TestResponse */
     /* @var $this \Tests\TestCase */
 
     //GIVEN
-    $cid=45;
-    $subquery="https://www.client.com/callback?&custom=456&homepage=46";
     \Illuminate\Support\Facades\Config::set('auth.sso_bridge_api_key_mandatory',false);
 
     //WHEN
-    $response = $this->get(route('sso-login-redirect')."?correlationId=".$cid."&tokenMissing=key123&bob=test&redirectUri=".urlencode($subquery)."&after=123");
+    $response = $this->get(route('ssobridge.check',["correlationId"=>"bad","missingToken"=>"missing"]));
 
-    $response->assertStatus(302);
+    $response->assertStatus(200);
+    $response->assertJson(["error"=>"invalid correlationId bad"]);
 
+});
+
+test('SSO Bridge check: token enforced KO if missing', function () {
+    /* @var $response \Illuminate\Testing\TestResponse */
+    /* @var $this \Tests\TestCase */
+
+    //GIVEN
+    \Illuminate\Support\Facades\Config::set('auth.sso_bridge_api_key_mandatory',true);
+
+    //WHEN
+    $response = $this->get(route('ssobridge.check',["correlationId"=>"bad","missingToken"=>"missing"]));
+    $response->assertStatus(403);
 
 });
 
@@ -78,7 +89,7 @@ test('SSO bridge login: bad/missing parameters', function ($param) {
     //THEN
     $response->assertStatus(403);
 
-})->with(['token=bad&correlationId=given','missingToken=missing&correlationId=given','correlationIdMissing=notgiven','']);
+})->with(['correlationIdMissing=notgiven','']);
 
 test('SSO login: standard sso (no bridge)', function () {
     /* @var $response \Illuminate\Testing\TestResponse */

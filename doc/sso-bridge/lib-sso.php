@@ -1,4 +1,9 @@
 <?php
+
+if( !\filter_var( \ini_get('allow_url_fopen'), \FILTER_VALIDATE_BOOLEAN ) ) {
+    die("Sorry, this server has a misconfiguration which blocks SSO from working... Please contact the operator with errorCode 1:allow_url_fopen disabled");
+}
+
 const SSO_PORTAL = "https://intranet.pm2etml.ch/auth/";
 const SESSION_SSO_KEY = "sso_bridge_correlation_id";
 
@@ -20,7 +25,7 @@ switch (session_status())
  * @param $apiKey A token for API access (must be asked to maintainer)
  * @param $customRedirectParameters Add parameters that will be given back to callback call (callback.php?param1=1&param2=2 ...)
  */
-function login(string $cid,string $apiKey,array $customRedirectParameters=[]): void
+function InitiateSSOLogin(string $cid,array $customRedirectParameters=[]): void
 {
     //Configure URLs
     $LOGIN_CALLBACK_URI = "http" . ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 's' : '') . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/callback.php";
@@ -33,7 +38,7 @@ function login(string $cid,string $apiKey,array $customRedirectParameters=[]): v
     }
     $redirectUri .= $params;
 
-    $SSO_URL= SSO_PORTAL . "redirect?". "correlationId=" . $cid."&token=".$apiKey."&redirectUri=".urlencode($redirectUri);
+    $SSO_URL= SSO_PORTAL . "redirect?". "correlationId=" . $cid."&redirectUri=".urlencode($redirectUri);
 
     //Redirect to SSO Login
     header("Location: $SSO_URL");
@@ -42,9 +47,9 @@ function login(string $cid,string $apiKey,array $customRedirectParameters=[]): v
 /*
  * Try to get a well-formed correlationId from API... If not, fallback to own generation
  */
-function generateCorrelationId(bool $storeInSession=true)
+function GenerateCorrelationId(string $apiKey,bool $storeInSession=true)
 {
-    $ssoCorrelationId=@json_decode(@file_get_contents(SSO_PORTAL."bridge/cid"),true)["correlationId"];
+    $ssoCorrelationId=@json_decode(@file_get_contents(SSO_PORTAL."bridge/cid?token=".$apiKey),true)["correlationId"];
     if($ssoCorrelationId=="")
     {
         try {
@@ -61,4 +66,39 @@ function generateCorrelationId(bool $storeInSession=true)
     }
 
     return $ssoCorrelationId;
+}
+
+/*
+ * @return a #LoginInfo instance
+ */
+function RetrieveSSOLoginInfos(string $token, string $correlationId) : SSOLoginInfo
+{
+    $ssoResult = file_get_contents(SSO_PORTAL."bridge/check?token=".$token."correlationId=".$correlationId);
+    $loginInfos=json_decode($ssoResult,true);
+
+    $result = new SSOLoginInfo();
+    if(!array_key_exists("error",$loginInfos))
+    {
+        $result->username=$loginInfos["username"];
+        $result->email=$loginInfos["email"];
+    }
+    else{
+        $result->error=$loginInfos["error"];
+    }
+
+    return $result;
+}
+
+class SSOLoginInfo
+{
+    public string $email;
+    public string $username;
+    public string $error="";
+
+    function IsSuccess()
+    {
+        return $this->error=="";
+    }
+
+
 }
