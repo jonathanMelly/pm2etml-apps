@@ -1,5 +1,5 @@
 <?php
-require_once("sso-config.php");
+require_once("lib-sso.php");
 
 $ssoResult = file_get_contents(SSO_PORTAL."bridge/check?correlationId=".$_SESSION[SESSION_SSO_KEY]);
 $loginInfos=json_decode($ssoResult,true);

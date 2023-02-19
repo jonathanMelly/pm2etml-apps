@@ -93,6 +93,9 @@ return [
     'sso_login' => env('SSO_LOGIN',true),
 
     //Time in seconds while the correlationId of an sso login request is valid
-    'sso_bridge_session_ttl'=> env('SSO_BRIDGE_SESSION_TTL',10)
+    'sso_bridge_session_ttl'=> env('SSO_BRIDGE_SESSION_TTL',10),
+
+    'sso_bridge_api_key_mandatory' => env('SSO_BRIDGE_API_KEY_MANDATORY',true),
+    'sso_bridge_api_key'=>  env('SSO_BRIDGE_API_KEY')
 
 ];

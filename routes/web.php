@@ -77,17 +77,16 @@ Route::middleware('guest')->group(function () {
 });
 
 //SSO
-Route::get('auth/redirect', [AuthenticatedSessionController::class,'ssoRedirect'])->name('sso-redirect');
-Route::get('auth/callback',[AuthenticatedSessionController::class,'ssoCallback']);
+Route::get('auth/redirect', [\App\Http\Controllers\Auth\SSOController::class, 'ssoLoginRedirect'])->name('sso-login-redirect');
+Route::get('auth/callback',[\App\Http\Controllers\Auth\SSOController::class,'ssoCallback'])->name('sso-callback');
 
-
-//sso bridge
-Route::get('auth/bridge/cid',[\App\Http\Controllers\Auth\SSOBridgeController::class,'createCorrelationId'])
+//SSO BRIDGE
+Route::get('auth/bridge/cid',[\App\Http\Controllers\Auth\SSOController::class,'createCorrelationId'])
     ->name('ssobridge.create-correlation-id')
     ->middleware('throttle:sso');
-Route::get('auth/bridge/check',[\App\Http\Controllers\Auth\SSOBridgeController::class,'check'])
-    ->middleware('throttle:sso');;
-Route::get('auth/bridge/logout',[\App\Http\Controllers\Auth\SSOBridgeController::class,'logout']);
+Route::get('auth/bridge/check',[\App\Http\Controllers\Auth\SSOController::class,'check'])
+    ->middleware('throttle:sso')->name('ssobridge.check');
+Route::get('auth/bridge/logout',[\App\Http\Controllers\Auth\SSOController::class,'logout']);
 
 //DEPLOY
 Route::get('deploy/optimize',[\App\Http\Controllers\DeployController::class,'optimize']);

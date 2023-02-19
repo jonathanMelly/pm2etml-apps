@@ -25,4 +25,10 @@ abstract class TestCase extends BaseTestCase
         ob_flush();
     }
 
+    public function Dump($var)
+    {
+        echo var_export($var,true);
+        ob_flush();
+    }
+
 }
