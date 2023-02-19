@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.18.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.17.0...v1.18.0) (2023-02-19)
+
+
+### Features
+
+* **sso bridge:** add integrity check of sso request ([927662b](https://github.com/jonathanMelly/pm2etml-intranet/commit/927662bd8ed426861964116dfa500eaca7c0212f))
+* **sso bridge:** add throttling to sso AND ask client to get correlationId from bridge ([1b29668](https://github.com/jonathanMelly/pm2etml-intranet/commit/1b29668ba464e3a787fe8dec3f4ebfd4cf27a84c))
+* **sso:** add API KEY restriction option AND correlationId generation ([39df0c4](https://github.com/jonathanMelly/pm2etml-intranet/commit/39df0c4c6fd491c1c55711ea89b7293a5cadac84))
+
 ## [1.17.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.16.2...v1.17.0) (2022-12-22)
 
 
