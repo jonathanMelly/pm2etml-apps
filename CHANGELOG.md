@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.18.1...v1.19.0) (2023-02-20)
+
+
+### Features
+
+* **laravel...:** update to laravale 9.59 (and also other deps) ([691ff0d](https://github.com/jonathanMelly/pm2etml-intranet/commit/691ff0da6a32e3f017bc529f4f3d39700a944f99))
+
 ## [1.18.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.18.0...v1.18.1) (2023-02-19)
 
 
