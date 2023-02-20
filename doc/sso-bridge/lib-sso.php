@@ -1,8 +1,11 @@
-<?php
+<?php /** @noinspection PhpMissingFieldTypeInspection */
 
 if( !\filter_var( \ini_get('allow_url_fopen'), \FILTER_VALIDATE_BOOLEAN ) ) {
     die("Sorry, this server has a misconfiguration which blocks SSO from working... Please contact the operator with errorCode 1:allow_url_fopen disabled");
 }
+
+$config = parse_ini_file("config.ini.php");
+define("API_KEY",$config["API_KEY"]);
 
 const SSO_PORTAL = "https://intranet.pm2etml.ch/auth/";
 const SESSION_SSO_KEY = "sso_bridge_correlation_id";
@@ -25,7 +28,7 @@ switch (session_status())
  * @param $apiKey A token for API access (must be asked to maintainer)
  * @param $customRedirectParameters Add parameters that will be given back to callback call (callback.php?param1=1&param2=2 ...)
  */
-function InitiateSSOLogin(string $cid,array $customRedirectParameters=[]): void
+function InitiateSSOLogin(string $cid,array $customRedirectParameters=[])
 {
     //Configure URLs
     $LOGIN_CALLBACK_URI = "http" . ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 's' : '') . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/callback.php";
@@ -73,7 +76,7 @@ function GenerateCorrelationId(string $apiKey,bool $storeInSession=true)
  */
 function RetrieveSSOLoginInfos(string $token, string $correlationId) : SSOLoginInfo
 {
-    $ssoResult = file_get_contents(SSO_PORTAL."bridge/check?token=".$token."correlationId=".$correlationId);
+    $ssoResult = file_get_contents(SSO_PORTAL."bridge/check?token=".$token."&correlationId=".$correlationId);
     $loginInfos=json_decode($ssoResult,true);
 
     $result = new SSOLoginInfo();
@@ -91,14 +94,12 @@ function RetrieveSSOLoginInfos(string $token, string $correlationId) : SSOLoginI
 
 class SSOLoginInfo
 {
-    public string $email;
-    public string $username;
-    public string $error="";
+    public $email;
+    public $username;
+    public $error="";
 
-    function IsSuccess()
+    function IsSuccess(): bool
     {
         return $this->error=="";
     }
-
-
 }
