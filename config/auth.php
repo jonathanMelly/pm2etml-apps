@@ -85,7 +85,7 @@ return [
     |
     */
 
-    'password_timeout' => 300/*10800*/,
+    'password_timeout' => env('PASSWORD_CONFIRM_TIMEOUT',300)/*10800*/,
 
     'fake_password' => env('FAKE_AUTHENTICATOR_PASSWORD','section-inf.2022'),
 

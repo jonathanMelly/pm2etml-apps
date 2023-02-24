@@ -42,6 +42,14 @@
                                                 </label>
                                             </button>
 
+                                            <button x-bind:disabled="!massAction" class="btn btn-outline btn-warning btn-xs multi-action-{{$job->id}}"
+                                                    @click="cids=Array.from(document.getElementsByName('job-{{$job->id}}-contracts[]'))
+                                                    .filter(el=>el.checked)
+                                                    .map(el=>el.getAttribute('value'))
+                                                    .join();window.location.href='contracts/bulkEdit/'+cids">
+                                                <i class="fa-solid fa-calendar-days mr-1"></i>{{__('Edit')}}
+                                            </button>
+
                                             <button x-bind:disabled="!massAction" class="btn btn-outline btn-success btn-xs multi-action-{{$job->id}}"
                                                     @click="cids=Array.from(document.getElementsByName('job-{{$job->id}}-contracts[]'))
                                                     .filter(el=>el.checked)

@@ -121,9 +121,6 @@
             <button type="button" class="btn my-2"
                     onclick="document.querySelector('#eval').submit()">
                 {{__('Save evaluation results')}}</button>
-            @foreach($errors as $error)
-                {{$error}}
-            @endforeach
         </div>
 
 

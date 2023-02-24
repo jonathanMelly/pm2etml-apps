@@ -3,16 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Constants\RoleName;
+use App\DateFormat;
 use App\Http\Requests\ContractEvaluationRequest;
 use App\Http\Requests\DestroyAllContractRequest;
 use App\Http\Requests\StoreContractRequest;
+use App\Http\Requests\UpdateContractBulkRequest;
 use App\Http\Requests\UpdateContractRequest;
 use App\Models\AcademicPeriod;
 use App\Models\Contract;
 use App\Models\JobDefinition;
 use App\Models\User;
 use App\Models\WorkerContract;
+use App\SwissFrenchDateFormat;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ContractController extends Controller
@@ -26,7 +34,7 @@ class ContractController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index()
     {
@@ -36,7 +44,7 @@ class ContractController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|Factory|View|Response
      */
     public function create(JobDefinition $jobDefinition)
     {
@@ -47,7 +55,7 @@ class ContractController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \App\Http\Requests\StoreContractRequest  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse|Response
      */
     public function store(StoreContractRequest $request)
     {
@@ -121,7 +129,7 @@ class ContractController extends Controller
      * Display the specified resource.
      *
      * @param  \App\Models\Contract  $contract
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function show(Contract $contract)
     {
@@ -132,11 +140,41 @@ class ContractController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param  \App\Models\Contract  $contract
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function edit(Contract $contract)
     {
         //
+    }
+
+    public function bulkUpdate(UpdateContractBulkRequest $request)
+    {
+        //SECURITY CHECKS (as this area is opened to students who might want to play with ids...)
+        $this->authorize('contracts.edit');
+
+        $contracts = $this->getContractsForModifications(collect($request->get("workersContracts"))->join(','),true);
+        $starts = $request->get("starts");
+        $ends = $request->get("ends");
+        $updated = 0;
+        foreach($contracts->all() as $i=>$contract)
+        {
+            $updateRequest= UpdateContractRequest::createFrom($request);
+            $updateRequest->replace(["start"=>DateFormat::DateFromHtmlInput($starts[$i]),"end"=>DateFormat::DateFromHtmlInput($ends[$i])]);
+
+            $result = $this->update($updateRequest,$contract,$i);
+            //Validation error...
+            if($result instanceof \Symfony\Component\HttpFoundation\Response)
+            {
+                return $result;
+            }
+            $updated += $result;
+        }
+
+        //Only save if no errors...
+        $contracts->each(fn($c)=>$c->save());
+
+        return $this->createUpdateResponse($updated);
+
     }
 
     /**
@@ -144,24 +182,61 @@ class ContractController extends Controller
      *
      * @param  \App\Http\Requests\UpdateContractRequest  $request
      * @param  \App\Models\Contract  $contract
-     * @return \Illuminate\Http\Response
+     * @return \Symfony\Component\HttpFoundation\Response | int
      */
-    public function update(UpdateContractRequest $request, Contract $contract)
+    public function update(UpdateContractRequest $request, Contract $contract, $index=-1) : \Symfony\Component\HttpFoundation\Response | int
     {
-        //ADAPT THIS WHEN NEEDED
+        $bulk=$index!=-1;
+
         //Validate start/end date
         $period = AcademicPeriod::current(false);
-        if($contract->start->isBefore($period->start) || $contract->end->isAfter($period->end))
+        /* @var $start Carbon */
+        $start=$request->input('start');
+        $end=$request->input('end');
+        if($start->isBefore($period->start) || $end->isAfter($period->end))
         {
-            return back()->withErrors(__('Dates must be within current academic period'))->withInput();
+            $message =__('Dates must be included within current academic period');
+            $errors = ["workersContract".($bulk?"s.$index":'')=>$message];
+            return back()->withErrors($errors)->withInput();
         }
+        else if($start->isAfter($end))
+        {
+            $message =__("Start date ".$start->format(SwissFrenchDateFormat::DATE)." must be before end date ".$end->format(SwissFrenchDateFormat::DATE));
+            $errors = ["workersContract".($bulk?"s.$index":'')=>$message];
+            return back()->withErrors($errors)->withInput();
+        }
+
+        //Smart update
+        $isUpdated = false;
+        foreach (['start','end'] as $field)
+        {
+            /* @var $newDate \Carbon\Carbon */
+            $newDate = $request->input($field);
+            if(!$newDate->isSameDay($contract->$field))
+            {
+                $contract->$field=$newDate;
+                $isUpdated=true;
+            }
+        }
+
+        $updatedCount = $isUpdated?1:0;
+        if($bulk)
+        {
+            return $updatedCount;
+        }
+        else
+        {
+            $contract->save();
+            return $this->createUpdateResponse($updatedCount);
+        }
+
     }
 
     /**
      * Remove the specified resource from storage.
      *
      * @param  \App\Models\Contract  $contract
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function destroy(Contract $contract)
     {
@@ -189,16 +264,20 @@ class ContractController extends Controller
     {
         $this->authorize('contracts.evaluate');
 
-        $contracts = $this->getContractsForEvaluation($ids);
-        $job = $contracts->firstOrFail()->jobDefinition;
+        return $this->getBulkView($ids,view('contracts-evaluate'));
+    }
 
-        return view('contracts-evaluate')->with(compact('contracts','job'));
+    public function bulkEdit(string $ids)
+    {
+        $this->authorize('contracts.edit');
+        return $this->getBulkView($ids,view('contracts-bulkEdit'));
+
     }
 
     public function evaluateApply(ContractEvaluationRequest $request)
     {
 
-        $contracts = $this->getContractsForEvaluation(collect($request->workersContracts)->join(','),true);
+        $contracts = $this->getContractsForModifications(collect($request->workersContracts)->join(','),true);
 
         $updated=0;
         foreach($contracts as $contract)
@@ -237,7 +316,7 @@ class ContractController extends Controller
      * @param string $ids
      * @return Contract[]|Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Query\Builder[]|\Illuminate\Support\Collection
      */
-    protected function getContractsForEvaluation(string $ids,bool $workersContractsIds=false): \Illuminate\Support\Collection|array|\Illuminate\Database\Eloquent\Collection
+    protected function getContractsForModifications(string $ids, bool $workersContractsIds=false): \Illuminate\Support\Collection|array|\Illuminate\Database\Eloquent\Collection
     {
         $queryIds = collect(explode(',', $ids))->filter(fn($el) => is_numeric($el))->toArray();
 
@@ -252,12 +331,45 @@ class ContractController extends Controller
             $query->whereIn('id',$queryIds);
         }
 
+        //Non admin users can only modify their contracts...
+        $user=auth()->user();
+        if($user->cannot('contracts'))
+        {
+            $query->whereHas('clients', fn($q) => $q->where('user_id', '=', $user->id));
+        }
+
         return $query
-            ->whereHas('clients', fn($q) => $q->where('user_id', '=', auth()->user()->id))
             ->with('workers.user')
             ->with('workersContracts.groupMember')
             ->get();
 
+    }
+
+    /**
+     * @param int $updated
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     */
+    public function createUpdateResponse(int $updated): \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+    {
+        $message = ['warning', __('No changes detected')];
+        if ($updated > 0) {
+            $message = ['success', trans_choice(':number contract updated|:number contracts updated', $updated, ['number' => $updated])];
+        }
+
+        return redirect('/dashboard')
+            ->with($message[0], $message[1]);
+    }
+
+    /**
+     * @param string $ids
+     * @return \Illuminate\Contracts\Foundation\Application|Factory|View
+     */
+    public function getBulkView(string $ids,$view): \Illuminate\Contracts\Foundation\Application|Factory|View
+    {
+        $contracts = $this->getContractsForModifications($ids);
+        $job = $contracts->firstOrFail()->jobDefinition;
+
+        return $view->with(compact('contracts', 'job'));
     }
 
 }

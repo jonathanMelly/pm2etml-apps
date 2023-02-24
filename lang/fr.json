@@ -297,5 +297,9 @@
     "Drafts only" : "Seul. brouillons",
     "Draft": "Brouillon",
     ":number evaluation|:number evaluations":":number évaluation|:number évaluations",
-    "Authenticate through Eduvaud": "S’authentifier via Eduvaud "
+    "Authenticate through Eduvaud": "S’authentifier via Eduvaud ",
+    "Edit": "Modifier",
+    "Apply to all": "Appliquer pour tous",
+    "No changes detected": "Aucun changement détecté",
+    ":number selected contract|:number selected contracts":":number contrat sélectionné|:number contrats sélectionnés"
 }

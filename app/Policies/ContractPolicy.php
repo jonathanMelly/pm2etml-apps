@@ -53,8 +53,8 @@ class ContractPolicy
      */
     public function update(User $user, Contract $contract)
     {
-        if($user->can('contracts.update')){
-            return $user->can('contracts') || $contract->clients->find($user->id)->containsOneItem();
+        if($user->can('contracts.edit')){
+            return $user->can('contracts') || $contract->clients->find($user->id)!==null;
         }
     }
 
