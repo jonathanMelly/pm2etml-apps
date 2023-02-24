@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.20.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.19.0...v1.20.0) (2023-02-24)
+
+
+### Features
+
+* **contract:** ability to edit contract dates ([de57b8b](https://github.com/jonathanMelly/pm2etml-intranet/commit/de57b8b61476d64823d55c800f009860e2e98e61)), closes [#29](https://github.com/jonathanMelly/pm2etml-intranet/issues/29)
+* **monitoring:** add sentry basic conf ([d4d111e](https://github.com/jonathanMelly/pm2etml-intranet/commit/d4d111ed3c524a19612782653a964f7ddd741287))
+
+
+### Bug Fixes
+
+* **sentry:** only report warnings and upper ([6aa47e0](https://github.com/jonathanMelly/pm2etml-intranet/commit/6aa47e0e325c4b387583ee75306b885584fbc88f))
+
 ## [1.19.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.18.1...v1.19.0) (2023-02-20)
 
 
