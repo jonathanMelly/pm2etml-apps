@@ -1,10 +1,17 @@
 <?php
 
+use App\Constants\FileFormat;
+use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
+use App\Http\Controllers\Auth\SSOController;
+use App\Http\Controllers\ContractController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DeployController;
 use App\Http\Controllers\DmzAssetController;
 use App\Http\Controllers\JobDefinitionController;
+use App\Http\Controllers\JobDefinitionDocAttachmentController;
+use App\Http\Controllers\JobDefinitionMainImageAttachmentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,39 +33,45 @@ Route::middleware('auth')->group(function () {
     Route::get('dashboard',DashboardController::class)->name('dashboard');
 
     //JOBS
-    Route::resource('jobDefinitions',\App\Http\Controllers\JobDefinitionController::class);
+    Route::resource('jobDefinitions', JobDefinitionController::class);
     Route::get('marketplace',[JobDefinitionController::class,'marketPlace'])
         ->name('marketplace');
 
     //CONTRACTS
     Route::get('jobs-apply/{jobDefinition}',
-        [\App\Http\Controllers\ContractController::class,'createApply'])
+        [ContractController::class,'createApply'])
         ->name('jobs-apply-for');
 
-    Route::delete('contracts.destroyAll',[\App\Http\Controllers\ContractController::class,'destroyAll'])
+    Route::delete('contracts.destroyAll',[ContractController::class,'destroyAll'])
         ->name('contracts.destroyAll');
 
-    Route::get('contracts/evaluate/{ids}',[\App\Http\Controllers\ContractController::class,'evaluate'])
+    Route::get('contracts/evaluate/{ids}',[ContractController::class,'evaluate'])
+        ->middleware('password.confirm');
+    Route::get('contracts/bulkEdit/{ids}',[ContractController::class,'bulkEdit'])
         ->middleware('password.confirm');
 
-    Route::post('contracts/eval',[\App\Http\Controllers\ContractController::class,'evaluateApply'])
+
+    //Bulk operations on contracts
+    Route::post('contracts/eval',[ContractController::class,'evaluateApply'])
         ->name('contracts.evaluate');
+    Route::post('contracts/bulkUpdate',[ContractController::class,'bulkUpdate'])
+        ->name('contracts.bulkUpdate');
 
     //Add basic CRUD actions for contracts
-    Route::resource('contracts',\App\Http\Controllers\ContractController::class);
+    Route::resource('contracts', ContractController::class);
 
-    //Files (images) handling (avoid any injected script in image as returning the file as file !
-    Route::get(\App\Constants\FileFormat::DMZ_ASSET_URL.'/{file?}', [DmzAssetController::class,'getFile'])
+    //Files (images) handling (avoid any injected script in image as returning the file as file !)
+    Route::get(FileFormat::DMZ_ASSET_URL.'/{file?}', [DmzAssetController::class,'getFile'])
         ->where('file','(.*)')
         ->name('dmz-asset');
 
-    Route::post('job-image-attachment',\App\Http\Controllers\JobDefinitionMainImageAttachmentController::class)
+    Route::post('job-image-attachment', JobDefinitionMainImageAttachmentController::class)
         ->name('job-definition-main-image-attachment.store');
-    Route::post('job-doc-attachment',\App\Http\Controllers\JobDefinitionDocAttachmentController::class)
+    Route::post('job-doc-attachment', JobDefinitionDocAttachmentController::class)
         ->name('job-definition-doc-attachment.store');
 
     //For now, destroy is same for any kind of attachment...
-    Route::delete('attachments/{attachment}',[\App\Http\Controllers\AttachmentController::class,'destroy'])
+    Route::delete('attachments/{attachment}',[AttachmentController::class,'destroy'])
         ->name('attachment.destroy');
 
     //AUTH RELATED
@@ -77,18 +90,18 @@ Route::middleware('guest')->group(function () {
 });
 
 //SSO
-Route::get('auth/redirect', [\App\Http\Controllers\Auth\SSOController::class, 'ssoLoginRedirect'])->name('sso-login-redirect');
-Route::get('auth/callback',[\App\Http\Controllers\Auth\SSOController::class,'ssoCallback'])->name('sso-callback');
+Route::get('auth/redirect', [SSOController::class, 'ssoLoginRedirect'])->name('sso-login-redirect');
+Route::get('auth/callback',[SSOController::class,'ssoCallback'])->name('sso-callback');
 
 //SSO BRIDGE
-Route::get('auth/bridge/cid',[\App\Http\Controllers\Auth\SSOController::class,'createCorrelationId'])
+Route::get('auth/bridge/cid',[SSOController::class,'createCorrelationId'])
     ->name('ssobridge.create-correlation-id')
     ->middleware('throttle:sso');
-Route::get('auth/bridge/check',[\App\Http\Controllers\Auth\SSOController::class,'check'])
+Route::get('auth/bridge/check',[SSOController::class,'check'])
     ->middleware('throttle:sso')->name('ssobridge.check');
-Route::get('auth/bridge/logout',[\App\Http\Controllers\Auth\SSOController::class,'logout']);
+Route::get('auth/bridge/logout',[SSOController::class,'logout']);
 
 //DEPLOY
-Route::get('deploy/optimize',[\App\Http\Controllers\DeployController::class,'optimize']);
+Route::get('deploy/optimize',[DeployController::class,'optimize']);
 
 
