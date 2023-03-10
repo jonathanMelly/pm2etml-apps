@@ -65,17 +65,20 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        //Logout SSO if needed
-        try {
-            $azureLogoutUrl = sso()->getLogoutUrl(route('login'));
-            return redirect($azureLogoutUrl);
-        }
-        catch(\Exception $e)
+        if(config('auth.sso_login'))
         {
-            Log::debug('Not sso session, redirecting to standard /');
-            return redirect('/');
+            //Logout SSO if needed
+            try {
+                $azureLogoutUrl = sso()->getLogoutUrl(route('login'));
+                return redirect($azureLogoutUrl);
+            }
+            catch(\Exception $e)
+            {
+                Log::debug('Not sso session, redirecting to standard /');
+            }
         }
 
+        return redirect('/');
 
     }
 }
