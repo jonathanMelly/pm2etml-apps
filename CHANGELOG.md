@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.20.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.20.0...v1.20.1) (2023-03-10)
+
+
+### Bug Fixes
+
+* **logout:** no sso logout for standard logout (issue on staging) ([a5bd68f](https://github.com/jonathanMelly/pm2etml-intranet/commit/a5bd68f15c4ca3ed8b9bd3c7cc4100a5b4610146))
+
 ## [1.20.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.19.0...v1.20.0) (2023-02-24)
 
 
