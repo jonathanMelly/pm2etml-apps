@@ -56,7 +56,7 @@ class ClientContractsEditFormTest extends BrowserKitTestCase
         $starts = ["$year-10-01","$year-12-01"];
         $ends=["$year-11-15","$year-12-25"];
         $this->visit('/contracts/bulkEdit/'.(implode(',',$wkIds)))
-            ->submitForm(__('Confirm'),['password'=>config('auth.fake_password')])
+           // ->submitForm(__('Confirm'),['password'=>config('auth.fake_password')])
             ->submitForm(trans('Save modifications'), [
                 'workersContracts' => $wkIds,
                 'starts'=>$starts,
@@ -98,7 +98,7 @@ class ClientContractsEditFormTest extends BrowserKitTestCase
         $ends=["1950-11-15"];
         $url='/contracts/bulkEdit/'.(implode(',',$wkIds));
         $this->visit($url)
-            ->submitForm(__('Confirm'),['password'=>config('auth.fake_password')])
+            //->submitForm(__('Confirm'),['password'=>config('auth.fake_password')])
             ->submitForm(trans('Save modifications'), [
                 'workersContracts' => $wkIds,
                 'starts'=>$starts,

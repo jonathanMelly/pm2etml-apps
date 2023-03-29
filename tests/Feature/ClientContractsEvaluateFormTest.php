@@ -64,7 +64,7 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
         $logCount = WorkerContractEvaluationLog::query()->count();
 
         $this->visit('/contracts/evaluate/'.(implode(',',$wkIds)))
-            ->submitForm(__('Confirm'),['password'=>config('auth.fake_password')])
+            //->submitForm(__('Confirm'),['password'=>config('auth.fake_password')])
             ->submitForm(trans('Save evaluation results'), [
                 'workersContracts' => $wkIds,
                 'success-'.$wkIds[0]=>'true',
