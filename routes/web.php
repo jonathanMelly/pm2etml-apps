@@ -45,10 +45,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('contracts.destroyAll',[ContractController::class,'destroyAll'])
         ->name('contracts.destroyAll');
 
-    Route::get('contracts/evaluate/{ids}',[ContractController::class,'evaluate'])
-        ->middleware('password.confirm');
-    Route::get('contracts/bulkEdit/{ids}',[ContractController::class,'bulkEdit'])
-        ->middleware('password.confirm');
+    Route::get('contracts/evaluate/{ids}',[ContractController::class,'evaluate']);
+    Route::get('contracts/bulkEdit/{ids}',[ContractController::class,'bulkEdit']);
 
 
     //Bulk operations on contracts
