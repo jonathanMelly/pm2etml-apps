@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.20.2](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.20.1...v1.20.2) (2023-03-29)
+
+
+### Bug Fixes
+
+* **password confirm:** deactivate password confirm as not compatible with 2nd factor auth and not available with openid... ([1d84ada](https://github.com/jonathanMelly/pm2etml-intranet/commit/1d84ada63856d5594f879486068e94b751a431fc))
+* **tests:** password confirm tests parts removed ([7ee152c](https://github.com/jonathanMelly/pm2etml-intranet/commit/7ee152c6b374fe745525e2bcd9e27254113548ba))
+
 ## [1.20.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.20.0...v1.20.1) (2023-03-10)
 
 
