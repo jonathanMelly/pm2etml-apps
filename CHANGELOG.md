@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.21.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.20.2...v1.21.0) (2023-04-04)
+
+
+### Features
+
+* **sentry:** add cron check ([50e095c](https://github.com/jonathanMelly/pm2etml-intranet/commit/50e095cfd22209d1804b21f32f87021e9d2d680d))
+
 ## [1.20.2](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.20.1...v1.20.2) (2023-03-29)
 
 
