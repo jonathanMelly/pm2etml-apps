@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.21.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.21.0...v1.21.1) (2023-04-05)
+
+
+### Bug Fixes
+
+* **sentry:** final probe name ([46e1cc4](https://github.com/jonathanMelly/pm2etml-intranet/commit/46e1cc4813e63748503fd2a5cd0b59e3fb385f5d))
+
 ## [1.21.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.20.2...v1.21.0) (2023-04-04)
 
 
