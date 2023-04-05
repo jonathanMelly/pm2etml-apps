@@ -19,7 +19,7 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')->hourly();
         $schedule
             ->command(EvaluationReportCommand::class)->dailyAt("07:45")->weekdays()
-            ->sentryMonitor('pm2etml-intranet-cron-test')
+            ->sentryMonitor('pm2etml-intranet-cron-evaluation-report')
         ;
 
     }
