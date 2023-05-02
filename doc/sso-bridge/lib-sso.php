@@ -28,12 +28,12 @@ switch (session_status())
  * @param $apiKey A token for API access (must be asked to maintainer)
  * @param $customRedirectParameters Add parameters that will be given back to callback call (callback.php?param1=1&param2=2 ...)
  */
-function InitiateSSOLogin(string $cid,array $customRedirectParameters=[])
+function InitiateSSOLogin(string $cid,array $customRedirectParameters=[],string $customCallbackURI = NULL)
 {
-    //Configure URLs
-    $LOGIN_CALLBACK_URI = "http" . ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 's' : '') . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/callback.php";
+    //Auto build redirect URI if necessary
+    $redirectUri=$customCallbackURI??
+        "http" . ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 's' : '') . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/callback.php";
 
-    $redirectUri = $LOGIN_CALLBACK_URI;
     $params="";
     foreach ($customRedirectParameters as $name =>$value)
     {
