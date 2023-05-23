@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Constants\RoleName;
 use App\Models\AcademicPeriod;
+use App\Models\Group;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -160,18 +161,26 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
 
                 //Student should have only 1 groupMember for a given period
                 $currentGroupMember = $user->groupMember($period->id, true);
+                $newGroupName = $newGroupNameNames[0]; /*A student is only in 1 class....*/
                 $createGroupMember = false;
                 if ($currentGroupMember !== null) {
                     //Group change
-                    $name = $currentGroupMember->group->groupName->name;
-                    if ($name != $newGroupNameNames[0]) {
-                        $currentGroupMember->delete();
-                        $reportInfo .= '[groups/'.$year.':-'.$name.']';
-                        $groupsToAdd = collect([$newGroupNameNames[0]]);
+                    $currentGroupName = $currentGroupMember->group->groupName->name;
+
+                    if ($currentGroupName != $newGroupName) {
+
+                        //Migrate instead of delete/add to keep track of previous evaluations
+                        $currentGroupMember->group_id = Group::where('academic_period_id','=',$period->id)
+                            ->whereRelation('groupName','name','=',$newGroupName)
+                            ->firstOrFail('id')->id;
+
+                        $currentGroupMember->save();
+
+                        $reportInfo .= '[groups/'.$year.': '.$currentGroupName.' => '.$newGroupName.']';
                     }
                     //Else Group is already good, we do nothing ;-)
                 } else {
-                    $groupsToAdd = collect([$newGroupNameNames[0]]);
+                    $groupsToAdd = collect([$newGroupName]);
                 }
             }
 

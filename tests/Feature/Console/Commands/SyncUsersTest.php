@@ -9,6 +9,7 @@ test('Test valid teachers and students import', function() {
     //GIVEN
     $this->multiSeed(
         AcademicPeriodSeeder::class,
+        \Database\Seeders\GroupSeeder::class
     );
 
     $period = \App\Models\AcademicPeriod::forDate(\Carbon\Carbon::create(2022,8))->firstOrFail();
@@ -36,6 +37,15 @@ test('Test valid teachers and students import', function() {
     $existing->joinGroup($period->id,'cin2b',2);
     $existing->save();
 
+    $migrator = \App\Models\User::factory()->create();
+    $migrator->username='migrator@eduvaud.ch';
+    $migrator->email='migrator@eduvaud.ch';
+    $migrator->firstname='migra';
+    $migrator->lastname='tor';
+    $migrator->assignRole(\App\Constants\RoleName::STUDENT);
+    $migrator->joinGroup($period->id,'min2',2);
+    $migrator->save();
+
     //WHEN
 /*
     $this->withoutMockingConsoleOutput()->artisan('users:sync',[
@@ -52,7 +62,7 @@ test('Test valid teachers and students import', function() {
         ->expectsOutputToContain('stud2@eduvaud.ch')
         ->expectsOutputToContain('Le champ login est obligatoire')
         ->expectsOutputToContain('ghost ghost marked as deleted but was never added before -> ignoring')
-        ->expectsTable(\App\Console\Commands\SyncUsersCommand::RESULT_HEADERS,[['5','2','8','1','1','1','3']])
+        ->expectsTable(\App\Console\Commands\SyncUsersCommand::RESULT_HEADERS,[[/*+*/'5',/*-*/'2',/*#*/'8',/*=*/'2',/***/'1',/*!*/'1',/*/!\*/'3']])
         ->assertExitCode(0);
 
     //THEN
@@ -61,7 +71,7 @@ test('Test valid teachers and students import', function() {
     $this->assertTrue($bob->hasRole([\App\Constants\RoleName::TEACHER,\App\Constants\RoleName::ADMIN]));
 
     $students = \App\Models\User::role(\App\Constants\RoleName::STUDENT)->get();
-    $this->assertCount(3,$students);
+    $this->assertCount(4,$students);
 
     foreach( [
         ['email'=>'studfnln@eduvaud.ch','roles'=>[\App\Constants\RoleName::STUDENT],'class'=>'cin1a','year'=>2022],
@@ -72,7 +82,8 @@ test('Test valid teachers and students import', function() {
         ['email'=>'bob@eduvaud.ch','roles'=>[\App\Constants\RoleName::TEACHER,\App\Constants\RoleName::ADMIN],'class'=>'fin1','year'=>2022],
         ['email'=>'samemail@eduvaud.ch','roles'=>[\App\Constants\RoleName::STUDENT],'class'=>'cin2b','year'=>2022],
         ['email'=>'modif@eduvaud.ch','roles'=>[\App\Constants\RoleName::TEACHER],'class'=>'fin2','year'=>2022],
-                 ['email'=>'tbr@eduvaud.ch','roles'=>[\App\Constants\RoleName::TEACHER],'class'=>'min1','year'=>2022]
+        ['email'=>'tbr@eduvaud.ch','roles'=>[\App\Constants\RoleName::TEACHER],'class'=>'min1','year'=>2022],
+        ['email'=>'migrator@eduvaud.ch','roles'=>[\App\Constants\RoleName::STUDENT],'class'=>'cin2a','year'=>2022]
 
              ] as $user) {
         /* @var $dbStudent \App\Models\User */
@@ -98,16 +109,16 @@ test('Test valid teachers and students import', function() {
 
     }
 
-    /*
+/*
     $this->withoutMockingConsoleOutput()->artisan('users:sync',[
         'input' => base_path('tests/data/users-import.xlsx'),
         '-v'=>null]);
     dd(Artisan::output());
-    */
+*/
 
     //relaunch and only updates should have been detected + validate rollback by default
     $this->artisan('users:sync',['input' => base_path('tests/data/users-import.xlsx')])
-        ->expectsTable(\App\Console\Commands\SyncUsersCommand::RESULT_HEADERS,[['0','2','4','10','2','1','3']])
+        ->expectsTable(\App\Console\Commands\SyncUsersCommand::RESULT_HEADERS,[['0','2','4','11','2','1','3']])
         ->assertExitCode(3);//3=rollback*/
 
 

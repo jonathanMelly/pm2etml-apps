@@ -61,9 +61,9 @@ class Contract extends Model
         return $this->HasMany(WorkerContract::class);
     }
 
-    public function getWorkerContract($userid)
+    public function workerContract(GroupMember $gm): HasMany
     {
-        return $this->workers->where('user_id','=',$userid)->firstOrFail()->pivot;
+        return $this->workersContracts()->where('group_member_id','=',$gm->id);
     }
 
     public function jobDefinition(): BelongsTo

@@ -21,7 +21,7 @@ class GroupSeeder extends Seeder
     {
 
         //Group names
-        foreach (['cin1a'=>1,'cin2a'=>2,'cin1b'=>1,'cin2b'=>2,'cid3a'=>3,'cin4b'=>4,'fin1'=>1,'fin2'=>3,'msig'=>1] as $group=>$year)
+        foreach (['cin1a'=>1,'cin2a'=>2,'cin1b'=>1,'cin2b'=>2,'cid3a'=>3,'cin4b'=>4,'fin1'=>1,'fin2'=>3,'msig'=>1,'min1'=>1,'min2'=>2,'min3'=>3,'min4'=>4] as $group=>$year)
         {
             GroupName::create([
                 'name'=> $group,
