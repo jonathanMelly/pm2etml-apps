@@ -208,6 +208,7 @@
     "Invalid client (only valid providers are allowed)": "Client invalide (seuls les fournisseurs officiels sont autorisés)",
     "Invalid worker (only students are allowed)": "Postulation invalide (seuls les élèves peuvent postuler)",
     "No contracts, you may apply at": "Aucun contrat, voir les opportunités sur le",
+    "No contracts": "Aucun contrat",
     "Start": "Début",
     "End": "Fin",
     "Elapsed time": "Temps écoulé",
@@ -301,5 +302,8 @@
     "Edit": "Modifier",
     "Apply to all": "Appliquer pour tous",
     "No changes detected": "Aucun changement détecté",
-    ":number selected contract|:number selected contracts":":number contrat sélectionné|:number contrats sélectionnés"
+    ":number selected contract|:number selected contracts":":number contrat sélectionné|:number contrats sélectionnés",
+    "Summary": "Bilan",
+    "Evaluation summary": "Bilan d’évaluation",
+    "Evolution": "Évolution"
 }

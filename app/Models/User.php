@@ -125,10 +125,10 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
 
     /**
      *
-     * @param null $periodId
+     * @param int|null $periodId
      * @return BelongsToMany | Builder
      */
-    public function contractsAsAWorker($periodId=null): BelongsToMany | Builder
+    public function contractsAsAWorker(int $periodId=null): BelongsToMany | Builder
     {
         $groupMember = $this->groupMember($periodId);
         if($groupMember===null)
@@ -142,7 +142,7 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
 
     }
 
-    public function joinGroup($periodId,string $groupName,int $year =null): GroupMember
+    public function joinGroup(int $periodId,string $groupName,int $year =null): GroupMember
     {
         $periodId = $periodId??AcademicPeriod::current();
 
@@ -176,7 +176,7 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
             ]);
     }
 
-    public function groupMembersForPeriod($periodId=null): HasMany
+    public function groupMembersForPeriod(int $periodId=null): HasMany
     {
         // PERF COMMENT
         // After some basic tests, it’s not obvious if eloquent whereHas (extensively use SQL exist)
@@ -209,11 +209,14 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
 
     //REMEMBER that GroupMember is mapped as a standard MODEL to be able to use softdelete on it...
     //So we don’t use belongsToMany or hasManyThrough...
-    public function groups($periodId=null):Builder
+    public function groups(int|AcademicPeriod $periodId=null):Builder
     {
         $query = Group::query()->whereHas('groupMembers',fn($q)=>$q->where('user_id','=',$this->id));
         if($periodId!==null)
         {
+            if($periodId instanceof AcademicPeriod){
+                $periodId = $periodId->id;
+            }
             $query->where('academic_period_id','=',$periodId);
         }
         return $query;
@@ -221,7 +224,7 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
 
     //A teacher can have multiple groupNames for a given period...
     //Students should’nt have
-    public function groupNames($periodId=null) : Builder
+    public function groupNames(int|AcademicPeriod $periodId=null) : Builder
     {
         return GroupName::distinct()->select('name')
             ->whereIn('id',$this->groups($periodId)->pluck('group_name_id'));
@@ -238,7 +241,7 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
     }
 
 
-    public function getJobDefinitionsWithActiveContracts($academicPeriodId): \Illuminate\Database\Eloquent\Collection
+    public function getJobDefinitionsWithActiveContracts(int $academicPeriodId): \Illuminate\Database\Eloquent\Collection
     {
         //TODO switch to polymorphic http://novate.co.uk/using-laravel-polymorphic-relationships-for-different-user-profiles/
         //OR https://github.com/calebporzio/parental
@@ -299,5 +302,4 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
         ];
 
     }
-
 }

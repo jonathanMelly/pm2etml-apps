@@ -22,13 +22,12 @@ mix
         require('autoprefixer'),
     ])
 
-    .sass('resources/sass/app.scss', 'public/css');
+    .sass('resources/sass/app.scss', 'public/css')
 
 //custom js
-mix.copyWatched('resources/js/helper.js','public/js');
+    .copyWatched('resources/js/helper.js','public/js')
 
 //dropzone
-mix
     //.copyWatched('node_modules/dropzone/dist/basic.css', 'public/css/')
     //.copyWatched('node_modules/dropzone/dist/basic.css.map', 'public/css/')
 
@@ -37,3 +36,7 @@ mix
 
     .copyWatched('node_modules/dropzone/dist/dropzone-min.js', 'public/js/')
     .copyWatched('node_modules/dropzone/dist/dropzone-min.js.map', 'public/js/')
+
+//echarts
+    .copyWatched('node_modules/echarts/dist/*.min.js', 'public/js/',{ base: 'node_modules/echarts/dist' })
+

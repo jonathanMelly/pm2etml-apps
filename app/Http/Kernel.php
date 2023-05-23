@@ -2,7 +2,9 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\AcademicPeriodFilter;
 use App\Http\Middleware\Theme;
+use App\Http\Middleware\TimeUnitFilter;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -44,6 +46,8 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             Theme::class,//theme switcher
+            AcademicPeriodFilter::class,//sets current working periodId
+            TimeUnitFilter::class,//sets default timeunit
         ],
 
         'api' => [

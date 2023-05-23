@@ -47,7 +47,7 @@
                             <li class="disabled">
                                 <div class="!text-opacity-75 whitespace-nowrap">
                                     <i class="fa-solid fa-people-group"></i>
-                                    {{Auth::user()->getGroupNames(printable:true)}}
+                                    {{Auth::user()->getGroupNames(request()->get("academicPeriodId"),printable:true)}}
                                 </div>
                             </li>
                         @endif

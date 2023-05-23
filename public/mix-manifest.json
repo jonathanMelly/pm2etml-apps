@@ -5,5 +5,9 @@
     "/css/dropzone.css.map": "/css/dropzone.css.map",
     "/css/dropzone.css": "/css/dropzone.css",
     "/js/dropzone-min.js": "/js/dropzone-min.js",
-    "/js/dropzone-min.js.map": "/js/dropzone-min.js.map"
+    "/js/dropzone-min.js.map": "/js/dropzone-min.js.map",
+    "/js/echarts.common.min.js": "/js/echarts.common.min.js",
+    "/js/echarts.esm.min.js": "/js/echarts.esm.min.js",
+    "/js/echarts.min.js": "/js/echarts.min.js",
+    "/js/echarts.simple.min.js": "/js/echarts.simple.min.js"
 }

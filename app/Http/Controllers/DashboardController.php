@@ -3,9 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Constants\RoleName;
-use App\Models\AcademicPeriod;
-use App\Models\Contract;
-use App\Models\JobDefinition;
+use App\Services\SummariesService;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -16,26 +14,29 @@ class DashboardController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function __invoke(Request $request)
+    public function __invoke(Request $request, SummariesService $statsService)
     {
 
+        $view = view('dashboard');
         $user = auth()->user();
 
-        $view = view('dashboard');
-
-        if($user->hasAnyRole(RoleName::TEACHER,RoleName::STUDENT))
+        if($user->hasAnyRole(RoleName::TEACHER,RoleName::STUDENT,RoleName::PRINCIPAL,RoleName::DEAN))
         {
-            //Client
+            $contracts =null;
+            $jobs=null;
+
+            //Teacher
             if($user->hasRole(RoleName::TEACHER))
             {
+                //Get jobs as a client
+                $jobs = $user->getJobDefinitionsWithActiveContracts($request->get("academicPeriodId"));
 
-                $jobs = $user->getJobDefinitionsWithActiveContracts(AcademicPeriod::current());
-
-                return $view->with(compact('jobs'));
+                $result = $view->with(compact('jobs'));
             }
             else
-            //Workers
+            //Students
             {
+                //Get jobs as Workers
                 $query = $user->contractsAsAWorker()
                     ->with('jobDefinition') //eager load definitions as needed on UI
                     ->with('clients') //eager load clients as needed on UI
@@ -45,15 +46,22 @@ class DashboardController extends Controller
                     ->orderByDesc('start');
 
                 $contracts = $query->get();
-
-                return $view->with(compact('contracts'));
+                $result = $view->with(compact('contracts'));
             }
 
+            //Append evaluations summary
+            $evaluationsSummaryJsObject = $statsService->getEvaluationsSummary(
+                $user,
+                $request->get("academicPeriodId"),
+                $request->get("timeUnit")
+            );
+
+            return  $result->with(compact('evaluationsSummaryJsObject'));
 
         }
         else
         {
-            return $view;
+            abort(404,"Missing required role");
         }
 
     }
