@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\SwissFrenchDateFormat;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Période scolaire (année.
@@ -41,12 +43,15 @@ class AcademicPeriod extends Model
             $today = today(); //don’t try with DB:raw(now()) as it doesn’t work on sqlite used for faster testing...
             $builder = self::forDate($today);
 
-            if($idOnly)
-            {
-                return $builder->firstOrFail(['id'])['id'];
+            if($builder->exists()){
+                /* @var $period AcademicPeriod */
+                $period = $builder->first();
+                return $idOnly?$period->id:$period;
             }
 
-            return $builder->firstOrFail();
+            Log::warning('Missing period in db for '.$today->format(SwissFrenchDateFormat::DATE));
+            return -1;
+
         });
 
     }
