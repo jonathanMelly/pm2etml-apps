@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 
 class Theme
 {
+
+    const DARK_THEMES=['dark','halloween','forest','black','dracula','night','coffee','luxury'];
+
     /**
      * Handle an incoming request.
      *
@@ -81,5 +84,10 @@ class Theme
             return 'lemonade';
         }
         return 'autumn';
+    }
+
+    public static function isDark(string $theme): bool
+    {
+        return in_array(strtolower($theme),self::DARK_THEMES);
     }
 }

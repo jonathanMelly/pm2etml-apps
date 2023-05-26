@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Constants\RoleName;
+use App\DateFormat;
 use App\Enums\RequiredTimeUnit;
+use App\Models\AcademicPeriod;
 use App\Models\Contract;
 use App\Models\User;
 use App\Models\WorkerContract;
@@ -11,12 +13,6 @@ use App\Models\WorkerContract;
 class SummariesService
 {
     public function getEvaluationsSummary(User $user,int $academicPeriodId,int $_timeUnit):string{
-
-        //TODO principal and dean and maitre de classe
-        //Prof normal: voit la synthèse des contrats pour lesquels il a été client
-        //Eleve : voit la synthèse des projets terminés ?
-        //Maitre de classe: voit la synthèse des projets pour lesquels il est client + sa classe
-        //Principal,dean: voit tout
 
         $seriesData=[];
         $timeUnit = RequiredTimeUnit::from($_timeUnit);
@@ -26,22 +22,36 @@ class SummariesService
 
             $wContractsBaseQuery = WorkerContract::where('group_member_id','=',$groupMember->id);
 
-        }else if($user->hasRole(RoleName::TEACHER)){
+        }else if($user->hasAnyRole(RoleName::TEACHER,RoleName::ADMIN)){
             //Prof de classe
             $handledGroups = $user->getGroupNames($academicPeriodId,false);
 
             $wContractsBaseQuery =
-                WorkerContract::
-                whereHas('groupMember.group.groupName',fn($q)=>$q->whereIn('name',$handledGroups))
-                //whereRelation('groupMember.group.groupName','name','in',$handledGroups)
-                    ->whereRelation('groupMember.group.academicPeriod','id','=',$academicPeriodId);
+                WorkerContract::query();
 
-            //maitre principal et doyen ?
+            //Dean and principal gets all info
+            if(!$user->hasAnyRole(RoleName::PRINCIPAL,RoleName::DEAN,RoleName::ADMIN))
+            {
+
+                $wContractsBaseQuery->where(function ($query) use($handledGroups,$user){
+
+                    return $query
+                        // Class teacher
+                        ->whereHas('groupMember.group.groupName',fn($q)=>$q->whereIn('name',$handledGroups))
+
+                        //Project manager (client)
+                        ->orWhereHas('contract.clients.groupMembers.user',fn($q)=>$q->where('id','=',$user->id));
+                });
+            }
+
+            $wContractsBaseQuery->whereRelation('groupMember.group.academicPeriod','id','=',$academicPeriodId);
+
         }
 
         if(isset($wContractsBaseQuery)){
             $wContracts = $wContractsBaseQuery
                 ->with('contract.jobDefinition')
+
 
                 ->orderBy('group_member_id')
                 ->orderBy('success_date')
@@ -51,9 +61,45 @@ class SummariesService
             $seriesData = array_merge($seriesData, $this->buildSeriesData($wContracts, $timeUnit));
         }
 
-        return json_encode([
-            "studentSeries"=>$seriesData,
-        ]);
+        $period = AcademicPeriod::whereId($academicPeriodId)->firstOrFail();
+
+        $startZoom = now()->addMonth(-3);
+        if($startZoom->isBefore($period->start)){
+            $startZoom=$period->start;
+        }
+
+        /* dummy data for fast testing
+        for ($i=0;$i<3;$i++)
+        {
+
+            for($j=0;$j<16;$j++)
+            {
+                $seriesData["fin$i"]["boba".$j][]=["2023-05-".($j+1), $j, 10, 10, 01, 10, 'bob','max'];
+            }
+
+        }
+        */
+
+        $seriesDataCol = collect($seriesData);
+        //$seriesDataCol->groupBy();
+
+
+        if(sizeof($seriesData)>0){
+            return json_encode([
+                "evaluations"=>$seriesData,
+                "summaries"=>"TODO",
+                "datesWindow"=>[
+                    $period->start->format(DateFormat::ECHARTS_FORMAT),
+                    $period->end->format(DateFormat::ECHARTS_FORMAT),
+                    $startZoom->format(DateFormat::ECHARTS_FORMAT),
+                    now()->addDay(5)->format(DateFormat::ECHARTS_FORMAT)
+                ],
+                "groupsCount"=>count($seriesData)
+            ]);
+        }
+        return "{}";
+
+
 
     }
 
@@ -76,7 +122,9 @@ class SummariesService
 
             if ($wContract->alreadyEvaluated()) {
 
-                $workerName = $wContract->groupMember->user->getFirstnameL();
+                $groupMember = $wContract->groupMember;
+                $worker = $groupMember->user;
+                $workerName = $worker->getFirstnameL();
                 //Worker switch, reset accumulators
                 //[for perf reasons, all data is fetched with 1 request with all contracts sorted by userid...]
                 if($workerName!=$previousWorkerName){
@@ -85,6 +133,7 @@ class SummariesService
                     $totalSuccessTime=0;
                 }
 
+                $group = $groupMember->group->groupName->name;
                 $success = $wContract->success;
                 $project = $contract->jobDefinition->title;
                 $date = $wContract->success_date;
@@ -95,13 +144,13 @@ class SummariesService
                 $totalTime += $time;
                 $totalSuccessTime += $successTime;
 
-                $formattedDate = $date->format("Y-m-d");
+                $formattedDate = $date->format("Y-m-d h:i");
                 $percentage = round($totalSuccessTime / $totalTime * 100);
 
                 $clients = $contract->clients->transform(fn($client)=>$client->getFirstnameL())->implode(',');
 
                 //ATTENTION: for echarts series format (as currently used), first 2 infos are X and Y ...
-                $seriesData[$workerName][] = [$formattedDate, $percentage, $successTime, $time, $totalSuccessTime, $totalTime, $project,$clients];
+                $seriesData[$group][$workerName][] = [$formattedDate, $percentage, $successTime, $time, $totalSuccessTime, $totalTime, $project,$clients];
             }
         }
 

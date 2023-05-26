@@ -20,7 +20,7 @@ class DashboardController extends Controller
         $view = view('dashboard');
         $user = auth()->user();
 
-        if($user->hasAnyRole(RoleName::TEACHER,RoleName::STUDENT,RoleName::PRINCIPAL,RoleName::DEAN))
+        if($user->hasAnyRole(RoleName::TEACHER,RoleName::STUDENT,RoleName::PRINCIPAL,RoleName::DEAN,RoleName::ADMIN))
         {
             $contracts =null;
             $jobs=null;
@@ -61,7 +61,7 @@ class DashboardController extends Controller
         }
         else
         {
-            abort(404,"Missing required role");
+            abort(403,"Missing required role");
         }
 
     }
