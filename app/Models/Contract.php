@@ -68,7 +68,7 @@ class Contract extends Model
 
     public function jobDefinition(): BelongsTo
     {
-        return $this->belongsTo(JobDefinition::class);
+        return $this->belongsTo(JobDefinition::class)->withTrashed();
     }
 
     #[ArrayShape(['percentage' => "float|int", 'remainingDays' => "int"])] public function getProgress(): array
