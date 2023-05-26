@@ -9,9 +9,13 @@ use App\Models\AcademicPeriod;
 use App\Models\Contract;
 use App\Models\User;
 use App\Models\WorkerContract;
+use Illuminate\Support\Collection;
+use function GuzzleHttp\Promise\all;
 
 class SummariesService
 {
+    const SUCCESS_REQUIREMENT=80/100;
+
     public function getEvaluationsSummary(User $user,int $academicPeriodId,int $_timeUnit):string{
 
         $seriesData=[];
@@ -80,21 +84,71 @@ class SummariesService
         }
         */
 
-        $seriesDataCol = collect($seriesData);
+
+        $groupsSummary=[];
+        $studentsSummary=[];
+        collect($seriesData)->each(function($groupData,$groupName) use (&$studentsSummary, &$groupsSummary){
+            $groupSuccessCount=0;
+            $groupFailureCount=0;
+            $groupSuccessDetails=[];
+            $groupFailureDetails=[];
+
+            collect($groupData)->each(function($studentData,$studentName) use(&$studentsSummary,&$groupSuccessCount,&$groupFailureCount,$groupsSummary,&$groupSuccessDetails,&$groupFailureDetails){
+
+                [$studentSuccessTime,$studentTotalTime,$studentSuccessProjects, $studentFailureProjects] = collect($studentData)->reduceSpread(
+                    fn(int $successTime,int $totalTime,array $studentSuccessProjects,array $studentFailureProjects,$pointData)=>
+                        [
+                            $successTime+$pointData[4],
+                            $totalTime+$pointData[5],
+                            $successTime==0?$studentSuccessProjects:array_merge($studentSuccessProjects,[$pointData[6]]),
+                            $successTime>0?$studentFailureProjects:array_merge($studentFailureProjects,[$pointData[6]]),
+                        ],0,0,[],[]);
+
+                $studentsSummary[$studentName]=[$studentSuccessTime,$studentSuccessProjects,$studentTotalTime,$studentFailureProjects];
+
+                $studentSuccess = $studentSuccessTime/$studentTotalTime>self::SUCCESS_REQUIREMENT;
+
+                if($studentSuccess){
+                    $groupSuccessCount++;
+                    $groupSuccessDetails[]=$studentName;
+                }else{
+                    $groupFailureCount++;
+                    $groupFailureDetails[]=$studentName;
+                }
+
+            });
+
+            $groupsSummary[$groupName]=[$groupSuccessCount,$groupSuccessDetails,$groupFailureCount,$groupFailureDetails];
+
+        });
+
         //$seriesDataCol->groupBy();
 
+        //Compute students stat
+        //$studentsSummary=$seriesDataCol->flatMap()
+        //$flat = $seriesDataCol->map(function (string $group,int $groupKey){
+           //collect($)
+        //});
+
+        //Compute groups stats
+
+        //Compute projects stats
+        //Additionne les pourcentages par projet
+        //collect($data)->flatten(2)->groupBy(fn($eval)=>$eval[2])->map(fn($project)=>$project->reduce(fn($carry,$eval2)=>$carry+$eval2[1],0))
+
+        //collect($data)->flatten(2)->groupBy(fn($eval)=>$eval[2])->map(fn($project)=>$project->reduce(fn($carry,$eval2)=>[$carry[0]+$eval2[1],'bob'.$carry[1]],[0,'max']))
 
         if(sizeof($seriesData)>0){
             return json_encode([
-                "evaluations"=>$seriesData,
-                "summaries"=>"TODO",
-                "datesWindow"=>[
+                'evaluations'=>$seriesData,
+                'summaries'=>['students'=>$studentsSummary,'groups'=>$groupsSummary],
+                'datesWindow'=>[
                     $period->start->format(DateFormat::ECHARTS_FORMAT),
                     $period->end->format(DateFormat::ECHARTS_FORMAT),
                     $startZoom->format(DateFormat::ECHARTS_FORMAT),
                     now()->addDay(5)->format(DateFormat::ECHARTS_FORMAT)
                 ],
-                "groupsCount"=>count($seriesData)
+                'groupsCount'=>count($seriesData)
             ]);
         }
         return "{}";
@@ -151,6 +205,9 @@ class SummariesService
 
                 //ATTENTION: for echarts series format (as currently used), first 2 infos are X and Y ...
                 $seriesData[$group][$workerName][] = [$formattedDate, $percentage, $successTime, $time, $totalSuccessTime, $totalTime, $project,$clients];
+
+                //Idea of evolution for easier data post-processing:
+                // $seriesData[]=['group'=>$group,'worker'=>$workerName,'data'=>[$formattedDate, $percentage, $successTime, $time, $totalSuccessTime, $totalTime, $project,$clients]];
             }
         }
 

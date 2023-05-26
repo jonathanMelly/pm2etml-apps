@@ -55,6 +55,9 @@
     const dataZooms = [];
     let chartsIndex = 0;
 
+    const red='#ec7671';
+    const green='#30cc61';
+
     const chartHeight=287;//in px
 
     groups.forEach((groupName)=>{
@@ -72,11 +75,11 @@
             studentSeriesData.forEach((pointData)=>{
 
                 {{-- success --}}
-                let color = '#30cc61';
+                let color = green;
                 let rotate=0;
                 {{-- win percentage=0 -> FAILURE --}}
                 if(pointData[PI_CURRENT_PERCENTAGE]==0){
-                    color='#ec7671';
+                    color=red;
                     rotate=180;
                 }
 
@@ -152,13 +155,11 @@
             }
         });
 
+        const success=Math.random()>0.5;
         legends.push(
             (students.length<=1)?{show:false}:{
-                data: students,
-                orient:'horizontal',
-                formatter: function (name) {
-                    return 'Legend ' + name;
-                }
+                data: students.map((stud)=>new Object({name:stud,icon: success?'':'triangle',itemStyle:{borderColor:red,borderWidth:success?0:1}})),
+                orient:'horizontal'
             },
         );
         visualMaps.push(
@@ -167,7 +168,7 @@
                     type: 'piecewise', // defined to be continuous visualMap
                     //seriesIndex: 0,
                     dimension:1,
-                    color:['#30cc61','#ec7671'],
+                    color:[green,red],
                     min:0,
                     max:100,
                     show:false
