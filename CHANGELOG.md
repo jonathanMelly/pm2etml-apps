@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.22.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.21.1...v1.22.0) (2023-05-26)
+
+
+### Features
+
+* **mutation:** keep evaluation history upon student migration (min-&gt;cin for instance...) ([6205aa1](https://github.com/jonathanMelly/pm2etml-intranet/commit/6205aa1bdcfc043abe2260ae3a420b7785b746b5))
+* **sso-bridge:** added custom login callback URI ([08df9a2](https://github.com/jonathanMelly/pm2etml-intranet/commit/08df9a2d77f9fe3247b1a914b5ec738df7a052ba)), closes [#72](https://github.com/jonathanMelly/pm2etml-intranet/issues/72)
+* **stat:** all data available for principal and dean ([a70e579](https://github.com/jonathanMelly/pm2etml-intranet/commit/a70e579aafc651a72c8ebc40fe076074b3e62f98))
+* **stat:** show basic eval stats for student and maitre de classe ([78a3c03](https://github.com/jonathanMelly/pm2etml-intranet/commit/78a3c033244a3219a7ea2c5f8934ce35c9937a4c))
+
+
+### Bug Fixes
+
+* **filters:** apply period and timeunit filters only for app (not on guest parts) ([1e62fa8](https://github.com/jonathanMelly/pm2etml-intranet/commit/1e62fa82e5d34190f57dd915aeead04aee7af554))
+* **period:** only show teacher’s groups of current academic period (filter to be added) ([78a3c03](https://github.com/jonathanMelly/pm2etml-intranet/commit/78a3c033244a3219a7ea2c5f8934ce35c9937a4c))
+* **stat:** compute contracts for which project has been retired ([6b31716](https://github.com/jonathanMelly/pm2etml-intranet/commit/6b3171631a776a79b0f1725a348e5e9ffd050006))
+
 ## [1.21.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.21.0...v1.21.1) (2023-04-05)
 
 
