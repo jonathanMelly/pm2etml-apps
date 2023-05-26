@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Route;
 Route::redirect("/","dashboard");
 
 //Authenticated
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth','app'])->group(function () {
 
     Route::get('dashboard',DashboardController::class)->name('dashboard');
 
