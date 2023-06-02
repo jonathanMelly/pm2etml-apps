@@ -305,5 +305,7 @@
     ":number selected contract|:number selected contracts":":number contrat sélectionné|:number contrats sélectionnés",
     "Summary": "Bilan",
     "Evaluation summary": "Bilan d’évaluation",
-    "Evolution": "Évolution"
+    "Evolution": "Évolution",
+    "Success rate": "Taux de réussite",
+    "Current summary": "Bilan à cette date"
 }

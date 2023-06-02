@@ -9,12 +9,19 @@ use App\Models\AcademicPeriod;
 use App\Models\Contract;
 use App\Models\User;
 use App\Models\WorkerContract;
-use Illuminate\Support\Collection;
-use function GuzzleHttp\Promise\all;
 
 class SummariesService
 {
     const SUCCESS_REQUIREMENT=80/100;
+
+    const PI_DATE=0;
+    const PI_PERCENTAGE=1;
+    const PI_SUCCESS_TIME=2;
+    const PI_TIME=3;
+    const PI_ACCUMULATED_SUCCESS_TIME=4;
+    const PI_ACCUMULATED_TIME=5;
+    const PI_PROJECT=6;
+    const PI_CLIENTS=7;
 
     public function getEvaluationsSummary(User $user,int $academicPeriodId,int $_timeUnit):string{
 
@@ -72,39 +79,50 @@ class SummariesService
             $startZoom=$period->start;
         }
 
-        /* dummy data for fast testing
-        for ($i=0;$i<3;$i++)
-        {
+         //dummy data for fast testing
+        if($user->hasRole(RoleName::TEACHER)) {
+            for ($i = 0; $i < 3; $i++) {
+                for ($j = 0; $j < 16; $j++) {
 
-            for($j=0;$j<16;$j++)
-            {
-                $seriesData["fin$i"]["boba".$j][]=["2023-05-".($j+1), $j, 10, 10, 01, 10, 'bob','max'];
+                    $totalSuccess=0;
+                    $totalTime=0;
+                    for($k=0;$k<4;$k++){
+                        $time=random_int(24,60);
+
+                        $success = random_int(0, 1)*$time;
+
+                        $totalTime+=$time;
+                        $totalSuccess+=$success;
+
+                        $seriesData["cid$i"."a"]["eleve-" . $i.$j][] = ["2023-".(3+$k)."-10", $totalSuccess/$totalTime, $success, $time, 01, 10, 'projectx'.$k, 'mark z.'];
+                    }
+
+                }
+
             }
-
         }
-        */
 
 
-        $groupsSummary=[];
-        $studentsSummary=[];
-        collect($seriesData)->each(function($groupData,$groupName) use (&$studentsSummary, &$groupsSummary){
+        //Compute students and group stats
+        $summaries=[];
+        collect($seriesData)->each(function($groupData,$groupName) use (&$summaries){
             $groupSuccessCount=0;
             $groupFailureCount=0;
             $groupSuccessDetails=[];
             $groupFailureDetails=[];
 
-            collect($groupData)->each(function($studentData,$studentName) use(&$studentsSummary,&$groupSuccessCount,&$groupFailureCount,$groupsSummary,&$groupSuccessDetails,&$groupFailureDetails){
+            collect($groupData)->each(function($studentData,$studentName) use(&$summaries,&$groupSuccessCount,&$groupFailureCount,&$groupSuccessDetails,&$groupFailureDetails,$groupName){
 
                 [$studentSuccessTime,$studentTotalTime,$studentSuccessProjects, $studentFailureProjects] = collect($studentData)->reduceSpread(
-                    fn(int $successTime,int $totalTime,array $studentSuccessProjects,array $studentFailureProjects,$pointData)=>
+                    fn(int $totalSuccessTime, int $totalTime, array $studentSuccessProjects, array $studentFailureProjects, $pointData)=>
                         [
-                            $successTime+$pointData[4],
-                            $totalTime+$pointData[5],
-                            $successTime==0?$studentSuccessProjects:array_merge($studentSuccessProjects,[$pointData[6]]),
-                            $successTime>0?$studentFailureProjects:array_merge($studentFailureProjects,[$pointData[6]]),
+                            $totalSuccessTime+$pointData[self::PI_SUCCESS_TIME],
+                            $totalTime+$pointData[self::PI_TIME],
+                            $pointData[self::PI_SUCCESS_TIME]==0?$studentSuccessProjects:array_merge($studentSuccessProjects,[$pointData[self::PI_PROJECT]]),
+                            $pointData[self::PI_SUCCESS_TIME]>0?$studentFailureProjects:array_merge($studentFailureProjects,[$pointData[self::PI_PROJECT]]),
                         ],0,0,[],[]);
 
-                $studentsSummary[$studentName]=[$studentSuccessTime,$studentSuccessProjects,$studentTotalTime,$studentFailureProjects];
+                $summaries[$groupName][$studentName]=[$studentSuccessTime,$studentSuccessProjects,$studentTotalTime-$studentSuccessTime,$studentFailureProjects];
 
                 $studentSuccess = $studentSuccessTime/$studentTotalTime>self::SUCCESS_REQUIREMENT;
 
@@ -118,19 +136,11 @@ class SummariesService
 
             });
 
-            $groupsSummary[$groupName]=[$groupSuccessCount,$groupSuccessDetails,$groupFailureCount,$groupFailureDetails];
+            //Put 'all' at the beginning for easier post processing
+            $summaries[$groupName]=array_merge(['all'=>[$groupSuccessCount,$groupSuccessDetails,$groupFailureCount,$groupFailureDetails]],$summaries[$groupName]);
+            //$summaries[$groupName];
 
         });
-
-        //$seriesDataCol->groupBy();
-
-        //Compute students stat
-        //$studentsSummary=$seriesDataCol->flatMap()
-        //$flat = $seriesDataCol->map(function (string $group,int $groupKey){
-           //collect($)
-        //});
-
-        //Compute groups stats
 
         //Compute projects stats
         //Additionne les pourcentages par projet
@@ -141,7 +151,7 @@ class SummariesService
         if(sizeof($seriesData)>0){
             return json_encode([
                 'evaluations'=>$seriesData,
-                'summaries'=>['students'=>$studentsSummary,'groups'=>$groupsSummary],
+                'summaries'=>$summaries,
                 'datesWindow'=>[
                     $period->start->format(DateFormat::ECHARTS_FORMAT),
                     $period->end->format(DateFormat::ECHARTS_FORMAT),
@@ -166,8 +176,8 @@ class SummariesService
     public function buildSeriesData(\LaravelIdea\Helper\App\Models\_IH_WorkerContract_C|\Illuminate\Database\Eloquent\Collection|array $wContracts, RequiredTimeUnit $timeUnit): array
     {
         $seriesData=[];
-        $totalTime = 0;
-        $totalSuccessTime = 0;
+        $accumulatedTime = 0;
+        $accumulatedSuccessTime = 0;
         $previousWorkerName="";
 
         foreach ($wContracts as /* @var $wContract WorkerContract */ $wContract) {
@@ -183,8 +193,8 @@ class SummariesService
                 //[for perf reasons, all data is fetched with 1 request with all contracts sorted by userid...]
                 if($workerName!=$previousWorkerName){
                     $previousWorkerName=$workerName;
-                    $totalTime=0;
-                    $totalSuccessTime=0;
+                    $accumulatedTime=0;
+                    $accumulatedSuccessTime=0;
                 }
 
                 $group = $groupMember->group->groupName->name;
@@ -195,16 +205,24 @@ class SummariesService
 
                 $successTime = $success ? $time : 0;
 
-                $totalTime += $time;
-                $totalSuccessTime += $successTime;
+                $accumulatedTime += $time;
+                $accumulatedSuccessTime += $successTime;
 
                 $formattedDate = $date->format("Y-m-d h:i");
-                $percentage = round($totalSuccessTime / $totalTime * 100);
+                $percentage = round($accumulatedSuccessTime / $accumulatedTime * 100);
 
                 $clients = $contract->clients->transform(fn($client)=>$client->getFirstnameL())->implode(',');
 
                 //ATTENTION: for echarts series format (as currently used), first 2 infos are X and Y ...
-                $seriesData[$group][$workerName][] = [$formattedDate, $percentage, $successTime, $time, $totalSuccessTime, $totalTime, $project,$clients];
+                $seriesData[$group][$workerName][] = [
+                    self::PI_DATE=> $formattedDate,
+                    self::PI_PERCENTAGE=> $percentage,
+                    self::PI_SUCCESS_TIME => $successTime,
+                    self::PI_TIME=> $time,
+                    self::PI_ACCUMULATED_SUCCESS_TIME=> $accumulatedSuccessTime,
+                    self::PI_ACCUMULATED_TIME => $accumulatedTime,
+                    self::PI_PROJECT => $project,
+                    self::PI_CLIENTS=> $clients];
 
                 //Idea of evolution for easier data post-processing:
                 // $seriesData[]=['group'=>$group,'worker'=>$workerName,'data'=>[$formattedDate, $percentage, $successTime, $time, $totalSuccessTime, $totalTime, $project,$clients]];
