@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.23.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.22.0...v1.23.0) (2023-06-02)
+
+
+### Features
+
+* **stat:** added summary data ([9136ecf](https://github.com/jonathanMelly/pm2etml-intranet/commit/9136ecf0a3f31d7836db4dfbdf8c3d52c42712bd)), closes [#24](https://github.com/jonathanMelly/pm2etml-intranet/issues/24)
+
+
+### Bug Fixes
+
+* **stat:** removed "legend" prefix and fixed missing label on same X multiple Y... ([9136ecf](https://github.com/jonathanMelly/pm2etml-intranet/commit/9136ecf0a3f31d7836db4dfbdf8c3d52c42712bd))
+
 ## [1.22.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.21.1...v1.22.0) (2023-05-26)
 
 
