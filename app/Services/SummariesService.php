@@ -80,6 +80,7 @@ class SummariesService
         }
 
          //dummy data for fast testing
+        /*
         if($user->hasRole(RoleName::TEACHER)) {
             for ($i = 0; $i < 3; $i++) {
                 for ($j = 0; $j < 16; $j++) {
@@ -101,6 +102,7 @@ class SummariesService
 
             }
         }
+        */
 
 
         //Compute students and group stats

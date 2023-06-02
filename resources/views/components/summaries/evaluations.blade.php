@@ -437,7 +437,7 @@
     //Create chart
     let summariesChart = echarts.init(document.getElementById('summariesCharts'), theme, {
         //width: '100%',
-        height: groupHeight * groupsForSummary.length
+        height: groupHeight * groupsForSummary.length + groupHeight/3
     });
     summariesChart.setOption(summariesChartOption);
 
