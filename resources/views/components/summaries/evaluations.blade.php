@@ -9,6 +9,10 @@
 <div id="evolutionCharts" class="w-[100%]">
 </div>
 <script type="text/javascript">
+    String.prototype.limit = function(max) {
+        const after="...";
+        return this.length>max-after.length ? this.substring(0, max-after.length) + after  : this.toString();
+    }
 
     const theme = '{{\App\Http\Middleware\Theme::isDark(session('theme'))?'dark':'light'}}';
 
@@ -63,7 +67,7 @@
                 height=groupHeight;
                 width=studentWidth;
 
-                title=student;
+                title=student.limit(10);
 
                 studentsCount++;
 
@@ -320,7 +324,8 @@
         legends.push(
             (students.length<=1)?{show:false}:{
                 data: students.map((stud)=>new Object({name:stud,icon: success?'':'triangle',itemStyle:{borderColor:red,borderWidth:success?0:1}})),
-                orient:'horizontal'
+                orient:'horizontal',
+                formatter: function(name){return name.limit(22);}
             },
         );
         visualMaps.push(
@@ -342,7 +347,7 @@
 
 
     const chartCounts = chartsIndex+1;
-    const offsetForTitle = 10;
+    const offsetForMainTitle = 10;
     const spaceBetweenCharts = 7;
     const availableForAllCharts = 100-(spaceBetweenCharts*chartCounts-1);
     const singleHeight = availableForAllCharts/chartCounts;
@@ -354,12 +359,12 @@
         grid.width='90%';
 
         grid.height= `${singleHeight}%`;
-        grid.top = `${(idx*(singleHeight+spaceBetweenCharts))+offsetForTitle}%`;
+        grid.top = `${(idx*(singleHeight+spaceBetweenCharts))+offsetForMainTitle}%`;
 
         titles[idx].left = `${parseFloat(grid.left)+parseFloat(grid.width)/2}%`;
         titles[idx].top = `${parseFloat(grid.top)-4}%`;
 
-        legends[idx].top = `${parseFloat(grid.top)-spaceBetweenCharts/3}%`;
+        legends[idx].top = `${parseFloat(grid.top)-spaceBetweenCharts/2.5}%`;
         legends[idx].width = `${parseFloat(grid.width)}%`;
         legends[idx].left = `${parseFloat(grid.left)}%`;
         //legends[idx].left = `${parseFloat(grid.left)+parseFloat(grid.width)+2}%`;

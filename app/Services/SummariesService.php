@@ -81,7 +81,7 @@ class SummariesService
 
          //dummy data for fast testing
         /*
-        if($user->hasRole(RoleName::TEACHER)) {
+        if(app()->environment('local') && $user->hasRole(RoleName::TEACHER)) {
             for ($i = 0; $i < 3; $i++) {
                 for ($j = 0; $j < 16; $j++) {
 
@@ -95,7 +95,7 @@ class SummariesService
                         $totalTime+=$time;
                         $totalSuccess+=$success;
 
-                        $seriesData["cid$i"."a"]["eleve-" . $i.$j][] = ["2023-".(3+$k)."-10", $totalSuccess/$totalTime, $success, $time, 01, 10, 'projectx'.$k, 'mark z.'];
+                        $seriesData["cid$i"."a"]["prenom nome1456789212345678" . $i.$j][] = ["2023-".(3+$k)."-10", $totalSuccess/$totalTime, $success, $time, 01, 10, 'projectx'.$k, 'mark z.'];
                     }
 
                 }
@@ -103,6 +103,7 @@ class SummariesService
             }
         }
         */
+
 
 
         //Compute students and group stats
