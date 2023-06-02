@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.23.2](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.23.1...v1.23.2) (2023-06-02)
+
+
+### Bug Fixes
+
+* **stat:** name length ([7d2cac8](https://github.com/jonathanMelly/pm2etml-intranet/commit/7d2cac8334105a16b09de1e1f94212f661b43ae2))
+
 ## [1.23.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.23.0...v1.23.1) (2023-06-02)
 
 
