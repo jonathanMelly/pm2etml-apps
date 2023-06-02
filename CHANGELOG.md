@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.23.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.23.0...v1.23.1) (2023-06-02)
+
+
+### Bug Fixes
+
+* **stat:** bigger v space for summaries ([56abd85](https://github.com/jonathanMelly/pm2etml-intranet/commit/56abd859e120101022b1d2b7bd30632694941457))
+* **stat:** point color of eval is based on success, not overall percentage until now... ([1112c71](https://github.com/jonathanMelly/pm2etml-intranet/commit/1112c71da5f94f22cecc215f7a93f44ce694c027))
+* **stat:** removes dummy data ([56abd85](https://github.com/jonathanMelly/pm2etml-intranet/commit/56abd859e120101022b1d2b7bd30632694941457))
+
 ## [1.23.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.22.0...v1.23.0) (2023-06-02)
 
 
