@@ -239,7 +239,7 @@
                 let color = green;
                 let rotate=0;
                 {{-- win percentage=0 -> FAILURE --}}
-                if(pointData[PI_CURRENT_PERCENTAGE]==0){
+                if(pointData[PI_SUCCESS_TIME]==0){
                     color=red;
                     rotate=180;
                 }
