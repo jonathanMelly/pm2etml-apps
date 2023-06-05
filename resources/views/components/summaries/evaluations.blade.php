@@ -4,7 +4,7 @@
     @endonce
 @endpush
 
-<div id="summariesCharts" class="w-[100%]">
+<div id="summariesCharts" class="w-[100%] overflow-x-auto">
 </div>
 <div id="evolutionCharts" class="w-[100%]">
 </div>
@@ -325,7 +325,7 @@
             (students.length<=1)?{show:false}:{
                 data: students.map((stud)=>new Object({name:stud,icon: success?'':'triangle',itemStyle:{borderColor:red,borderWidth:success?0:1}})),
                 orient:'horizontal',
-                formatter: function(name){return name.limit(22);}
+                formatter: function(name){return name.limit(15);}
             },
         );
         visualMaps.push(
@@ -415,7 +415,7 @@
 
                 });
 
-                return globalInfo+'<br/>ok:'+compiledInfos["success"].join(',')+'<br/>ko:'+compiledInfos["failure"];
+                return globalInfo+'<br/>ok:'+compiledInfos["success"].join('<br />')+'<br/><br/>ko:'+compiledInfos["failure"].join('<br />');
 
             },
 
@@ -426,7 +426,7 @@
                 xAxisIndex:grids.map((_,i)=>i),
                 startValue: datesWindow[2],
                 endValue: datesWindow[3],
-                top:parseFloat(grids[grids.length-1].top)+parseFloat(grids[grids.length-1].height)+7+'%'
+                top:parseFloat(grids[grids.length-1].top)+parseFloat(grids[grids.length-1].height)+4+(grids.length==1?10:0)+'%'
             },
 
     };
@@ -442,7 +442,7 @@
     //Create chart
     let summariesChart = echarts.init(document.getElementById('summariesCharts'), theme, {
         //width: '100%',
-        height: groupHeight * groupsForSummary.length + groupHeight/3
+        height: (groupHeight*(groupsForSummary.length==1?1:1.35)) * groupsForSummary.length
     });
     summariesChart.setOption(summariesChartOption);
 

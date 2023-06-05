@@ -82,7 +82,7 @@ class SummariesService
          //dummy data for fast testing
         /*
         if(app()->environment('local') && $user->hasRole(RoleName::TEACHER)) {
-            for ($i = 0; $i < 3; $i++) {
+            for ($i = 0; $i < 4; $i++) {
                 for ($j = 0; $j < 16; $j++) {
 
                     $totalSuccess=0;
