@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.23.3](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.23.2...v1.23.3) (2023-06-05)
+
+
+### Bug Fixes
+
+* **stat:** missing group, details on line-&gt;on column.... ([c81b45d](https://github.com/jonathanMelly/pm2etml-intranet/commit/c81b45d96f6e3d8550683cb7ccfea4207319f7d8))
+
 ## [1.23.2](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.23.1...v1.23.2) (2023-06-02)
 
 
