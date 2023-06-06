@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Kirschbaum\PowerJoins\PowerJoins;
 
 class WorkerContract extends Pivot
 {
+
+    use PowerJoins;
+
     // Cannot use Enum... TODO Transform Enum to CONST !!!!
     public $table='contract_worker';//\App\Enums\CustomPivotTableNames::CONTRACT_GROUP_MEMBER->value;
 

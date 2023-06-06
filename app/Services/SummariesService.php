@@ -64,7 +64,8 @@ class SummariesService
                 ->with('contract.jobDefinition')
 
 
-                ->orderBy('group_member_id')
+                ->orderByPowerJoins('groupMember.group.groupName.year')
+                ->orderByPowerJoins('groupMember.group.groupName.name')
                 ->orderBy('success_date')
 
                 ->get();
@@ -150,7 +151,6 @@ class SummariesService
         //collect($data)->flatten(2)->groupBy(fn($eval)=>$eval[2])->map(fn($project)=>$project->reduce(fn($carry,$eval2)=>$carry+$eval2[1],0))
 
         //collect($data)->flatten(2)->groupBy(fn($eval)=>$eval[2])->map(fn($project)=>$project->reduce(fn($carry,$eval2)=>[$carry[0]+$eval2[1],'bob'.$carry[1]],[0,'max']))
-
         if(sizeof($seriesData)>0){
             return json_encode([
                 'evaluations'=>$seriesData,
