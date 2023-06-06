@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.23.4](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.23.3...v1.23.4) (2023-06-06)
+
+
+### Bug Fixes
+
+* **stat:** still missing info in some cases and enhanced UI ([c3e6b6b](https://github.com/jonathanMelly/pm2etml-intranet/commit/c3e6b6bdae5251304907742c3978e16c62d02bba))
+* **stat:** triangle for failure ([c3e6b6b](https://github.com/jonathanMelly/pm2etml-intranet/commit/c3e6b6bdae5251304907742c3978e16c62d02bba))
+
 ## [1.23.3](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.23.2...v1.23.3) (2023-06-05)
 
 
