@@ -6,7 +6,6 @@
 ### Bug Fixes
 
 * **users:** notify group change as a change ;-) ([8fcc379](https://github.com/jonathanMelly/pm2etml-intranet/commit/8fcc37946a5b73c1e47b19da5b1444d99f81fe0b))
-* **users:** notify group change as a change ;-) (realy) ([d96c99d](https://github.com/jonathanMelly/pm2etml-intranet/commit/d96c99d087128caf12027eecf59e7f5e3a18e0eb))
 
 ## [1.23.4](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.23.3...v1.23.4) (2023-06-06)
 
