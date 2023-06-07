@@ -177,7 +177,7 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
                         $currentGroupMember->save();
 
                         $reportInfo .= '[groups/'.$year.': '.$currentGroupName.' => '.$newGroupName.']';
-                        $isUpdate=true;
+                        $somethingHasBeenUpdated=true;
                     }
                     //Else Group is already good, we do nothing ;-)
                 } else {
