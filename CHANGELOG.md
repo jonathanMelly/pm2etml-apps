@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.25.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.24.0...v1.25.0) (2023-06-26)
+
+
+### Features
+
+* **laravel:** upgrade to Laravel 10 ([1fc65a1](https://github.com/jonathanMelly/pm2etml-intranet/commit/1fc65a1655dfab45042d9880f319c1988f60f27d))
+
 ## [1.24.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.23.5...v1.24.0) (2023-06-26)
 
 
