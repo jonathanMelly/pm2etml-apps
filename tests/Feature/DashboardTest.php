@@ -67,7 +67,7 @@ test('Eleve cannot see FAQ tool/url shortener but git', function () {
     $response->assertSeeText("git.section-inf.ch");
 });
 
-test('Student see his contracts as a worker', function () {
+test('Student see his contracts as a worker and can download summary', function () {
     //Given
     $eleve = User::role(\App\Constants\RoleName::STUDENT)->firstOrFail();
     $this->be($eleve);
@@ -76,15 +76,33 @@ test('Student see his contracts as a worker', function () {
 
     $contracts = $eleve->contractsAsAWorker()->get();
     \PHPUnit\Framework\assertGreaterThan(0,$contracts->count());
+    \PHPUnit\Framework\assertGreaterThan(0,$contracts->filter(fn($c)=>
+    $c->workerContract($eleve->groupMember()->firstOrFail())->firstOrFail()->alreadyEvaluated())->count());
 
     //When
+    /* @var $response TestResponse */
     $response = $this->get('/dashboard');
 
     //Then
     foreach ($contracts as $contract)
     {
         $response->assertSeeText(Str::words($contract->jobDefinition->title,3));
+        if($contract->workerContract($eleve->groupMember()->firstOrFail())->firstOrFail()->alreadyEvaluated())
+        {
+            $response->assertSeeText("Bilan d’évaluation");
+        }
     }
+
+    //And when download
+    /* @var $response TestResponse */
+    $response = $this->get(route('evaluation-export'));
+
+    //then
+    $response->assertStatus(200);
+    \PHPUnit\Framework\assertStringStartsWith(
+        'attachment; filename=inf-',$response->baseResponse->headers->get('content-disposition'));
+    \PHPUnit\Framework\assertStringEndsWith(
+        '.xlsx',$response->baseResponse->headers->get('content-disposition'));
 
 });
 
