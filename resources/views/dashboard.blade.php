@@ -41,8 +41,15 @@
         @if($evaluationsSummaryJsObject!="{}")
             <div class="bg-base-200 bg-opacity-60 overflow-hidden shadow-sm sm:rounded-lg border-secondary border-2 border-opacity-20 hover:border-opacity-30">
                 <div class="p-6">
-                    <div class="prose pb-2 -p-6">
-                        <h1 class="text-base-content">{{__('Evaluation summary')}}</h1>
+                    <div class="flex">
+                        <div class="prose pb-2 -p-6">
+                            <h1 class="text-base-content">{{__('Evaluation summary')}}</h1>
+                        </div>
+                        <div class="ml-2">
+                            <a class="btn btn-info btn-sm" target="_blank" href="{{route('evaluation-export')}}" >
+                                <i class="fa-solid fa-download mr-1"></i>{{__('Export')}}
+                            </a>
+                        </div>
                     </div>
                     <div>
                         <x-summaries.evaluations :summary="$evaluationsSummaryJsObject"></x-summaries.evaluations>

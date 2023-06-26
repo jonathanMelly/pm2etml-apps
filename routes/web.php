@@ -74,10 +74,12 @@ Route::middleware(['auth','app'])->group(function () {
 
     //AUTH RELATED
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
-        ->name('password.confirm');
-    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
+        ->name('password.confirm'); //currently disabled (sso)
+    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']); // disabled (sso)
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+
+    Route::get('evaluation-export',\App\Http\Controllers\EvaluationExportController::class)->name('evaluation-export');
 });
 
 //LOGIN

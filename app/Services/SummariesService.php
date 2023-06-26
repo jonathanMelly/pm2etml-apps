@@ -9,13 +9,16 @@ use App\Models\AcademicPeriod;
 use App\Models\Contract;
 use App\Models\User;
 use App\Models\WorkerContract;
+use Illuminate\Support\Collection;
+use LaravelIdea\Helper\App\Models\_IH_WorkerContract_C;
 
 class SummariesService
 {
     const SUCCESS_REQUIREMENT=80/100;
+    const SUCCESS_REQUIREMENT_IN_PERCENTAGE = self::SUCCESS_REQUIREMENT*100;
 
     const PI_DATE=0;
-    const PI_PERCENTAGE=1;
+    const PI_CURRENT_PERCENTAGE=1;
     const PI_SUCCESS_TIME=2;
     const PI_TIME=3;
     const PI_ACCUMULATED_SUCCESS_TIME=4;
@@ -23,7 +26,14 @@ class SummariesService
     const PI_PROJECT=6;
     const PI_CLIENTS=7;
 
-    public function getEvaluationsSummary(User $user,int $academicPeriodId,int $_timeUnit):string{
+    /**
+     * @param User $user
+     * @param int $academicPeriodId
+     * @param int $_timeUnit
+     * @param bool $json
+     * @return string | Collection data for chart OR raw collection
+     */
+    public function getEvaluationsSummary(User $user, int $academicPeriodId, int $_timeUnit, bool $json=true):string | Collection{
 
         $seriesData=[];
         $timeUnit = RequiredTimeUnit::from($_timeUnit);
@@ -63,14 +73,15 @@ class SummariesService
             $wContracts = $wContractsBaseQuery
                 ->with('contract.jobDefinition')
 
-
                 ->orderByPowerJoins('groupMember.group.groupName.year')
                 ->orderByPowerJoins('groupMember.group.groupName.name')
+                ->orderByPowerJoins('groupMember.user.lastname')
+                ->orderByPowerJoins('groupMember.user.firstname')
                 ->orderBy('success_date')
 
                 ->get();
 
-            $seriesData = array_merge($seriesData, $this->buildSeriesData($wContracts, $timeUnit));
+            $seriesData = array_merge($seriesData, $this->buildSeriesData($wContracts, $timeUnit,!$json));
         }
 
         $period = AcademicPeriod::whereId($academicPeriodId)->firstOrFail();
@@ -151,32 +162,39 @@ class SummariesService
         //collect($data)->flatten(2)->groupBy(fn($eval)=>$eval[2])->map(fn($project)=>$project->reduce(fn($carry,$eval2)=>$carry+$eval2[1],0))
 
         //collect($data)->flatten(2)->groupBy(fn($eval)=>$eval[2])->map(fn($project)=>$project->reduce(fn($carry,$eval2)=>[$carry[0]+$eval2[1],'bob'.$carry[1]],[0,'max']))
-        if(sizeof($seriesData)>0){
-            return json_encode([
-                'evaluations'=>$seriesData,
-                'summaries'=>$summaries,
-                'datesWindow'=>[
-                    $period->start->format(DateFormat::ECHARTS_FORMAT),
-                    $period->end->format(DateFormat::ECHARTS_FORMAT),
-                    $startZoom->format(DateFormat::ECHARTS_FORMAT),
-                    now()->addDay(5)->format(DateFormat::ECHARTS_FORMAT)
-                ],
-                'groupsCount'=>count($seriesData)
-            ]);
+        if($json){
+            if(sizeof($seriesData)>0){
+                return json_encode([
+                    'evaluations'=>$seriesData,
+                    'summaries'=>$summaries,
+                    'datesWindow'=>[
+                        $period->start->format(DateFormat::ECHARTS_FORMAT),
+                        $period->end->format(DateFormat::ECHARTS_FORMAT),
+                        $startZoom->format(DateFormat::ECHARTS_FORMAT),
+                        now()->addDay(5)->format(DateFormat::ECHARTS_FORMAT)
+                    ],
+                    'groupsCount'=>count($seriesData)
+                ]);
+            }
+            return "{}";
+        }else{
+            return collect($seriesData);
         }
-        return "{}";
-
 
 
     }
 
     /**
-     * @param \LaravelIdea\Helper\App\Models\_IH_WorkerContract_C|\Illuminate\Database\Eloquent\Collection|array $wContracts
+     * Format is [cin1b][bob][[1.1.2021,55%,...,projectName,clients]]
+     *
+     * @param _IH_WorkerContract_C|\Illuminate\Database\Eloquent\Collection|array $wContracts
      * @param RequiredTimeUnit $timeUnit
      * @param array $seriesData
      * @return array
      */
-    public function buildSeriesData(\LaravelIdea\Helper\App\Models\_IH_WorkerContract_C|\Illuminate\Database\Eloquent\Collection|array $wContracts, RequiredTimeUnit $timeUnit): array
+    public function buildSeriesData(_IH_WorkerContract_C|\Illuminate\Database\Eloquent\Collection|array $wContracts,
+                                    RequiredTimeUnit $timeUnit,
+                                    bool $fullName=false): array
     {
         $seriesData=[];
         $accumulatedTime = 0;
@@ -191,7 +209,9 @@ class SummariesService
 
                 $groupMember = $wContract->groupMember;
                 $worker = $groupMember->user;
-                $workerName = $worker->getFirstnameL();
+                $workerName = $fullName ?
+                    $worker->firstname.'|'.$worker->lastname:
+                    $worker->getFirstnameL();
                 //Worker switch, reset accumulators
                 //[for perf reasons, all data is fetched with 1 request with all contracts sorted by userid...]
                 if($workerName!=$previousWorkerName){
@@ -219,7 +239,7 @@ class SummariesService
                 //ATTENTION: for echarts series format (as currently used), first 2 infos are X and Y ...
                 $seriesData[$group][$workerName][] = [
                     self::PI_DATE=> $formattedDate,
-                    self::PI_PERCENTAGE=> $percentage,
+                    self::PI_CURRENT_PERCENTAGE=> $percentage,
                     self::PI_SUCCESS_TIME => $successTime,
                     self::PI_TIME=> $time,
                     self::PI_ACCUMULATED_SUCCESS_TIME=> $accumulatedSuccessTime,
