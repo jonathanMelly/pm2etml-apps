@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.24.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.23.5...v1.24.0) (2023-06-26)
+
+
+### Features
+
+* **eval:** export vers excel ([9217503](https://github.com/jonathanMelly/pm2etml-intranet/commit/92175032082220a39f4a02f7094811616fdafb61)), closes [#38](https://github.com/jonathanMelly/pm2etml-intranet/issues/38)
+
 ## [1.23.5](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.23.4...v1.23.5) (2023-06-07)
 
 
