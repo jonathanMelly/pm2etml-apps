@@ -129,7 +129,7 @@ test('Employee cannot delete an attachment', function () {
     $response->assertForbidden();
 });
 
-test('Cannot upload bad file format', function ($uri,$file) {
+test('Cannot upload bad file format', function (string $uri,$file) {
     //Given
     $this->be($this->createUser(roles: \App\Constants\RoleName::TEACHER));
 

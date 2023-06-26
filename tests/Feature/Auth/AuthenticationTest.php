@@ -31,10 +31,6 @@ class AuthenticationTest extends TestCase
 
         self::assertNotNull($user->last_logged_at,'last logged date not set');
         $response->assertRedirect(RouteServiceProvider::HOME);
-        if($this->hasFailed())
-        {
-            $this->fail($response);
-        }
 
     }
 

@@ -36,7 +36,6 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->registerPolicies();
 
         //https://spatie.be/docs/laravel-permission/v5/basic-usage/super-admin
         // Implicitly grant "Super Admin" role all permissions

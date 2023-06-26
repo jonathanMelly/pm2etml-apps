@@ -1,44 +1,40 @@
 {
-    "name": "laravel/laravel",
+    "name": "etml-inf/marketplace",
     "type": "project",
-    "description": "The Laravel Framework.",
-    "keywords": ["framework", "laravel"],
+    "description": "Project management at etml’s inf section",
+    "keywords": ["etml", "inf","project","laravel"],
     "license": "MIT",
     "require": {
         "php": "^8.1",
-        "calebporzio/parental": "^1.2",
+        "tightenco/parental": "^v1.3.4",
         "fakerphp/faker": "^1.9.1",
-        "fruitcake/laravel-cors": "^2.0.5",
         "guzzlehttp/guzzle": "^7.2",
         "intervention/image": "^2.7",
-        "kirschbaum-development/eloquent-power-joins": "^2.6",
-        "laravel/framework": "^9.0",
-        "laravel/sanctum": "^2.14",
+        "kirschbaum-development/eloquent-power-joins": "^3.2",
+        "laravel/framework": "^10.0",
+        "laravel/sanctum": "^3.2",
         "laravel/socialite": "^5.5",
-        "laravel/tinker": "^2.7",
+        "laravel/tinker": "^2.8",
         "maatwebsite/excel": "^3.1",
         "phpmailer/phpmailer": "^6.6",
         "psr/simple-cache": "1.0",
-        "sentry/sentry-laravel": "^3.2",
+        "sentry/sentry-laravel": "^3.5",
         "socialiteproviders/microsoft-azure": "^5.1",
         "spatie/laravel-backup": "^8.1",
         "spatie/laravel-permission": "^5.5"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.6",
-        "barryvdh/laravel-ide-helper": "^2.12",
-        "brianium/paratest": "^6.4",
-        "laravel-lang/lang": "^10.4",
-        "laravel-lang/publisher": "^12.2",
+        "brianium/paratest": "^v7.2.2",
+        "laravel-lang/lang": "^12.22.1",
+        "laravel-lang/publisher": "^v14.6.4",
         "laravel/breeze": "^1.8",
-        "laravel/browser-kit-testing": "^6.3",
-        "laravel/sail": "^1.0.1",
+        "laravel/browser-kit-testing": "^7",
+        "laravel/sail": "^1.23",
         "mockery/mockery": "^1.4.4",
-        "nunomaduro/collision": "^6.1",
-        "pestphp/pest-plugin-laravel": "^1.2",
-        "pestphp/pest-plugin-parallel": "^1.2",
-        "phpunit/phpunit": "^9.5.10",
-        "spatie/laravel-ignition": "^1.0"
+        "nunomaduro/collision": "^7.0",
+        "pestphp/pest-plugin-laravel": "^v2.0.0",
+        "spatie/laravel-ignition": "^2.0"
     },
     "autoload": {
         "files": ["app/Helpers.php"],
@@ -83,6 +79,5 @@
             "php-http/discovery": true
         }
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    "minimum-stability": "stable"
 }
