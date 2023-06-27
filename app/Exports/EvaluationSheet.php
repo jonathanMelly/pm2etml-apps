@@ -31,26 +31,29 @@ class EvaluationSheet implements WithTitle,FromCollection,ShouldAutoSize,WithSty
         $TIME_NA=3;
 
         //Format is [bob][[1.1.2021,55%,...,projectName,clients]]
-        $projects = [
+        $projects = collect([
             $SUMMARY=>['name'=>'bilan'],
             $PERCENTAGE=>['name'=>'%'],
             $TIME_A=>['name'=> 'nb pér. '.EvaluationResult::A->name],
             $TIME_NA=>['name'=> 'nb pér. '. EvaluationResult::NA->name]
-        ];
+        ]);
 
         //list all projects
-        $this->data->each(function($studentEvaluations) use(&$projects){
+        $this->data->each(function($studentEvaluations) use($projects){
             foreach($studentEvaluations as $studentEvaluation){
-                $project = $studentEvaluation[SummariesService::PI_PROJECT];
+                $projectName = $studentEvaluation[SummariesService::PI_PROJECT];
                 $workload = $studentEvaluation[SummariesService::PI_ACCUMULATED_TIME];
                 $date = $studentEvaluation[SummariesService::PI_DATE];
                 $client = $studentEvaluation[SummariesService::PI_CLIENTS];
-                if(!in_array($project,$projects)){
-                    $projects[]=[
-                        'name'=>$project,
+
+                if($projects->where(fn($p)=>$p['name']==$projectName)->count()==0)
+                {
+                    $projects->add([
+                        'name'=>$projectName,
                         'workload'=>$workload,
                         'date'=>$date,
-                        'client'=>$client];
+                        'client'=>$client
+                    ]);
                 }
             }
         });
@@ -89,7 +92,7 @@ class EvaluationSheet implements WithTitle,FromCollection,ShouldAutoSize,WithSty
 
         //Build excel rows
         $rows = [];
-        $header  = array_merge(['prénom','nom'],collect($projects)->map(function($p) {
+        $header  = array_merge(['prénom','nom'],$projects->map(function($p) {
             $label =$p['name'];
             if(array_key_exists('workload',$p)){
                 $label .= ' (' . $p['workload'] . 'p, ' .
