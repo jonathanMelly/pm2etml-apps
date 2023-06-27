@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.25.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.25.0...v1.25.1) (2023-06-27)
+
+
+### Bug Fixes
+
+* **export:** remove duplicated projects ([225810e](https://github.com/jonathanMelly/pm2etml-intranet/commit/225810e2036f6331c9041dd1337cbcf652edf363))
+
 ## [1.25.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.24.0...v1.25.0) (2023-06-26)
 
 
