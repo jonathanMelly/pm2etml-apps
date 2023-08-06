@@ -25,6 +25,19 @@
     </x-tools-card>
     @endcan
 
+    <x-tools-card>
+        <x-slot name="title">IceScrum</x-slot>
+        <x-slot name="link">https://etml.icescrum.com</x-slot>
+        <x-slot name="logo">https://www.icescrum.com/wp-content/themes/new_icescrum/assets/logo.png</x-slot>
+
+        Outil de gestion de projet.
+        <a class="btn btn-sm btn-accent mt-1" target="_blank" href="https://eduvaud.sharepoint.com/:w:/s/msteams_d0db31/EQr2dZ02fwJMjFSKSO9AXS0B66ULFNqBpaYlBfOYlZyV0Q?e=S2PyE9">Aide</a>
+
+        <x-slot name="tags">
+            <x-tools-card-tag>Agile</x-tools-card-tag>
+            <x-tools-card-tag>Scrum</x-tools-card-tag>
+        </x-slot>
+    </x-tools-card>
 
     <x-tools-card>
         <x-slot name="title">Documentation</x-slot>
