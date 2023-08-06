@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.26.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.25.1...v1.26.0) (2023-08-06)
+
+
+### Features
+
+* **tools:** added icescrum in tools (and link to doc) ([0c0c415](https://github.com/jonathanMelly/pm2etml-intranet/commit/0c0c415f176be720e4edb63a5fa54256eb274e58))
+
+
+### Bug Fixes
+
+* **test:** migrator test user forced to 2022 period ([6df825b](https://github.com/jonathanMelly/pm2etml-intranet/commit/6df825b88c59cb633496c166fee880b94c5d0e7f))
+
 ## [1.25.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.25.0...v1.25.1) (2023-06-27)
 
 
