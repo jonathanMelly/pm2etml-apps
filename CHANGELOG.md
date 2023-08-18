@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.27.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.26.0...v1.27.0) (2023-08-18)
+
+
+### Features
+
+* **contracts:** handles multiple subcontracts per project contract (enable easy multiple evaluations for 1 project) ([e1f3531](https://github.com/jonathanMelly/pm2etml-intranet/commit/e1f3531a3a3a479560ccd4a9392a5a3fcd4ae68f))
+
 ## [1.26.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.25.1...v1.26.0) (2023-08-06)
 
 
