@@ -17,36 +17,44 @@
 
                         <label class="input-group">
                             <span class="w-1/2">{{__('Start date')}}</span>
-                            <input type="date" name="start_date" value="{{old('start_date')??now()->format('Y-m-d')}}"
+                            <input type="date" name="start_date" value="{{old('start_date')??now()->format(\App\DateFormat::HTML_FORMAT)}}"
                                    class="w-1/2 input input-bordered input-primary">
                         </label>
 
                         <label class="input-group">
                             <span class="w-1/2">{{__('End date')}}</span>
-                            <input type="date" name="end_date" value="{{old('end_date')??now()->addWeeks(3)->format('Y-m-d')}}"
+                            <input type="date" name="end_date" value="{{old('end_date')??now()->addWeeks(3)->format(\App\DateFormat::HTML_FORMAT)}}"
                                    class="w-1/2 input input-secondary input-bordered">
                         </label>
 
-                        <div class="input-group">
-                            <select class="select select-bordered w-2/3" name="client">
-                                <option disabled selected>{{__('Client')}}</option>
-                                @php
-                                    $providers = $jobDefinition->getProviders();
-                                @endphp
-                                @foreach($providers as $client)
-                                    <option value="{{$client->id}}" {{old('client')==$client->id?'selected="selected"':''}}>
-                                        {{$client->firstname.' '.$client->lastname}} ({{$client->getClientLoad(\App\Models\AcademicPeriod::current())['percentage']}}%)
-                                    </option>
-                                @endforeach
-                                <option class="divider p-0 m-0"></option>
-                                @foreach($jobDefinition->getClients($providers) as $client)
-                                    <option value="{{$client->id}}" {{old('client')==$client->id?'selected="selected"':''}}>
-                                        {{$client->firstname.' '.$client->lastname}} ({{$client->getClientLoad(\App\Models\AcademicPeriod::current())['percentage']}}%)
-                                    </option>
-                                @endforeach
-                            </select>
-                            <button type="submit" class="btn w-1/3" onclick="this.classList.add('loading')">{{__('Apply')}}</button>
-                        </div>
+                        @foreach($parts as $part)
+                            <div class="input-group">
+                                @if(!stringNullOrEmpty($part->name))
+                                    <label for="client-{{$part->id}}">{{$part->name}}</label>
+                                @endif
+                                <select class="select select-bordered w-2/3" name="client-{{$part->id}}">
+                                    <option disabled selected>{{__('Client')}}</option>
+                                    @php
+                                        $providers = $jobDefinition->getProviders();
+                                    @endphp
+                                    @foreach($providers as $client)
+                                        <option value="{{$client->id}}" {{old('client')==$client->id?'selected="selected"':''}}>
+                                            {{$client->firstname.' '.$client->lastname}} ({{$client->getClientLoad(\App\Models\AcademicPeriod::current())['percentage']}}%)
+                                        </option>
+                                    @endforeach
+                                    <option class="divider p-0 m-0"></option>
+                                    @foreach($jobDefinition->getClients($providers) as $client)
+                                        <option value="{{$client->id}}" {{old('client')==$client->id?'selected="selected"':''}}>
+                                            {{$client->firstname.' '.$client->lastname}} ({{$client->getClientLoad(\App\Models\AcademicPeriod::current())['percentage']}}%)
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                            </div>
+                        @endforeach
+
+                        <button type="submit" class="btn w-1/3" onclick="this.classList.add('loading')">{{__('Apply')}}</button>
+
                     </div>
                     @if($errors->any())
                         <div class="flex flex-col bg-error text-error-content rounded-box p-3 m-2 text-md max-h-fit self-center">

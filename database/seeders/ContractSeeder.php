@@ -7,6 +7,7 @@ use App\Models\AcademicPeriod;
 use App\Models\Contract;
 use App\Models\JobDefinition;
 use App\Models\User;
+use App\Models\WorkerContract;
 use Faker\Generator;
 use Illuminate\Container\Container;
 use Illuminate\Database\Seeder;
@@ -76,6 +77,12 @@ class ContractSeeder extends Seeder
                     $comment = $success?null:'Autonomie, respect des délais, structure du code';
                     $contract->workers()->where('user_id','=',$worker->id)->firstOrFail()->pivot->evaluate($success,$comment);
                 }
+
+                /* @var $workerContract WorkerContract */
+                $workerContract = $contract->workerContract($worker->groupMember())->firstOrFail();
+                $workerContract->name="";
+                $workerContract->allocated_time=$job->allocated_time;
+                $workerContract->save();
 
                 if($job->one_shot)
                 {

@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\JobPriority;
+use App\Enums\RequiredTimeUnit;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use JetBrains\PhpStorm\Pure;
 use Kirschbaum\PowerJoins\PowerJoins;
 
 class WorkerContract extends Pivot
@@ -14,7 +17,8 @@ class WorkerContract extends Pivot
     public $table='contract_worker';//\App\Enums\CustomPivotTableNames::CONTRACT_GROUP_MEMBER->value;
 
     public $casts = [
-        'success_date' => 'datetime'
+        'success_date' => 'datetime',
+        'allocated_time_unit' => RequiredTimeUnit::class
     ];
 
     public function contract(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -52,5 +56,28 @@ class WorkerContract extends Pivot
             return 'n/a';
         }
         return $this->success?'true':'false';
+    }
+
+    #[Pure] public function getAllocatedTime(RequiredTimeUnit $targetUnit = RequiredTimeUnit::PERIOD): float
+    {
+        if ($this->allocated_time === null) {
+            return 0;
+        }
+        return round(RequiredTimeUnit::Convert($this->allocated_time, $this->allocated_time_unit, $targetUnit), 0);
+    }
+
+    public function getAllocationDetails(): string
+    {
+
+        $allocatedTimeInPeriods = $this->getAllocatedTime(RequiredTimeUnit::PERIOD);
+        if ($allocatedTimeInPeriods < JobDefinition::SIZE_MEDIUM_MIN) {
+            $size = 'Weak';
+        } else if ($allocatedTimeInPeriods < JobDefinition::SIZE_LARGE_MIN) {
+            $size = 'Medium';
+        } else {
+            $size = 'Large';
+        }
+
+        return __($size) . ', ~' . $this->getAllocatedTime(RequiredTimeUnit::PERIOD) . 'p';
     }
 }

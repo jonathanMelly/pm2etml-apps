@@ -13,6 +13,7 @@ use App\Models\JobDefinitionDocAttachment;
 use App\Models\JobDefinitionMainImageAttachment;
 use App\Models\Skill;
 use App\Models\User;
+use App\Models\WorkerContract;
 use Database\Seeders\AcademicPeriodSeeder;
 use Database\Seeders\PermissionV1Seeder;
 use Illuminate\Http\UploadedFile;
@@ -143,6 +144,11 @@ trait TestHarness
 
             $contract->clients()->attach($client->id);
             $contract->workers()->attach($employee->groupMember()->id);
+            /* @var $workerContract WorkerContract */
+            $workerContract = $contract->workerContract($employee->groupMember())->firstOrFail();
+            $workerContract->name="";
+            $workerContract->allocated_time=$job->allocated_time;
+            $workerContract->save();
 
         }
 

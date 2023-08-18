@@ -3,6 +3,10 @@
     $progressPercentage = $progress['percentage'];
     $remainingDays = $progress['remainingDays'];
 
+    /* @var $contract \App\Models\Contract */
+    /* @var $wc \App\Models\WorkerContract*/
+    $wc = $contract->workerContract(auth()->user()->groupMember())->firstOrFail();
+
 @endphp
 <tr>
     <td>
@@ -17,7 +21,11 @@
                     @if(session('contractId')==$contract->id)
                     <span class="indicator-item indicator-start badge badge-primary -mt-2 text-xs">{{__('new')}}</span>
                     @endif
-                    <div class="lg:font-bold lg:text-base text-xs">{{Str::words($contract->jobDefinition->title,3)}}</div>
+                    <div class="lg:font-bold lg:text-base text-xs">{{Str::words($contract->jobDefinition->title,3)}}
+                    @if($wc->name!="")
+                        ({{$wc->name}})
+                    @endif
+                    </div>
                 </div>
             </div>
         </a>
@@ -36,7 +44,7 @@
     </td>
     {{-- EFFORT --}}
     <td class="text-center">
-    {{$contract->jobDefinition->getAllocationDetails()}}
+    {{$wc->getAllocationDetails()}}
     </td>
     <td class="text-center">
         @if($progressPercentage<100)

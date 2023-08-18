@@ -3,7 +3,11 @@
     $progressPercentage = $progress['percentage'];
     $remainingDays = $progress['remainingDays'];
 
-    $workers=collect($contract->workers)->transform(fn ($gm)=>$gm->user->getFirstnameL())->join(',')
+    $workers=collect($contract->workers)->transform(fn ($gm)=>$gm->user->getFirstnameL())->join(',');
+
+    /* @var $contract \App\Models\Contract */
+    /* @var $wc \App\Models\WorkerContract */
+    $wc = $contract->workerContract($contract->workers[0])->firstOrFail();
 @endphp
 <tr>
     <td>
@@ -11,6 +15,9 @@
             <input type="checkbox" class="checkbox" name="job-{{$job->id}}-contracts[]" value="{{$contract->id}}" data-workers="{{$workers}}"
             @change="massAction=isAnyChecked('job-{{$job->id}}-contracts[]')">
         </label>
+    </td>
+    <td>
+        {{$wc->name==""?__("main"):$wc->name}} ({{$wc->getAllocatedTime()}}p)
     </td>
     <td>
         {{$contract->workers[0]->group->groupName->name}}

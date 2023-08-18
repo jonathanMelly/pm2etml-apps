@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Constants\DiskNames;
 use App\Constants\RoleName;
+use App\DateFormat;
 use App\Models\AcademicPeriod;
 use App\Models\Group;
 use App\Models\GroupMember;
@@ -56,13 +57,14 @@ class JobApplyFormTest extends BrowserKitTestCase
      */
     public function test_user_can_apply_for_a_job_and_only_once()
     {
+        $date = now()->format(DateFormat::HTML_FORMAT);
 
         //ok
         $this->visit($this->formPage)
-            ->type(now(), 'start_date')
-            ->type(now(), 'end_date')
+            ->type($date, 'start_date')
+            ->type($date, 'end_date')
             ->type($this->job->id, 'job_definition_id')
-            ->select($this->teacher->id, 'client')
+            ->select($this->teacher->id, 'client-0')
             ->press(__('Apply'))
             ->seePageIs('/dashboard')
             ->seeText(__('Congrats, you have been hired for the job'))
@@ -70,10 +72,10 @@ class JobApplyFormTest extends BrowserKitTestCase
 
         //ko (already registered)
         $this->visit($this->formPage)
-            ->type(now(), 'start_date')
-            ->type(now(), 'end_date')
+            ->type($date, 'start_date')
+            ->type($date, 'end_date')
             ->type($this->job->id, 'job_definition_id')
-            ->select($this->teacher->id, 'client')
+            ->select($this->teacher->id, 'client-0')
             ->press(__('Apply'))
             ->seePageIs($this->formPage)
             ->seeText(__('You already have/had a contract for this job'))
@@ -82,6 +84,8 @@ class JobApplyFormTest extends BrowserKitTestCase
 
     public function test_user_can_apply_for_a_job_with_any_teacher()
     {
+        $date = now()->format(DateFormat::HTML_FORMAT);
+
         $otherProvider = $this->createUser(false,'prof');
 
 
@@ -93,10 +97,10 @@ class JobApplyFormTest extends BrowserKitTestCase
         $this->job->providers()->sync($otherProvider->id);
 
         $temp
-            ->type(now(), 'start_date')
-            ->type(now(), 'end_date')
+            ->type($date, 'start_date')
+            ->type($date, 'end_date')
             ->type($this->job->id, 'job_definition_id')
-            ->select($this->teacher->id, 'client')
+            ->select($this->teacher->id, 'client-0')
             ->press(__('Apply'))
             ->seePageIs('/dashboard')
             ->seeText(__('Congrats, you have been hired for the job'))
@@ -116,10 +120,10 @@ class JobApplyFormTest extends BrowserKitTestCase
 
         //ok
         $this->visit($this->formPage)
-            ->type($startDate, 'start_date')
-            ->type($endDate, 'end_date')
+            ->type($startDate->format(DateFormat::HTML_FORMAT), 'start_date')
+            ->type($endDate->format(DateFormat::HTML_FORMAT), 'end_date')
             ->type($this->job->id, 'job_definition_id')
-            ->select($this->teacher->id, 'client')
+            ->select($this->teacher->id, 'client-0')
             ->press(__('Apply'))
             ->seePageIs($this->formPage)
             ->seeText(__('validation.after_or_equal', ['attribute' => 'end date', 'date' => 'start date']))

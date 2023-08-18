@@ -76,6 +76,6 @@ return new class extends Migration
             $table->drop();
         });
 
-        DB::unprepared("DROP TRIGGER ".self::TRIGGER."contract_worker_eval_log");
+        DB::unprepared("DROP TRIGGER ".self::TRIGGER);
     }
 };

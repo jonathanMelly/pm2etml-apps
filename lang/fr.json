@@ -309,5 +309,7 @@
     "Success rate": "Taux de réussite",
     "Current summary": "Bilan à cette date",
     "Download": "Télécharger",
-    "Export": "Exporter"
+    "Export": "Exporter",
+    "Part": "Partie",
+    "main": "global"
 }

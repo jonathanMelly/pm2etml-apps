@@ -12,6 +12,7 @@ use App\Http\Requests\UpdateContractRequest;
 use App\Models\AcademicPeriod;
 use App\Models\Contract;
 use App\Models\JobDefinition;
+use App\Models\JobDefinitionPart;
 use App\Models\User;
 use App\Models\WorkerContract;
 use App\SwissFrenchDateFormat;
@@ -48,6 +49,7 @@ class ContractController extends Controller
      */
     public function create(JobDefinition $jobDefinition)
     {
+        //Not used...see createApply...
         return view('contract-create')->with(compact('jobDefinition'));
     }
 
@@ -64,23 +66,48 @@ class ContractController extends Controller
 
         $jobDefinitionId = $request->get('job_definition_id');
 
-        /* @var $jobDefinition JobDefinition */
         $jobDefinition = JobDefinition::whereId($jobDefinitionId)->firstOrFail();
         if(! $jobDefinition->isPublished())
         {
             return back()->withErrors(__('Cannot apply for a draft/upcoming job...)'))->withInput();
         }
 
-        //Only teachers and authorized providers can be client
-        $client = User::whereId($request->get('client'))->firstOrFail();
-        if(!$client->hasRole(RoleName::TEACHER) /* any teacher can be a client... ||
+        //Default part (1 eval per project) name is empty string
+        $parts = JobDefinitionPart::query()->where('job_definition_id','=',$jobDefinitionId)->get();
+        $partsDetails=collect();
+        if($parts->isEmpty()){
+            $partsDetails->add([
+                'name'=>"",
+                'clientId'=>$request->input('client-0'),
+                'time'=>$jobDefinition->allocated_time,
+                //todo timeunit
+                ]);
+        }else{
+            $parts->each(function(JobDefinitionPart $part) use ($partsDetails,$request,$jobDefinition){
+                $partsDetails->add([
+                    'name'=>$part->name,
+                    'clientId'=>$request->input("client-".$part->id),
+                    'time'=>$part->allocated_time,
+                    //todo timueunit
+                ]);
+            });
+        }
+
+        foreach ($partsDetails as $partsDetail){
+            //Only teachers and authorized providers can be client
+            $client = User::whereId($partsDetail['clientId']);
+            if(!$client->exists() || !$client->firstOrFail()->hasRole(RoleName::TEACHER) /* any teacher can be a client... ||
             !JobDefinition::whereHas('providers', function (Builder $query) use($jobDefinitionId,$client) {
                 $query->where('user_id','=',$client->id)->where('job_definition_id','=',$jobDefinitionId);
             })->exists()*/)
-        {
-            return back()->withErrors(__('Invalid client (only valid providers are allowed)'))->withInput();
+            {
+                return back()->withErrors(__('Invalid client (only valid providers are allowed)'))->withInput();
+            }
         }
+
+
         //Only students can be workers
+        /* @var $user User */
         $user = auth()->user();
         if(!$user->hasRole(RoleName::STUDENT))
         {
@@ -90,39 +117,69 @@ class ContractController extends Controller
 
 
         //check that this user has not yet a contract for this job def
-        if ($user->contractsAsAWorker()->where('job_definition_id','=',$jobDefinitionId)->exists())
+        if ($user->contractsAsAWorker()
+            ->where('job_definition_id','=',$jobDefinitionId)
+            ->whereIn('name',$partsDetails->pluck('name'))
+            ->exists())
         {
             return back()->withErrors(__('You already have/had a contract for this job'))->withInput();
         }
 
-        $contract = Contract::make();
-        $contract->start = $request->get('start_date');
-        $contract->end = $request->get('end_date');
         //This shoud be checked in any date update
         $period = AcademicPeriod::current(false);
-        if($contract->start->isBefore($period->start) || $contract->end->isAfter($period->end))
+        $start = Carbon::createFromFormat(DateFormat::HTML_FORMAT,$request->input('start_date'));
+        $end =  Carbon::createFromFormat(DateFormat::HTML_FORMAT, $request->input('end_date'));
+        if($start->isBefore($period->start) || $end->isAfter($period->end))
         {
             return back()->withErrors(__('Dates must be within current academic period'))->withInput();
         }
 
-        $contract->jobDefinition()->associate($jobDefinitionId);
+        $firstContract=null;
+        DB::transaction(function () use ($start,$end,&$firstContract,$jobDefinitionId,$partsDetails,$request,$user) {
+            foreach($partsDetails as $partsDetail){
+                $contract = Contract::make();
+                $contract->start = $start;
+                $contract->end = $end;
 
-        //Consistency on error
-        DB::transaction(function () use ($contract,$request,$client,$user) {
-            $contract->save();
-            $contract->clients()->attach($client->id);
-            $contract->workers()->attach($user->groupMember()->id);//set worker
+                $contract->jobDefinition()->associate($jobDefinitionId);
+
+                //Consistency on error
+                $clientId = $partsDetail['clientId'];
+
+                $contract->save();
+                $contract->clients()->attach($clientId);
+                $contract->workers()->attach($user->groupMember()->id);//set worker
+
+                /* @var $workerContract WorkerContract */
+                $workerContract = $contract->workerContract($user->groupMember())->firstOrFail();
+                $workerContract->name=$partsDetail['name'];
+                $workerContract->allocated_time=$partsDetail['time'];
+                $workerContract->save();
+
+                if($firstContract==null){
+                    $firstContract=$contract;
+                }
+            }
         });
 
         return redirect('/dashboard')
             ->with('success',__('Congrats, you have been hired for the job'))
-            ->with('contractId',$contract->id);
+            ->with('contractId',$firstContract->id);
     }
 
     public function createApply(JobDefinition $jobDefinition)
     {
+        //TODO List parts
+        $parts = JobDefinitionPart::query()->where('job_definition_id','=',$jobDefinition->id)->get();
+        //add dummy default if needed
+        if($parts->isEmpty()){
+            $mainJob = JobDefinitionPart::make();
+            $mainJob->id=0;
+            $parts=collect()->add($mainJob);
+        }
+
         //form to apply for a job
-        return view('job-apply')->with(compact('jobDefinition'));
+        return view('job-apply')->with(compact('jobDefinition','parts'));
     }
 
     /**

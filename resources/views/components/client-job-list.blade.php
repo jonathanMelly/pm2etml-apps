@@ -74,6 +74,7 @@
                                     </label>
                                 </td>
 
+                                <th><i class="fa-solid fa-pager"></i> {{__('Part')}}</th>
                                 <th><i class="fa-solid fa-people-roof"></i> {{__('Group')}}</th>
                                 <th><i class="fa-solid fa-sack-dollar"></i> {{__('Worker(s)')}}</th>
                                 <x-contract-list-header :effort="false"/>

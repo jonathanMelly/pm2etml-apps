@@ -224,7 +224,7 @@ class SummariesService
                 $success = $wContract->success;
                 $project = $contract->jobDefinition->title;
                 $date = $wContract->success_date;
-                $time = $contract->jobDefinition->getAllocatedTime($timeUnit);
+                $time = $wContract->getAllocatedTime($timeUnit);
 
                 $successTime = $success ? $time : 0;
 
