@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.28.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.27.0...v1.28.0) (2023-08-20)
+
+
+### Features
+
+* **ui:** better look for contract apply with multiple evals ([6b877f4](https://github.com/jonathanMelly/pm2etml-intranet/commit/6b877f4b29a4262749faf51c5e78d061dda7d3ff))
+
 ## [1.27.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.26.0...v1.27.0) (2023-08-18)
 
 
