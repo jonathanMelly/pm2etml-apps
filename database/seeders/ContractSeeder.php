@@ -55,6 +55,7 @@ class ContractSeeder extends Seeder
 
             //$sql = $workersQuery->getQuery()->toSql();
             $workers = $workersQuery->get();
+            $evaluatedCount=0; // force at least 1 evaluated contract...
             foreach ($workers
                      as $worker)
             {
@@ -71,11 +72,12 @@ class ContractSeeder extends Seeder
                 $contract->clients()->attach($client->id);
                 $contract->workers()->attach($worker->groupMember()->id);//set worker
 
-                if($end<now())
+                if($end<now() || $evaluatedCount==0)
                 {
                     $success = $faker->boolean(80);
                     $comment = $success?null:'Autonomie, respect des délais, structure du code';
                     $contract->workers()->where('user_id','=',$worker->id)->firstOrFail()->pivot->evaluate($success,$comment);
+                    $evaluatedCount++;
                 }
 
                 /* @var $workerContract WorkerContract */

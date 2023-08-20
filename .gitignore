@@ -25,3 +25,4 @@ Homestead.json
 /storage/dmz-assets/
 /doc/db-schema-business.mwb.bak
 /sync.ffs_db
+/tests/data/testdb.sqlite
