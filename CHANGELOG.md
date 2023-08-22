@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.28.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.28.0...v1.28.1) (2023-08-22)
+
+
+### Bug Fixes
+
+* **sso:** better invalid correlationId report ([8b99029](https://github.com/jonathanMelly/pm2etml-intranet/commit/8b9902923e38798234aac5784acbfea237598dd6))
+
 ## [1.28.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.27.0...v1.28.0) (2023-08-20)
 
 
