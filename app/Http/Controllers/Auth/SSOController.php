@@ -32,8 +32,11 @@ class SSOController extends Controller
         $this->checkApiKey($request);
 
         $correlationId = $request->input(self::SSO_CORRELATION_ID_PARAM_NAME);
-        $ssoData = \Cache::pull(self::SSO_BRIDGE_CORRELATION_ID_PREFIX_CACHE_KEY . $correlationId,
-            ["error"=>"invalid correlationId $correlationId"]);
+        $ssoData = \Cache::pull(self::SSO_BRIDGE_CORRELATION_ID_PREFIX_CACHE_KEY . $correlationId);
+        if($ssoData===null){
+            Log::warning("Check called for missing/invalid correlationId:".$correlationId);
+            $ssoData = ["error"=>"invalid correlationId $correlationId"];
+        }
 
         return json_encode($ssoData);
     }
