@@ -15,13 +15,6 @@ use Kirschbaum\PowerJoins\PowerJoins;
 
 class Contract extends Model
 {
-    /**
-     * WARNING | ATTENTION : même si un contrat peut avoir plusieurs clients / employés
-     * Actuellement, l’évaluation est faite au niveau du contrat (même éval pour tous les employés)!!!
-     * Pour changer cela, il faudrait mettre l’évaluation dans la table CONTRACT_WORKER
-     * voir https://github.com/jonathanMelly/pm2etml-intranet/issues/40
-     */
-
     use HasFactory, SoftDeletes, PowerJoins;
 
     /**
