@@ -21,18 +21,19 @@ return new class extends Migration
                 ->default(null);
         });
 
-        //Fill new fields of existing contracts with project values
-        WorkerContract::with('contract.jobDefinition')->each(function($wc){
-            /* @var $wc WorkerContract */
-            if($wc->allocated_time===null && $wc->contract!==null){
-               $job = $wc->contract->jobDefinition;
-               $wc->allocated_time = $job->allocated_time;
-               $wc->allocated_time_unit = $job->allocated_time_unit;
-               $wc->name="";
-
-               $wc->save();
-           }
-        });
+        //done in prod, no need anymore... worse it makes crash further migrations
+//        //Fill new fields of existing contracts with project values
+//        WorkerContract::with('contract.jobDefinition')->each(function($wc){
+//            /* @var $wc WorkerContract */
+//            if($wc->allocated_time===null && $wc->contract!==null){
+//               $job = $wc->contract->jobDefinition;
+//               $wc->allocated_time = $job->allocated_time;
+//               $wc->allocated_time_unit = $job->allocated_time_unit;
+//               $wc->name="";
+//
+//               $wc->save();
+//           }
+//        });
     }
 
     /**

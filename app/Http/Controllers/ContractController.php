@@ -169,7 +169,6 @@ class ContractController extends Controller
 
     public function createApply(JobDefinition $jobDefinition)
     {
-        //TODO List parts
         $parts = JobDefinitionPart::query()->where('job_definition_id','=',$jobDefinition->id)->get();
         //add dummy default if needed
         if($parts->isEmpty()){
@@ -302,19 +301,36 @@ class ContractController extends Controller
 
     public function destroyAll(DestroyAllContractRequest $request)
     {
+        //TODO UI should send worker_contract id , not contract id...
+
         $user=auth()->user();//Policy ensure required role
         $jobId = $request->get('job_id');
         $contracts = $request->get('job-'.$jobId.'-contracts');
 
-        $deleted = Contract::
-            whereHas('jobDefinition',fn($q)=>$q->where(tbl(JobDefinition::class).'.id','=',$jobId))
-            ->whereHas('clients',fn($q)=>$q->where(tbl(User::class).'.id','=',$user->id))
-            ->whereIn(tbl(Contract::class).'.id',$contracts)
-            ->delete();
+        DB::transaction(function () use ($user,$contracts,$jobId) {
+            $deleted = WorkerContract::whereIn('contract_id', $contracts)
+                ->update(['deleted_at' => now()]);
+
+            $cDeleted=Contract::
+                whereHas('jobDefinition', fn($q) => $q->where(tbl(JobDefinition::class) . '.id', '=', $jobId))
+                ->whereHas('clients', fn($q) => $q->where(tbl(User::class) . '.id', '=', $user->id))
+
+                //Drop only contracts which hasn’t any valid workers on it anymore...
+                ->whereDoesntHave('workersContracts',function($query){
+                    return $query->whereNull('deleted_at');
+                })
+
+                ->whereIn(tbl(Contract::class) . '.id', $contracts)
+                ->delete();
+
+            return redirect('/dashboard')
+                ->with('success',
+                    trans_choice(':number contract deleted|:number contracts deleted',$deleted,['number'=>$deleted]));
+        });
 
         return redirect('/dashboard')
-            ->with('success',
-                trans_choice(':number contract deleted|:number contracts deleted',$deleted,['number'=>$deleted]));
+            ->with('error', __('sorry an error occurred :-('));
+
     }
 
     public function evaluate(string $ids)

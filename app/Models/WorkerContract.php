@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
-use App\Enums\JobPriority;
 use App\Enums\RequiredTimeUnit;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use JetBrains\PhpStorm\Pure;
 use Kirschbaum\PowerJoins\PowerJoins;
+use phpDocumentor\Reflection\Types\This;
 
 class WorkerContract extends Pivot
 {
@@ -17,9 +18,19 @@ class WorkerContract extends Pivot
     public $table='contract_worker';//\App\Enums\CustomPivotTableNames::CONTRACT_GROUP_MEMBER->value;
 
     public $casts = [
+        'deleted_at'=>'datetime',
         'success_date' => 'datetime',
         'allocated_time_unit' => RequiredTimeUnit::class
     ];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::addGlobalScope('withoutTrashed', function (Builder $builder) {
+            $builder->whereNull(tbl(WorkerContract::class). '.deleted_at');
+        });
+    }
 
     public function contract(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
