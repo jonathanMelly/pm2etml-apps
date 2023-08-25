@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.28.2](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.28.1...v1.28.2) (2023-08-25)
+
+
+### Bug Fixes
+
+* **contract:** also soft delete associated worker_contract ([fee682c](https://github.com/jonathanMelly/pm2etml-intranet/commit/fee682ca88b8d70f705e9edf784a1c3e925e3882))
+
 ## [1.28.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.28.0...v1.28.1) (2023-08-22)
 
 
