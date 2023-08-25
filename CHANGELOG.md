@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.29.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.28.2...v1.29.0) (2023-08-25)
+
+
+### Features
+
+* **job:** allow .sql attachment ([a997cc6](https://github.com/jonathanMelly/pm2etml-intranet/commit/a997cc6c5a3504a29b6e5529a2b84e4e0b78e82c))
+
 ## [1.28.2](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.28.1...v1.28.2) (2023-08-25)
 
 
