@@ -18,7 +18,7 @@ class FileFormat
     public const JOB_ATTACHMENT_MAX_SIZE_IN_MO=10;
     public const JOB_ATTACHMENT_MAX_COUNT=10;
     public const JOB_DOC_ATTACHMENT_ALLOWED_EXTENSIONS =
-        ['pdf','doc','docx','xls','xlsx','txt','md','zip'];
+        ['pdf','doc','docx','xls','xlsx','txt','md','zip','sql'];
 
     public static function getImageFormatsAsRegex(): string
     {
