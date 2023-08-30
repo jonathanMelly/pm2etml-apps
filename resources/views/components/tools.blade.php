@@ -32,6 +32,7 @@
 
         Outil de gestion de projet.
         <a class="btn btn-sm btn-accent mt-1" target="_blank" href="https://eduvaud.sharepoint.com/:w:/s/msteams_d0db31/EQr2dZ02fwJMjFSKSO9AXS0B66ULFNqBpaYlBfOYlZyV0Q?e=S2PyE9">Aide</a>
+        <a class="btn btn-sm btn-accent mt-1" target="_blank" href="https://github.com/XCarrel/IceScrub">Outils</a>
 
         <x-slot name="tags">
             <x-tools-card-tag>Agile</x-tools-card-tag>
