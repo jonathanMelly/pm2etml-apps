@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.30.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.29.0...v1.30.0) (2023-09-06)
+
+
+### Features
+
+* **contracts:** auto expand projects with pending evaluations ([e0f7f94](https://github.com/jonathanMelly/pm2etml-intranet/commit/e0f7f942c21fb90ca468d701d394d8a9233c5c77))
+* **icescrum:** add link to icescrub tools ([05468b1](https://github.com/jonathanMelly/pm2etml-intranet/commit/05468b1c1299c9e496d1587acc60c11c522d8193))
+
+
+### Bug Fixes
+
+* **contract:** deleting contract does not trigger a wrong error message AND user rights are checked ([3b5d33b](https://github.com/jonathanMelly/pm2etml-intranet/commit/3b5d33b8361be699464fbb2aa61818ddfedfdc71))
+* **contracts:** only show project contracts of current period ([5aae2e4](https://github.com/jonathanMelly/pm2etml-intranet/commit/5aae2e417bf345c350327fae4a533d5457122ff0))
+* **job:** remove useless "action" column ([1913022](https://github.com/jonathanMelly/pm2etml-intranet/commit/1913022789ab2bd33d07ead5aa9cdf904a3f46b3))
+* **stats:** also show stats for standard clients (no special role) ([55a1556](https://github.com/jonathanMelly/pm2etml-intranet/commit/55a1556a7e721dc59897b6eb16e04bbea4f1e5ba))
+
 ## [1.29.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.28.2...v1.29.0) (2023-08-25)
 
 
