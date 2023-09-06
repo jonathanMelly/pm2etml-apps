@@ -61,7 +61,7 @@ class SummariesService
                         ->whereHas('groupMember.group.groupName',fn($q)=>$q->whereIn('name',$handledGroups))
 
                         //Project manager (client)
-                        ->orWhereHas('contract.clients.groupMembers.user',fn($q)=>$q->where('id','=',$user->id));
+                        ->orWhereHas('contract.clients',fn($q)=>$q->where(tbl(User::class). '.id','=',$user->id));
                 });
             }
 
