@@ -3,4 +3,3 @@
 <th>{{__('Start')}} (min)</th>
 <th>{{__('End')}} (max)</th>
 <th>{{__('Worker(s)')}}</th>
-<th>{{__('Action')}}</th>

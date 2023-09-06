@@ -25,7 +25,4 @@
         <i class="fa-solid fa-calendar-days"></i> {{\Illuminate\Support\Carbon::parse($job->max_end)->format(\App\SwissFrenchDateFormat::DATE)}}
     </td>
     <td><i class="fa-solid fa-users"></i> {{$job->contracts_count}}</td>
-    <td>
-        <button class="btn btn-ghost btn-xs">details</button>
-    </td>
 </tr>
