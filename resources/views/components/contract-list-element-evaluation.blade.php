@@ -1,5 +1,4 @@
 @php
-
     $multiple = $contract->workers_count > 1;
 @endphp
 <td class="text-left ">
@@ -12,6 +11,12 @@
                 <i class="ml-2 fa-solid fa-{{$workerContract->alreadyEvaluated()?($workerContract->success?'square-check':'square-xmark'):'person-digging'}}"></i>
         @if($workerContract->alreadyEvaluated())
             </div>
+        @elseif(isset($job))
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    Alpine.store('show{{$job->id}}', true)
+                });
+            </script>
         @endif
     </div>
 

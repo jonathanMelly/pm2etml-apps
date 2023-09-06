@@ -43,5 +43,5 @@
         @endif
     </td>
 
-    <x-contract-list-element-evaluation :contract="$contract" />
+    <x-contract-list-element-evaluation :job="$job"  :contract="$contract" />
 </tr>

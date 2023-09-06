@@ -7,8 +7,13 @@
                 <x-client-job-list-header/>
             </tr>
             </thead>
+           <script>
+                document.addEventListener('alpine:init', () => {
+                    {!! $jobs->values()->transform(fn($job) =>"Alpine.store('show$job->id', false)")->join(';')!!}
+                })
+            </script>
 
-            <tbody x-data="{ show{{$jobs->first()->id}}:true,{{$jobs->values()->skip(1)->transform(fn($job) =>'show'.$job->id.':false')->join(',')}} }">
+            <tbody>
             @foreach($jobs as $job)
                 <form method="post" action="{{route('contracts.destroyAll')}}" id="job-{{$job->id}}-form" x-on:submit.prevent>
                     @method('DELETE')
@@ -18,7 +23,7 @@
                 <x-client-job-list-element :job="$job"/>
 
                 {{-- CONTRACTS DETAILS TABLE --}}
-                <tr x-show="show{{$job->id}}" x-transition.opacity x-data="{massAction:false}">
+                <tr x-show="$store.show{{$job->id}}" x-transition.opacity x-data="{massAction:false}">
                     <td colspan="6">
 
                         <table class="table table-compact table-zebra w-full">

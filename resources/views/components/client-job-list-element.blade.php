@@ -1,7 +1,7 @@
 <tr>
     <td>
         <div class="flex items-center space-x-3" >
-            <i class="fa-solid fa-xl hover:cursor-pointer" :class="show{{$job->id}}?'fa-caret-down':'fa-caret-right'" @click="show{{$job->id}} = ! show{{$job->id}}"></i>
+            <i class="fa-solid fa-xl hover:cursor-pointer" :class="$store.show{{$job->id}}?'fa-caret-down':'fa-caret-right'" @click="$store.show{{$job->id}} = ! $store.show{{$job->id}}"></i>
 
             <a href="{{route('jobDefinitions.show',['jobDefinition'=>$job->id])}}" class="flex flex-row items-center space-x-3">
                 <div class="avatar" >
