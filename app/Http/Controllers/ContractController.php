@@ -19,10 +19,10 @@ use App\SwissFrenchDateFormat;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ContractController extends Controller
 {
@@ -217,6 +217,7 @@ class ContractController extends Controller
             $updateRequest= UpdateContractRequest::createFrom($request);
             $updateRequest->replace(["start"=>DateFormat::DateFromHtmlInput($starts[$i]),"end"=>DateFormat::DateFromHtmlInput($ends[$i])]);
 
+            //TODO: is policy still applied here ?
             $result = $this->update($updateRequest,$contract,$i);
             //Validation error...
             if($result instanceof \Symfony\Component\HttpFoundation\Response)
@@ -242,6 +243,7 @@ class ContractController extends Controller
      */
     public function update(UpdateContractRequest $request, Contract $contract, $index=-1) : \Symfony\Component\HttpFoundation\Response | int
     {
+        //TODO: if policy is not applied on $this->update call (like spring proxy in java), policy must be manually applied...
         $bulk=$index!=-1;
 
         //Validate start/end date
@@ -264,6 +266,7 @@ class ContractController extends Controller
 
         //Smart update
         $isUpdated = false;
+        $user = auth()->user();
         foreach (['start','end'] as $field)
         {
             /* @var $newDate \Carbon\Carbon */
@@ -271,6 +274,7 @@ class ContractController extends Controller
             if(!$newDate->isSameDay($contract->$field))
             {
                 $contract->$field=$newDate;
+                Log::info("userid ".$user->id." updated contract with id ".$contract->id." => ".$field." to ".$newDate);
                 $isUpdated=true;
             }
         }
@@ -303,33 +307,57 @@ class ContractController extends Controller
     {
         //TODO UI should send worker_contract id , not contract id...
 
-        $user=auth()->user();//Policy ensure required role
+        $user=auth()->user();
+
+        if(!$user->can('contracts.trash')){
+            Log::warning("missing role to delete contract");
+            abort(403,'You are not allowed to do this');
+        }
+
         $jobId = $request->get('job_id');
         $contracts = $request->get('job-'.$jobId.'-contracts');
 
-        DB::transaction(function () use ($user,$contracts,$jobId) {
-            $deleted = WorkerContract::whereIn('contract_id', $contracts)
-                ->update(['deleted_at' => now()]);
+        $deleted = DB::transaction(function () use ($user,$contracts,$jobId) {
+            $deleted=0;
+            WorkerContract::whereIn('contract_id', $contracts)->with('contract.clients')->each(
+                function(WorkerContract $workerContract) use(&$deleted,$user)
+                {
+                    if($user->can('contracts') || $workerContract->contract->clients->find($user->id)!==null){
+                        //Manual trash as WorkContract is a pivot and cannot softdelete
+                        if($workerContract->update(['deleted_at' => now()]))
+                        {
+                            $deleted++;
+                            Log::info("userid".$user->id." deleted worker contract with id ".$workerContract->id);
 
-            $cDeleted=Contract::
-                whereHas('jobDefinition', fn($q) => $q->where(tbl(JobDefinition::class) . '.id', '=', $jobId))
-                ->whereHas('clients', fn($q) => $q->where(tbl(User::class) . '.id', '=', $user->id))
+                            //softdelete contract if not any workers on it...
+                            $contractDeleted=$workerContract->contract->whereDoesntHave('workersContracts',
+                                function($query){
+                                        return $query->whereNull('deleted_at');
+                                })->delete();
 
-                //Drop only contracts which hasn’t any valid workers on it anymore...
-                ->whereDoesntHave('workersContracts',function($query){
-                    return $query->whereNull('deleted_at');
-                })
+                            Log::info("userid".$user->id." also deleted ".$contractDeleted." related contract with id ".$workerContract->contract->id);
+                        }
+                    }
+                    else{
+                        Log::warning("trying to delete contracts which do not belong");
+                    }
 
-                ->whereIn(tbl(Contract::class) . '.id', $contracts)
-                ->delete();
+                }
+            );
 
+            return $deleted;
+        });
+
+        if($deleted>0)
+        {
             return redirect('/dashboard')
                 ->with('success',
                     trans_choice(':number contract deleted|:number contracts deleted',$deleted,['number'=>$deleted]));
-        });
-
-        return redirect('/dashboard')
-            ->with('error', __('sorry an error occurred :-('));
+        }
+        else{
+            return redirect('/dashboard')
+                ->with('error', __('No contract deleted, wrong request ?'));
+        }
 
     }
 
