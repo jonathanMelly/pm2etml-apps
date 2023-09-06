@@ -118,7 +118,7 @@ test('Teacher see his contracts as a client', function () {
     $jobDefinition = $teacher->getJobDefinitionsWithActiveContracts(\App\Models\AcademicPeriod::current())
         //->where('one_shot','=','false')
         ->firstOrFail();
-    $contracts = $teacher->contractsAsAClientForJob($jobDefinition)->get();
+    $contracts = $teacher->contractsAsAClientForJob($jobDefinition,\App\Models\AcademicPeriod::current())->get();
     \PHPUnit\Framework\assertGreaterThan(0,$contracts->count());
 
     //When

@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Constants\RoleName;
 use App\Services\SummariesService;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -11,8 +14,9 @@ class DashboardController extends Controller
     /**
      * Handle the incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param SummariesService $statsService
+     * @return Application|Factory|View|\Illuminate\Foundation\Application|void
      */
     public function __invoke(Request $request, SummariesService $statsService)
     {
@@ -24,17 +28,18 @@ class DashboardController extends Controller
         {
             $contracts =null;
             $jobs=null;
+            $periodId = $request->get("academicPeriodId");
 
             //Teacher
             if($user->hasRole(RoleName::TEACHER))
             {
                 //Get jobs as a client
-                $jobs = $user->getJobDefinitionsWithActiveContracts($request->get("academicPeriodId"));
+                $jobs = $user->getJobDefinitionsWithActiveContracts($periodId);
 
                 $result = $view->with(compact('jobs'));
             }
             else
-            //Students
+            //Students (auto filtered on student periodId as using groupmember...)
             {
                 //Get jobs as Workers
                 $query = $user->contractsAsAWorker()
@@ -49,14 +54,15 @@ class DashboardController extends Controller
                 $result = $view->with(compact('contracts'));
             }
 
+
             //Append evaluations summary
             $evaluationsSummaryJsObject = $statsService->getEvaluationsSummary(
                 $user,
-                $request->get("academicPeriodId"),
+                $periodId,
                 $request->get("timeUnit")
             );
 
-            return  $result->with(compact('evaluationsSummaryJsObject'));
+            return  $result->with(compact('evaluationsSummaryJsObject','periodId'));
 
         }
         else

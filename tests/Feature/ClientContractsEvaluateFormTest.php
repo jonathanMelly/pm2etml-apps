@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Constants\RoleName;
+use App\Models\AcademicPeriod;
 use App\Models\User;
 use App\Models\WorkerContract;
 use App\Models\WorkerContractEvaluationLog;
@@ -52,7 +53,7 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
 
         $this->teacher=$clientAndJob['client'];
 
-        $contractIds = $this->teacher->contractsAsAClientForJob($clientAndJob['job'])
+        $contractIds = $this->teacher->contractsAsAClientForJob($clientAndJob['job'],AcademicPeriod::current())
             //->whereNull('success_date')
             ->take($contractsCount)
             ->get('id')->pluck('id')->toArray();

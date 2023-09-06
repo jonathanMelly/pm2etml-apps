@@ -44,15 +44,16 @@ class ClientContractsEditFormTest extends BrowserKitTestCase
         $clientAndJob = $this->createClientAndJob($contractsCount);
 
         $this->teacher=$clientAndJob['client'];
+        $period = \App\Models\AcademicPeriod::current(idOnly: false);
 
-        $contractIds = $this->teacher->contractsAsAClientForJob($clientAndJob['job'])
+        $contractIds = $this->teacher->contractsAsAClientForJob($clientAndJob['job'],$period->id)
             //->whereNull('success_date')
             ->take($contractsCount)
             ->get('id')->pluck('id')->toArray();
 
         $wkIds = WorkerContract::query()->whereIn('contract_id',$contractIds)->pluck('id')->toArray();
 
-        $year = \App\Models\AcademicPeriod::current(idOnly: false)->start->year;
+        $year = $period->start->year;
         $starts = ["$year-10-01","$year-12-01"];
         $ends=["$year-11-15","$year-12-25"];
         $this->visit('/contracts/bulkEdit/'.(implode(',',$wkIds)))
@@ -85,15 +86,15 @@ class ClientContractsEditFormTest extends BrowserKitTestCase
         $clientAndJob = $this->createClientAndJob($contractsCount);
 
         $this->teacher=$clientAndJob['client'];
+        $period = \App\Models\AcademicPeriod::current(idOnly: false);
 
-        $contractIds = $this->teacher->contractsAsAClientForJob($clientAndJob['job'])
+        $contractIds = $this->teacher->contractsAsAClientForJob($clientAndJob['job'],$period->id)
             //->whereNull('success_date')
             ->take($contractsCount)
             ->get('id')->pluck('id')->toArray();
 
         $wkIds = WorkerContract::query()->whereIn('contract_id',$contractIds)->pluck('id')->toArray();
 
-        $year = \App\Models\AcademicPeriod::current(idOnly: false)->start->year;
         $starts = ["1950-10-01"];
         $ends=["1950-11-15"];
         $url='/contracts/bulkEdit/'.(implode(',',$wkIds));

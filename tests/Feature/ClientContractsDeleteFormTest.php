@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\AcademicPeriod;
 use App\Models\JobDefinition;
 use App\Models\User;
 use Tests\BrowserKitTestCase;
@@ -41,7 +42,7 @@ class ClientContractsDeleteFormTest extends BrowserKitTestCase
     {
 
         $jobId = $this->job->id;
-        $contractIds = $this->teacher->contractsAsAClientForJob($this->job)->take($this->contractsCount)
+        $contractIds = $this->teacher->contractsAsAClientForJob($this->job,AcademicPeriod::current())->take($this->contractsCount)
             ->get('id')->pluck('id')->toArray();
 
         $this->assertEquals($this->contractsCount, sizeof($contractIds));

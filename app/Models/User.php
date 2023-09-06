@@ -102,15 +102,17 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
     }
 
     //Filter and order contracts for the current client for a given job
-    public function contractsAsAClientForJob(JobDefinition $job): Contract|Builder
+    public function contractsAsAClientForJob(JobDefinition $job,int $periodId): Contract|Builder
     {
         $contract_client = CustomPivotTableNames::CONTRACT_USER->value;
+
         return Contract::
             //No power join as using the pivot table as a shortcut than the entire relation
             join($contract_client,tbl(Contract::class).'.id','=',$contract_client.'.contract_id')
 
             ->where('job_definition_id','=',$job->id)
             ->where($contract_client . '.user_id','=',$this->id)
+            ->whereHas('workers.group.academicPeriod',fn($q)=>$q->where(tbl(AcademicPeriod::class).".id",'=',$periodId))
 
             ->with('workers.user')
             ->with('workers.group.groupName')
@@ -257,7 +259,7 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
                     inner join contracts c on c.job_definition_id=jd.id and c.deleted_at is null
                     inner join contract_client cc on cc.contract_id=c.id and cc.user_id=?
 
-                    inner join contract_worker cw on cw.contract_id=c.id
+                    inner join contract_worker cw on cw.contract_id=c.id and cw.deleted_at is null
                         inner join group_members gm on cw.group_member_id=gm.id and gm.deleted_at is null
                             inner join groups g on gm.group_id=g.id and g.deleted_at is null
                                 inner join academic_periods ap on g.academic_period_id=ap.id and ap.id=? and ap.deleted_at is null

@@ -80,7 +80,7 @@
                                 <x-contract-list-header :effort="false"/>
                             </tr>
 
-                            @foreach(auth()->user()->contractsAsAClientForJob($job)->get() as $contract)
+                            @foreach(auth()->user()->contractsAsAClientForJob($job,$periodId)->get() as $contract)
                                 <x-client-contract-list-element :job="$job" :contract="$contract"/>
                             @endforeach
                             </tbody>
