@@ -58,9 +58,26 @@ La fin du fichier [config/auth.php](https://raw.githubusercontent.com/jonathanMe
 Il faut impérativement utiliser MariaDB car le projet se base sur une utilisation particulière de la clause Group By...
 Si besoin, démarrer une instance avec Docker
 ```shell
-docker run --detach --env MARIADB_ROOT_PASSWORD=123 -p3306:3306  mariadb:10.3.34
+docker volume create pm2etml-db
+docker run --name pm2etml-mariadb -v pm2etml-db:/var/lib/mysql --detach --env MARIADB_ROOT_PASSWORD=123 -p3306:3306  mariadb:10.3.34
+docker stop pm2etml-mariadb
 ```
+
+Et pour les autres fois
+```shell
+docker start pm2etml-mariadb
+```
+
 Puis créer/remplir la base de données
+
+#### Création (si nécessaire)
+```shell
+docker exec -it pm2etml-mariadb  mysql -p
+create database pm2;
+exit
+```
+
+#### Remplissage
 ```shell
 php artisan migrate:fresh --seed
 ```
@@ -71,6 +88,13 @@ php artisan serve --port 80
 ```
 
 ## Rechargement à chaud des ressources javascript/css
+
+### Si nécessaire
+```shell
+npm install
+```
+
+### Rechargement à chaud
 ```shell
 npm run watch
 ```
