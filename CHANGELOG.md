@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.31.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.30.0...v1.31.0) (2023-09-08)
+
+
+### Features
+
+* **contract:** ability to edit contract periods (more than only edit dates) ([b376936](https://github.com/jonathanMelly/pm2etml-intranet/commit/b3769364c87ec7047ede09928e865315ef1aeb2f))
+
 ## [1.30.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.29.0...v1.30.0) (2023-09-06)
 
 
