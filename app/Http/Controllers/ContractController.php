@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Constants\RoleName;
 use App\DateFormat;
+use App\Enums\RequiredTimeUnit;
 use App\Http\Requests\ContractEvaluationRequest;
 use App\Http\Requests\DestroyAllContractRequest;
 use App\Http\Requests\StoreContractRequest;
@@ -203,37 +204,59 @@ class ContractController extends Controller
         //
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function bulkUpdate(UpdateContractBulkRequest $request)
     {
         //SECURITY CHECKS (as this area is opened to students who might want to play with ids...)
         $this->authorize('contracts.edit');
 
-        $contracts = $this->getContractsForModifications(collect($request->get("workersContracts"))->join(','),true);
-        $starts = $request->get("starts");
-        $ends = $request->get("ends");
         $updated = 0;
-        foreach($contracts->all() as $i=>$contract)
-        {
-            $updateRequest= UpdateContractRequest::createFrom($request);
-            $updateRequest->replace(["start"=>DateFormat::DateFromHtmlInput($starts[$i]),"end"=>DateFormat::DateFromHtmlInput($ends[$i])]);
 
-            //TODO: is policy still applied here ?
-            $result = $this->update($updateRequest,$contract,$i);
-            //Validation error...
-            if($result instanceof \Symfony\Component\HttpFoundation\Response)
+        $contracts = $this->getContractsForModifications(collect($request->input("workersContracts"))->join(','),true);
+        $starts = $request->input("starts");
+        $ends = $request->input("ends");
+        $allocated_times = $request->input("allocated_times");
+        $workersContracts = $request->input("workersContracts");
+
+        DB::beginTransaction();
+        try{
+            foreach($contracts->all() as $i=>$contract)
             {
-                return $result;
-            }
-            $updated += $result;
-        }
+                $updateRequest= UpdateContractRequest::createFrom($request);
+                $updateRequest->replace([
+                    "start"=>DateFormat::DateFromHtmlInput($starts[$i]),
+                    "end"=>DateFormat::DateFromHtmlInput($ends[$i]),
+                    "allocated_time"=>$allocated_times[$i]
+                ]);
 
-        //Only save if no errors...
-        $contracts->each(fn($c)=>$c->save());
+                //TODO: is policy still applied here ?
+                $workerContract = WorkerContract::whereId($workersContracts[$i])->firstOrFail();
+                $result = $this->update($updateRequest,$contract,$i,$workerContract);
+                //Validation error...
+                if($result instanceof \Symfony\Component\HttpFoundation\Response)
+                {
+                    DB::rollBack();
+                    return $result;
+                }
+                $updated += $result;
+            }
+
+            //Only save if no errors...
+            $contracts->each(fn($c)=>$c->save());
+            DB::commit();
+
+        }catch(\Throwable $t){
+            DB::rollBack();
+            throw $t;
+        }
 
         return $this->createUpdateResponse($updated);
 
     }
 
+    //TODO refactor to have only use workercontract... ?
     /**
      * Update the specified resource in storage.
      *
@@ -241,7 +264,7 @@ class ContractController extends Controller
      * @param  \App\Models\Contract  $contract
      * @return \Symfony\Component\HttpFoundation\Response | int
      */
-    public function update(UpdateContractRequest $request, Contract $contract, $index=-1) : \Symfony\Component\HttpFoundation\Response | int
+    public function update(UpdateContractRequest $request, Contract $contract, $index=-1,WorkerContract $workerContract=null) : \Symfony\Component\HttpFoundation\Response | int
     {
         //TODO: if policy is not applied on $this->update call (like spring proxy in java), policy must be manually applied...
         $bulk=$index!=-1;
@@ -274,8 +297,23 @@ class ContractController extends Controller
             if(!$newDate->isSameDay($contract->$field))
             {
                 $contract->$field=$newDate;
-                Log::info("userid ".$user->id." updated contract with id ".$contract->id." => ".$field." to ".$newDate);
-                $isUpdated=true;
+                $isUpdated=$contract->save();
+                if($isUpdated){
+                    Log::info("userid ".$user->id." updated contract with id ".$contract->id." => ".$field." to ".$newDate);
+                }
+            }
+        }
+
+        if($workerContract!==null) {
+            $allocated_time = $request->input('allocated_time');
+            if ($allocated_time !== null && $allocated_time != $workerContract->getAllocatedTime(RequiredTimeUnit::PERIOD))
+            {
+                $workerContract->allocated_time = $allocated_time;
+                $isUpdated=$workerContract->save();
+                if($isUpdated)
+                {
+                    Log::info("userid ".$user->id." updated worker contract with id ".$workerContract->id." => allocated_time to ".$allocated_time);
+                }
             }
         }
 
@@ -286,7 +324,6 @@ class ContractController extends Controller
         }
         else
         {
-            $contract->save();
             return $this->createUpdateResponse($updatedCount);
         }
 

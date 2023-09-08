@@ -2,9 +2,10 @@
 
     @push('custom-scripts')
         <script>
-        function updateAll(start,end)
+        function updateAll(start,end,time)
         {
-            const elements = {'starts': start, 'ends': end};
+            const elements = {'starts': start, 'ends': end,'allocated_time':time};
+
             for(let selector in elements)
             {
                 document.querySelectorAll("[name^='"+selector+"']").forEach((el)=>{
@@ -50,6 +51,7 @@
                     </th>
                     <th class="w-96 text-center">{{__('Start')}}</th>
                     <th class="text-center">{{__('End')}}</th>
+                    <th class="text-center">{{__('Periods')}}</th>
                     <th class="text-center">{{__('Action')}}</th>
                 </tr>
                 </thead>
@@ -61,10 +63,12 @@
                 @foreach($contracts as $contract)
                     @foreach($contract->workersContracts as $workerContract)
                         @php
+                        /* @var $workerContract \App\Models\WorkerContract */
                         $start = old("starts.$i",$contract->start?->format(\App\DateFormat::HTML_FORMAT));
                         $end = old("ends.$i",$contract->end?->format(\App\DateFormat::HTML_FORMAT));
+                        $allocated_time = old("allocated_time.$i",$workerContract->getAllocatedTime(\App\Enums\RequiredTimeUnit::PERIOD));
                         @endphp
-                        <tr class="h-16" x-data="{start:'{{$start}}',end:'{{$end}}'}">
+                        <tr class="h-16" x-data="{start:'{{$start}}',end:'{{$end}}',allocated_time:'{{$allocated_time}}'}">
                             <td class="">{{$workerContract->groupMember->user->getFirstnameL()}}</td>
                             <td class="text-center">
                                 <input type="hidden" name="workersContracts[{{$i}}]" value="{{$workerContract->id}}">
@@ -73,10 +77,17 @@
                             <td class="text-center">
                                 <input x-model="end" type="date" name="ends[{{$i}}]" class="input input-bordered input-secondary @error("workersContracts.$i") !bg-error @enderror">
                             </td>
+                            <td class="text-center">
+                                <input x-model="allocated_time" class="input text-lg font-bold input-bordered input-accent @error("workersContracts.$i") !bg-error @enderror"
+                                       name="allocated_times[{{$i}}]"
+                                       min="{{\App\Models\JobDefinition::MIN_PERIODS}}"
+                                       max="{{\App\Models\JobDefinition::MAX_PERIODS}}"
+                                       type="number">
+                            </td>
                             <td class="text-right">
                                 <button
                                     type="button"
-                                    @click="updateAll(start,end)"
+                                    @click="updateAll(start,end,allocated_time)"
                                     class="btn btn-sm btn-secondary">
                                     {{__('Apply to all')}}
                                 </button>
@@ -90,7 +101,7 @@
                 </tbody>
                 <tfoot>
                 <tr>
-                    <th colspan="3"/>
+                    <th colspan="5"/>
                 </tr>
                 </tfoot>
             </table>

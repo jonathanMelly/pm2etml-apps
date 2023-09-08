@@ -26,7 +26,8 @@ class UpdateContractBulkRequest extends FormRequest
         return [
             'workersContracts'=>'array',
             'starts'=>'array',
-            'ends'=>'array'
+            'ends'=>'array',
+            'allocated_times'=>'array'
         ];
     }
 }
