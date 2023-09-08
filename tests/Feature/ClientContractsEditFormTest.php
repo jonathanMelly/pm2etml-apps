@@ -37,7 +37,7 @@ class ClientContractsEditFormTest extends BrowserKitTestCase
         });
     }
 
-    public function test_teacher_can_edit_dates(): void
+    public function test_teacher_can_edit_dates_and_periods(): void
     {
         $contractsCount=2;
 
@@ -56,12 +56,14 @@ class ClientContractsEditFormTest extends BrowserKitTestCase
         $year = $period->start->year;
         $starts = ["$year-10-01","$year-12-01"];
         $ends=["$year-11-15","$year-12-25"];
+        $times=["7","8"];
         $this->visit('/contracts/bulkEdit/'.(implode(',',$wkIds)))
            // ->submitForm(__('Confirm'),['password'=>config('auth.fake_password')])
             ->submitForm(trans('Save modifications'), [
                 'workersContracts' => $wkIds,
                 'starts'=>$starts,
-                'ends'=>$ends
+                'ends'=>$ends,
+               'allocated_times'=>$times
 
             ])
             ->seeText($contractsCount.' contrats mis à jour')
@@ -75,6 +77,7 @@ class ClientContractsEditFormTest extends BrowserKitTestCase
             $wk=WorkerContract::whereId($wkId)->firstOrFail();
             $this->assertEquals($starts[$i], $wk->contract->start->format(\App\DateFormat::HTML_FORMAT));
             $this->assertEquals($ends[$i], $wk->contract->end->format(\App\DateFormat::HTML_FORMAT));
+            $this->assertEquals($times[$i], $wk->getAllocatedTime(\App\Enums\RequiredTimeUnit::PERIOD));
         }
 
     }
