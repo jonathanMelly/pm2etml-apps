@@ -5,13 +5,9 @@ namespace App\Models;
 use App\Constants\AttachmentTypes;
 use App\Constants\FileFormat;
 use App\Constants\MorphTargets;
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
-use http\Exception\InvalidArgumentException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\MultipleRecordsFoundException;
-use Illuminate\Support\Facades\Storage;
 use Parental\HasChildren;
 
 class Attachment extends Model
