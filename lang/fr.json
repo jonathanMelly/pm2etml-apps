@@ -312,5 +312,6 @@
     "Export": "Exporter",
     "Part": "Partie",
     "main": "global",
-    "Periods": "Périodes"
+    "Periods": "Périodes",
+    "Note: currently associated contracts won’t be affected": "Note: les contrats associés ne seront pas affecté"
 }

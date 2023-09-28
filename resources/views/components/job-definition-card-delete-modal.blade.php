@@ -2,6 +2,7 @@
 <div class="modal">
     <div class="modal-box">
         <h3 class="font-bold text-lg">{{__('Do you really want to delete the following job ?',)}}</h3>
+        <div class="italic">({{__('Note: currently associated contracts won’t be affected')}})</div>
         <p class="py-4">
 
         <div class="flex flex-wrap">

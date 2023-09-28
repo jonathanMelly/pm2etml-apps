@@ -253,6 +253,9 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
             throw new \Illuminate\Validation\UnauthorizedException('Only for teacher');
         }
 
+        //When a job is trashed, some contracts may still be pending... Let contracts be deleted separately
+        $whereJob="";//"where jd.deleted_at is null";
+
         //TODO convert into powerRelation to avoid hard-coded table names and uses soft delete...
         $sqlQuery = "
                 select jd.*,min(c.start) as min_start,max(c.end) as max_end,count(c.id) as contracts_count from job_definitions jd
@@ -264,7 +267,7 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
                             inner join groups g on gm.group_id=g.id and g.deleted_at is null
                                 inner join academic_periods ap on g.academic_period_id=ap.id and ap.id=? and ap.deleted_at is null
 
-                    where jd.deleted_at is null
+                    $whereJob
 
                     group by c.job_definition_id
 
