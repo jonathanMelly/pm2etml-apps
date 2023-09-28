@@ -5,14 +5,17 @@ namespace App\Http\Controllers;
 use App\Constants\RoleName;
 use App\Exceptions\DataIntegrityException;
 use App\Http\Requests\StoreUpdateJobDefinitionRequest;
-use App\Http\Requests\UpdateJobDefinitionRequest;
 use App\Models\Attachment;
 use App\Models\JobDefinition;
 use App\Models\JobDefinitionMainImageAttachment;
 use App\Models\Skill;
 use App\Models\User;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
 
@@ -83,7 +86,7 @@ class JobDefinitionController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\JobDefinition  $jobDefinition
+     * @param JobDefinition $jobDefinition
      * @return \Illuminate\Http\Response
      */
     public function show(JobDefinition $jobDefinition)
@@ -94,7 +97,7 @@ class JobDefinitionController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\JobDefinition  $jobDefinition
+     * @param JobDefinition $jobDefinition
      * @return \Illuminate\Http\Response
      */
     public function edit(Request $request, JobDefinition $jobDefinition)
@@ -106,7 +109,7 @@ class JobDefinitionController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \App\Http\Requests\UpdateJobDefinitionRequest  $request
-     * @param  \App\Models\JobDefinition  $jobDefinition
+     * @param JobDefinition $jobDefinition
      * @return \Illuminate\Http\Response
      */
     public function update(StoreUpdateJobDefinitionRequest $request, JobDefinition $jobDefinition)
@@ -117,16 +120,16 @@ class JobDefinitionController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\JobDefinition  $jobDefinition
-     * @return \Illuminate\Http\Response
+     * @param JobDefinition $jobDefinition
+     * @param User $user
+     * @return Application|\Illuminate\Foundation\Application|RedirectResponse|Redirector
      */
-    public function destroy(JobDefinition $jobDefinition)
+    public function destroy(JobDefinition $jobDefinition, User $user)
     {
-        //Mark attachments as deleted (do not use mass delete to keep EVENT processing)
-        Attachment::where('attachable_id','=',$jobDefinition->id)
-            ->each(fn($a)=>$a->delete());
-
         $jobDefinition->delete();
+
+        Log::info("Job with id {$jobDefinition->id} deleted by user with id {$user->id}");
+
         return redirect(route('marketplace'))
             ->with('success', __('Job ":job" deleted', ['job' => $jobDefinition->title]));
     }

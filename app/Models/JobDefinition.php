@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use JetBrains\PhpStorm\Pure;
 
 class JobDefinition extends Model
@@ -141,13 +142,25 @@ class JobDefinition extends Model
 
     public function attachments(): MorphMany
     {
-        return $this->morphMany(JobDefinitionDocAttachment::class, 'attachable');
+        $relation = $this->morphMany(JobDefinitionDocAttachment::class, 'attachable');
+        if($this->trashed())
+        {
+            return $relation->withTrashed();
+        }
+        return $relation;
     }
 
     public function image(): MorphOne
     {
-        return $this->morphOne(related: JobDefinitionMainImageAttachment::class,
+
+        $relation = $this->morphOne(related: JobDefinitionMainImageAttachment::class,
             name: 'attachable');
+
+        if($this->trashed())
+        {
+            return $relation->withTrashed();
+        }
+        return $relation;
     }
 
     public function skills(): BelongsToMany
@@ -183,8 +196,6 @@ class JobDefinition extends Model
         return $this->published_date!==null && $this->published_date->isBefore(Carbon::tomorrow());
     }
 
-
-
     public function sortUsers(Collection $users, bool $byLoad=true): Collection
     {
         $orders = [];
@@ -210,6 +221,17 @@ class JobDefinition extends Model
         $clients = User::role(RoleName::TEACHER)->get()->filter(fn($el) => $exclude->doesntContain('id', '=', $el->id));
 
         return $this->sortUsers($clients,$sortedByLoad);
+    }
+
+    public function delete()
+    {
+        return DB::transaction(function (){
+            //Mark attachments as deleted (do not use mass delete to keep EVENT processing)
+            Attachment::where('attachable_id', '=', $this->id)
+                ->each(fn($a) => $a->delete());
+
+            return parent::delete();
+        });
     }
 
 }

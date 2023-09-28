@@ -67,7 +67,9 @@ test('Eleve cannot see FAQ tool/url shortener but git', function () {
     $response->assertSeeText("git.section-inf.ch");
 });
 
-test('Student see his contracts as a worker and can download summary', function () {
+test('Student see his contracts as a worker and can download summary even for trashed jobs', function () {
+    /* @var $this \tests\TestCase */
+
     //Given
     $eleve = User::role(\App\Constants\RoleName::STUDENT)->firstOrFail();
     $this->be($eleve);
@@ -78,6 +80,7 @@ test('Student see his contracts as a worker and can download summary', function 
     \PHPUnit\Framework\assertGreaterThan(0,$contracts->count());
     \PHPUnit\Framework\assertGreaterThan(0,$contracts->filter(fn($c)=>
     $c->workerContract($eleve->groupMember()->firstOrFail())->firstOrFail()->alreadyEvaluated())->count());
+
 
     //When
     /* @var $response TestResponse */
@@ -104,6 +107,12 @@ test('Student see his contracts as a worker and can download summary', function 
     \PHPUnit\Framework\assertStringEndsWith(
         '.xlsx',$response->baseResponse->headers->get('content-disposition'));
 
+    //And when a project is deleted (by an admin)
+    $jobId = $contracts->firstOrFail()->jobDefinition->delete();
+
+    //then dashboard is still up and running
+    $response = $this->get('/dashboard');
+    $response->assertStatus(200);
 });
 
 test('Teacher see his contracts as a client', function () {

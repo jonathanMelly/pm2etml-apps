@@ -12,9 +12,10 @@ use App\Models\User;
 use Database\Seeders\AcademicPeriodSeeder;
 use Database\Seeders\UserV1Seeder;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\Response;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Tests\BrowserKitTestCase;
+use function PHPUnit\Framework\assertEquals;
 
 class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
 {
@@ -181,6 +182,26 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
             )
             ->seePageIs('/jobDefinitions/create')
             ->seeText('erreur');
+
+    }
+
+    public function test_teacher_can_delete_job(){
+
+        //Arrange
+        /* @var $job JobDefinition */
+        ['client'=>$client,'job'=>$job]=$this->createClientAndJob();
+        self::assertFalse($job->trashed());
+
+
+        //WHEN
+        /* @var $response Response */
+        $response = $this->call('POST',"/jobDefinitions/{$job->id}",["_method"=>"delete"]);
+        $job->refresh();
+
+        //Then
+        assertEquals($response->status(),302);
+        self::assertStringContainsString("/marketplace",$response->content());
+        self::assertTrue($job->trashed());
 
     }
 
