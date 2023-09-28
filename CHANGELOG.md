@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.32.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.31.0...v1.32.0) (2023-09-28)
+
+
+### Features
+
+* **job:** add warning about contracts not deleted when deleting a job ([761a7b9](https://github.com/jonathanMelly/pm2etml-intranet/commit/761a7b9196b380f344fec72753072bd1e40714d5))
+
+
+### Bug Fixes
+
+* **dashboard:** no more error on contracts linked to deleted jobs ([7f277bd](https://github.com/jonathanMelly/pm2etml-intranet/commit/7f277bd0964eb01ef99506917d4ed9975a5c3578))
+* **dashboard:** show active contracts of deleted jobs too ([761a7b9](https://github.com/jonathanMelly/pm2etml-intranet/commit/761a7b9196b380f344fec72753072bd1e40714d5))
+
 ## [1.31.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.30.0...v1.31.0) (2023-09-08)
 
 
