@@ -42,7 +42,7 @@ class EvaluationSheet implements WithTitle,FromCollection,ShouldAutoSize,WithSty
         $this->data->each(function($studentEvaluations) use($projects){
             foreach($studentEvaluations as $studentEvaluation){
                 $projectName = $studentEvaluation[SummariesService::PI_PROJECT];
-                $workload = $studentEvaluation[SummariesService::PI_ACCUMULATED_TIME];
+                $workload = $studentEvaluation[SummariesService::PI_TIME];
                 $date = $studentEvaluation[SummariesService::PI_DATE];
                 $client = $studentEvaluation[SummariesService::PI_CLIENTS];
 
