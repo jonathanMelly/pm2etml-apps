@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.32.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.32.0...v1.32.1) (2023-11-06)
+
+
+### Bug Fixes
+
+* **export:** print correct periods count for project (not accumulated...) ([455fbe0](https://github.com/jonathanMelly/pm2etml-intranet/commit/455fbe05500b7a7c162a2640f3b1cb8c7cb67fa7))
+
 ## [1.32.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.31.0...v1.32.0) (2023-09-28)
 
 
