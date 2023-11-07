@@ -9,6 +9,7 @@ use App\Models\AcademicPeriod;
 use App\Models\Contract;
 use App\Models\User;
 use App\Models\WorkerContract;
+use App\SwissFrenchDateFormat;
 use Illuminate\Support\Collection;
 use LaravelIdea\Helper\App\Models\_IH_WorkerContract_C;
 
@@ -25,6 +26,7 @@ class SummariesService
     const PI_ACCUMULATED_TIME=5;
     const PI_PROJECT=6;
     const PI_CLIENTS=7;
+    const PI_PROJECT_SPECIFIC = 8;
 
     /**
      * @param User $user
@@ -223,6 +225,7 @@ class SummariesService
                 $group = $groupMember->group->groupName->name;
                 $success = $wContract->success;
                 $project = $contract->jobDefinition->title;
+
                 $date = $wContract->success_date;
                 $time = $wContract->getAllocatedTime($timeUnit);
 
@@ -231,21 +234,31 @@ class SummariesService
                 $accumulatedTime += $time;
                 $accumulatedSuccessTime += $successTime;
 
-                $formattedDate = $date->format("Y-m-d h:i");
+                $formattedDateForECharts = $date->format("Y-m-d h:i");
                 $percentage = round($accumulatedSuccessTime / $accumulatedTime * 100);
 
                 $clients = $contract->clients->transform(fn($client)=>$client->getFirstnameL())->implode(',');
 
+                $part="";
+                if($wContract->name!=null){
+                    $part = "-".$wContract->name."-";
+                }
+                //Used for excel export when grouping by project... as a single project
+                //may have contracts with specific periods OR different "parts", it's better creating
+                //a custom ID with all info when we have it
+                $projectSpecific = $project .$part." (".$time."p, ".$date->format(SwissFrenchDateFormat::DATE).", ".$clients.")";
+
                 //ATTENTION: for echarts series format (as currently used), first 2 infos are X and Y ...
                 $seriesData[$group][$workerName][] = [
-                    self::PI_DATE=> $formattedDate,
+                    self::PI_DATE=> $formattedDateForECharts,
                     self::PI_CURRENT_PERCENTAGE=> $percentage,
                     self::PI_SUCCESS_TIME => $successTime,
                     self::PI_TIME=> $time,
                     self::PI_ACCUMULATED_SUCCESS_TIME=> $accumulatedSuccessTime,
                     self::PI_ACCUMULATED_TIME => $accumulatedTime,
                     self::PI_PROJECT => $project,
-                    self::PI_CLIENTS=> $clients];
+                    self::PI_CLIENTS=> $clients,
+                    self::PI_PROJECT_SPECIFIC=>$projectSpecific];
 
                 //Idea of evolution for easier data post-processing:
                 // $seriesData[]=['group'=>$group,'worker'=>$workerName,'data'=>[$formattedDate, $percentage, $successTime, $time, $totalSuccessTime, $totalTime, $project,$clients]];

@@ -31,6 +31,7 @@ class EvaluationSheet implements WithTitle,FromCollection,ShouldAutoSize,WithSty
         $TIME_NA=3;
 
         //Format is [bob][[1.1.2021,55%,...,projectName,clients]]
+        //create first columns headers before real projects
         $projects = collect([
             $SUMMARY=>['name'=>'bilan'],
             $PERCENTAGE=>['name'=>'%'],
@@ -41,18 +42,12 @@ class EvaluationSheet implements WithTitle,FromCollection,ShouldAutoSize,WithSty
         //list all projects
         $this->data->each(function($studentEvaluations) use($projects){
             foreach($studentEvaluations as $studentEvaluation){
-                $projectName = $studentEvaluation[SummariesService::PI_PROJECT];
-                $workload = $studentEvaluation[SummariesService::PI_TIME];
-                $date = $studentEvaluation[SummariesService::PI_DATE];
-                $client = $studentEvaluation[SummariesService::PI_CLIENTS];
+                $projectNameSpecific = $studentEvaluation[SummariesService::PI_PROJECT_SPECIFIC];
 
-                if($projects->where(fn($p)=>$p['name']==$projectName)->count()==0)
+                if($projects->where(fn($p)=>$p['name']==$projectNameSpecific)->count()==0)
                 {
                     $projects->add([
-                        'name'=>$projectName,
-                        'workload'=>$workload,
-                        'date'=>$date,
-                        'client'=>$client
+                        'name'=>$projectNameSpecific,
                     ]);
                 }
             }
@@ -70,7 +65,7 @@ class EvaluationSheet implements WithTitle,FromCollection,ShouldAutoSize,WithSty
             {
                 $studentEval = $studentEvals[$i];
 
-                $studentsProjectsMap[$studentId][$studentEval[SummariesService::PI_PROJECT]]=
+                $studentsProjectsMap[$studentId][$studentEval[SummariesService::PI_PROJECT_SPECIFIC]]=
                     $studentEval[SummariesService::PI_SUCCESS_TIME]>0?EvaluationResult::A->name : EvaluationResult::NA->name;
             }
 
@@ -93,13 +88,7 @@ class EvaluationSheet implements WithTitle,FromCollection,ShouldAutoSize,WithSty
         //Build excel rows
         $rows = [];
         $header  = array_merge(['prénom','nom'],$projects->map(function($p) {
-            $label =$p['name'];
-            if(array_key_exists('workload',$p)){
-                $label .= ' (' . $p['workload'] . 'p, ' .
-                    $p['date'] . ', ' .
-                    $p['client'] . ')';
-            }
-            return $label;
+            return $p['name'];
 
         })->all());
 
