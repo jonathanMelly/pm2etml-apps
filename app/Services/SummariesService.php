@@ -241,7 +241,7 @@ class SummariesService
 
                 $part="";
                 if($wContract->name!=null){
-                    $part = "-".$wContract->name."-";
+                    $part = "-".$wContract->name;
                 }
                 //Used for excel export when grouping by project... as a single project
                 //may have contracts with specific periods OR different "parts", it's better creating
