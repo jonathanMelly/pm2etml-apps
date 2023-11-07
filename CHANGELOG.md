@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.32.2](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.32.1...v1.32.2) (2023-11-07)
+
+
+### Bug Fixes
+
+* **eval export:** prints correct title and periods for aggregated projects in excel export ([2a15290](https://github.com/jonathanMelly/pm2etml-intranet/commit/2a152905cbe96aa25eb891582a9b5d1710bd8046))
+* **eval export:** removed extra dash after project subpart (if any) ([59e9f72](https://github.com/jonathanMelly/pm2etml-intranet/commit/59e9f7262811ef2742650c3fd91976c729e34efe))
+
 ## [1.32.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.32.0...v1.32.1) (2023-11-06)
 
 
