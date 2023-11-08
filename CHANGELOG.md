@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.33.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.32.2...v1.33.0) (2023-11-08)
+
+
+### Features
+
+* **formative jobs:** allow 0 period contracts ([a187130](https://github.com/jonathanMelly/pm2etml-intranet/commit/a18713035f5ec367fce1289c3b990efb1abce33a))
+
 ## [1.32.2](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.32.1...v1.32.2) (2023-11-07)
 
 
