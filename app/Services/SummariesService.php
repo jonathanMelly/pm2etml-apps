@@ -75,6 +75,8 @@ class SummariesService
             $wContracts = $wContractsBaseQuery
                 ->with('contract.jobDefinition')
 
+                ->where('allocated_time','>',0)
+
                 ->orderByPowerJoins('groupMember.group.groupName.year')
                 ->orderByPowerJoins('groupMember.group.groupName.name')
                 ->orderByPowerJoins('groupMember.user.lastname')
@@ -207,7 +209,7 @@ class SummariesService
             /* @var $contract Contract */
             $contract = $wContract->contract;
 
-            if ($wContract->alreadyEvaluated()) {
+            if ($wContract->alreadyEvaluated() && $wContract->getAllocatedTime()>0) {
 
                 $groupMember = $wContract->groupMember;
                 $worker = $groupMember->user;
