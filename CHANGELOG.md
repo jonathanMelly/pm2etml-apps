@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.33.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.33.0...v1.33.1) (2023-11-22)
+
+
+### Bug Fixes
+
+* **evaluation log:** fix sql trigger syntax on condition !=null =&gt; is not null ([9d068e3](https://github.com/jonathanMelly/pm2etml-intranet/commit/9d068e3f1ee3278e8461a7b12098738c4880f87a))
+
 ## [1.33.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.32.2...v1.33.0) (2023-11-08)
 
 
