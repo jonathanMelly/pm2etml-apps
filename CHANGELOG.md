@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.34.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.33.1...v1.34.0) (2023-11-24)
+
+
+### Features
+
+* **contract edit:** add subpart info (for multi-eval on same project...) ([6748346](https://github.com/jonathanMelly/pm2etml-intranet/commit/6748346117f0116a68b3feacf23625a905e3b547))
+* **contract:** add localstorage persisted already evaluated filter toggle ([a78fc8c](https://github.com/jonathanMelly/pm2etml-intranet/commit/a78fc8c6ef6dad80182cb71073264120fdfacf4c))
+* **evaluation summary:** collapse by default evaluation summary (status is saved in localstorage) ([a78fc8c](https://github.com/jonathanMelly/pm2etml-intranet/commit/a78fc8c6ef6dad80182cb71073264120fdfacf4c))
+
 ## [1.33.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.33.0...v1.33.1) (2023-11-22)
 
 
