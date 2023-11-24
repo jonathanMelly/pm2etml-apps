@@ -1,24 +1,34 @@
+<div class="overflow-x-auto w-full" x-data="{contracts:'',hideAlreadyEvaluated:$persist(false)}">
+    <div class="form-control w-80">
+        <label class="cursor-pointer label">
+            <span class="label-text">{{__('Hide already evaluated contracts')}}</span>
+            <input type="checkbox" class="toggle toggle-accent"
+                   @click="hideAlreadyEvaluated=!hideAlreadyEvaluated;
+                   if(hideAlreadyEvaluated){toggleCheckBoxes('job-',false,true)};"
+                   :checked="hideAlreadyEvaluated"/>
+        </label>
+    </div>
 
-    <div class="overflow-x-auto w-full" x-data="{contracts:''}">
-        <table class="table w-full">
-            <!-- head -->
-            <thead>
-            <tr>
-                <x-client-job-list-header/>
-            </tr>
-            </thead>
-           <script>
-                document.addEventListener('alpine:init', () => {
-                    {!! $jobs->values()->transform(fn($job) =>"Alpine.store('show$job->id', false)")->join(';')!!}
-                })
-            </script>
+    <table class="table w-full">
+        <!-- head -->
+        <thead>
+        <tr>
+            <x-client-job-list-header/>
+        </tr>
+        </thead>
+        <script>
+            document.addEventListener('alpine:init', () => {
+                {!! $jobs->values()->transform(fn($job) =>"Alpine.store('show$job->id', false)")->join(';')!!}
+            })
+        </script>
 
-            <tbody>
-            @foreach($jobs as $job)
-                <form method="post" action="{{route('contracts.destroyAll')}}" id="job-{{$job->id}}-form" x-on:submit.prevent>
-                    @method('DELETE')
-                    @csrf
-                    <input type="hidden" name="job_id" value="{{$job->id}}">
+        <tbody>
+        @foreach($jobs as $job)
+            <form method="post" action="{{route('contracts.destroyAll')}}" id="job-{{$job->id}}-form"
+                  x-on:submit.prevent>
+                @method('DELETE')
+                @csrf
+                <input type="hidden" name="job_id" value="{{$job->id}}">
                 {{-- JOB DESCRIPTION --}}
                 <x-client-job-list-element :job="$job"/>
 
@@ -26,7 +36,7 @@
                 <tr x-show="$store.show{{$job->id}}" x-transition.opacity x-data="{massAction:false}">
                     <td colspan="6">
 
-                        <table class="table table-compact table-zebra w-full">
+                        <table :class="{ 'table-zebra': !hideAlreadyEvaluated}" class="table table-compact custom-zebra w-full">
                             <thead>
                             {{-- CONTRACTS MULTI ACTION HEADERS --}}
                             <tr>
@@ -37,7 +47,8 @@
                                         </div>
                                         <div class="btn-group">
 
-                                            <button type="button" x-bind:disabled="!massAction" class="btn btn-outline btn-error btn-xs multi-action-{{$job->id}}"
+                                            <button type="button" x-bind:disabled="!massAction"
+                                                    class="btn btn-outline btn-error btn-xs multi-action-{{$job->id}}"
                                                     @click="contracts=Array.from(document.getElementsByName('job-{{$job->id}}-contracts[]'))
                                                     .filter(el=>el.checked)
                                                     .map(el=>el.getAttribute('data-workers'));
@@ -47,7 +58,8 @@
                                                 </label>
                                             </button>
 
-                                            <button x-bind:disabled="!massAction" class="btn btn-outline btn-warning btn-xs multi-action-{{$job->id}}"
+                                            <button x-bind:disabled="!massAction"
+                                                    class="btn btn-outline btn-warning btn-xs multi-action-{{$job->id}}"
                                                     @click="cids=Array.from(document.getElementsByName('job-{{$job->id}}-contracts[]'))
                                                     .filter(el=>el.checked)
                                                     .map(el=>el.getAttribute('value'))
@@ -55,7 +67,8 @@
                                                 <i class="fa-solid fa-calendar-days mr-1"></i>{{__('Edit')}}
                                             </button>
 
-                                            <button x-bind:disabled="!massAction" class="btn btn-outline btn-success btn-xs multi-action-{{$job->id}}"
+                                            <button x-bind:disabled="!massAction"
+                                                    class="btn btn-outline btn-success btn-xs multi-action-{{$job->id}}"
                                                     @click="cids=Array.from(document.getElementsByName('job-{{$job->id}}-contracts[]'))
                                                     .filter(el=>el.checked)
                                                     .map(el=>el.getAttribute('value'))
@@ -104,7 +117,8 @@
 
                         <div class="flex flex-wrap">
                             <div class="w-1/4">
-                                <i class="fa-solid fa-project-diagram fa-align-center mr-2"></i> <strong> {{__('Project')}}:</strong>
+                                <i class="fa-solid fa-project-diagram fa-align-center mr-2"></i>
+                                <strong> {{__('Project')}}:</strong>
                             </div>
                             <div class="w-3/4">
                                 {{$job->title}}
@@ -113,7 +127,8 @@
                         </p>
 
                         <p class="py-4">
-                            <i class="fa-solid fa-users-gear"></i> <strong>{{__("Workers")}} (<span x-text="contracts.length"></span>):</strong>
+                            <i class="fa-solid fa-users-gear"></i> <strong>{{__("Workers")}} (<span
+                                    x-text="contracts.length"></span>):</strong>
                         <ul class="flex flex-wrap">
                             <template x-for="contract in contracts">
                                 <li x-text="contract" class="w-1/3"></li>
@@ -122,10 +137,10 @@
                         </p>
 
 
-
                         <div class="modal-action">
-                            <button id="job-{{$job->id}}-submit" disabled @click="document.querySelector('#job-{{$job->id}}-form').submit()"
-                                    type="button" class="btn btn-outline btn-error" >{{__('Yes')}}</button>
+                            <button id="job-{{$job->id}}-submit" disabled
+                                    @click="document.querySelector('#job-{{$job->id}}-form').submit()"
+                                    type="button" class="btn btn-outline btn-error">{{__('Yes')}}</button>
 
                             <label for="delete-contract-modal-{{$job->id}}" class="btn"
                                    @click="document.querySelector('#job-{{$job->id}}-submit').disabled=true">{{__('No')}}</label>
@@ -133,18 +148,18 @@
 
                     </div>
                 </div>
-                </form>
+            </form>
 
-            @endforeach
-            </tbody>
+        @endforeach
+        </tbody>
 
-            <!-- foot -->
-            <tfoot>
-            </tfoot>
+        <!-- foot -->
+        <tfoot>
+        </tfoot>
 
-        </table>
+    </table>
 
-    </div>
+</div>
 
 
 

@@ -8,8 +8,12 @@
     /* @var $contract \App\Models\Contract */
     /* @var $wc \App\Models\WorkerContract */
     $wc = $contract->workerContract($contract->workers[0])->firstOrFail();
+
+    $hideDone = false;
+
+    $hideUponRequest = $wc->alreadyEvaluated()?"x-show=!hideAlreadyEvaluated":"";
 @endphp
-<tr>
+<tr {{$hideUponRequest}}>
     <td>
         <label>
             <input type="checkbox" class="checkbox" name="job-{{$job->id}}-contracts[]" value="{{$contract->id}}" data-workers="{{$workers}}"
