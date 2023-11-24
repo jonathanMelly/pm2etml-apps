@@ -46,6 +46,7 @@
                 <thead>
                 {{-- CONTRACTS MULTI ACTION HEADERS --}}
                 <tr>
+                    <th>{{__('Part')}}</th>
                     <th>
                         {{__('Worker(s)')}}
                     </th>
@@ -69,6 +70,7 @@
                         $allocated_time = old("allocated_time.$i",$workerContract->getAllocatedTime(\App\Enums\RequiredTimeUnit::PERIOD));
                         @endphp
                         <tr class="h-16" x-data="{start:'{{$start}}',end:'{{$end}}',allocated_time:'{{$allocated_time}}'}">
+                            <td>{{$workerContract->name==""?__("main"):$wc->name}}</td>
                             <td class="">{{$workerContract->groupMember->user->getFirstnameL()}}</td>
                             <td class="text-center">
                                 <input type="hidden" name="workersContracts[{{$i}}]" value="{{$workerContract->id}}">
@@ -101,7 +103,7 @@
                 </tbody>
                 <tfoot>
                 <tr>
-                    <th colspan="5"/>
+                    <th colspan="6"/>
                 </tr>
                 </tfoot>
             </table>
