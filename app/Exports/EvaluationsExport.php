@@ -9,7 +9,6 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 class EvaluationsExport implements  FromCollection,WithMultipleSheets,ShouldAutoSize
 {
-
     private Collection $data;
 
     public function __construct(Collection $data)
@@ -25,11 +24,13 @@ class EvaluationsExport implements  FromCollection,WithMultipleSheets,ShouldAuto
     public function sheets(): array
     {
         $sheets = [];
+        $comments = collect();
 
         //Format is [cin1b][bob][[1.1.2021,55%,...,projectName,clients]]
         $this->data->each(
             function ($groupEvaluations,$groupName) use (&$sheets){
-                $sheets[]=new EvaluationSheet($groupName,collect($groupEvaluations));;
+                $sheet = new EvaluationSheet($groupName,collect($groupEvaluations));
+                $sheets[]=$sheet;
             }
         );
 

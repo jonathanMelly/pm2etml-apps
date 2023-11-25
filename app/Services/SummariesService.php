@@ -27,6 +27,8 @@ class SummariesService
     const PI_PROJECT=6;
     const PI_CLIENTS=7;
     const PI_PROJECT_SPECIFIC = 8;
+    const PI_DATE_SWISS = 9;
+    const PI_SUCCESS_COMMENT = 10;
 
     /**
      * @param User $user
@@ -237,6 +239,7 @@ class SummariesService
                 $accumulatedSuccessTime += $successTime;
 
                 $formattedDateForECharts = $date->format("Y-m-d h:i");
+                $formattedSwissDate = $date->format(SwissFrenchDateFormat::DATE_TIME);
                 $percentage = round($accumulatedSuccessTime / $accumulatedTime * 100);
 
                 $clients = $contract->clients->transform(fn($client)=>$client->getFirstnameL())->implode(',');
@@ -248,7 +251,10 @@ class SummariesService
                 //Used for excel export when grouping by project... as a single project
                 //may have contracts with specific periods OR different "parts", it's better creating
                 //a custom ID with all info when we have it
-                $projectSpecific = $project .$part." (".$time."p, ".$date->format(SwissFrenchDateFormat::DATE).", ".$clients.")";
+                $projectDefaultTime = $contract->jobDefinition->getAllocatedTime(RequiredTimeUnit::PERIOD);
+                $projectSpecific = $project .$part." (".$projectDefaultTime."p)";
+
+                $successComment = $wContract->success_comment??"";
 
                 //ATTENTION: for echarts series format (as currently used), first 2 infos are X and Y ...
                 $seriesData[$group][$workerName][] = [
@@ -260,7 +266,10 @@ class SummariesService
                     self::PI_ACCUMULATED_TIME => $accumulatedTime,
                     self::PI_PROJECT => $project,
                     self::PI_CLIENTS=> $clients,
-                    self::PI_PROJECT_SPECIFIC=>$projectSpecific];
+                    self::PI_PROJECT_SPECIFIC=>$projectSpecific,
+                    self::PI_DATE_SWISS=> $formattedSwissDate,
+                    self::PI_SUCCESS_COMMENT=> $successComment
+                ];
 
                 //Idea of evolution for easier data post-processing:
                 // $seriesData[]=['group'=>$group,'worker'=>$workerName,'data'=>[$formattedDate, $percentage, $successTime, $time, $totalSuccessTime, $totalTime, $project,$clients]];
