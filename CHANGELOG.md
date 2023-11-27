@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.36.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.35.0...v1.36.0) (2023-11-27)
+
+
+### Features
+
+* **eval export:** add clients in project header ([212064d](https://github.com/jonathanMelly/pm2etml-intranet/commit/212064db5aa9dfc31b8220dc8b60dae2faf8d1fb))
+
 ## [1.35.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.34.0...v1.35.0) (2023-11-25)
 
 
