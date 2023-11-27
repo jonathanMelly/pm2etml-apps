@@ -252,7 +252,7 @@ class SummariesService
                 //may have contracts with specific periods OR different "parts", it's better creating
                 //a custom ID with all info when we have it
                 $projectDefaultTime = $contract->jobDefinition->getAllocatedTime(RequiredTimeUnit::PERIOD);
-                $projectSpecific = $project .$part." (".$projectDefaultTime."p)";
+                $projectSpecific = $project .$part." (".$projectDefaultTime."p";
 
                 $successComment = $wContract->success_comment??"";
 

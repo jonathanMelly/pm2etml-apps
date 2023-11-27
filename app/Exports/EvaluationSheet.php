@@ -53,12 +53,24 @@ class EvaluationSheet implements WithTitle,FromCollection,ShouldAutoSize,WithSty
         $this->data->each(function($studentEvaluations) use($projects){
             foreach($studentEvaluations as $studentEvaluation){
                 $projectNameSpecific = $studentEvaluation[SummariesService::PI_PROJECT_SPECIFIC];
+                $clients = $studentEvaluation[SummariesService::PI_CLIENTS];
 
-                if($projects->where(fn($p)=>$p['name']==$projectNameSpecific)->count()==0)
+                $query = $projects->where(fn($p)=>$p['name']==$projectNameSpecific);
+                if($query->count()==0)
                 {
                     $projects->add([
                         'name'=>$projectNameSpecific,
+                        'clients'=>$clients,
                     ]);
+                }
+                //Merge clients if multiple
+                else{
+                    $existingProject = $query->first();
+                    if(!str_contains($existingProject['clients'],$clients))
+                    {
+                        $existingProject['clients'] .= ",".$clients;
+                    }
+
                 }
             }
         });
@@ -106,7 +118,12 @@ class EvaluationSheet implements WithTitle,FromCollection,ShouldAutoSize,WithSty
         //Build excel rows
         $rows = [];
         $header  = array_merge(['prénom','nom'],$projects->map(function($p) {
-            return $p['name'];
+            $clients=")";
+            if(array_key_exists('clients',$p))
+            {
+                $clients = ", ".$p['clients'].")";
+            }
+            return $p['name'].$clients;
 
         })->all());
 
