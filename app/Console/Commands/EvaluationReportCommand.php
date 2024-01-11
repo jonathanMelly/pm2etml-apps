@@ -6,6 +6,7 @@ use App\Mail\EvaluationChanged;
 use App\Models\User;
 use App\Models\WorkerContractEvaluationLog;
 use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -57,6 +58,16 @@ class EvaluationReportCommand extends Command
         $contractsPerClient=[];
         foreach($logs as $log)
         {
+            //Contract has most probably been deleted, lets update the status without notification
+            if($log->contract === null)
+            {
+                $dummyDate = Carbon::now();
+                $dummyDate->setHour(12)->setMinute(12)->setSecond(12);
+                $log->reported_at=$dummyDate;
+                $log->save();
+                continue;
+            }
+
             /* @var $log WorkerContractEvaluationLog */
             foreach($log->contract->clients->pluck('email') as $client)
             {
