@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.36.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.36.0...v1.36.1) (2024-01-11)
+
+
+### Bug Fixes
+
+* **eval report:** handles deleted contracts correctly ([7477c28](https://github.com/jonathanMelly/pm2etml-intranet/commit/7477c2864dddbc4b9db162824d2021c78f88ef48))
+
 ## [1.36.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.35.0...v1.36.0) (2023-11-27)
 
 
