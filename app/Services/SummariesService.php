@@ -145,7 +145,7 @@ class SummariesService
 
                 $summaries[$groupName][$studentName]=[$studentSuccessTime,$studentSuccessProjects,$studentTotalTime-$studentSuccessTime,$studentFailureProjects];
 
-                $studentSuccess = $studentSuccessTime/$studentTotalTime>self::SUCCESS_REQUIREMENT;
+                $studentSuccess = $studentSuccessTime/$studentTotalTime>=self::SUCCESS_REQUIREMENT;
 
                 if($studentSuccess){
                     $groupSuccessCount++;
