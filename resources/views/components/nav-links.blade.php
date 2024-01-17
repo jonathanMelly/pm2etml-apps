@@ -10,8 +10,8 @@
 @foreach($links as $route=>$label)
     <x-nav-link :li="$li" :href="route($route)" :active="request()->routeIs($route)"
                 class="btn btn-ghost normal-case mx-4"
-                onclick="this.classList.add('loading')">
-        {{ $label }}
+                onclick="spin('{{$route}}Button')">
+        <span class="hidden" id="{{$route}}Button"></span>{{ $label }}
     </x-nav-link>
 @endforeach
 

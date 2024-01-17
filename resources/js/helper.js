@@ -18,4 +18,16 @@ isAnyChecked = function (name)
     return Array.from(document.querySelectorAll(`[name^='${name}']`)).filter(el=>el.checked).length>0;
 }
 
+spin = function(target){
+    let el = document.getElementById(target);
+    if(el!=null){
+        el.classList.remove("hidden");
+        el.classList.add("loading","loading-spinner");
+        let parent = el.parentElement;
+        if(parent!=null){
+            parent.classList.add("btn-disabled")
+        }
+    }
+}
+
 

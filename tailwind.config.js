@@ -19,6 +19,9 @@ module.exports = {
         'bg-success',
         'bg-error',
         'bg-warning',
+        'loading',
+        'loading-spinner',
+        'btn-disabled'
     ],
 
     theme: {

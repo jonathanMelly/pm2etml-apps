@@ -1,4 +1,9 @@
 <x-app-layout>
+    @push('custom-scripts')
+        @once
+            <script type="text/javascript" src="{{ URL::asset ('js/helper.js') }}"></script>
+        @endonce
+    @endpush
 
     <div class="sm:mx-6 py-6 rounded-box bg-base-200 flex flex-col gap-2 items-center">
 
@@ -65,7 +70,10 @@
                             </label>
                         @endforeach
 
-                        <button type="submit" class="btn w-1/3" onclick="this.classList.add('loading')">{{__('Apply')}}</button>
+                        <button type="submit" class="btn btn-neutral w-36" onclick="spin('applyButton')">
+                            <span id="applyButton" class="hidden"></span>
+                            {{__('Apply')}}
+                        </button>
 
                     </div>
                     @if($errors->any())

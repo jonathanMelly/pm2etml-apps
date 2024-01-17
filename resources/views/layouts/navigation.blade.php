@@ -39,13 +39,13 @@
                             <span class="text-xl">{{ Auth::user()->getInitials() }}</span>
                         </div>
                     </label>
-                    <ul tabindex="0" class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box min-w-[13rem]">
+                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
                         <li class="menu-title">
                             <span>{{__('Infos')}}</span>
                         </li>
                         @if(Auth::user()->groupMember()!==null)
-                            <li class="disabled">
-                                <div class="!text-opacity-75 whitespace-nowrap">
+                            <li class="">
+                                <div class="whitespace-nowrap">
                                     <i class="fa-solid fa-people-group"></i>
                                     {{Auth::user()->getGroupNames(request()->get("academicPeriodId"),printable:true)}}
                                 </div>
@@ -53,19 +53,20 @@
                         @endif
 
                         @can('jobDefinitions.create')
-                        <li class="disabled">
-                             @php
-                                $load=Auth::user()->getClientLoad(\App\Models\AcademicPeriod::current());
-                            @endphp
-                            <div class="!text-opacity-75 whitespace-nowrap">
-                                <i class="fa-solid fa-fire-burner"></i>
-                            {{__('Load')}}: {{$load['percentage']}}% ({{$load['mine']}}/{{$load['total']}})
-                            </div>
-                        </li>
+                            <li class="">
+                                @php
+                                    $load=Auth::user()->getClientLoad(\App\Models\AcademicPeriod::current());
+                                @endphp
+                                <div class="whitespace-nowrap">
+                                    <i class="fa-solid fa-fire-burner"></i>
+                                    {{__('Load')}}: {{$load['percentage']}}% ({{$load['mine']}}/{{$load['total']}})
+                                </div>
+                            </li>
                         @endcan
                         <li class="menu-title">
                             <span>{{__('Actions')}}</span>
                         </li>
+                        <li>
                         <li>
                             <x-logout-link />
                         </li>
