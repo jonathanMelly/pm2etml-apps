@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.36.2](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.36.1...v1.36.2) (2024-01-17)
+
+
+### Bug Fixes
+
+* **eval charts:** success when &gt;=80% (not strictly >80%) ([74ab064](https://github.com/jonathanMelly/pm2etml-intranet/commit/74ab064c8aa4b9b4269b824da34ed11c91643d38))
+
 ## [1.36.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.36.0...v1.36.1) (2024-01-11)
 
 
