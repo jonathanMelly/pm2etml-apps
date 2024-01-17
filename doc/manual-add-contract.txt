@@ -1,0 +1,20 @@
+$contract = Contract::make();
+
+$contract->start = Illuminate\Support\Carbon::make('2023-08-28');
+$contract->end = Illuminate\Support\Carbon::make('2023-11-23');
+
+$jobId=55;
+$contract->jobDefinition()->associate($jobId);
+
+$contract->save();
+
+$client=18;
+$contract->clients()->attach($client);
+
+$gm=User::where('email','=','xxx@yyy.ch')->firstOrFail()->GroupMember();
+
+$contract->workers()->attach($gm->id);//set worker
+
+$workerContract = $contract->workerContract($gm)->firstOrFail();
+$workerContract->allocated_time=24;
+$workerContract->save();
