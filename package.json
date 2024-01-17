@@ -18,7 +18,7 @@
         "alpinejs": "^3.10.2",
         "autoprefixer": "^10.4.2",
         "axios": "^0.25",
-        "daisyui": "^3.0.0",
+        "daisyui": "^4.6.0",
         "dropzone": "^6.0.0-beta.2",
         "laravel-mix": "^6.0.6",
         "laravel-mix-copy-watched": "^2.3.1",
