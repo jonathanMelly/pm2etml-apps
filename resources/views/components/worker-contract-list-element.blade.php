@@ -32,6 +32,33 @@
     </td>
     <td>
         {{collect($contract->clients)->transform(fn ($user)=>$user->getFirstnameL())->join(',')}}
+        @if(!$wc->alreadyEvaluated())
+            <i onclick="switchClient{{$wc->id}}.showModal()" class="fa-solid fa-edit hover:cursor-pointer"></i>
+            <dialog id="switchClient{{$wc->id}}" class="modal">
+                <div class="modal-box">
+                    <h3 class="font-bold text-lg">{{__('Switch client')}}</h3>
+                    <p class="py-4">{{__('Select new client')}}</p>
+                    <form method="post" action="{{route('contracts.update',[$contract])}}" id="contract-{{$contract->id}}-form"
+                          x-on:submit.prevent>
+                        @method('PATCH')
+                        @csrf
+                        <x-client-select name="clientId" :selected="$contract->clients->first()->id" :job-definition="$contract->jobDefinition" :with-stats="true" />
+                    </form>
+                    <div class="modal-action">
+
+                        <button class="btn btn-success" onclick="spin('saveButton{{$contract->id}}');document.querySelector('#contract-{{$contract->id}}-form').submit()">
+                            <span id="saveButton{{$contract->id}}" class="hidden"></span>
+                            {{__('Save')}}
+                        </button>
+
+                        <form method="dialog">
+                            <!-- if there is a button in form, it will close the modal -->
+                            <button class="btn btn-error">{{__('Cancel')}}</button>
+                        </form>
+                    </div>
+                </div>
+            </dialog>
+        @endif
     </td>
     <td>
         {{$contract->start->format(\App\SwissFrenchDateFormat::DATE)}}

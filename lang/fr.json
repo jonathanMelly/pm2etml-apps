@@ -314,5 +314,7 @@
     "main": "global",
     "Periods": "Périodes",
     "Note: currently associated contracts won’t be affected": "Note: les contrats associés ne seront pas affecté",
-    "Hide already evaluated contracts": "Masquer les contrats déjà évalués"
+    "Hide already evaluated contracts": "Masquer les contrats déjà évalués",
+    "Switch client": "Changer le client",
+    "Select new client": "Sélectionner le nouveau client"
 }

@@ -25,7 +25,8 @@ class UpdateContractRequest extends FormRequest
     {
         return [
             'start'=>'date|before:end',
-            'end'=>'date|after:start'
+            'end'=>'date|after:start',
+            'clientId'=>'int'
         ];
     }
 }

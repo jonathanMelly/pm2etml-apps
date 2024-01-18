@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -278,33 +279,38 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
     }
 
     /**
+     * To avoid perf issues, cache is used and flushed in controllers when modification is done
+     * As hooking events on pivot tables needs add model for them, care must be taken to avoid
+     * bad cache data (always flush cache on contract client updates...)
      * @param int $academicPeriodId
      * @return float the load percentage
      */
     public function getClientLoad(int $academicPeriodId) : array
     {
-        $contractsForPeriodQuery = Contract::query()
-            ->whereHas('workers.group.academicPeriod',fn($q)=>$q->where(tbl(AcademicPeriod::class).'.id','=',$academicPeriodId));
-        $totalContractsForPeriod = $contractsForPeriodQuery->count('id');
+        return Cache::rememberForever("client-".$this->id."-percentage",function() use($academicPeriodId){
+            $contractsForPeriodQuery = Contract::query()
+                ->whereHas('workers.group.academicPeriod',fn($q)=>$q->where(tbl(AcademicPeriod::class).'.id','=',$academicPeriodId));
+            $totalContractsForPeriod = $contractsForPeriodQuery->count('id');
 
-        if($totalContractsForPeriod===0)
-        {
-            $percentage = 0;
-            $currentUserContracts=0;
-        }
-        else
-        {
-            $currentUserContracts = $contractsForPeriodQuery
-                ->whereHas('clients',fn($q)=>$q->where(tbl(User::class).'.id','=',$this->id))
-                ->count('id');
-            $percentage = round($currentUserContracts/$totalContractsForPeriod*100,0);
-        }
+            if($totalContractsForPeriod===0)
+            {
+                $percentage = 0;
+                $currentUserContracts=0;
+            }
+            else
+            {
+                $currentUserContracts = $contractsForPeriodQuery
+                    ->whereHas('clients',fn($q)=>$q->where(tbl(User::class).'.id','=',$this->id))
+                    ->count('id');
+                $percentage = round($currentUserContracts/$totalContractsForPeriod*100,0);
+            }
 
-        return [
-            'percentage' => $percentage,
-            'mine'=> $currentUserContracts,
-            'total'=> $totalContractsForPeriod
-        ];
+            return [
+                'percentage' => $percentage,
+                'mine'=> $currentUserContracts,
+                'total'=> $totalContractsForPeriod
+            ];
+        });
 
     }
 }

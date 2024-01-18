@@ -15917,9 +15917,6 @@ input.tab:checked + .tab-content,
 .min-h-screen {
   min-height: 100vh;
 }
-.w-1\/2 {
-  width: 50%;
-}
 .w-1\/3 {
   width: 33.333333%;
 }
@@ -15991,9 +15988,6 @@ input.tab:checked + .tab-content,
 }
 .w-full {
   width: 100%;
-}
-.w-16 {
-  width: 4rem;
 }
 .max-w-6xl {
   max-width: 72rem;
@@ -16142,8 +16136,14 @@ input.tab:checked + .tab-content,
 .place-self-end {
   place-self: end;
 }
+.place-self-center {
+  place-self: center;
+}
 .self-center {
   align-self: center;
+}
+.justify-self-end {
+  justify-self: end;
 }
 .overflow-hidden {
   overflow: hidden;
@@ -16259,6 +16259,9 @@ input.tab:checked + .tab-content,
   --tw-bg-opacity: 1 !important;
   background-color: var(--fallback-er,oklch(var(--er)/var(--tw-bg-opacity))) !important;
 }
+.bg-\[color-mix\(in_oklab\2c oklch\(var\(--n\)\)\2c black_7\%\)\] {
+  background-color: color-mix(in oklab,oklch(var(--n)),black 7%);
+}
 .bg-base-100 {
   --tw-bg-opacity: 1;
   background-color: var(--fallback-b1,oklch(var(--b1)/var(--tw-bg-opacity)));
@@ -16298,17 +16301,6 @@ input.tab:checked + .tab-content,
 .bg-white {
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
-}
-.bg-primary {
-  --tw-bg-opacity: 1;
-  background-color: var(--fallback-p,oklch(var(--p)/var(--tw-bg-opacity)));
-}
-.bg-neutral {
-  --tw-bg-opacity: 1;
-  background-color: var(--fallback-n,oklch(var(--n)/var(--tw-bg-opacity)));
-}
-.bg-\[color-mix\(in_oklab\2c oklch\(var\(--n\)\)\2c black_7\%\)\] {
-  background-color: color-mix(in oklab,oklch(var(--n)),black 7%);
 }
 .bg-opacity-25 {
   --tw-bg-opacity: 0.25;

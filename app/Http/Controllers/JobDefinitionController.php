@@ -14,6 +14,7 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -231,7 +232,11 @@ class JobDefinitionController extends Controller
             $providers = User::role(RoleName::TEACHER)
                 ->whereIn('id', $request->input('providers'))
                 ->pluck('id');
-            $jobDefinition->providers()->sync($providers);
+            $syncResult = $jobDefinition->providers()->sync($providers);
+            if(collect($syncResult)->transform(fn($k)=>sizeof($k))->sum()>0){
+                Cache::forget('providers-'.$jobDefinition->id);
+                Cache::forget('clients-'.$jobDefinition->id);
+            }
 
             //Attachments (already uploaded, we just bind them)
             $attachmentIds = json_decode($request->input('other_attachments'));

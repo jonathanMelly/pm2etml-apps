@@ -32,45 +32,9 @@
                                    class=" input input-secondary input-bordered">
                         </label>
 
-                        @php
-                            $providers = $jobDefinition->getProviders();
-                            $clients = $jobDefinition->getClients($providers);
-                        @endphp
+                        <x-client-select :job-definition="$jobDefinition" :parts="$parts" />
 
-                        @foreach($parts as $part)
-                            <label class="input-group">
-                                @php
-                                $size2="w-full";
-                                if(!stringNullOrEmpty($part->name)){
-                                    $size="w-1/3";
-                                    $size2="w-2/3";
-                                }
-                                @endphp
-
-                                @if(!stringNullOrEmpty($part->name))
-                                    <span class="{{$size}}">{{$part->name}}</span>
-                                @endif
-
-                                <select class="select select-bordered {{$size2}}" name="client-{{$part->id}}">
-                                    <option disabled selected>{{__('Client')}}</option>
-
-                                    @foreach($providers as $client)
-                                        <option value="{{$client->id}}" {{old('client')==$client->id?'selected="selected"':''}}>
-                                            {{$client->firstname.' '.$client->lastname}} ({{$client->getClientLoad(\App\Models\AcademicPeriod::current())['percentage']}}%)
-                                        </option>
-                                    @endforeach
-                                    <option class="divider p-0 m-0"></option>
-                                    @foreach($clients as $client)
-                                        <option value="{{$client->id}}" {{old('client')==$client->id?'selected="selected"':''}}>
-                                            {{$client->firstname.' '.$client->lastname}} ({{$client->getClientLoad(\App\Models\AcademicPeriod::current())['percentage']}}%)
-                                        </option>
-                                    @endforeach
-                                </select>
-
-                            </label>
-                        @endforeach
-
-                        <button type="submit" class="btn btn-neutral w-36" onclick="spin('applyButton')">
+                        <button type="submit" class="btn btn-neutral w-36 place-self-center" onclick="spin('applyButton')">
                             <span id="applyButton" class="hidden"></span>
                             {{__('Apply')}}
                         </button>

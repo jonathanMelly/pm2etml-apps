@@ -54,7 +54,11 @@ class ContractPolicy
     public function update(User $user, Contract $contract)
     {
         if($user->can('contracts.edit')){
-            return $user->can('contracts') || $contract->clients->find($user->id)!==null;
+            $result = $user->can('contracts') ||
+                $contract->clients->find($user->id)!==null /*client can edit his contracts*/ ||
+                $contract->workers->where('user_id','=',$user->id)->count()==1 /*worker can edit his contracts*/;
+
+            return $result;
         }
     }
 
