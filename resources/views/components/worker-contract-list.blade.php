@@ -1,4 +1,3 @@
-
     <div class="overflow-x-auto">
         <table class="table table-compact table-zebra w-full">
             <!-- head -->
