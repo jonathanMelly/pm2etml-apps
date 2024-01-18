@@ -15,21 +15,21 @@
                 @csrf
                 <input type="hidden" name="job_definition_id" value="{{$jobDefinition->id}}">
                 <div class="flex flex-row gap-2 sm:min-w-max">
-                    <div class="form-control flex flex-col gap-2 items-center">
-                        <label class="label prose">
+                    <div class="form-control flex flex-col gap-2">
+                        <div class="label prose">
                             <h2 class="label-text">{{__('Application details')}}</h2>
-                        </label>
+                        </div>
 
-                        <label class="input-group">
-                            <span class="w-1/2">{{__('Start date')}}</span>
+                        <label class="input-group flex justify-between">
+                            <div class="self-center justify-self-end">{{__('Start date')}}</div>
                             <input type="date" name="start_date" value="{{old('start_date')??now()->format(\App\DateFormat::HTML_FORMAT)}}"
-                                   class="w-1/2 input input-bordered input-primary">
+                                   class=" input input-bordered input-primary">
                         </label>
 
-                        <label class="input-group">
-                            <span class="w-1/2">{{__('End date')}}</span>
+                        <label class="input-group flex justify-between">
+                            <div class="self-center justify-self-end">{{__('End date')}}</div>
                             <input type="date" name="end_date" value="{{old('end_date')??now()->addWeeks(3)->format(\App\DateFormat::HTML_FORMAT)}}"
-                                   class="w-1/2 input input-secondary input-bordered">
+                                   class=" input input-secondary input-bordered">
                         </label>
 
                         @php
