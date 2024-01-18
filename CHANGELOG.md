@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.37.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.36.2...v1.37.0) (2024-01-18)
+
+
+### Features
+
+* **cache:** allow cache clear from web request for admin /deploy/clearCache ([6aeff71](https://github.com/jonathanMelly/pm2etml-intranet/commit/6aeff71e1b3b5c2180788355971e5ade763d4c9b))
+* **worker:** ability to switch client (if not yet evaluated) ([d56a193](https://github.com/jonathanMelly/pm2etml-intranet/commit/d56a1932a31409f1e0b068ad29e6e32760a53670))
+
+
+### Bug Fixes
+
+* **contract:** allow bulk edit multi-parts contracts instead of printing an error ([d24ba93](https://github.com/jonathanMelly/pm2etml-intranet/commit/d24ba937dd680c8d43b22a5f9726f9b700e51c0e))
+* **ui:** flash message in one row instead of 2 (daisyui upgrade...) ([5aca238](https://github.com/jonathanMelly/pm2etml-intranet/commit/5aca2381286c2104ef1add1c31dfb54808e9641a))
+* **ui:** job apply fields alignment ([225fb69](https://github.com/jonathanMelly/pm2etml-intranet/commit/225fb69077223204a0b73747c05076b7ca248a09))
+
 ## [1.36.2](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.36.1...v1.36.2) (2024-01-17)
 
 
