@@ -9,11 +9,9 @@
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
     >
-        <div class="alert alert-{{$flashType}} shadow-lg">
-            <div>
-                {{$slot}}
-                <span>{{$custom??$message??'Oops'}}</span>
-            </div>
+        <div role="alert" class="alert alert-{{$flashType}} shadow-lg">
+            {{$slot}}
+            <span>{{$custom??$message??'Oops'}}</span>
         </div>
 
     </div>
