@@ -103,5 +103,6 @@ Route::get('auth/bridge/logout',[SSOController::class,'logout']);
 
 //DEPLOY
 Route::get('deploy/optimize',[DeployController::class,'optimize']);
+Route::get('deploy/clearCache',[DeployController::class,'clearCache']);
 
 
