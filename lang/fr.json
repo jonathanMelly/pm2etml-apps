@@ -201,10 +201,9 @@
     "Invalid data, please check":"Données invalides, veuillez contrôler les informations fournies",
     "Apply": "Postuler",
     "Allocated time": "Temps alloué",
-    "Congrats, you have been hired for the job":"Félicitations, vous avez été engagé pour le travail",
     "Internal tools": "Outils",
     "My contracts": "Mes contrats",
-    "You already have/had a contract for this job": "Vous avez déjà un contrat pour ce job",
+    "There already is a contract for this job": "Il y a déjà un contrat pour ce job",
     "Invalid client (only valid providers are allowed)": "Client invalide (seuls les fournisseurs officiels sont autorisés)",
     "Invalid worker (only students are allowed)": "Postulation invalide (seuls les élèves peuvent postuler)",
     "No contracts, you may apply at": "Aucun contrat, voir les opportunités sur le",
@@ -316,5 +315,9 @@
     "Note: currently associated contracts won’t be affected": "Note: les contrats associés ne seront pas affecté",
     "Hide already evaluated contracts": "Masquer les contrats déjà évalués",
     "Switch client": "Changer le client",
-    "Select new client": "Sélectionner le nouveau client"
+    "Select new client": "Sélectionner le nouveau client",
+    "Add a contract": "Ajouter un contrat",
+    "Select worker": "Sélectionner la personne",
+    "New contract successfully registered": "Nouveau contrat enregistré avec succès",
+    "Start date :start must be before end date :end" : "La date de début :start doit être antérieure à la date de fin :end"
 }

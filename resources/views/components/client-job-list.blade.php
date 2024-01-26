@@ -9,6 +9,12 @@
         </label>
     </div>
 
+    <datalist id="workers-list">
+        @foreach($candidatesForWork as $worker)
+            <option value="{{$worker->email}}">{{$worker->firstname}} {{$worker->lastname}}</option>
+        @endforeach
+    </datalist>
+
     <table class="table w-full">
         <!-- head -->
         <thead>
@@ -24,11 +30,7 @@
 
         <tbody>
         @foreach($jobs as $job)
-            <form method="post" action="{{route('contracts.destroyAll')}}" id="job-{{$job->id}}-form"
-                  x-on:submit.prevent>
-                @method('DELETE')
-                @csrf
-                <input type="hidden" name="job_id" value="{{$job->id}}">
+
                 {{-- JOB DESCRIPTION --}}
                 <x-client-job-list-element :job="$job"/>
 
@@ -43,7 +45,7 @@
                                 <th colspan="7">
                                     <div class="flex items-center">
                                         <div class="mr-2">
-                                            {{__('Selection')}}
+                                            {{__('Action')}}
                                         </div>
                                         <div class="btn-group">
 
@@ -76,12 +78,67 @@
                                                 <i class="fa-solid fa-check mr-1"></i>{{__('Evaluate')}}
                                             </button>
                                         </div>
+                                        <div class="m-2">
+                                            <button class="btn btn-outline btn-neutral btn-xs" id="addContractButton{{$job->id}}" onclick="addContract{{$job->id}}.showModal()">
+                                            <i class="fa-solid fa-user-plus"></i>{{__('Ajouter un contrat')}}
+                                            </button>
+                                            <dialog id="addContract{{$job->id}}" class="modal">
+                                                <div class="modal-box">
+                                                    <h3 class="font-bold text-lg">{{__('Add a contract')}} ({{Str::words($job->title,5)}})</h3>
+                                                    <p class="py-4">{{__('Select worker')}}</p>
+                                                    <form method="post" action="{{route('contracts.store')}}" id="addContract-{{$job->id}}-form" name="addContract-{{$job->id}}-form">
+                                                        @method('POST')
+                                                        @csrf
+
+                                                        <label>
+                                                            <input name="worker" class="input w-full" type="text" placeholder="bob@eduvaud.ch" list="workers-list" />
+                                                        </label>
+
+                                                        <label class="input-group flex justify-between mt-3">
+                                                            <div class="self-center justify-self-end">{{__('Start date')}}</div>
+                                                            <input type="date" name="start_date" value="{{old('start_date')??now()->format(\App\DateFormat::HTML_FORMAT)}}"
+                                                                   class=" input input-bordered input-primary">
+                                                        </label>
+
+                                                        <label class="input-group flex justify-between">
+                                                            <div class="self-center justify-self-end">{{__('End date')}}</div>
+                                                            <input type="date" name="end_date" value="{{old('end_date')??now()->addWeeks(3)->format(\App\DateFormat::HTML_FORMAT)}}"
+                                                                   class=" input input-secondary input-bordered">
+                                                        </label>
+
+                                                        <input type="hidden" name="client-0" value="{{\Illuminate\Support\Facades\Auth::user()->id}}" />
+                                                        <input type="hidden" name="job_definition_id" value="{{$job->id}}" />
+
+                                                    </form>
+                                                    <div class="modal-action">
+
+                                                        <button class="btn btn-success" onclick="spin('SaveContractButton{{$job->id}}');document.querySelector('#addContract-{{$job->id}}-form').submit()">
+                                                            <span id="SaveContractButton{{$job->id}}" class="hidden"></span>
+                                                            {{__('Add')}}
+                                                        </button>
+
+                                                        <form method="dialog">
+                                                            <!-- if there is a button in form, it will close the modal -->
+                                                            <button class="btn btn-error">{{__('Cancel')}}</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </dialog>
+                                        </div>
                                     </div>
                                 </th>
                             </tr>
 
                             </thead>
                             <tbody>
+                            <form method="post" action="{{route('contracts.destroyAll')}}" id="job-{{$job->id}}-form"
+                                  x-on:submit.prevent>
+                                @method('DELETE')
+                                @csrf
+                                <input type="hidden" name="job_id" value="{{$job->id}}" >
+                                @if(app()->environment('testing'))
+                                <input class="hidden" type="submit" id="job-{{$job->id}}-form-input-for-test">
+                                @endif
                             {{-- CONTRACTS HEADERS --}}
                             <tr>
                                 <td>
@@ -101,6 +158,7 @@
                             @foreach(auth()->user()->contractsAsAClientForJob($job,$periodId)->get() as $contract)
                                 <x-client-contract-list-element :job="$job" :contract="$contract"/>
                             @endforeach
+                            </form>
                             </tbody>
                             <tfoot>
                             {{-- EMPTY --}}
@@ -148,7 +206,7 @@
 
                     </div>
                 </div>
-            </form>
+
 
         @endforeach
         </tbody>

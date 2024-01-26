@@ -67,7 +67,7 @@ class JobApplyFormTest extends BrowserKitTestCase
             ->select($this->teacher->id, 'client-0')
             ->press(__('Apply'))
             ->seePageIs('/dashboard')
-            ->seeText(__('Congrats, you have been hired for the job'))
+            ->seeText(__('New contract successfully registered'))
         ;
 
         //ko (already registered)
@@ -78,7 +78,7 @@ class JobApplyFormTest extends BrowserKitTestCase
             ->select($this->teacher->id, 'client-0')
             ->press(__('Apply'))
             ->seePageIs($this->formPage)
-            ->seeText(__('You already have/had a contract for this job'))
+            ->seeText(__('There already is a contract for this job'))
         ;
     }
 
@@ -103,7 +103,7 @@ class JobApplyFormTest extends BrowserKitTestCase
             ->select($this->teacher->id, 'client-0')
             ->press(__('Apply'))
             ->seePageIs('/dashboard')
-            ->seeText(__('Congrats, you have been hired for the job'))
+            ->seeText(__('New contract successfully registered'))
         ;
     }
 

@@ -1,3 +1,4 @@
+@props(['flashType','custom'])
 @if (($message = Session::get($flashType)) || isset($custom))
 <div x-data="{ open: true }" @click="open = ! open" class="sm:mx-6 sm:my-2" x-init="setTimeout(() => open = false, 30000)">
     <div
@@ -11,7 +12,7 @@
     >
         <div role="alert" class="alert alert-{{$flashType}} shadow-lg">
             {{$slot}}
-            <span>{{$custom??$message??'Oops'}}</span>
+            <span>{{$custom??$message??'Oops'}}{!!\Illuminate\Support\Facades\Session::get("printErrors") && $errors->any()?" : <b>".implode(',',$errors->all()).".</b>":""!!}</span>
         </div>
 
     </div>

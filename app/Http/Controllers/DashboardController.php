@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Constants\RoleName;
+use App\Models\User;
 use App\Services\SummariesService;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
@@ -36,7 +37,11 @@ class DashboardController extends Controller
                 //Get jobs as a client
                 $jobs = $user->getJobDefinitionsWithActiveContracts($periodId);
 
-                $result = $view->with(compact('jobs'));
+                $candidatesForWork = User::role(RoleName::STUDENT)
+                    ->whereHas('groupMembers.group.academicPeriod', fn($q)=> $q->whereId($periodId))
+                    ->get();
+
+                $result = $view->with(compact('jobs','candidatesForWork'));
             }
             else
             //Students (auto filtered on student periodId as using groupmember...)

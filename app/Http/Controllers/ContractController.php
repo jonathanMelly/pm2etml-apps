@@ -26,6 +26,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 
 class ContractController extends Controller
 {
@@ -86,9 +87,18 @@ class ContractController extends Controller
             ]);
         } else {
             $parts->each(function (JobDefinitionPart $part) use ($partsDetails, $request, $jobDefinition) {
+
+                //Allow a teacher manually add a job without showing parts options on the UI
+                //=>when doing this, the teacher will be the client for all parts (student can change that afterwards if needed...)
+                $clientIdKey = "client-" . $part->id;
+                if ($request->has($clientIdKey)) {
+                    $clientId = $request->input($clientIdKey);
+                } else {
+                    $clientId = $request->input('client-0');
+                }
                 $partsDetails->add([
                     'name' => $part->name,
-                    'clientId' => $request->input("client-" . $part->id),
+                    'clientId' => $clientId,
                     'time' => $part->allocated_time,
                     //todo timueunit
                 ]);
@@ -106,22 +116,33 @@ class ContractController extends Controller
             }
         }
 
+        /* @var $targetWorker User */
+        //we expect mainly that students will apply... but in special cases a teacher can make an assignment... (student sick...)
+        $targetWorker = auth()->user();
+        if ($request->has('worker')) {
+            //Teachers can manually add a contract
+            if ($targetWorker->hasRole(RoleName::TEACHER)) {
+                $targetWorker = User::where('email', '=', $request->input('worker'))->firstOrFail();
 
-        //Only students can be workers
-        /* @var $user User */
-        $user = auth()->user();
-        if (!$user->hasRole(RoleName::STUDENT)) {
+                //As teacher adds a contract via modal, full error must be printed in root toast
+                Session::flash("printErrors");
+            } else {
+                return back()->withErrors(__('Only teachers can assign custom worker'))->withInput();
+            }
+
+        } //If not teacher with worker, only students can apply for contract
+        else if (!$targetWorker->hasRole(RoleName::STUDENT)) {
             return back()->withErrors(__('Invalid worker (only students are allowed)'))->withInput();
         }
         //END OF SECURITY CHECKS
 
 
         //check that this user has not yet a contract for this job def
-        if ($user->contractsAsAWorker()
+        if ($targetWorker->contractsAsAWorker()
             ->where('job_definition_id', '=', $jobDefinitionId)
             ->whereIn('name', $partsDetails->pluck('name'))
             ->exists()) {
-            return back()->withErrors(__('You already have/had a contract for this job'))->withInput();
+            return back()->withErrors(__('There already is a contract for this job'))->withInput();
         }
 
         //This shoud be checked in any date update
@@ -133,7 +154,7 @@ class ContractController extends Controller
         }
 
         $firstContract = null;
-        DB::transaction(function () use ($start, $end, &$firstContract, $jobDefinitionId, $partsDetails, $request, $user) {
+        DB::transaction(function () use ($start, $end, &$firstContract, $jobDefinitionId, $partsDetails, $request, $targetWorker) {
             foreach ($partsDetails as $partsDetail) {
                 $contract = Contract::make();
                 $contract->start = $start;
@@ -146,11 +167,11 @@ class ContractController extends Controller
 
                 $contract->save();
                 $contract->clients()->attach($clientId);
-                Cache::forget("client-".$clientId."-percentage");
-                $contract->workers()->attach($user->groupMember()->id);//set worker
+                Cache::forget("client-" . $clientId . "-percentage");
+                $contract->workers()->attach($targetWorker->groupMember()->id);//set worker
 
                 /* @var $workerContract WorkerContract */
-                $workerContract = $contract->workerContract($user->groupMember())->firstOrFail();
+                $workerContract = $contract->workerContract($targetWorker->groupMember())->firstOrFail();
                 $workerContract->name = $partsDetail['name'];
                 $workerContract->allocated_time = $partsDetail['time'];
                 $workerContract->save();
@@ -162,7 +183,7 @@ class ContractController extends Controller
         });
 
         return redirect('/dashboard')
-            ->with('success', __('Congrats, you have been hired for the job'))
+            ->with('success', __("New contract successfully registered"))
             ->with('contractId', $firstContract->id);
     }
 
@@ -282,7 +303,9 @@ class ContractController extends Controller
                     $errors = ["workersContract" . ($bulk ? "s.$index" : '') => $message];
                     return back()->withErrors($errors)->withInput();
                 } else if ($start->isAfter($end)) {
-                    $message = __("Start date " . $start->format(SwissFrenchDateFormat::DATE) . " must be before end date " . $end->format(SwissFrenchDateFormat::DATE));
+                    $message = __("Start date :start must be before end date :end" ,
+                            ['start'=>$start->format(SwissFrenchDateFormat::DATE),
+                            'end'=>$end->format(SwissFrenchDateFormat::DATE)]);
                     $errors = ["workersContract" . ($bulk ? "s.$index" : '') => $message];
                     return back()->withErrors($errors)->withInput();
                 }

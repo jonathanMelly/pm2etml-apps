@@ -16,6 +16,7 @@ class ClientContractsDeleteFormTest extends BrowserKitTestCase
     protected JobDefinition $job;
 
     protected int $contractsCount = 2;
+    private string $formPage;
 
     /**
      * @before
@@ -50,8 +51,7 @@ class ClientContractsDeleteFormTest extends BrowserKitTestCase
         $contractFields = 'job-' . $jobId . '-contracts';
 
         $this->visit($this->formPage)
-            ->seeText(trans('Yes'))//on error print the content
-            ->submitForm(trans('Yes'), [
+            ->submitForm("job-{$jobId}-form-input-for-test", [
                 $contractFields => $contractIds,
                 'job_id' => $jobId
             ])
