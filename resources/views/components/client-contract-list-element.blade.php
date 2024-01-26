@@ -16,7 +16,7 @@
 <tr {{$hideUponRequest}}>
     <td>
         <label>
-            <input type="checkbox" class="checkbox" name="job-{{$job->id}}-contracts[]" value="{{$contract->id}}" data-workers="{{$workers}}"
+            <input type="checkbox" class="checkbox" name="job-{{$job->id}}-contracts[]" value="{{$contract->id}}" data-workers="{{$workers.($wc->name==""?"":" (".$wc->name.")")}}"
             @change="massAction=isAnyChecked('job-{{$job->id}}-contracts[]')">
         </label>
     </td>
