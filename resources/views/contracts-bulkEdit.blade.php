@@ -121,7 +121,7 @@
             </div>
             @endif
 
-<button type="button" class="btn my-2"
+<button type="button" class="btn my-2 btn-primary"
 onclick="document.querySelector('#eval').submit()">
 {{__('Save modifications')}}</button>
 
