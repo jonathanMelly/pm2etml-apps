@@ -335,9 +335,13 @@ class ContractController extends Controller
 
             }
 
+            //Smartly end transaction /!\WARNING: either force commit (even without changes), OR let this code because if transaction is not terminated
+            //it will make a mess...
             if($isUpdated)
             {
                 DB::commit();
+            }else{
+                DB::rollBack();
             }
             $updatedCount = $isUpdated ? 1 : 0;
             if ($bulk) {
