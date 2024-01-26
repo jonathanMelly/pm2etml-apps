@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.38.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.37.0...v1.38.0) (2024-01-26)
+
+
+### Features
+
+* **contract:** client (teachers) can now add arbitrary contracts for any worker (student) if needed ([776ae5a](https://github.com/jonathanMelly/pm2etml-intranet/commit/776ae5a27322c28bb127b8a278705a04bcc59b62))
+* **toast:** increase show delay from 5 to 30seconds ([f8a90a0](https://github.com/jonathanMelly/pm2etml-intranet/commit/f8a90a0c1971fcab1f35c36fbd36ebde1ead5b74))
+
+
+### Bug Fixes
+
+* **bulk edit:** fix save button css ([8aa8d22](https://github.com/jonathanMelly/pm2etml-intranet/commit/8aa8d22881c140009a155cbf38f7aaccaa5cd2a4))
+* **contract eval:** button css more visible ([aa7da71](https://github.com/jonathanMelly/pm2etml-intranet/commit/aa7da7123fc72b1c626eac33e2429457345f0e9b))
+* **contract:** bulk edit honores any modification done (no more unclosed transaction levels...) ([0912608](https://github.com/jonathanMelly/pm2etml-intranet/commit/0912608ce03d90524af63cc27c4395c570e978c7))
+* **delete contract:** show subpart info ([cd52701](https://github.com/jonathanMelly/pm2etml-intranet/commit/cd527017b1dfdb953347c8965803102e444510df))
+
 ## [1.37.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.36.2...v1.37.0) (2024-01-18)
 
 
