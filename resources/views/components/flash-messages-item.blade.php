@@ -1,5 +1,5 @@
 @if (($message = Session::get($flashType)) || isset($custom))
-<div x-data="{ open: true }" @click="open = ! open" class="sm:mx-6 sm:my-2" x-init="setTimeout(() => open = false, 5000)">
+<div x-data="{ open: true }" @click="open = ! open" class="sm:mx-6 sm:my-2" x-init="setTimeout(() => open = false, 30000)">
     <div
         x-show="open"
         x-transition:enter="transition ease-in duration-500"
