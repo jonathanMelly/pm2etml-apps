@@ -167,22 +167,31 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
                 $currentGroupMembers = $user->groupMembersForPeriod($period->id)->with('group.groupName')->get();
 
                 //DB Cleanup if necessary
+                $currentGroupMember=null;
                 if($currentGroupMembers->count()>1)
                 {
                     Log::warning("Detected student with id {$user->id} in multiple groups, trying to clean up the mess");
-                    foreach($currentGroupMembers as $currentGroupMember)
+                    foreach($currentGroupMembers as $currentGroupMemberTemp)
                     {
-                        /* @var $currentGroupMember GroupMember */
-                        $currentGroupName = $currentGroupMember->group->groupName->name;
+                        /* @var $currentGroupMemberTemp GroupMember */
+                        $currentGroupName = $currentGroupMemberTemp->group->groupName->name;
                         if($currentGroupName!=$newGroupName)
                         {
                             Log::info("Removing group {$currentGroupName} from user id {$user->id} and period {$period->id}");
-                            $currentGroupMember->delete();
+                            $currentGroupMemberTemp->forceDelete();
+                        }
+                        else{
+                            //keep that info for later checks
+                            $currentGroupMember = $currentGroupMemberTemp;
                         }
                     }
                 }
+                else
+                {
+                    //load first group if existing
+                    $currentGroupMember= $user->groupMember($period->id,true);
+                }
 
-                $currentGroupMember= $currentGroupMembers->first();
                 if ($currentGroupMember !== null) {
                     //Group change
                     $currentGroupName = $currentGroupMember->group->groupName->name;
