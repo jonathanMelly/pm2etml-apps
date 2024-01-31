@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.39.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.38.0...v1.39.0) (2024-01-31)
+
+
+### Features
+
+* **data:** handle/cleanup student inconsistency (having 2 groups in same year...) ([bee2bab](https://github.com/jonathanMelly/pm2etml-intranet/commit/bee2bab123fed15b8ac80cf98ef450c085066427))
+* **data:** handle/cleanup student inconsistency (having 2 groups in same year...) ([ef7c50e](https://github.com/jonathanMelly/pm2etml-intranet/commit/ef7c50e020df6d652c3d2730f97b5e04f3823238))
+
 ## [1.38.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.37.0...v1.38.0) (2024-01-26)
 
 
