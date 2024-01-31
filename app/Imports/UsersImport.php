@@ -5,8 +5,10 @@ namespace App\Imports;
 use App\Constants\RoleName;
 use App\Models\AcademicPeriod;
 use App\Models\Group;
+use App\Models\GroupMember;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
@@ -159,10 +161,28 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
             else if ($user->hasRole(RoleName::STUDENT)) {
                 $reportInfo = '<ELEVE> '.$reportInfo;
 
-                //Student should have only 1 groupMember for a given period
-                $currentGroupMember = $user->groupMember($period->id, true);
                 $newGroupName = $newGroupNameNames[0]; /*A student is only in 1 class....*/
-                $createGroupMember = false;
+
+                //Student should have only 1 groupMember for a given period
+                $currentGroupMembers = $user->groupMembersForPeriod($period->id)->with('group.groupName')->get();
+
+                //DB Cleanup if necessary
+                if($currentGroupMembers->count()>1)
+                {
+                    Log::warning("Detected student with id {$user->id} in multiple groups, trying to clean up the mess");
+                    foreach($currentGroupMembers as $currentGroupMember)
+                    {
+                        /* @var $currentGroupMember GroupMember */
+                        $currentGroupName = $currentGroupMember->group->groupName->name;
+                        if($currentGroupName!=$newGroupName)
+                        {
+                            Log::info("Removing group {$currentGroupName} from user id {$user->id} and period {$period->id}");
+                            $currentGroupMember->delete();
+                        }
+                    }
+                }
+
+                $currentGroupMember= $currentGroupMembers->first();
                 if ($currentGroupMember !== null) {
                     //Group change
                     $currentGroupName = $currentGroupMember->group->groupName->name;
