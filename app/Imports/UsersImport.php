@@ -4,9 +4,11 @@ namespace App\Imports;
 
 use App\Constants\RoleName;
 use App\Models\AcademicPeriod;
+use App\Models\Contract;
 use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\User;
+use App\Models\WorkerContract;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -64,11 +66,11 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
 
             if($isUpdate)
             {
-                $reportInfo=$user->getFirstnameL();
+                $reportInfo=$user->getFirstnameL(true);
             }
             else
             {
-                $reportInfo=($firstname??'unknown').' '.($lastname??'unknown')."<{$user->id}>";
+                $reportInfo=($firstname??'unknown').' '.($lastname??'unknown')."<?>";
             }
 
             $year = $period->start->year;
@@ -195,23 +197,69 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
                 }
 
                 if ($currentGroupMember !== null) {
-                    //Group change
+                    //Group change (mutation)
                     $currentGroupName = $currentGroupMember->group->groupName->name;
+                    $previousGroupYear = $currentGroupMember->group->groupName->year;
 
                     if ($currentGroupName != $newGroupName) {
 
-                        //Migrate instead of delete/add to keep track of previous evaluations
-                        $currentGroupMember->group_id = Group::where('academic_period_id','=',$period->id)
+                        //Migrate instead of delete/add to keep track of previous evaluations (if not repetition)
+                        $newGroup = Group::where('academic_period_id','=',$period->id)
                             ->whereRelation('groupName','name','=',$newGroupName)
-                            ->firstOrFail('id')->id;
+                            ->with('groupName')
+                            ->firstOrFail();
+                        $currentGroupMember->group_id = $newGroup->id;
 
                         $currentGroupMember->save();
+
+                        //Year is diminishing => Repetition => drop contracts
+                        if($previousGroupYear > $newGroup->groupName->year)
+                        {
+                            if(!Str::contains($comment,'redoublement',true))
+                            {
+                                $this->warning[]="{$user->getFirstnameL(true)} : repetition detected but missing conventional comment, please check !";
+                            }
+
+                            $droppedWcs=collect();
+                            $droppedContracts=collect();
+
+                            $user->contractsAsAWorker($period->id)->each(
+                                function(Contract $contract) use($user,$period,$droppedWcs,$droppedContracts){
+
+                                    //Drop each worker contract already evaluated for this period and this user
+                                    $contract->workerContract($user->groupMember($period->id))
+                                        ->whereNotNull('success_date')
+                                        ->each(
+                                        function (WorkerContract $wc) use($user,$droppedWcs){
+                                            $wc->softDelete();
+
+                                            $droppedWcs[]=$wc->id;
+                                        }
+                                    );
+                                    $contract->refresh();
+
+                                    //Do not drop contract if others workers are still in the game...
+                                    //Remember that manuallySoftDeleted wc are auto filtered...
+                                    $remainingWorkersContracts  = $contract->workerContract($user->groupMember($period->id))->count();
+                                    if($remainingWorkersContracts==0)
+                                    {
+                                        $contract->delete();
+                                        $droppedContracts[]=$contract->id;
+                                    }
+                            });
+
+                            if($droppedContracts->count()>0 || $droppedWcs->count()>0)
+                            {
+                                $this->warning[]="{$user->getFirstnameL(true)} : repetition, deleted cids: {$droppedContracts->implode(',')} | wcids:{$droppedWcs->implode(',')}";
+                            }
+                        }
 
                         $reportInfo .= '[groups/'.$year.': '.$currentGroupName.' => '.$newGroupName.']';
                         $somethingHasBeenUpdated=true;
                     }
                     //Else Group is already good, we do nothing ;-)
                 } else {
+                    //brand-new group
                     $groupsToAdd = collect([$newGroupName]);
                 }
             }

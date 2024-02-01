@@ -36,7 +36,7 @@ class AcademicPeriod extends Model
         return $this->hasManyThrough(GroupName::class,Group::class);
     }
 
-    public static function current(bool $idOnly=true): AcademicPeriod|int
+    public static function current(bool $idOnly=true): AcademicPeriod|int|null
     {
         $key = 'currentAcademicPeriod'.($idOnly?'Id':'');
         return Cache::remember($key,Carbon::today()->secondsUntilEndOfDay(), function () use($idOnly) {
@@ -50,7 +50,7 @@ class AcademicPeriod extends Model
             }
 
             Log::warning('Missing period in db for '.$today->format(SwissFrenchDateFormat::DATE));
-            return -1;
+            return $idOnly?-1:null;
 
         });
 

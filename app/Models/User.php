@@ -72,9 +72,9 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
     {
         return $this->firstname[0].$this->lastname[0];
     }
-    public function getFirstnameL():string
+    public function getFirstnameL(bool $withId=false):string
     {
-        return $this->firstname.' '.$this->lastname[0].'.';
+        return $this->firstname.' '.$this->lastname[0].'.'.($withId?"<{$this->id}>":"");
     }
 
     /**
@@ -145,7 +145,7 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
 
     }
 
-    public function joinGroup(int $periodId,string $groupName,int $year =null): GroupMember
+    public function joinGroup(int|null $periodId,string $groupName,int $year =null): GroupMember
     {
         $periodId = $periodId??AcademicPeriod::current();
 

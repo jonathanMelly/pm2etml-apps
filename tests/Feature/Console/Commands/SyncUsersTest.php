@@ -46,13 +46,28 @@ test('Test valid teachers and students import', function() {
     $migrator->joinGroup($period->id,'min2',2);
     $migrator->save();
 
+    $repetor = \App\Models\User::factory()->create();
+    $repetor->username='rep@eduvaud.ch';
+    $repetor->email='rep@eduvaud.ch';
+    $repetor->firstname='repe';
+    $repetor->lastname='tor';
+    $repetor->assignRole(\App\Constants\RoleName::STUDENT);
+    $repetor->joinGroup($period->id,'cin2a',2);
+    $repetor->save();
+    $repetor->refresh()->with('groupMembers');
+
+    //create some contracts
+    /* @var $c \App\Models\WorkerContract */
+    $c = $this->createClientAndJob(1,[$repetor],$period)['workerContracts'][0];
+    $c->evaluate(true);//should be later deleted
+
     //WHEN
-/*
-    $this->withoutMockingConsoleOutput()->artisan('users:sync',[
+
+/*    $this->withoutMockingConsoleOutput()->artisan('users:sync',[
         'input' => base_path('tests/data/users-import.xlsx'),
         '-v'=>null]);
-    dd(Artisan::output());
-*/
+    dd(Artisan::output());*/
+
     $this->artisan('users:sync',[
         'input' => base_path('tests/data/users-import.xlsx'),
         '--commit'=>null,
@@ -61,8 +76,9 @@ test('Test valid teachers and students import', function() {
         ->expectsOutputToContain('fr@eduvaud.ch')
         ->expectsOutputToContain('stud2@eduvaud.ch')
         ->expectsOutputToContain('Le champ login est obligatoire')
-        ->expectsOutputToContain('ghost ghost marked as deleted but was never added before -> ignoring')
-        ->expectsTable(\App\Console\Commands\SyncUsersCommand::RESULT_HEADERS,[[/*+*/'5',/*-*/'2',/*#*/'9',/*=*/'1',/***/'1',/*!*/'1',/*/!\*/'3']])
+        ->expectsOutputToContain('ghost ghost<?> marked as deleted but was never added before -> ignoring')
+        ->expectsOutputToContain('repe t.<5> : repetition, deleted cids: 1 | wcids:1')
+        ->expectsTable(\App\Console\Commands\SyncUsersCommand::RESULT_HEADERS,[[/*+*/'5',/*-*/'2',/*#*/'10',/*=*/'1',/***/'1',/*!*/'3',/*/!\*/'3']])
         ->assertExitCode(0);
 
     //THEN
@@ -71,7 +87,7 @@ test('Test valid teachers and students import', function() {
     $this->assertTrue($bob->hasRole([\App\Constants\RoleName::TEACHER,\App\Constants\RoleName::ADMIN]));
 
     $students = \App\Models\User::role(\App\Constants\RoleName::STUDENT)->get();
-    $this->assertCount(4,$students);
+    $this->assertCount(5,$students);
 
     foreach( [
         ['email'=>'studfnln@eduvaud.ch','roles'=>[\App\Constants\RoleName::STUDENT],'class'=>'cin1a','year'=>2022],
@@ -99,26 +115,27 @@ test('Test valid teachers and students import', function() {
                 'Student '.$user['email']. ' is not member of class '.$user['class'].' for 1.8.'.$user['year'].' as expected');
         }
 
-
-        $this->assertTrue(\App\Models\User::withTrashed()->where('username','=','ghost@eduvaud.ch')->doesntExist());
-
-        $tbd = \App\Models\User::withTrashed()->where('username','=','tbd@eduvaud.ch')->firstOrFail();
-        $this->assertTrue($tbd->trashed());
-        $this->assertNull($tbd->groupMember($period->id),'tbd and his cin1c membership should be trashed');
-        $this->assertEquals($tbd->groupMembers()->withTrashed()->firstOrFail()->group->groupName->name,'cin1c','tbd is not found in cin1c 2022-23 trashed group');
-
     }
 
-/*
-    $this->withoutMockingConsoleOutput()->artisan('users:sync',[
+    $this->assertTrue(\App\Models\User::withTrashed()->where('username','=','ghost@eduvaud.ch')->doesntExist());
+
+    $tbd = \App\Models\User::withTrashed()->where('username','=','tbd@eduvaud.ch')->firstOrFail();
+    $this->assertTrue($tbd->trashed());
+    $this->assertNull($tbd->groupMember($period->id),'tbd and his cin1c membership should be trashed');
+    $this->assertEquals($tbd->groupMembers()->withTrashed()->firstOrFail()->group->groupName->name,'cin1c','tbd is not found in cin1c 2022-23 trashed group');
+
+    $c->refresh();
+    $this->assertNotNull($c->deleted_at);
+
+/*    $this->withoutMockingConsoleOutput()->artisan('users:sync',[
         'input' => base_path('tests/data/users-import.xlsx'),
         '-v'=>null]);
-    dd(Artisan::output());
-*/
+    dd(Artisan::output());*/
+
 
     //relaunch and only updates should have been detected + validate rollback by default
     $this->artisan('users:sync',['input' => base_path('tests/data/users-import.xlsx')])
-        ->expectsTable(\App\Console\Commands\SyncUsersCommand::RESULT_HEADERS,[['0','2','4','11','2','1','3']])
+        ->expectsTable(\App\Console\Commands\SyncUsersCommand::RESULT_HEADERS,[['0','2','4','12','2','1','3']])
         ->assertExitCode(3);//3=rollback*/
 
 

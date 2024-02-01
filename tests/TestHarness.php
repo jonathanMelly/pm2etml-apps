@@ -94,26 +94,34 @@ trait TestHarness
         return $result;
     }
 
-    public function createClientAndJob(int $contractsCount=0):array
+    public function createClientAndJob(int $contractsCount=0,array $employees=[],AcademicPeriod $period=null):array
     {
-        AcademicPeriod::create([
-            'start' => today()->subWeek(),
-            'end' => today()->addWeek()
-        ]);
+        if($period==null)
+        {
+            $period = AcademicPeriod::current(false);
+            if($period==null)
+            {
+                $period = AcademicPeriod::create([
+                    'start' => today()->subWeek(),
+                    'end' => today()->addWeek()
+                ]);
+            }
 
-        Group::create([
-            'academic_period_id' => AcademicPeriod::current(),
-            'group_name_id' => GroupName::create([
+        }
+
+        Group::firstOrCreate([
+            'academic_period_id' => $period->id,
+            'group_name_id' => GroupName::firstOrCreate([
                 'name'=> 'test',
-                'year' =>today()->year
+                'year' =>$period->start->year
             ])->id
         ]) ;
 
         $client = $this->createUser(roles:RoleName::TEACHER);
 
         $job=JobDefinition::factory()
-            ->afterMaking(function (JobDefinition $job) {
-                $job->published_date = today()->subWeek();
+            ->afterMaking(function (JobDefinition $job) use($period) {
+                $job->published_date = $period->start;
             })
             ->afterCreating(function (JobDefinition $job) use ($client) {
                 $job->providers()->attach($client->id);
@@ -127,31 +135,36 @@ trait TestHarness
             })
             ->count(1)->create()->firstOrFail()->/*without it, default values set in DB are not loaded...*/fresh();
 
-        $employees=[];
-        for ($i=0;$i<$contractsCount;$i++)
+        $entriesCount=$contractsCount-sizeof($employees);
+        for ($i=sizeof($employees);$i<$entriesCount;$i++)
         {
-            $employees[]=$this->createUser(false,RoleName::STUDENT);
+            $employees[$i]=$this->createUser(false,RoleName::STUDENT);
         }
 
         //Be sure to have 2 contracts for the first job
+        $workerContracts=[];
         foreach ($employees as $employee) {
 
+            /* @var $employee User */
+
             $contract = \App\Models\Contract::make([
-                'start' => today()->subDay(),
-                'end' => today()->addDay()]);
+                'start' => $period->start->addWeeks(rand(1,120)),
+                'end' => $period->end->subDays(rand(1,120))]);
             $contract->job_definition_id = $job->id;
             $contract->save();
 
             $contract->clients()->attach($client->id);
-            $contract->workers()->attach($employee->groupMember()->id);
+            $contract->workers()->attach($employee->groupMember($period->id)->id);
             /* @var $workerContract WorkerContract */
-            $workerContract = $contract->workerContract($employee->groupMember())->firstOrFail();
+            $workerContract = $contract->workerContract($employee->groupMember($period->id))->firstOrFail();
             $workerContract->name="";
             $workerContract->allocated_time=$job->allocated_time;
             $workerContract->save();
 
+            $workerContracts[]=$workerContract;
+
         }
 
-        return ['client'=>$client,'job'=>$job];
+        return ['client'=>$client,'job'=>$job,'workerContracts'=>$workerContracts];
     }
 }

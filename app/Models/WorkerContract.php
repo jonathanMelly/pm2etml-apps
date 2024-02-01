@@ -42,7 +42,7 @@ class WorkerContract extends Pivot
         return $this->belongsTo(GroupMember::class);
     }
 
-    function evaluate($success,$comment=null,$save=true): bool
+    function evaluate(bool|null $success,$comment=null,$save=true): bool
     {
         $this->success=$success;
         $this->success_date=now();
@@ -90,5 +90,20 @@ class WorkerContract extends Pivot
         }
 
         return __($size) . ', ~' . $this->getAllocatedTime(RequiredTimeUnit::PERIOD) . 'p';
+    }
+
+
+    public function softDelete(): bool
+    {
+        if($this->isDirty())
+        {
+            throw new \Exception("Trying to softDelete a dirty workercontract with id {$this->id}. Please apply your modifications first to avoid any side effect...");
+        }
+        else
+        {
+            $this->deleted_at=now(); //soft delete not implemented on pivot
+            return $this->save();
+        }
+
     }
 }
