@@ -68,7 +68,7 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
             }
             else
             {
-                $reportInfo=($firstname??'unknown').' '.($lastname??'unknown');
+                $reportInfo=($firstname??'unknown').' '.($lastname??'unknown')."<{$user->id}>";
             }
 
             $year = $period->start->year;
