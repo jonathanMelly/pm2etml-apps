@@ -179,6 +179,8 @@ class UsersImport implements ToCollection, WithHeadingRow, WithValidation, WithP
                         {
                             Log::info("Removing group {$currentGroupName} from user id {$user->id} and period {$period->id}");
                             $currentGroupMemberTemp->forceDelete();
+                            $reportInfo .= '[groups/'.$year.':-'.$currentGroupName.']';
+                            $somethingHasBeenUpdated=true;
                         }
                         else{
                             //keep that info for later checks
