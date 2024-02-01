@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.40.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.39.0...v1.40.0) (2024-02-01)
+
+
+### Features
+
+* **repetition:** auto removes contracts for students that repeat (redoublement) ([a374f26](https://github.com/jonathanMelly/pm2etml-intranet/commit/a374f260ed193d0d7914a6ce700a770df82dc6f5))
+* **users cleanup:** report fixes ([fc53322](https://github.com/jonathanMelly/pm2etml-intranet/commit/fc53322fab3be858200abe89efaa3768bf4cf779))
+* **users import:** added id of impacted users ([3c6248b](https://github.com/jonathanMelly/pm2etml-intranet/commit/3c6248bbb063c26c482993c46160ef89edc7bf0b))
+
 ## [1.39.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.38.0...v1.39.0) (2024-01-31)
 
 
