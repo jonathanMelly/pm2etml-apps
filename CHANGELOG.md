@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.40.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.40.0...v1.40.1) (2024-03-06)
+
+
+### Bug Fixes
+
+* **charts:** pie group title is not y misplaced when students &lt;8 ([eecf499](https://github.com/jonathanMelly/pm2etml-intranet/commit/eecf4997e42f425c69ea4c431544fc3832368f6f))
+* **charts:** pies are shown completely (not missing last part because of wrong height) ([71cde8e](https://github.com/jonathanMelly/pm2etml-intranet/commit/71cde8e5a0e0344ef4a2800cda4220696a82b959))
+
 ## [1.40.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.39.0...v1.40.0) (2024-02-01)
 
 
