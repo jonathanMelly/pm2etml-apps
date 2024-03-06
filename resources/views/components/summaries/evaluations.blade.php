@@ -34,7 +34,7 @@
 
 
     const groupRadius=100;
-    const groupHeight = groupRadius*2;
+    const oneLineHeight = groupRadius*2;
     let summaryTop=5;
     const groupWidth = groupRadius*2;
     const studentsTotalWidth=600;
@@ -59,7 +59,7 @@
 
             const studentSummary = summariesData[groupName][student];
 
-            let height=groupHeight;
+            let height=oneLineHeight;
             let width = groupWidth;
 
             let title=groupName;
@@ -68,10 +68,11 @@
             let topTitle = summaryTop;
 
             let isGroup=true;
-            if(student!="all"){
+            //All is the first Pie which summaries all the students of the group
+            if(student!=="all"){
                 isGroup=false;
                 radius *=0.6;
-                height=groupHeight;
+                height=oneLineHeight;
                 width=studentWidth;
 
                 title=student.limit(10);
@@ -79,15 +80,15 @@
                 studentsCount++;
 
                 //first line of students, move x
-                if(idxStudent==1){
+                if(idxStudent===1){
                     left+=groupWidth+horizontalSpacer1;
                     summaryTop+=studentNameTitle;
                     top+=studentNameTitle;
                     topTitle=top;
                 }//Move student top for second line ? (-1 for the group chart)
-                else if(idxStudent!=1 && (idxStudent-1)%studentsPack==0){
+                else if(idxStudent!==1 && (idxStudent-1)%studentsPack===0){
 
-                    summaryTop+=groupHeight/2+verticalSpacer1;
+                    summaryTop+=oneLineHeight/2+verticalSpacer1;
 
                     top=summaryTop;
                     topTitle=summaryTop;
@@ -169,11 +170,12 @@
             });
 
         });
-        summaryTop+=groupHeight;
+        summaryTop+=oneLineHeight;
 
-        //when not much students...
-        if( students.length-1<studentsPack){
-            summaryTop+=groupHeight/2+verticalSpacer1;
+        //when not much students, second line is empty, we have to fake this emptiness
+        let only1Line = students.length-1 /*-1: In students, there is the ALL special entry /!\*/<=studentsPack;
+        if(only1Line){
+            summaryTop+=oneLineHeight/2+verticalSpacer1;
         }
 
     });
