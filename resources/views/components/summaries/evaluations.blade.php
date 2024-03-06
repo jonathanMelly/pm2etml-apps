@@ -35,7 +35,8 @@
 
     const groupRadius=100;
     const oneLineHeight = groupRadius*2;
-    let summaryTop=5;
+    const initialSummaryTop = 5;
+    let summaryTop=initialSummaryTop;
     const groupWidth = groupRadius*2;
     const studentsTotalWidth=600;
     const studentsPack=8;
@@ -137,6 +138,8 @@
                 left: left+'px',
             });
 
+
+
             //console.log(successColor);
             summarySeries.push({
                 type: 'pie',
@@ -181,7 +184,7 @@
     });
 
     //For students, only show himself in the big graph
-    if(summarySeries.length==2){
+    if(summarySeries.length===2){
         summaryTitles[0].text = summaryTitles[1].text;
         summaryTitles[0].subtext = summaryTitles[1].subtext;
         summaryTitles.pop();
@@ -200,6 +203,9 @@
         },
 
     };
+
+
+    {{-- BEGIN EVALUATION CHARTS --}}
 
     const evaluationsData = allJsonData["evaluations"];
     const groupsForEvaluation = Object.keys(evaluationsData);
@@ -473,7 +479,7 @@
     //Create chart
     let summariesChart = echarts.init(document.getElementById('summariesCharts'), theme, {
         //width: '100%',
-        height: maxTop+groupRadius*3
+        height: (summaryTop-initialSummaryTop)// maxTop+groupRadius*3
     });
     summariesChart.setOption(summariesChartOption);
 

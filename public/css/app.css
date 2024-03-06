@@ -15716,6 +15716,9 @@ input.tab:checked + .tab-content,
 .m-2 {
   margin: 0.5rem;
 }
+.m-5 {
+  margin: 1.25rem;
+}
 .-mx-3 {
   margin-left: -0.75rem;
   margin-right: -0.75rem;
