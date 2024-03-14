@@ -168,6 +168,7 @@ class ContractController extends Controller
                 $contract->save();
                 $contract->clients()->attach($clientId);
                 Cache::forget("client-" . $clientId . "-percentage");
+                Cache::forget("involvedGroupNames-$clientId");
                 $contract->workers()->attach($targetWorker->groupMember()->id);//set worker
 
                 /* @var $workerContract WorkerContract */
@@ -352,6 +353,7 @@ class ContractController extends Controller
                         $isUpdated = true;
                         Cache::forget("client-".$oldClientId."-percentage");
                         Cache::forget("client-".$clientId."-percentage");
+                        Cache::forget("involvedGroupNames-$clientId");
                         Log::info("userid " . $user->id . " updated contract with id " . $contract->id . " : client moved from id ".$oldClientId. " => " . $clientId);
                     }
                 }
@@ -413,7 +415,9 @@ class ContractController extends Controller
                         if ($workerContract->update(['deleted_at' => now()])) {
                             $deleted++;
                             Log::info("userid" . $user->id . " deleted worker contract with id " . $workerContract->id);
-                            Cache::forget("client-".$workerContract->contract->clients->firstOrFail()->id."-percentage");
+                            $clientId = $workerContract->contract->clients->firstOrFail()->id;
+                            Cache::forget("client-".$clientId."-percentage");
+                            Cache::forget("involvedGroupNames-$clientId");
 
                             //softdelete contract if not any workers on it...
                             $contractDeleted = $workerContract->contract->whereDoesntHave('workersContracts',

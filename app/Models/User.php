@@ -102,6 +102,26 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
             ->withTimestamps();
     }
 
+    public function involvedGroupNames(int $periodId): Collection
+    {
+        return Cache::rememberForever("involvedGroupNames-$this->id",
+            function() use ($periodId) {
+                return GroupName::query()
+                    ->distinct()
+                    ->select('name')
+                    ->whereHas('groups.groupMembers',
+                        fn($q) => $q->whereIn('id',
+
+                            WorkerContract::query()
+                                ->whereHas('groupMember.group.academicPeriod', fn($q) => $q->whereId($periodId))
+                                ->whereHas('contract.clients.groupMembers', fn($q) => $q->where('user_id', '=', $this->id))
+                                ->pluck('group_member_id'))
+
+                    )
+                    ->pluck('name');
+            });
+    }
+
     //Filter and order contracts for the current client for a given job
     public function contractsAsAClientForJob(JobDefinition $job,int $periodId): Contract|Builder
     {
