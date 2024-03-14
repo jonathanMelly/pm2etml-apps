@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.41.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.40.1...v1.41.0) (2024-03-14)
+
+
+### Features
+
+* **contracts:** filter by class ([37f3b8c](https://github.com/jonathanMelly/pm2etml-intranet/commit/37f3b8c0eaf4bf6cfc8932559a06e8397421ed76))
+
 ## [1.40.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.40.0...v1.40.1) (2024-03-06)
 
 
