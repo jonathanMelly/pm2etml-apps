@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.42.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.41.0...v1.42.0) (2024-03-17)
+
+
+### Features
+
+* **attachment:** upgrade max size to 23Mo instead of 10 ([147b116](https://github.com/jonathanMelly/pm2etml-intranet/commit/147b116d64b666795adca266e842683a25577c8a))
+
 ## [1.41.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.40.1...v1.41.0) (2024-03-14)
 
 
