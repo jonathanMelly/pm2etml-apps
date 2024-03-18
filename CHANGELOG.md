@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.42.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.42.0...v1.42.1) (2024-03-18)
+
+
+### Bug Fixes
+
+* **bad cid:** generic exception to be filtered in sentry... (details are in the sentry details) ([6ebe4ae](https://github.com/jonathanMelly/pm2etml-intranet/commit/6ebe4ae22f3bf818dd9a1daa8b97acc25a91c930))
+
 ## [1.42.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.41.0...v1.42.0) (2024-03-17)
 
 
