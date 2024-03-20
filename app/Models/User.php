@@ -113,8 +113,8 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
                         fn($q) => $q->whereIn('id',
 
                             WorkerContract::query()
-                                ->whereHas('groupMember.group.academicPeriod', fn($q) => $q->whereId($periodId))
-                                ->whereHas('contract.clients.groupMembers', fn($q) => $q->where('user_id', '=', $this->id))
+                                ->whereHas('groupMember.group.academicPeriod', fn($q) => $q->where(tbl(AcademicPeriod::class).'.id','=',$periodId))
+                                ->whereHas('contract.clients', fn($q) => $q->where(tbl(User::class).'.id','=',$this->id))
                                 ->pluck('group_member_id'))
 
                     )

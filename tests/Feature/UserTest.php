@@ -1,6 +1,6 @@
 <?php
 
-test('Client load percentage is accurate', function () {
+test('Client load percentage is accurate and check involved groupNames', function () {
     //Arrange
     $this->seed(\Database\Seeders\AcademicPeriodSeeder::class);
     /* @var $client \App\Models\User */
@@ -42,4 +42,6 @@ test('Client load percentage is accurate', function () {
 
     //Assert
     $this->assertEquals(['percentage'=>30,'mine'=>3,'total'=>$employeesCount],$load);
+
+    $this->assertEquals(1,$client->involvedGroupNames(\App\Models\AcademicPeriod::current())->count());
 });
