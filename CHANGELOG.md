@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.42.2](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.42.1...v1.42.2) (2024-03-20)
+
+
+### Bug Fixes
+
+* **class filters:** ok for non "prof de classe" people ([411d7a5](https://github.com/jonathanMelly/pm2etml-intranet/commit/411d7a561f2bddc5f2de3ba091c658d4a977aba3))
+
 ## [1.42.1](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.42.0...v1.42.1) (2024-03-18)
 
 
