@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.42.3](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.42.2...v1.42.3) (2024-03-25)
+
+
+### Bug Fixes
+
+* **missing cid:** remove id from message title error ([0711093](https://github.com/jonathanMelly/pm2etml-intranet/commit/07110934a92f791f31c66afd717ea87cc3b89947))
+
 ## [1.42.2](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.42.1...v1.42.2) (2024-03-20)
 
 
