@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Constants\RoleName;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
 
 class StoreContractRequest extends FormRequest
 {
@@ -14,7 +14,9 @@ class StoreContractRequest extends FormRequest
      */
     public function authorize()
     {
-        return $this->user()->can('jobs-apply');
+        return
+            $this->user()->can('jobs-apply') /*standard student*/ ||
+            ($this->has("worker") && $this->user()->hasRole(RoleName::TEACHER)) /*teacher makes a manual enrolment*/;
     }
 
     /**

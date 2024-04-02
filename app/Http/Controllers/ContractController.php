@@ -66,7 +66,6 @@ class ContractController extends Controller
     public function store(StoreContractRequest $request)
     {
         //SECURITY CHECKS (as this area is opened to students who might want to play with ids...)
-        $this->authorize('jobs-apply');
 
         $jobDefinitionId = $request->get('job_definition_id');
 
@@ -116,12 +115,12 @@ class ContractController extends Controller
             }
         }
 
+        /* @var $loggedUser User */
         /* @var $targetWorker User */
-        //we expect mainly that students will apply... but in special cases a teacher can make an assignment... (student sick...)
-        $targetWorker = auth()->user();
+        $loggedUser = auth()->user();
         if ($request->has('worker')) {
             //Teachers can manually add a contract
-            if ($targetWorker->hasRole(RoleName::TEACHER)) {
+            if ($loggedUser->hasRole(RoleName::TEACHER)) {
                 $targetWorker = User::where('email', '=', $request->input('worker'))->firstOrFail();
 
                 //As teacher adds a contract via modal, full error must be printed in root toast
@@ -131,11 +130,16 @@ class ContractController extends Controller
             }
 
         } //If not teacher with worker, only students can apply for contract
-        else if (!$targetWorker->hasRole(RoleName::STUDENT)) {
-            return back()->withErrors(__('Invalid worker (only students are allowed)'))->withInput();
+        else
+        {
+            if (!$loggedUser->hasRole(RoleName::STUDENT) /*double check role... but should be done with permissions*/)
+            {
+                return back()->withErrors(__('Invalid worker (only students are allowed)'))->withInput();
+            }
+            //we expect mainly that students will apply... but in special cases a teacher can make an assignment... (student sick...)
+            $targetWorker = $loggedUser;
         }
-        //END OF SECURITY CHECKS
-
+        //END OF SECURITY CHECKS/double checks
 
         //check that this user has not yet a contract for this job def
         if ($targetWorker->contractsAsAWorker()

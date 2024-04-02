@@ -120,7 +120,7 @@
 
                                                     <label>
                                                         <input name="worker" class="input w-full" type="text"
-                                                               placeholder="bob@eduvaud.ch" list="workers-list"/>
+                                                               placeholder="{{__('Select worker')}}" list="workers-list"/>
                                                     </label>
 
                                                     <label class="input-group flex justify-between mt-3">
