@@ -8,6 +8,7 @@
 
     <div class="form-control flex flex-row">
         <div class="self-center ml-1 text-sm">{{__('Show following groups :')}}</div>
+        <div class="flex flex-wrap">
         @foreach($involvedGroupNames as $involvedGroupName)
             <label class="cursor-pointer label">
                 <span class="label-text ml-1">{{$involvedGroupName}}</span>
@@ -18,6 +19,7 @@
                        :checked="showGroup_{{$involvedGroupName}}"/>
             </label>
         @endforeach
+        </div>
 
     </div>
 
