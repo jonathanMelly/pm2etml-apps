@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.43.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.42.3...v1.43.0) (2024-04-03)
+
+
+### Features
+
+* **dashboard filters:** auto hide project if no contracts inside ([2e49cfc](https://github.com/jonathanMelly/pm2etml-intranet/commit/2e49cfcb672be9008287f2c8abeba143d56182f5))
+
+
+### Bug Fixes
+
+* **group filter:** auto-wrap when there are a lot ([599e8c2](https://github.com/jonathanMelly/pm2etml-intranet/commit/599e8c22073cc143755e6e95a39edbfe87f2a866))
+* **manual apply:** non admin teacher can manually add a contract (no more 403) ([a51e210](https://github.com/jonathanMelly/pm2etml-intranet/commit/a51e210554de6c5fc167c0cb3d796dc78745f3b5))
+
 ## [1.42.3](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.42.2...v1.42.3) (2024-03-25)
 
 
