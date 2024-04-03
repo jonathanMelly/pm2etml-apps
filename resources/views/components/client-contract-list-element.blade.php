@@ -14,7 +14,7 @@
 
     $hideUponRequest = $wc->alreadyEvaluated()?"x-show=\"!hideAlreadyEvaluated && showGroup_$groupName\"":"x-show=\"showGroup_$groupName\"";
 @endphp
-<tr {!! $hideUponRequest !!}>
+<tr {!! $hideUponRequest !!} class="worker-contract">
     <td>
         <label>
             <input type="checkbox" class="checkbox" name="job-{{$job->id}}-contracts[]" value="{{$contract->id}}" data-workers="{{$workers.($wc->name==""?"":" (".$wc->name.")")}}"

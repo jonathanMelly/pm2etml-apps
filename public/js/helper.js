@@ -30,4 +30,11 @@ spin = function(target){
     }
 }
 
+function toggleProjectVisibility(jobId)
+{
+    const hasChildren = document.querySelector('.job-'+jobId).querySelector(`.worker-contract:not([style*="display: none;"])`)!=null;
+    Alpine.store('show'+jobId+'main',hasChildren);
+    return hasChildren;
+}
+
 

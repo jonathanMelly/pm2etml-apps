@@ -15,7 +15,7 @@
 
                 <input type="checkbox" class="toggle toggle-primary ml-1"
                        @click="showGroup_{{$involvedGroupName}}=!showGroup_{{$involvedGroupName}};
-                   if(!showGroup_{{$involvedGroupName}}){toggleCheckBoxes('job-',false,true)};"
+                   if(!showGroup_{{$involvedGroupName}}){toggleCheckBoxes('job-',false,true)};updateProjectsVisbility();"
                        :checked="showGroup_{{$involvedGroupName}}"/>
             </label>
         @endforeach
@@ -28,7 +28,7 @@
             <span class="label-text">{{__('Hide already evaluated contracts')}}</span>
             <input type="checkbox" class="toggle toggle-accent ml-1"
                    @click="hideAlreadyEvaluated=!hideAlreadyEvaluated;
-                   if(hideAlreadyEvaluated){toggleCheckBoxes('job-',false,true)};"
+                   if(hideAlreadyEvaluated){toggleCheckBoxes('job-',false,true)};updateProjectsVisbility();"
                    :checked="hideAlreadyEvaluated"/>
         </label>
     </div>
@@ -42,28 +42,47 @@
     <table class="table w-full">
         <!-- head -->
         <thead>
-        <tr>
-            <x-client-job-list-header/>
-        </tr>
+            <tr x-show="!$store.empty">
+                <x-client-job-list-header/>
+            </tr>
+            <tr x-show="$store.empty">
+                <td class="pl-0">
+                    <div class="text-center italic text-xl rounded-lg bg-base-200 w-48">{{__('Nothing to show')}}</div>
+                </td>
+            </tr>
         </thead>
         <script>
             document.addEventListener('alpine:init', () => {
                 {!! $jobs->values()->transform(fn($job) =>"Alpine.store('show$job->id', false)")->join(';')!!}
+
+                {{-- Reset visibility upon saved state... --}}
+                setTimeout(() => {
+                    updateProjectsVisbility();
+                },250);{{-- timeout is to let alpinejs events fire up before taking a decision... --}}
             })
+
+            function updateProjectsVisbility()
+            {
+                setTimeout(() => {
+                    let atLeastOneProjectVisible = false;
+                    {!! $jobs->values()->transform(fn($job) =>"atLeastOneProjectVisible |= toggleProjectVisibility('$job->id')")->join(';')!!};
+                    Alpine.store('empty',!atLeastOneProjectVisible);
+                },250);{{-- timeout is to let alpinejs events fire up before taking a decision... --}}
+            }
         </script>
 
         <tbody>
         @foreach($jobs as $job)
 
             {{-- JOB DESCRIPTION --}}
-            <x-client-job-list-element :job="$job"/>
+            <x-client-job-list-element :job="$job"  />
 
             {{-- CONTRACTS DETAILS TABLE --}}
-            <tr x-show="$store.show{{$job->id}}" x-transition.opacity x-data="{massAction:false}">
+            <tr x-show="$store.show{{$job->id}} && $store.show{{$job->id}}main" x-transition.opacity x-data="{massAction:false}">
                 <td colspan="6">
 
                     <table :class="{ 'table-zebra': {!! $showGroupFilterJsEval !!} && !hideAlreadyEvaluated} "
-                           class="table table-compact custom-zebra w-full">
+                           class="table table-compact custom-zebra w-full job-{{$job->id}}">
                         <thead>
                         {{-- CONTRACTS MULTI ACTION HEADERS --}}
                         <tr>

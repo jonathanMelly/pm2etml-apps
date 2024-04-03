@@ -1,4 +1,4 @@
-<tr>
+<tr x-show="$store.show{{$job->id}}main">
     <td>
         <div class="flex items-center space-x-3" >
             <i class="fa-solid fa-xl hover:cursor-pointer" :class="$store.show{{$job->id}}?'fa-caret-down':'fa-caret-right'" @click="$store.show{{$job->id}} = ! $store.show{{$job->id}}"></i>

@@ -16087,6 +16087,9 @@ input.tab:checked + .tab-content,
 .flex-nowrap {
   flex-wrap: nowrap;
 }
+.place-content-center {
+  place-content: center;
+}
 .place-items-center {
   place-items: center;
 }
@@ -16195,6 +16198,10 @@ input.tab:checked + .tab-content,
 .rounded-r-md {
   border-top-right-radius: 0.375rem;
   border-bottom-right-radius: 0.375rem;
+}
+.rounded-b-box {
+  border-bottom-right-radius: var(--rounded-box, 1rem);
+  border-bottom-left-radius: var(--rounded-box, 1rem);
 }
 .\!border-2 {
   border-width: 2px !important;
@@ -16423,6 +16430,9 @@ input.tab:checked + .tab-content,
 }
 .pt-8 {
   padding-top: 2rem;
+}
+.pl-0 {
+  padding-left: 0px;
 }
 .text-left {
   text-align: left;
