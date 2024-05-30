@@ -1,5 +1,6 @@
 // Font-Awesome
-@import "~@fortawesome/fontawesome-free/scss/fontawesome";
-@import "~@fortawesome/fontawesome-free/scss/regular";
-@import "~@fortawesome/fontawesome-free/scss/solid";
-@import "~@fortawesome/fontawesome-free/scss/brands";
+$fa-font-path:"~fa/../webfonts";
+@import "~fa/fontawesome.scss";
+@import "~fa/solid.scss";
+@import "~fa/regular.scss";
+@import "~fa/brands.scss";

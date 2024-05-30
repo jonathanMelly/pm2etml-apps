@@ -39,9 +39,9 @@
             }
 
         </style>
-        <script src="{{ asset('js/dropzone-min.js') }}" type="module" defer></script>
+        @vite('resources/js/dropzone.js')
 
-        <script>
+        <script type="module">
             {{-- WARNING: the main idea is : what has already been saved is not deleted directly (waits for save button)... --}}
             {{-- Reloads from old if any errors happened (and happen again), we keep what user asked until then... --}}
             let otherAttachments = JSON.parse('{!!old('other_attachments','{}')!!}');

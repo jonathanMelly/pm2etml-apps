@@ -1,6 +1,6 @@
 @push('custom-scripts')
     @once
-        <script type="text/javascript" src="{{ URL::asset ('js/echarts.min.js') }}"></script>
+         @vite(['resources/js/echarts.js'])
     @endonce
 @endpush
 
@@ -8,7 +8,8 @@
 </div>
 <div id="evolutionCharts" class="w-[100%]">
 </div>
-<script type="text/javascript">
+<script type="module">
+
     String.prototype.limit = function(max) {
         const after="...";
         return this.length>max-after.length ? this.substring(0, max-after.length) + after  : this.toString();
@@ -42,7 +43,7 @@
     const studentsPack=8;
     const studentWidth = studentsTotalWidth/studentsPack;
     const horizontalSpacer1=10;//space between group and first student
-    horizontalSpacer2=50;//space between students
+    const horizontalSpacer2=50;//space between students
 
     const verticalSpacer1=70;//y space between students
 
@@ -467,7 +468,6 @@
             },
 
     };
-
 
     //Create chart
     let evolutionChart = echarts.init(document.getElementById('evolutionCharts'), theme, {

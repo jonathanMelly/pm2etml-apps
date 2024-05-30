@@ -32,7 +32,6 @@ composer install
 Si nécessaire, installer NPM
 ```shell
 npm install
-npm run dev
 ```
 
 ### Fichier de configuration
@@ -84,17 +83,6 @@ php artisan migrate:fresh --seed
 
 ## Démarrage de l’application
 ```shell
-php artisan serve --port 80
+npm run dev
 ```
 
-## Rechargement à chaud des ressources javascript/css
-
-### Si nécessaire
-```shell
-npm install
-```
-
-### Rechargement à chaud
-```shell
-npm run watch
-```

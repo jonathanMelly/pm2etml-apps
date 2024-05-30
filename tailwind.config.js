@@ -1,6 +1,8 @@
-const defaultTheme = require('tailwindcss/defaultTheme');
+import defaultTheme from 'tailwindcss/defaultTheme';
+import daisyui from "daisyui";
+import typography from "@tailwindcss/typography"
 
-module.exports = {
+export default {
     content: [
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
         './storage/framework/views/*.php',
@@ -32,11 +34,7 @@ module.exports = {
         },
     },
 
-    plugins: [
-        //require('@tailwindcss/forms'),
-        require("daisyui"),
-        require('@tailwindcss/typography'),
-    ],
+    plugins: [daisyui,typography],
 
     daisyui: {
         styled: true,

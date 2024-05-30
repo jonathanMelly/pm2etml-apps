@@ -1,13 +1,10 @@
 {
     "private": true,
     "scripts": {
-        "dev": "npm run development",
-        "development": "mix",
-        "watch": "mix watch",
-        "watch-poll": "mix watch -- --watch-options-poll=1000",
-        "hot": "mix watch --hot",
-        "prod": "npm run production",
-        "production": "mix --production"
+        "dev": "concurrently -p name -n php,dev,build \"php artisan serve --port 80 --ansi\" npm:dev:vite npm:build:watch",
+        "dev:vite": "vite",
+        "build": "vite build",
+        "build:watch": "vite build --watch"
     },
     "devDependencies": {
         "@alpinejs/collapse": "^3.10.2",
@@ -15,22 +12,26 @@
         "@fortawesome/fontawesome-free": "^6.1.0",
         "@tailwindcss/forms": "^0.5.7",
         "@tailwindcss/typography": "^0.5.10",
+        "@vitejs/plugin-vue": "^5.0.4",
         "alpinejs": "^3.10.2",
         "autoprefixer": "^10.4.2",
         "axios": "^0.25",
+        "concurrently": "^8.2.2",
         "daisyui": "^4.6.0",
         "dropzone": "^6.0.0-beta.2",
-        "laravel-mix": "^6.0.6",
         "laravel-mix-copy-watched": "^2.3.1",
+        "laravel-vite-plugin": "^1.0.4",
         "lodash": "^4.17.19",
         "postcss": "^8.4.6",
         "postcss-import": "^14.0.2",
         "resolve-url-loader": "^5.0.0",
         "sass": "^1.49.9",
         "sass-loader": "^12.1.0",
-        "tailwindcss": "^3.4.1"
+        "tailwindcss": "^3.4.1",
+        "vite": "^5.2.12"
     },
     "dependencies": {
         "echarts": "^5.4.2"
-    }
+    },
+    "type": "module"
 }

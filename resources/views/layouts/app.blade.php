@@ -1,7 +1,7 @@
 <x-root-layout>
     @push('custom-scripts')
         @once
-            <script type="text/javascript" src="{{ URL::asset ('js/helper.js') }}"></script>
+            @vite(['resources/js/helper.js'])
         @endonce
     @endpush
     <x-slot name="top">
