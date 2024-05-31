@@ -19,6 +19,7 @@
         "concurrently": "^8.2.2",
         "daisyui": "^4.6.0",
         "dropzone": "^6.0.0-beta.2",
+        "echarts": "^5.5.0",
         "laravel-mix-copy-watched": "^2.3.1",
         "laravel-vite-plugin": "^1.0.4",
         "lodash": "^4.17.19",
@@ -29,9 +30,6 @@
         "sass-loader": "^12.1.0",
         "tailwindcss": "^3.4.1",
         "vite": "^5.2.12"
-    },
-    "dependencies": {
-        "echarts": "^5.4.2"
     },
     "type": "module"
 }

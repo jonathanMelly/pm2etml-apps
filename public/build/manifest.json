@@ -1,4 +1,28 @@
 {
+  "fa-brands-400.ttf": {
+    "file": "assets/fa-brands-400-aaGr5KPy.ttf",
+    "src": "fa-brands-400.ttf"
+  },
+  "fa-brands-400.woff2": {
+    "file": "assets/fa-brands-400-CZi_ZSei.woff2",
+    "src": "fa-brands-400.woff2"
+  },
+  "fa-regular-400.ttf": {
+    "file": "assets/fa-regular-400-CsfhrGbl.ttf",
+    "src": "fa-regular-400.ttf"
+  },
+  "fa-regular-400.woff2": {
+    "file": "assets/fa-regular-400-C-WfP7Xv.woff2",
+    "src": "fa-regular-400.woff2"
+  },
+  "fa-solid-900.ttf": {
+    "file": "assets/fa-solid-900-C01X6yRm.ttf",
+    "src": "fa-solid-900.ttf"
+  },
+  "fa-solid-900.woff2": {
+    "file": "assets/fa-solid-900-BMmFSO-B.woff2",
+    "src": "fa-solid-900.woff2"
+  },
   "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.ttf": {
     "file": "assets/fa-brands-400-aaGr5KPy.ttf",
     "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.ttf"
@@ -41,7 +65,7 @@
     "isEntry": true
   },
   "resources/js/echarts.js": {
-    "file": "assets/echarts-55bJY7d5.js",
+    "file": "assets/echarts-B5YRNMSm.js",
     "name": "echarts",
     "src": "resources/js/echarts.js",
     "isEntry": true
