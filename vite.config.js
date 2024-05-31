@@ -15,12 +15,11 @@ export default defineConfig({
 
             //js
             'resources/js/app.js', //main laravel js
-            //'resources/js/fontawesome.js', doesn’t work with @click alpine directive
             'resources/js/helper.js', //custom helpers
 
-            //node modules for prod
+
             'resources/js/dropzone.js', //for draq/drop file upload
-            'resources/js/echarts.js', //for charts
+            'resources/js/dashboard-charts.js'
 
         ]),
 
@@ -38,5 +37,15 @@ export default defineConfig({
         alias: {
             '~fa': path.resolve(__dirname, 'node_modules/@fortawesome/fontawesome-free/scss'),
         }
+    },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    "echarts-core": ['echarts/core'],
+                    "echarts-charts": ['echarts/charts'],
+                }
+            }
+        },
     },
 });

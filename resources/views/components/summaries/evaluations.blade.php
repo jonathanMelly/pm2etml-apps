@@ -1,6 +1,6 @@
 @push('custom-scripts')
     @once
-         @vite(['resources/js/echarts.js'])
+        @vite('resources/js/dashboard-charts.js')
     @endonce
 @endpush
 
@@ -8,7 +8,7 @@
 </div>
 <div id="evolutionCharts" class="w-[100%]">
 </div>
-@vite('resources/js/dashboard-charts.js')
+
 <script type="module">
 
     String.prototype.limit = function(max) {

@@ -1,8 +1,9 @@
 {
     "private": true,
     "scripts": {
-        "dev": "concurrently -p name -n php,dev,build \"php artisan serve --port 80 --ansi\" npm:dev:vite npm:build:watch",
+        "dev": "concurrently -p name -n php,dev,build npm:dev:php npm:dev:vite npm:build:watch",
         "dev:vite": "vite",
+        "dev:php": "php artisan serve --port 80 --ansi",
         "build": "vite build",
         "build:watch": "vite build --watch"
     },
