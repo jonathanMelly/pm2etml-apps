@@ -1,7 +1,8 @@
 <?php
 
 test('example', function () {
-    $response = $this->get('/');
+    $this->createUser(true,'root');
+    $response = $this->get('/apps/manager');
 
     $response->assertStatus(200);
 });
