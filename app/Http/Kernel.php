@@ -45,7 +45,8 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            Theme::class,//theme switcher
+            Theme::class,//theme switcher,
+            \App\Http\Middleware\HandleInertiaRequests::class,//inertia middleware
 
         ],
 

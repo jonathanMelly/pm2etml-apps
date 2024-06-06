@@ -197,4 +197,12 @@ return [
         'Image' => Intervention\Image\Facades\Image::class
     ])->toArray(),
 
+    //JS APPS
+    'manager_prefix' => 'manager',
+    'manager_enabled' => env('MANAGER_ENABLED', false),
+
+    'smarties_prefix' => 'smarties',
+    'smarties_enabled' => env('SMARTIES_ENABLED', false),
+
+
 ];

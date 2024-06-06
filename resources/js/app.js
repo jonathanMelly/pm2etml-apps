@@ -1,3 +1,4 @@
+//handles standard http requests
 import './bootstrap';
 
 import Alpine from 'alpinejs';

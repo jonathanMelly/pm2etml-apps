@@ -4,16 +4,20 @@
         "dev": "concurrently -p name -n php,dev,build npm:dev:php npm:dev:vite npm:build:watch",
         "dev:vite": "vite",
         "dev:php": "php artisan serve --port 80 --ansi",
-        "build": "vite build",
-        "build:watch": "vite build --watch"
+        "build": "vue-tsc --noEmit && vite build",
+        "build-ziggy": "php artisan ziggy:generate --types-only && vue-tsc --noEmit && vite build",
+        "build:watch": "npm run build --- --watch",
+        "ts-check": "vue-tsc --noEmit"
     },
     "devDependencies": {
         "@alpinejs/collapse": "^3.10.2",
         "@alpinejs/persist": "^3.13.3",
         "@fortawesome/fontawesome-free": "^6.1.0",
+        "@inertiajs/inertia-vue3": "^0.6.0",
         "@tailwindcss/forms": "^0.5.7",
         "@tailwindcss/typography": "^0.5.10",
         "@vitejs/plugin-vue": "^5.0.4",
+        "@vue/tsconfig": "^0.5.1",
         "alpinejs": "^3.10.2",
         "autoprefixer": "^10.4.2",
         "axios": "^0.25",
@@ -21,7 +25,6 @@
         "daisyui": "^4.6.0",
         "dropzone": "^6.0.0-beta.2",
         "echarts": "^5.5.0",
-        "laravel-mix-copy-watched": "^2.3.1",
         "laravel-vite-plugin": "^1.0.4",
         "lodash": "^4.17.19",
         "postcss": "^8.4.6",
@@ -30,7 +33,9 @@
         "sass": "^1.49.9",
         "sass-loader": "^12.1.0",
         "tailwindcss": "^3.4.1",
-        "vite": "^5.2.12"
+        "typescript": "^5.4.5",
+        "vite": "^5.2.12",
+        "vue-tsc": "^2.0.19"
     },
     "type": "module"
 }
