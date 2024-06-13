@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.44.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.43.0...v1.44.0) (2024-06-13)
+
+
+### Features
+
+* **echarts:** reduce echarts js size (+refactor) ([9e488ec](https://github.com/jonathanMelly/pm2etml-intranet/commit/9e488ecf4d091181dff4221a0c7093266eea0859))
+* **sso-bridge:** update url ([45dd6e1](https://github.com/jonathanMelly/pm2etml-intranet/commit/45dd6e1723abb6002f0e850cbd8854b6f5da82e8))
+
 ## [1.43.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.42.3...v1.43.0) (2024-04-03)
 
 
