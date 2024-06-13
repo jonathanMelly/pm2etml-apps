@@ -2,7 +2,7 @@
 
 test('example', function () {
     $this->createUser(true,'root');
-    $response = $this->get('/apps/manager');
+    $response = $this->get('/apps/smarties');
 
     $response->assertStatus(200);
 });
