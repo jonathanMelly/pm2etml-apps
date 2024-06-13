@@ -7,7 +7,7 @@ if( !\filter_var( \ini_get('allow_url_fopen'), \FILTER_VALIDATE_BOOLEAN ) ) {
 $config = parse_ini_file("config.ini.php");
 define("API_KEY",$config["API_KEY"]);
 
-const SSO_PORTAL = "https://intranet.pm2etml.ch/auth/";
+const SSO_PORTAL = "https://apps.pm2etml.ch/auth/";
 const SESSION_SSO_KEY = "sso_bridge_correlation_id";
 
 //
