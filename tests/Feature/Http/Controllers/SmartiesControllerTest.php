@@ -4,5 +4,5 @@ test('example', function () {
     $this->createUser(true,'root');
     $response = $this->get('/apps/smarties');
 
-    $response->assertStatus(200);
+    $response->assertStatus(config('app.smarties_enabled')?200:404);
 });

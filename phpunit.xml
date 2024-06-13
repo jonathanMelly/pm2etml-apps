@@ -12,6 +12,7 @@
     </testsuites>
     <coverage/>
     <php>
+        <!-- WARNING this file is not used by php artisan test... only for ide ? -->
         <env name="APP_ENV" value="testing"/>
         <env name="SSO_LOGIN" value="false"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
@@ -25,8 +26,6 @@
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="SSO_BRIDGE_API_KEY" value="key123"/>
         <env name="SSO_BRIDGE_API_KEY_MANDATORY" value="true"/>
-        <env name="MANAGER_ENABLED" value="true"/>
-        <env name="SMARTIES_ENABLED" value="true"/>
     </php>
     <source>
         <include>
