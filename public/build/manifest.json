@@ -14,6 +14,30 @@
     "file": "assets/echarts-core-ZUOL-v90.js",
     "name": "echarts-core"
   },
+  "lang/en.json": {
+    "file": "assets/en-C98XKXsA.js",
+    "name": "en",
+    "src": "lang/en.json",
+    "isDynamicEntry": true
+  },
+  "lang/fr.json": {
+    "file": "assets/fr-BjIaVNyZ.js",
+    "name": "fr",
+    "src": "lang/fr.json",
+    "isDynamicEntry": true
+  },
+  "lang/php_en.json": {
+    "file": "assets/php_en-YRvX7rAc.js",
+    "name": "php_en",
+    "src": "lang/php_en.json",
+    "isDynamicEntry": true
+  },
+  "lang/php_fr.json": {
+    "file": "assets/php_fr-BfnViXVU.js",
+    "name": "php_fr",
+    "src": "lang/php_fr.json",
+    "isDynamicEntry": true
+  },
   "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.ttf": {
     "file": "assets/fa-brands-400-aaGr5KPy.ttf",
     "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.ttf"
@@ -53,12 +77,18 @@
     ]
   },
   "resources/js/apps.ts": {
-    "file": "assets/apps-CdoSfEY9.js",
+    "file": "assets/apps-DPYJ44PE.js",
     "name": "apps",
     "src": "resources/js/apps.ts",
     "isEntry": true,
     "imports": [
       "__commonjsHelpers-BosuxZz1.js"
+    ],
+    "dynamicImports": [
+      "lang/en.json",
+      "lang/fr.json",
+      "lang/php_en.json",
+      "lang/php_fr.json"
     ],
     "css": [
       "assets/apps-CFmBQ8ql.css"

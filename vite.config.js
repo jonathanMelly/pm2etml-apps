@@ -3,6 +3,7 @@ import laravel from 'laravel-vite-plugin';
 import * as path from "path";
 // import react from '@vitejs/plugin-react';
 import vue from '@vitejs/plugin-vue';
+import i18n from 'laravel-vue-i18n/vite';
 
 export default defineConfig({
     plugins: [
@@ -35,6 +36,7 @@ export default defineConfig({
                 },
             },
         }),
+        i18n(),
     ],
     resolve: {
         alias: {

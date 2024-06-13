@@ -2,6 +2,7 @@
 import {createInertiaApp} from "@inertiajs/inertia-vue3";
 import {createApp,h,type DefineComponent} from "vue";
 import {ZiggyVue} from "ziggy-js";
+import {i18nVue} from "laravel-vue-i18n";
 
 createInertiaApp({
     resolve: name => {
@@ -19,6 +20,12 @@ createInertiaApp({
         createApp({ render: () => h(app, props) })
             .use(plugin)
             .use(ZiggyVue, Ziggy)
+            .use(i18nVue, {
+                resolve: async lang => {
+                    const langs = import.meta.glob('../../lang/*.json');
+                    return await langs[`../../lang/${lang}.json`]();
+                }
+            })
             .mount(el);
     },
 });
