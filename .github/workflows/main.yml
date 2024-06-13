@@ -54,7 +54,7 @@ jobs:
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: database/database.sqlite
-        run: php artisan test --coverage-clover clover.xml
+        run: php artisan test -p --coverage-clover clover.xml
 
       - name: Generate coverage badge
         # You may pin to the exact commit or the version.
