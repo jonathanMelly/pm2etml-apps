@@ -1,12 +1,21 @@
 <?php
 
-use App\Http\Controllers\ManagerController;
+use App\Http\Controllers\SmartiesController;
 use Illuminate\Support\Facades\Route;
 
-defineAppsRoute(config('app.manager_prefix'),function () {
-    //Route::inertia('/', 'index');
-    Route::get('/', [ManagerController::class, 'index']);
-});
+//allow modular activation of the manager app
+if(config('app.manager_enabled')){
+    Route::group(
+        [
+            'prefix' => 'apps/manager',
+            'as' => 'manager.',
+            'middleware' => ['auth','app']
+        ],
+        //Route::inertia('/', 'index');
+        fn() => Route::get('/', [SmartiesController::class, 'index'])
+    );
+}
+
 
 
 

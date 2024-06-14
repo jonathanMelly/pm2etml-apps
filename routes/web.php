@@ -25,8 +25,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-require_once __DIR__ . '/apps.php';
-
 Route::redirect("/","dashboard");
 
 //Authenticated
@@ -107,4 +105,6 @@ Route::get('auth/bridge/logout',[SSOController::class,'logout']);
 Route::get('deploy/optimize',[DeployController::class,'optimize']);
 Route::get('deploy/clearCache',[DeployController::class,'clearCache']);
 
-
+//apps
+require __DIR__ .'/apps-manager.php';
+require __DIR__ .'/apps-smarties.php';
