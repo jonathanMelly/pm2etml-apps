@@ -1,9 +1,8 @@
 <?php
 
-test('example', function () {
+test('manager controller shows up', function () {
     $this->createUser(true,'root');
     $response = $this->get('/apps/manager');
 
-    //issue in gh action !!!
-    //$response->assertStatus(config('app.manager_enabled')?200:404);
+    $response->assertStatus(config('app.manager_enabled')?200:500);
 });

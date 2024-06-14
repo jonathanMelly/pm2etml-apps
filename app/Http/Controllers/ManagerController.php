@@ -7,6 +7,13 @@ use Inertia\Inertia;
 
 class ManagerController extends Controller
 {
+
+    public function __construct()
+    {
+        if(!config('app.manager_enabled')){
+            throw new \Exception('Smarties is not enabled');
+        }
+    }
     /**
      * Display a listing of the resource.
      */

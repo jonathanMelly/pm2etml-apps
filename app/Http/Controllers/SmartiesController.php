@@ -8,6 +8,15 @@ use Inertia\Inertia;
 class SmartiesController extends Controller
 {
     /**
+     * @throws \Exception
+     */
+    public function __construct()
+    {
+        if(!config('app.smarties_enabled')){
+            throw new \Exception('Smarties is not enabled');
+        }
+    }
+    /**
      * Display a listing of the resource.
      */
     public function index()
