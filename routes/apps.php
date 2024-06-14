@@ -6,7 +6,7 @@
  */
 function defineAppsRoute($appName, $callback, $middlewares=['auth','app']): void
 {
-    if(config('app.'.$appName.'_enabled')){
+    if(config('app.'.$appName.'_enabled') || !app()->environment('production')){
         Route::group(
             [
                 'prefix' => 'apps/'.$appName,
