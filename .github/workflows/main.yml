@@ -56,7 +56,6 @@ jobs:
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: ":memory:"
-          SMARTIES_ENABLED: true
         run: php artisan test -p --coverage-clover clover.xml
 
       - name: Generate coverage badge
