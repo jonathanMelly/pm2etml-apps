@@ -49,6 +49,8 @@ jobs:
         run: |
           mkdir -p database
           touch database/database.sqlite
+      - name: check route
+        run: php artisan route:list
       #TESTS
       - name: Execute tests (Unit and Feature tests) via Pest
         env:
