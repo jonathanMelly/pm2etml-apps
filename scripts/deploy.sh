@@ -34,7 +34,7 @@ function deploy()
 
   log=storage/logs/deploy-$(date +%F_%Hh%MM%Ss).log
 
-  php='/opt/php81/bin/php'
+  php='/opt/php82/bin/php'
   composer="$php $(which composer)"
   composer_install="$composer install --optimize-autoloader --no-dev --no-interaction"
 
