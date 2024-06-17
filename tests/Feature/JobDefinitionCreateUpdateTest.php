@@ -47,8 +47,6 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
 
     /**
      * A basic feature test example.
-     *
-     * @return void
      */
     public function test_teacher_can_create_a_job(): void
     {

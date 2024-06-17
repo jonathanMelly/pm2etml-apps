@@ -9,8 +9,6 @@ class TestO365AuthProvider extends TestCase
 {
     /**
      * A basic unit test example.
-     *
-     * @return void
      */
     public function testO365Auth(): void
     {

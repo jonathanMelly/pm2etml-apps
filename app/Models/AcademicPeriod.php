@@ -27,7 +27,7 @@ class AcademicPeriod extends Model
     protected function casts(): array
     {
         return [
-            'start' => 'immutable_date', 'end' => 'immutable_date'
+            'start' => 'immutable_date', 'end' => 'immutable_date',
         ];
     }
 

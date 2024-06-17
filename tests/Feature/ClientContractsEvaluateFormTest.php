@@ -41,8 +41,6 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
 
     /**
      * A basic feature test example.
-     *
-     * @return void
      */
     public function test_teacher_can_evaluate_2_contracts_1okAnd1Ko(): void
     {
