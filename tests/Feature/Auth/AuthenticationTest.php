@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Providers\AppServiceProvider;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Tests\TestCase;
@@ -30,7 +31,7 @@ class AuthenticationTest extends TestCase
         $user->refresh();
 
         self::assertNotNull($user->last_logged_at, 'last logged date not set');
-        $response->assertRedirect(RouteServiceProvider::HOME);
+        $response->assertRedirect(AppServiceProvider::HOME);
 
     }
 
