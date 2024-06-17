@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.45.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.44.0...v1.45.0) (2024-06-17)
+
+
+### Features
+
+* **laravel:** finish update to laravel 11 ([2a4dc25](https://github.com/jonathanMelly/pm2etml-apps/commit/2a4dc25a7142893dfeaa4a432aa503dab2cdf199))
+
 ## [1.44.0](https://github.com/jonathanMelly/pm2etml-intranet/compare/v1.43.0...v1.44.0) (2024-06-13)
 
 
