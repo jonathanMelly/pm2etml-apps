@@ -14,12 +14,6 @@
     "file": "assets/echarts-core-ZUOL-v90.js",
     "name": "echarts-core"
   },
-  "lang/en.json": {
-    "file": "assets/en-C98XKXsA.js",
-    "name": "en",
-    "src": "lang/en.json",
-    "isDynamicEntry": true
-  },
   "lang/fr.json": {
     "file": "assets/fr-BjIaVNyZ.js",
     "name": "fr",
@@ -27,7 +21,7 @@
     "isDynamicEntry": true
   },
   "lang/php_en.json": {
-    "file": "assets/php_en-YRvX7rAc.js",
+    "file": "assets/php_en-COn0sMGk.js",
     "name": "php_en",
     "src": "lang/php_en.json",
     "isDynamicEntry": true
@@ -63,7 +57,7 @@
     "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-BLYS78IP.css",
+    "file": "assets/app-B-_ifMqV.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -77,7 +71,7 @@
     ]
   },
   "resources/js/apps.ts": {
-    "file": "assets/apps-DPYJ44PE.js",
+    "file": "assets/apps-SToamvs2.js",
     "name": "apps",
     "src": "resources/js/apps.ts",
     "isEntry": true,
@@ -85,13 +79,12 @@
       "__commonjsHelpers-BosuxZz1.js"
     ],
     "dynamicImports": [
-      "lang/en.json",
       "lang/fr.json",
       "lang/php_en.json",
       "lang/php_fr.json"
     ],
     "css": [
-      "assets/apps-CFmBQ8ql.css"
+      "assets/apps-B3e0kXO2.css"
     ],
     "assets": [
       "assets/fa-solid-900-BMmFSO-B.woff2",

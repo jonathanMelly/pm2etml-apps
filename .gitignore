@@ -27,3 +27,4 @@ Homestead.json
 /sync.ffs_db
 /tests/data/testdb.sqlite
 /php_errors.log
+/storage/testing-database.sqlite*

@@ -4,7 +4,7 @@ return [
 
     'connections' => [
         'mysql' => [
-            'driver' => 'mysql',
+            'driver' => 'mariadb',
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
@@ -18,9 +18,9 @@ return [
             'prefix_indexes' => true,
             'strict' => false, //allow useful possibly hazardous group by
             'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
+            /*'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
+            ]) : [],*/
         ],
     ],
 

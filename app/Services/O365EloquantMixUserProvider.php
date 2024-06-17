@@ -8,6 +8,7 @@ namespace App\Services;
 
 use App\Models\User;
 use Illuminate\Auth\EloquentUserProvider;
+use Illuminate\Contracts\Auth\Authenticatable as UserContract;
 use Illuminate\Support\Facades\Log;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
@@ -91,5 +92,10 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
     public function getPassword(array $credentials): string
     {
         return $credentials['password'];
+    }
+
+    public function rehashPasswordIfRequired(UserContract $user, array $credentials, bool $force = false)
+    {
+        //Nothing to be done here
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CustomPivotTableNames;
 use App\Enums\RequiredTimeUnit;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Pivot;
@@ -10,6 +11,8 @@ use Kirschbaum\PowerJoins\PowerJoins;
 
 class WorkerContract extends Pivot
 {
+    protected $table = CustomPivotTableNames::CONTRACT_GROUP_MEMBER->value;
+
     use PowerJoins;
 
     // Cannot use Enum... TODO Transform Enum to CONST !!!!

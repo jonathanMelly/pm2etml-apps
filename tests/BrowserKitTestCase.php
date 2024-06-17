@@ -6,7 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class BrowserKitTestCase extends \Laravel\BrowserKitTesting\TestCase
 {
-    use CreatesApplication, RefreshDatabase, TestHarness;
+    use RefreshDatabase, TestHarness;
 
     public $baseUrl = 'http://localhost';
 }
