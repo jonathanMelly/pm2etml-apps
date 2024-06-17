@@ -13,13 +13,6 @@ class WorkerContract extends Pivot
     use PowerJoins;
 
     // Cannot use Enum... TODO Transform Enum to CONST !!!!
-    public $table = 'contract_worker'; //\App\Enums\CustomPivotTableNames::CONTRACT_GROUP_MEMBER->value;
-
-    public $casts = [
-        'deleted_at' => 'datetime',
-        'success_date' => 'datetime',
-        'allocated_time_unit' => RequiredTimeUnit::class,
-    ];
 
     protected static function boot(): void
     {
@@ -28,6 +21,20 @@ class WorkerContract extends Pivot
         static::addGlobalScope('withoutTrashed', function (Builder $builder) {
             $builder->whereNull(tbl(WorkerContract::class).'.deleted_at');
         });
+    }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'deleted_at' => 'datetime',
+            'success_date' => 'datetime',
+            'allocated_time_unit' => RequiredTimeUnit::class,
+        ];
     }
 
     public function contract(): \Illuminate\Database\Eloquent\Relations\BelongsTo

@@ -47,15 +47,6 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-
-    ];
-
     ///Overrides password with default as only used by o365
     //Added to avoid any issues with others modules deps (sessionHandling for instance...)
     public function getAuthPassword(): string
