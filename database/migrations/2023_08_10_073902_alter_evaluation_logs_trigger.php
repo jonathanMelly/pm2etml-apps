@@ -13,7 +13,7 @@ return new class extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         DB::unprepared('DROP TRIGGER '.self::TRIGGER);
 
@@ -59,7 +59,7 @@ return new class extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         DB::unprepared('DROP TRIGGER '.self::TRIGGER);
         //As trigger syntax is different on sqlite (tests) and mariadb and

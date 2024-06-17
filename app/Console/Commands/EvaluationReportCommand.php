@@ -42,7 +42,7 @@ class EvaluationReportCommand extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(): int
     {
 
         //find evaluation not yet reported

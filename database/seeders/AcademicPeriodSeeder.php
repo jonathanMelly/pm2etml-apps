@@ -13,7 +13,7 @@ class AcademicPeriodSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         $currentYear = now()->year;
         for ($i = -5; $i < 100; $i++) {

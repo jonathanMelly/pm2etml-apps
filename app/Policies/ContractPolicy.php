@@ -15,7 +15,7 @@ class ContractPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function viewAny(User $user)
+    public function viewAny(User $user): bool
     {
         //
     }
@@ -25,7 +25,7 @@ class ContractPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Contract $contract)
+    public function view(User $user, Contract $contract): bool
     {
         //
     }
@@ -35,7 +35,7 @@ class ContractPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function create(User $user)
+    public function create(User $user): bool
     {
         return $user->can('contracts.create');
     }
@@ -45,7 +45,7 @@ class ContractPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Contract $contract)
+    public function update(User $user, Contract $contract): bool
     {
         if ($user->can('contracts.edit')) {
             $result = $user->can('contracts') ||
@@ -61,7 +61,7 @@ class ContractPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Contract $contract)
+    public function delete(User $user, Contract $contract): bool
     {
         //
     }
@@ -71,7 +71,7 @@ class ContractPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function restore(User $user, Contract $contract)
+    public function restore(User $user, Contract $contract): bool
     {
         //
     }
@@ -81,7 +81,7 @@ class ContractPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function forceDelete(User $user, Contract $contract)
+    public function forceDelete(User $user, Contract $contract): bool
     {
         //
     }

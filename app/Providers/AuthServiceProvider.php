@@ -31,7 +31,7 @@ class AuthServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
 
         //https://spatie.be/docs/laravel-permission/v5/basic-usage/super-admin

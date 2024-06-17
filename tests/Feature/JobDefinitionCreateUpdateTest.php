@@ -50,7 +50,7 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
      *
      * @return void
      */
-    public function test_teacher_can_create_a_job()
+    public function test_teacher_can_create_a_job(): void
     {
         $providers = User::role(RoleName::TEACHER)
             ->orderBy('id')
@@ -116,7 +116,7 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
     }
 
     //TODO add scenarios with attachments, images , ...
-    public function test_teacher_can_update_a_job()
+    public function test_teacher_can_update_a_job(): void
     {
 
         $this->createClientAndJob();
@@ -152,7 +152,7 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
 
     }
 
-    public function test_job_edit_form_has_correct_data()
+    public function test_job_edit_form_has_correct_data(): void
     {
         /* @var $job JobDefinition */
 
@@ -170,7 +170,7 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
 
     }
 
-    public function test_teacher_cannot_create_an_invalid_job()
+    public function test_teacher_cannot_create_an_invalid_job(): void
     {
 
         $this->visit(route('jobDefinitions.create'))
@@ -184,7 +184,7 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
 
     }
 
-    public function test_teacher_can_delete_job()
+    public function test_teacher_can_delete_job(): void
     {
 
         //Arrange

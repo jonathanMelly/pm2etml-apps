@@ -15,7 +15,7 @@ class JobDefinitionPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function viewAny(User $user)
+    public function viewAny(User $user): bool
     {
         return $user->can('jobDefinitions.view');
     }
@@ -26,7 +26,7 @@ class JobDefinitionPolicy
      * @param  \App\Models\JobDefinition  $job
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, JobDefinition $jobDefinition)
+    public function view(User $user, JobDefinition $jobDefinition): bool
     {
         //Currently all users can see all jobs...
         return self::viewAny($user);
@@ -37,7 +37,7 @@ class JobDefinitionPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function create(User $user)
+    public function create(User $user): bool
     {
         return $user->can('jobDefinitions.create');
     }
@@ -47,7 +47,7 @@ class JobDefinitionPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, JobDefinition $jobDefinition)
+    public function update(User $user, JobDefinition $jobDefinition): bool
     {
         return $user->can('jobDefinitions') ||
             ($user->can('jobDefinitions.edit') && $jobDefinition->providers()->find($user) !== null);
@@ -58,7 +58,7 @@ class JobDefinitionPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, JobDefinition $jobDefinition)
+    public function delete(User $user, JobDefinition $jobDefinition): bool
     {
         if ($user->can('jobDefinitions.trash')) {
             return $user->can('jobDefinitions') || $jobDefinition->providers()->find($user->id) !== null;
@@ -70,7 +70,7 @@ class JobDefinitionPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function restore(User $user, JobDefinition $jobDefinition)
+    public function restore(User $user, JobDefinition $jobDefinition): bool
     {
         //same as delete (softdelete = trash)
         return $this->delete($user, $jobDefinition);
@@ -81,7 +81,7 @@ class JobDefinitionPolicy
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function forceDelete(User $user, JobDefinition $jobDefinition)
+    public function forceDelete(User $user, JobDefinition $jobDefinition): bool
     {
         return false; //no real delete through web interface
     }

@@ -17,7 +17,7 @@ class UserV1Seeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         $exitCode = Artisan::call('db:seed', [
             '--class' => GroupSeeder::class, // as students mainly exists in real class for 1 year...

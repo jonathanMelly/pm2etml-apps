@@ -40,7 +40,7 @@ class ClientContractsDeleteFormTest extends BrowserKitTestCase
      *
      * @return void
      */
-    public function test_teacher_can_delete_two_contracts()
+    public function test_teacher_can_delete_two_contracts(): void
     {
 
         $jobId = $this->job->id;
