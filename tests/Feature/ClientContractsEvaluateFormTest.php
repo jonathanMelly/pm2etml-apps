@@ -44,7 +44,7 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
      *
      * @return void
      */
-    public function test_teacher_can_evaluate_2_contracts_1okAnd1Ko()
+    public function test_teacher_can_evaluate_2_contracts_1okAnd1Ko(): void
     {
         $contractsCount = 2;
 
@@ -85,7 +85,7 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
         $this->assertEquals(WorkerContract::whereId($wkIds[1])->firstOrFail()->success_comment, $comment);
     }
 
-    public function testDummy()
+    public function testDummy(): void
     {
         $this->createClientAndJob(1);
         $logCount = WorkerContractEvaluationLog::query()->count();

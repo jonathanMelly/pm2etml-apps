@@ -15,7 +15,7 @@ class UserFactory extends Factory
      *
      * @return array
      */
-    public function definition()
+    public function definition(): array
     {
         $fn = $this->faker->firstName();
         $ln = $this->faker->lastName();

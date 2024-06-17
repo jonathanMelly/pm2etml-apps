@@ -11,7 +11,7 @@ class DestroyAllContractRequest extends FormRequest
      *
      * @return bool
      */
-    public function authorize()
+    public function authorize(): bool
     {
         return $this->user()->can('contracts.trash');
     }
@@ -21,7 +21,7 @@ class DestroyAllContractRequest extends FormRequest
      *
      * @return array
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             'job_id' => 'required|int',

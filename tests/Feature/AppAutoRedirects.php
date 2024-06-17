@@ -11,7 +11,7 @@ class AppAutoRedirects extends TestCase
      *
      * @return void
      */
-    public function test_redirect_to_dashboard()
+    public function test_redirect_to_dashboard(): void
     {
         $response = $this->get('/');
 
@@ -20,7 +20,7 @@ class AppAutoRedirects extends TestCase
 
     }
 
-    public function test_redirect_to_login_if_not_authenticated()
+    public function test_redirect_to_login_if_not_authenticated(): void
     {
         $response = $this->get('/dashboard');
 

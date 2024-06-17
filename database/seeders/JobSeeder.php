@@ -21,7 +21,7 @@ class JobSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         $total = app()->environment('testing') ? 5 : 21;
         $faker = Container::getInstance()->make(Generator::class);

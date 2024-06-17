@@ -16,7 +16,7 @@ return new class extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create($this->tables()[0], function (Blueprint $table) {
             $table->id();
@@ -73,7 +73,7 @@ return new class extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         collect($this->tables())->each(
             fn ($table) => Schema::dropIfExists($table)

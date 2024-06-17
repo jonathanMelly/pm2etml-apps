@@ -50,7 +50,7 @@ class JobApplyFormTest extends BrowserKitTestCase
      *
      * @return void
      */
-    public function test_user_can_apply_for_a_job_and_only_once()
+    public function test_user_can_apply_for_a_job_and_only_once(): void
     {
         $date = now()->format(DateFormat::HTML_FORMAT);
 
@@ -75,7 +75,7 @@ class JobApplyFormTest extends BrowserKitTestCase
             ->seeText(__('There already is a contract for this job'));
     }
 
-    public function test_user_can_apply_for_a_job_with_any_teacher()
+    public function test_user_can_apply_for_a_job_with_any_teacher(): void
     {
         $date = now()->format(DateFormat::HTML_FORMAT);
 
@@ -103,7 +103,7 @@ class JobApplyFormTest extends BrowserKitTestCase
      *
      * @return void
      */
-    public function test_user_cannot_apply_with_end_date_in_the_past()
+    public function test_user_cannot_apply_with_end_date_in_the_past(): void
     {
         $startDate = now();
         $endDate = now()->subDay();

@@ -12,7 +12,7 @@ class PermissionResetSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         $tableNames = config('permission.table_names');
         if (empty($tableNames)) {

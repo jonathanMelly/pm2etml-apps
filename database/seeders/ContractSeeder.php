@@ -19,7 +19,7 @@ class ContractSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         $faker = Container::getInstance()->make(Generator::class);
 

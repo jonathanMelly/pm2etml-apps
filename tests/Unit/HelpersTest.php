@@ -11,7 +11,7 @@ class HelpersTest extends TestCase
      *
      * @return void
      */
-    public function test_ordinal()
+    public function test_ordinal(): void
     {
         $this->assertEquals('st', ordinal(1));
         $this->assertEquals('nd', ordinal(2));

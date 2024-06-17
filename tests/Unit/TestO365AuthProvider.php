@@ -12,7 +12,7 @@ class TestO365AuthProvider extends TestCase
      *
      * @return void
      */
-    public function testO365Auth()
+    public function testO365Auth(): void
     {
         $this->markTestSkipped('only for manual test');
         $provider = new O365EloquantMixUserProvider(null, 'smtp.office365.com:587');
