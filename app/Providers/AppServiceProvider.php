@@ -28,8 +28,6 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Register any application services.
-     *
-     * @return void
      */
     public function register(): void
     {
@@ -38,8 +36,6 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
     public function boot(): void
     {
@@ -68,7 +64,6 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('sso', function (Request $request) {
             return Limit::perHour(25000)->by($request->user()?->id ?: $request->ip());
         });
-
 
     }
 }

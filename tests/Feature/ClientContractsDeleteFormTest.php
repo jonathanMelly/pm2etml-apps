@@ -37,8 +37,6 @@ class ClientContractsDeleteFormTest extends BrowserKitTestCase
 
     /**
      * A basic feature test example.
-     *
-     * @return void
      */
     public function test_teacher_can_delete_two_contracts(): void
     {

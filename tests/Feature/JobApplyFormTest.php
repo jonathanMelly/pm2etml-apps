@@ -47,8 +47,6 @@ class JobApplyFormTest extends BrowserKitTestCase
 
     /**
      * A basic feature test example.
-     *
-     * @return void
      */
     public function test_user_can_apply_for_a_job_and_only_once(): void
     {
@@ -100,8 +98,6 @@ class JobApplyFormTest extends BrowserKitTestCase
 
     /**
      * A basic feature test example.
-     *
-     * @return void
      */
     public function test_user_cannot_apply_with_end_date_in_the_past(): void
     {
