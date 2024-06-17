@@ -15,8 +15,8 @@ class TestO365AuthProvider extends TestCase
     public function testO365Auth()
     {
         $this->markTestSkipped('only for manual test');
-        $provider = new O365EloquantMixUserProvider(null,"smtp.office365.com:587");
-        $result = $provider->validateCredentialsRaw("bob@eduvaud.ch","badword");
+        $provider = new O365EloquantMixUserProvider(null, 'smtp.office365.com:587');
+        $result = $provider->validateCredentialsRaw('bob@eduvaud.ch', 'badword');
 
         $this->assertTrue($result);
     }

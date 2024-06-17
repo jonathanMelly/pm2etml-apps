@@ -22,11 +22,11 @@ class PermissionV1Seeder extends Seeder
 
         DB::transaction(function () {
 
-            ##
-            #create permissions
-            #
+            //#
+            //create permissions
+            //
 
-            #JobDefinition related permissions
+            //JobDefinition related permissions
             Permission::create(['name' => 'jobDefinitions.create']);
             $permision_job_view = Permission::create(['name' => 'jobDefinitions.view']); //assumes view all
 
@@ -34,12 +34,12 @@ class PermissionV1Seeder extends Seeder
 
             Permission::create(['name' => 'jobDefinitions.trash']);
             Permission::create(['name' => 'jobDefinitions.restore']);
-            $permission_job_apply = Permission::create(['name' => 'jobs-apply']);//custom for separating apply from students
+            $permission_job_apply = Permission::create(['name' => 'jobs-apply']); //custom for separating apply from students
             //Permission::create(['name' => 'jobs.admin']); //can do on all items (not only his) [not used, as wildcard jobs...]
             $permission_jobs = Permission::create(['name' => 'jobDefinitions']);
             $permission_jobs_for_teachers = Permission::create(['name' => 'jobDefinitions.create,view,edit,trash,restore']);
 
-            #Contracts
+            //Contracts
             $permission_contract_create = Permission::create(['name' => 'contracts.create']);
             $permission_contracts_view = Permission::create(['name' => 'contracts.view']); //assumes view all
             Permission::create(['name' => 'contracts.edit']);
@@ -49,14 +49,14 @@ class PermissionV1Seeder extends Seeder
             //Permission::create(['name' => 'contracts.admin']); //can do on all items (not only his) [duplicate with jobs wildcard]
             $permission_contracts = Permission::create(['name' => 'contracts']);
 
-            #attachments -> should be linked to the dependent class rights...
+            //attachments -> should be linked to the dependent class rights...
 
             //tools list
             $permission_tools_for_teachers = Permission::create(['name' => 'tools.teacher']);
 
-            ##
-            #create roles and assign created permissions
-            ##
+            //#
+            //create roles and assign created permissions
+            //#
             $eleve = Role::create(['name' => RoleName::STUDENT])
                 ->givePermissionTo(
                     $permision_job_view,
@@ -81,14 +81,13 @@ class PermissionV1Seeder extends Seeder
 
             //Mainly copy mp permissions -> buggy...
             $dean = Role::create(['name' => RoleName::DEAN]);
-                //->givePermissionTo($mp->getAllPermissions()->toArray());
+            //->givePermissionTo($mp->getAllPermissions()->toArray());
 
-            #Super Admin
+            //Super Admin
             Role::create(['name' => RoleName::ADMIN]);
-        #should be handled by AuthServiceProvider
-        #$role->givePermissionTo(Permission::all());
+            //should be handled by AuthServiceProvider
+            //$role->givePermissionTo(Permission::all());
         });
-
 
     }
 }

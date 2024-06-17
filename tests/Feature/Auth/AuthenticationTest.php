@@ -29,20 +29,19 @@ class AuthenticationTest extends TestCase
         $this->assertAuthenticated();
         $user->refresh();
 
-        self::assertNotNull($user->last_logged_at,'last logged date not set');
+        self::assertNotNull($user->last_logged_at, 'last logged date not set');
         $response->assertRedirect(RouteServiceProvider::HOME);
 
     }
 
     public function test_users_can_not_authenticate_with_invalid_domain()
     {
-        $user = User::factory()->create(['username'=>'bob@microsoft.com']);
+        $user = User::factory()->create(['username' => 'bob@microsoft.com']);
 
         $this->post('/login', [
             'username' => $user->username,
             'password' => 'pentest',
         ]);
-
 
         $this->assertGuest();
 

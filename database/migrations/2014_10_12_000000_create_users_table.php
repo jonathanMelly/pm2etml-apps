@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-
     /**
      * Run the migrations.
      *
@@ -39,7 +38,7 @@ return new class extends Migration
         Schema::dropIfExists($this->table());
     }
 
-    public function table():string
+    public function table(): string
     {
         return app(User::class)->getTable();
     }

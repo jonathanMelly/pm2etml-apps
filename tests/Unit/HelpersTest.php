@@ -13,8 +13,8 @@ class HelpersTest extends TestCase
      */
     public function test_ordinal()
     {
-        $this->assertEquals('st',ordinal(1));
-        $this->assertEquals('nd',ordinal(2));
-        $this->assertEquals('rd',ordinal(3));
+        $this->assertEquals('st', ordinal(1));
+        $this->assertEquals('nd', ordinal(2));
+        $this->assertEquals('rd', ordinal(3));
     }
 }

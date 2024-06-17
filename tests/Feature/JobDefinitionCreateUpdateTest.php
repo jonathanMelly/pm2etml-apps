@@ -15,6 +15,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\Response;
 use Illuminate\Http\UploadedFile;
 use Tests\BrowserKitTestCase;
+
 use function PHPUnit\Framework\assertEquals;
 
 class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
@@ -26,6 +27,7 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
 
     /**
      * @before
+     *
      * @return void
      */
     public function setUpLocal()
@@ -36,7 +38,6 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
                 AcademicPeriodSeeder::class,
                 UserV1Seeder::class,
             );
-
 
             $this->teacher = User::role(RoleName::TEACHER)->firstOrFail();
             $this->be($this->teacher);
@@ -57,12 +58,12 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
             ->get(['id'])->pluck('id')->toArray();
 
         //Mimic Dropzone upload. BrowserKit needs call('post') instead of post to correctly pass file...
-        $imageId = $this->call('POST',route('job-definition-main-image-attachment.store'),files: [
-            'file' => [UploadedFile::fake()->image('test.png',499,147)],
+        $imageId = $this->call('POST', route('job-definition-main-image-attachment.store'), files: [
+            'file' => [UploadedFile::fake()->image('test.png', 499, 147)],
         ])->json('id');
 
-        $attachmentId = $this->call('POST',route('job-definition-doc-attachment.store'), files: [
-            'file' => [UploadedFile::fake()->createWithContent('test.zip','not a real zip')],
+        $attachmentId = $this->call('POST', route('job-definition-doc-attachment.store'), files: [
+            'file' => [UploadedFile::fake()->createWithContent('test.zip', 'not a real zip')],
         ])->json('id');
 
         $output = $this->visit(route('jobDefinitions.create'))
@@ -77,8 +78,8 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
                     'allocated_time' => 25,
                     'one_shot' => 1,
                     'published_date' => today(),
-                    'other_attachments' => json_encode(['test.zip'=>$attachmentId]),
-                    'skills'=> json_encode(['group:skill'])
+                    'other_attachments' => json_encode(['test.zip' => $attachmentId]),
+                    'skills' => json_encode(['group:skill']),
                 ]/*, kept as documentation if needed somewhere else
                 [
                     'image_data'=>'job.png',
@@ -92,9 +93,8 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
             //
             ->seeText('Emploi "lol" ajouté')
             ->seePageIs('/marketplace')
-            ->seeElement('img', ['src' => route('dmz-asset',['file'=>JobDefinitionMainImageAttachment::findOrFail($imageId)->storage_path])])
+            ->seeElement('img', ['src' => route('dmz-asset', ['file' => JobDefinitionMainImageAttachment::findOrFail($imageId)->storage_path])])
             ->response->getContent();
-
 
         //unlink($image);
 
@@ -105,13 +105,13 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
         $this->assertEquals('description', $createdJob->description);
         $this->assertEquals(1, $createdJob->required_xp_years);
         $this->assertEquals(JobPriority::MANDATORY, $createdJob->priority);
-        $this->assertEquals(25,$createdJob->allocated_time);
-        $this->assertEquals(true,$createdJob->one_shot);
-        $this->assertEquals($providers,$createdJob->providers()->get()->pluck('id')->toArray());
-        $this->assertEquals($createdJob->id,JobDefinitionDocAttachment::findOrFail($attachmentId)->jobDefinition->id);
-        $this->assertEquals($imageId,$createdJob->image->id);
+        $this->assertEquals(25, $createdJob->allocated_time);
+        $this->assertEquals(true, $createdJob->one_shot);
+        $this->assertEquals($providers, $createdJob->providers()->get()->pluck('id')->toArray());
+        $this->assertEquals($createdJob->id, JobDefinitionDocAttachment::findOrFail($attachmentId)->jobDefinition->id);
+        $this->assertEquals($imageId, $createdJob->image->id);
 
-        $this->assertStringContainsString('group: skill',$output);
+        $this->assertStringContainsString('group: skill', $output);
 
     }
 
@@ -121,10 +121,10 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
 
         $this->createClientAndJob();
 
-        $response = $this->visit(route('jobDefinitions.edit',['jobDefinition'=>1]))
+        $response = $this->visit(route('jobDefinitions.edit', ['jobDefinition' => 1]))
             ->submitForm(trans('Save modifications'),
                 [
-                    'title'=>'update-title',
+                    'title' => 'update-title',
                     'description' => 'update-desc',
                     'required_xp_years' => 2,
                     'priority' => 2,
@@ -133,7 +133,7 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
                     'allocated_time' => 100,
                     'published_date' => today(),
                     'other_attachments' => json_encode('{}'),
-                    'skills'=> json_encode(['group2:skill2'])
+                    'skills' => json_encode(['group2:skill2']),
                 ]
             );
 
@@ -144,9 +144,9 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
             ->seeText('Emploi "'.$updatedJob->title.'" mis à jour')
             ->seeText('group2: skill2');
 
-        $this->assertEquals('update-title',$updatedJob->title);
-        $this->assertEquals('update-desc',$updatedJob->description);
-        $this->assertEquals('100',$updatedJob->allocated_time);
+        $this->assertEquals('update-title', $updatedJob->title);
+        $this->assertEquals('update-desc', $updatedJob->description);
+        $this->assertEquals('100', $updatedJob->allocated_time);
 
         //TODO more checks ( ...)
 
@@ -156,18 +156,17 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
     {
         /* @var $job JobDefinition */
 
-        ['client'=>$client,'job'=>$job]=$this->createClientAndJob();
+        ['client' => $client,'job' => $job] = $this->createClientAndJob();
         $job->update(['allocated_time' => 23]);
         $timeInHour = $job->getAllocatedTime(RequiredTimeUnit::HOUR);
         $timeInPeriod = $job->getAllocatedTime();
 
-        $response = $this->visit(route('jobDefinitions.edit',['jobDefinition'=>$job->id]));
+        $response = $this->visit(route('jobDefinitions.edit', ['jobDefinition' => $job->id]));
 
         $response
-            ->seePageIs(route('jobDefinitions.edit',['jobDefinition'=>$job->id]))
-            ->seeInElement('span',$timeInHour)
-            ->seeElement('input',['value'=>$timeInPeriod]);
-
+            ->seePageIs(route('jobDefinitions.edit', ['jobDefinition' => $job->id]))
+            ->seeInElement('span', $timeInHour)
+            ->seeElement('input', ['value' => $timeInPeriod]);
 
     }
 
@@ -177,7 +176,7 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
         $this->visit(route('jobDefinitions.create'))
             ->submitForm(trans('Publish job offer'),
                 [
-                    'title'=>'lol',
+                    'title' => 'lol',
                 ]
             )
             ->seePageIs('/jobDefinitions/create')
@@ -185,30 +184,30 @@ class JobDefinitionCreateUpdateTest extends BrowserKitTestCase
 
     }
 
-    public function test_teacher_can_delete_job(){
+    public function test_teacher_can_delete_job()
+    {
 
         //Arrange
         /* @var $job JobDefinition */
-        ['client'=>$client,'job'=>$job]=$this->createClientAndJob();
+        ['client' => $client,'job' => $job] = $this->createClientAndJob();
         self::assertFalse($job->trashed());
-
 
         //WHEN
         /* @var $response Response */
-        $response = $this->call('POST',"/jobDefinitions/{$job->id}",["_method"=>"delete"]);
+        $response = $this->call('POST', "/jobDefinitions/{$job->id}", ['_method' => 'delete']);
         $job->refresh();
 
         //Then
-        assertEquals($response->status(),302);
-        self::assertStringContainsString("/marketplace",$response->content());
+        assertEquals($response->status(), 302);
+        self::assertStringContainsString('/marketplace', $response->content());
         self::assertTrue($job->trashed());
 
     }
 
-    function base64url_encode($s) {
-        return str_replace(array('+', '/'), array('-', '_'), base64_encode($s));
+    public function base64url_encode($s)
+    {
+        return str_replace(['+', '/'], ['-', '_'], base64_encode($s));
     }
-
 
     //TODO TEST JOB DELETION !!!
 }

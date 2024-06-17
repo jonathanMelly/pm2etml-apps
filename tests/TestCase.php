@@ -11,15 +11,14 @@ abstract class TestCase extends BaseTestCase
 {
     use CreatesApplication, RefreshDatabase, TestHarness;
 
-    public function GetValidPassword():string
+    public function GetValidPassword(): string
     {
         return config('auth.fake_password');
     }
 
     public function Dump($var)
     {
-        echo var_export($var,true);
+        echo var_export($var, true);
         ob_flush();
     }
-
 }

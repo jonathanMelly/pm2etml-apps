@@ -194,7 +194,7 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         // ...
-        'Image' => Intervention\Image\Facades\Image::class
+        'Image' => Intervention\Image\Facades\Image::class,
     ])->toArray(),
 
     //JS APPS
@@ -203,6 +203,5 @@ return [
 
     'smarties_prefix' => 'smarties',
     'smarties_enabled' => env('SMARTIES_ENABLED', false),
-
 
 ];

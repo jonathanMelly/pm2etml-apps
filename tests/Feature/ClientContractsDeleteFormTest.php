@@ -9,17 +9,18 @@ use Tests\BrowserKitTestCase;
 
 class ClientContractsDeleteFormTest extends BrowserKitTestCase
 {
-
     /* @var $teacher User */
     protected User $teacher;
 
     protected JobDefinition $job;
 
     protected int $contractsCount = 2;
+
     private string $formPage;
 
     /**
      * @before
+     *
      * @return void
      */
     public function setUpLocal()
@@ -30,7 +31,7 @@ class ClientContractsDeleteFormTest extends BrowserKitTestCase
             $this->teacher = $clientAndJob['client'];
             $this->job = $clientAndJob['job'];
 
-            $this->formPage = "/dashboard";
+            $this->formPage = '/dashboard';
         });
     }
 
@@ -43,21 +44,20 @@ class ClientContractsDeleteFormTest extends BrowserKitTestCase
     {
 
         $jobId = $this->job->id;
-        $contractIds = $this->teacher->contractsAsAClientForJob($this->job,AcademicPeriod::current())->take($this->contractsCount)
+        $contractIds = $this->teacher->contractsAsAClientForJob($this->job, AcademicPeriod::current())->take($this->contractsCount)
             ->get('id')->pluck('id')->toArray();
 
-        $this->assertEquals($this->contractsCount, sizeof($contractIds));
+        $this->assertEquals($this->contractsCount, count($contractIds));
 
-        $contractFields = 'job-' . $jobId . '-contracts';
+        $contractFields = 'job-'.$jobId.'-contracts';
 
         $this->visit($this->formPage)
             ->submitForm("job-{$jobId}-form-input-for-test", [
                 $contractFields => $contractIds,
-                'job_id' => $jobId
+                'job_id' => $jobId,
             ])
             ->seePageIs('/dashboard')
-            ->seeText($this->contractsCount . ' contrats supprimés');
+            ->seeText($this->contractsCount.' contrats supprimés');
 
     }
-
 }

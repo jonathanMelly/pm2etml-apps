@@ -49,9 +49,9 @@ return [
 
     'channels' => [
 
-        'prod'=> [
+        'prod' => [
             'driver' => 'stack',
-            'channels' => ['daily','sentry'],
+            'channels' => ['daily', 'sentry'],
             'ignore_exceptions' => false,
         ],
 

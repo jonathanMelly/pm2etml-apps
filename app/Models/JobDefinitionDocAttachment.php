@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Constants\MorphTargets;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Parental\HasParent;
 
@@ -13,6 +12,6 @@ class JobDefinitionDocAttachment extends Attachment
     //fixed attachable...using STI
     public function jobDefinition(): BelongsTo
     {
-        return $this->belongsTo(JobDefinition::class,'attachable_id');
+        return $this->belongsTo(JobDefinition::class, 'attachable_id');
     }
 }

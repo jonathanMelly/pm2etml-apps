@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Skill;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class SkillSeeder extends Seeder
@@ -27,9 +26,8 @@ class SkillSeeder extends Seeder
             'web:tailwind css',
             'infra:dns multicast',
             'infra:load balancer',
-            'infra:système voip'
-                 ] as $skillAndGroup)
-        {
+            'infra:système voip',
+        ] as $skillAndGroup) {
             Skill::firstOrCreateFromString($skillAndGroup);
         }
 

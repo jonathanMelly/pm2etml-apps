@@ -24,7 +24,7 @@ class ContractEvaluationRequest extends FormRequest
     public function rules()
     {
         return [
-            'workersContracts'=>'array',
+            'workersContracts' => 'array',
         ];
     }
 }

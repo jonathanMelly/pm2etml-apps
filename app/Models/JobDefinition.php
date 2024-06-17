@@ -25,8 +25,11 @@ class JobDefinition extends Model
     use HasFactory, SoftDeletes;
 
     public const MIN_PERIODS = 24;
+
     public const MAX_PERIODS = 150;
+
     const SIZE_MEDIUM_MIN = 90;
+
     const SIZE_LARGE_MIN = 120;
 
     /**
@@ -43,13 +46,13 @@ class JobDefinition extends Model
         'published_date',
         'image_attachment_id',
         'allocated_time',
-        'one_shot'
+        'one_shot',
     ];
 
     protected $casts = [
         'priority' => JobPriority::class,
         'allocated_time_unit' => RequiredTimeUnit::class,
-        'published_date' => 'datetime'
+        'published_date' => 'datetime',
     ];
 
     public function scopeFilter(Builder $query, Request $request)
@@ -57,7 +60,7 @@ class JobDefinition extends Model
         //Simple ones
         foreach (['required_xp_years', 'priority'] as $filter) {
             if (($input = existsAndNotEmpty($request, $filter)) != null) {
-                $query->where($filter,'=',$input);
+                $query->where($filter, '=', $input);
             }
         }
 
@@ -78,23 +81,23 @@ class JobDefinition extends Model
         }
 
         if (($input = existsAndNotEmpty($request, 'provider')) != null) {
-            $query->whereHas('providers', fn($q) => $q->where(tbl(User::class) . '.id', '=', $input));
+            $query->whereHas('providers', fn ($q) => $q->where(tbl(User::class).'.id', '=', $input));
         }
 
         if (($input = existsAndNotEmpty($request, 'fulltext')) != null) {
             $query->where(function (Builder $q) use ($input) {
-                $q->where('title', 'LIKE', '%' . $input . '%');
-                $q->orWhere('description', 'LIKE', '%' . $input . '%');
+                $q->where('title', 'LIKE', '%'.$input.'%');
+                $q->orWhere('description', 'LIKE', '%'.$input.'%');
                 $q->orWhereHas('providers', function ($q) use ($input) {
-                    $q->where(tbl(User::class) . '.firstname', 'LIKE', '%' . $input . '%');
-                    $q->orWhere(tbl(User::class) . '.lastname', 'LIKE', '%' . $input . '%');
+                    $q->where(tbl(User::class).'.firstname', 'LIKE', '%'.$input.'%');
+                    $q->orWhere(tbl(User::class).'.lastname', 'LIKE', '%'.$input.'%');
                 });
             });
         }
 
         $onlyPublished = true;
         //Students should not see drafts
-        if (!$request->user()->hasRole(RoleName::STUDENT)) {
+        if (! $request->user()->hasRole(RoleName::STUDENT)) {
             if (($input = existsAndNotEmpty($request, 'draft')) != null) {
                 if ($input === 'only') {
                     $query->where(function (Builder $q) {
@@ -103,13 +106,13 @@ class JobDefinition extends Model
                             ->orWhereNull('published_date');
                     });
                     $onlyPublished = false;
-                } else if ($input === 'include') {
+                } elseif ($input === 'include') {
                     $onlyPublished = false;
                 }
             }
         }
         if ($onlyPublished) {
-            $query->where(fn($q) => $q->published());
+            $query->where(fn ($q) => $q->published());
         }
 
         return $query;
@@ -143,10 +146,10 @@ class JobDefinition extends Model
     public function attachments(): MorphMany
     {
         $relation = $this->morphMany(JobDefinitionDocAttachment::class, 'attachable');
-        if($this->trashed())
-        {
+        if ($this->trashed()) {
             return $relation->withTrashed();
         }
+
         return $relation;
     }
 
@@ -156,10 +159,10 @@ class JobDefinition extends Model
         $relation = $this->morphOne(related: JobDefinitionMainImageAttachment::class,
             name: 'attachable');
 
-        if($this->trashed())
-        {
+        if ($this->trashed()) {
             return $relation->withTrashed();
         }
+
         return $relation;
     }
 
@@ -168,11 +171,13 @@ class JobDefinition extends Model
         return $this->belongsToMany(Skill::class);
     }
 
-    #[Pure] public function getAllocatedTime(RequiredTimeUnit $targetUnit = RequiredTimeUnit::PERIOD): float
+    #[Pure]
+    public function getAllocatedTime(RequiredTimeUnit $targetUnit = RequiredTimeUnit::PERIOD): float
     {
         if ($this->allocated_time === null) {
             return 0;
         }
+
         return round(RequiredTimeUnit::Convert($this->allocated_time, $this->allocated_time_unit, $targetUnit), 0);
     }
 
@@ -182,56 +187,53 @@ class JobDefinition extends Model
         $allocatedTimeInPeriods = $this->getAllocatedTime(RequiredTimeUnit::PERIOD);
         if ($allocatedTimeInPeriods < self::SIZE_MEDIUM_MIN) {
             $size = 'Weak';
-        } else if ($allocatedTimeInPeriods < self::SIZE_LARGE_MIN) {
+        } elseif ($allocatedTimeInPeriods < self::SIZE_LARGE_MIN) {
             $size = 'Medium';
         } else {
             $size = 'Large';
         }
 
-        return __($size) . ', ~' . $this->getAllocatedTime(RequiredTimeUnit::PERIOD) . 'p';
+        return __($size).', ~'.$this->getAllocatedTime(RequiredTimeUnit::PERIOD).'p';
     }
 
     public function isPublished(): bool
     {
-        return $this->published_date!==null && $this->published_date->isBefore(Carbon::tomorrow());
+        return $this->published_date !== null && $this->published_date->isBefore(Carbon::tomorrow());
     }
 
-    public function sortUsers(Collection $users, bool $byLoad=true): Collection
+    public function sortUsers(Collection $users, bool $byLoad = true): Collection
     {
         $orders = [];
 
-        if ($byLoad)
-        {
-            $orders[]=fn($a, $b) =>
-                $a->getClientLoad(\App\Models\AcademicPeriod::current())['percentage'] <=>
+        if ($byLoad) {
+            $orders[] = fn ($a, $b) => $a->getClientLoad(\App\Models\AcademicPeriod::current())['percentage'] <=>
                 $b->getClientLoad(\App\Models\AcademicPeriod::current())['percentage'];
         }
-        $orders[]=fn($a, $b) => $a['lastname'] <=> $b['lastname'];
+        $orders[] = fn ($a, $b) => $a['lastname'] <=> $b['lastname'];
 
         return $users->sortBy($orders)->values();
     }
 
     public function getProviders(bool $sortedByLoad = true): Collection
     {
-        return $this->sortUsers($this->providers,$sortedByLoad);
+        return $this->sortUsers($this->providers, $sortedByLoad);
     }
 
     public function getClients(Collection $exclude, bool $sortedByLoad = true): Collection
     {
-        $clients = User::role(RoleName::TEACHER)->get()->filter(fn($el) => $exclude->doesntContain('id', '=', $el->id));
+        $clients = User::role(RoleName::TEACHER)->get()->filter(fn ($el) => $exclude->doesntContain('id', '=', $el->id));
 
-        return $this->sortUsers($clients,$sortedByLoad);
+        return $this->sortUsers($clients, $sortedByLoad);
     }
 
     public function delete()
     {
-        return DB::transaction(function (){
+        return DB::transaction(function () {
             //Mark attachments as deleted (do not use mass delete to keep EVENT processing)
             Attachment::where('attachable_id', '=', $this->id)
-                ->each(fn($a) => $a->delete());
+                ->each(fn ($a) => $a->delete());
 
             return parent::delete();
         });
     }
-
 }

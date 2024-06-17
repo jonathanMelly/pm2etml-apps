@@ -16,9 +16,10 @@ class UsersSheetImport implements WithMultipleSheets
         $import = new UsersImport();
         $import->withOutput($this->output);
         $this->firstSheetImport = $import;
+
         return [
             //Look only at 1st sheet
-            $import
+            $import,
         ];
     }
 }

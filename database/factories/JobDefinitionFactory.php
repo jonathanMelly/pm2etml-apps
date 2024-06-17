@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Enums\JobPriority;
-use App\Models\JobDefinitionMainImageAttachment;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,7 +18,7 @@ class JobDefinitionFactory extends Factory
     public function definition()
     {
 
-        $names=['Android task monitoring',
+        $names = ['Android task monitoring',
             'Sentiment analysis for product rating',
             'Fingerprint-based ATM system',
             'Advanced employee management system',
@@ -41,19 +40,19 @@ class JobDefinitionFactory extends Factory
             'Software piracy protection system'];
 
         $priority = $this->faker->numberBetween(JobPriority::cases()[0]->value,
-            JobPriority::cases()[count(JobPriority::cases())-1]->value);
+            JobPriority::cases()[count(JobPriority::cases()) - 1]->value);
 
         return [
             'title' => $this->faker->randomElement($names).' Version '.$this->faker->randomDigit().'.'.$this->faker->randomDigit(),
-            'published_date' => $this->faker->dateTimeBetween('-365 days','+1 day'),
-            'priority' =>  $priority,
+            'published_date' => $this->faker->dateTimeBetween('-365 days', '+1 day'),
+            'priority' => $priority,
             'description' => $this->faker->realText(150),
-            'max_workers' => $this->faker->numberBetween(1,5),
-            'required_xp_years' => $this->faker->numberBetween(0,3),
-            'allocated_time' => $this->faker->numberBetween(5,200),
-            'one_shot' => ($priority>JobPriority::MANDATORY->value?
-                $this->faker->boolean(20):
-                false) // mandatory projects cannot be for 1 single worker !!!,
+            'max_workers' => $this->faker->numberBetween(1, 5),
+            'required_xp_years' => $this->faker->numberBetween(0, 3),
+            'allocated_time' => $this->faker->numberBetween(5, 200),
+            'one_shot' => ($priority > JobPriority::MANDATORY->value ?
+                $this->faker->boolean(20) :
+                false), // mandatory projects cannot be for 1 single worker !!!,
 
         ];
     }

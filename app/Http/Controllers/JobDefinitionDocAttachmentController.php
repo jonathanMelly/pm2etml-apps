@@ -15,10 +15,10 @@ class JobDefinitionDocAttachmentController extends AbstractJobDefinitionAttachme
     {
         //Revalidate extension TODO mime check ?
         $filePathInfo = pathinfo($this->getFileInput($request)->getClientOriginalName());
-        if(!in_array($filePathInfo['extension'],FileFormat::JOB_DOC_ATTACHMENT_ALLOWED_EXTENSIONS))
-        {
-            throw new BadFileFormat($filePathInfo['extension'],FileFormat::JOB_DOC_ATTACHMENT_ALLOWED_EXTENSIONS);
+        if (! in_array($filePathInfo['extension'], FileFormat::JOB_DOC_ATTACHMENT_ALLOWED_EXTENSIONS)) {
+            throw new BadFileFormat($filePathInfo['extension'], FileFormat::JOB_DOC_ATTACHMENT_ALLOWED_EXTENSIONS);
         }
+
         return $this->storeJobDefinitionAnyAttachment($request);
     }
 }

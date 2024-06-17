@@ -15,7 +15,6 @@ class EvaluationExportController extends Controller
     /**
      * Handle the incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function __invoke(Request $request, SummariesService $summariesService)
@@ -23,9 +22,9 @@ class EvaluationExportController extends Controller
         /* @var $evalData Collection*/
         $evalData = $summariesService->getEvaluationsSummary(
             Auth::user(),
-            $request->get("academicPeriodId"),
-            $request->get("timeUnit"),
-            json:false
+            $request->get('academicPeriodId'),
+            $request->get('timeUnit'),
+            json: false
         );
 
         return Excel::download(new EvaluationsExport($evalData),

@@ -5,57 +5,50 @@ use App\Models\Attachment;
 use Carbon\Carbon;
 use Laravel\Socialite\Facades\Socialite;
 
-if(!function_exists('ordinal'))
-{
-    function ordinal(int $number):string
+if (! function_exists('ordinal')) {
+    function ordinal(int $number): string
     {
-        if($number>31)
-        {
+        if ($number > 31) {
             return '';
         }
-        return preg_replace('/\d+/','',date("S", mktime(0, 0, 0, 0, $number, 0)));
+
+        return preg_replace('/\d+/', '', date('S', mktime(0, 0, 0, 0, $number, 0)));
     }
 }
 
-if(!function_exists('uploadDisk'))
-{
+if (! function_exists('uploadDisk')) {
     function uploadDisk(): \Illuminate\Contracts\Filesystem\Filesystem|\Illuminate\Filesystem\FilesystemAdapter
     {
         return Storage::disk(\App\Constants\DiskNames::UPLOAD);
     }
 }
 
-if(!function_exists('attachmentPathInUploadDisk'))
-{
-    function attachmentPathInUploadDisk(?string $file=null, bool $temporary=false, bool $deleted=false):string
+if (! function_exists('attachmentPathInUploadDisk')) {
+    function attachmentPathInUploadDisk(?string $file = null, bool $temporary = false, bool $deleted = false): string
     {
         $parts = [];
-        if($temporary)
-        {
-            $parts[]=\App\Constants\FileFormat::ATTACHMENT_TEMPORARY_SUBFOLDER;
+        if ($temporary) {
+            $parts[] = \App\Constants\FileFormat::ATTACHMENT_TEMPORARY_SUBFOLDER;
         }
-        if($deleted)
-        {
-            $parts[]=\App\Constants\FileFormat::ATTACHMENT_DELETED_SUBFOLDER;
+        if ($deleted) {
+            $parts[] = \App\Constants\FileFormat::ATTACHMENT_DELETED_SUBFOLDER;
         }
-        if($file!=null)
-        {
-            $parts[]=$file;
+        if ($file != null) {
+            $parts[] = $file;
         }
-        return implode(DIRECTORY_SEPARATOR,$parts);
+
+        return implode(DIRECTORY_SEPARATOR, $parts);
     }
 }
 
-if(!function_exists('attachmentUri'))
-{
-    function attachmentUri(Attachment $attachment):string
+if (! function_exists('attachmentUri')) {
+    function attachmentUri(Attachment $attachment): string
     {
-        return route('dmz-asset',['file'=>$attachment->storage_path]);
+        return route('dmz-asset', ['file' => $attachment->storage_path]);
     }
 }
 
-if(!function_exists('tbl'))
-{
+if (! function_exists('tbl')) {
     function tbl($class)
     {
         //TODO add cache ?
@@ -63,109 +56,98 @@ if(!function_exists('tbl'))
     }
 }
 
-if(!function_exists('b2s'))
-{
-    function b2s(mixed $boolValue):string
+if (! function_exists('b2s')) {
+    function b2s(mixed $boolValue): string
     {
-        if(!is_bool($boolValue))
-        {
-            $boolValue = filter_var($boolValue,FILTER_VALIDATE_BOOLEAN);
+        if (! is_bool($boolValue)) {
+            $boolValue = filter_var($boolValue, FILTER_VALIDATE_BOOLEAN);
 
         }
-        return $boolValue?'true':'false';
+
+        return $boolValue ? 'true' : 'false';
     }
 }
 
-if(!function_exists('existsAndNotEmpty'))
-{
-    function existsAndNotEmpty(ArrayAccess $array,mixed $key)
+if (! function_exists('existsAndNotEmpty')) {
+    function existsAndNotEmpty(ArrayAccess $array, mixed $key)
     {
-        if(isset($array[$key]) && ($value=trim($array[$key]))!=='')
-        {
+        if (isset($array[$key]) && ($value = trim($array[$key])) !== '') {
             return $value;
         }
+
         return null;
     }
 }
 
-if(!function_exists('stringNullOrEmpty'))
-{
+if (! function_exists('stringNullOrEmpty')) {
     function stringNullOrEmpty(?string $str): bool
     {
-        return $str===null || trim($str)==='';
+        return $str === null || trim($str) === '';
     }
 }
 
-if(!function_exists('troolHtml'))
-{
+if (! function_exists('troolHtml')) {
     function troolHtml(?bool $value): string
     {
-        if($value===null)
+        if ($value === null) {
             return 'n/a';
+        }
 
-        return spanColor($value?'green':'red',$value?'Ok':'Ko');
+        return spanColor($value ? 'green' : 'red', $value ? 'Ok' : 'Ko');
     }
 }
 
-if(!function_exists('spanColor'))
-{
-    function spanColor(string $color,string $content): string
+if (! function_exists('spanColor')) {
+    function spanColor(string $color, string $content): string
     {
         return '<span style="color:'.$color.'">'.$content.'</span>';
     }
 }
 
-if(!function_exists('mdSmall'))
-{
-    function mdSmall(?string $str,bool $parenthesis=false): string
+if (! function_exists('mdSmall')) {
+    function mdSmall(?string $str, bool $parenthesis = false): string
     {
-        if($str==null)
-        {
+        if ($str == null) {
             return '';
         }
-        return '<sup><sub>'.($parenthesis?'(':'').$str.($parenthesis?')':'').'</sub></sup>';
+
+        return '<sup><sub>'.($parenthesis ? '(' : '').$str.($parenthesis ? ')' : '').'</sub></sup>';
     }
 }
 
-if(!function_exists('diff'))
-{
-    function diff(mixed $a,mixed $b): string
+if (! function_exists('diff')) {
+    function diff(mixed $a, mixed $b): string
     {
-        if($a==$b)
+        if ($a == $b) {
             return $a;
+        }
 
         return $a.' => '.$b;
     }
 }
 
-if(!function_exists('df'))
-{
-    function df(?Carbon $date,string $format='d.m.Y H:i:s'): string
+if (! function_exists('df')) {
+    function df(?Carbon $date, string $format = 'd.m.Y H:i:s'): string
     {
-        if($date===null)
-        {
+        if ($date === null) {
             return '';
         }
-        return date_format($date,$format);
+
+        return date_format($date, $format);
     }
 }
 
-if(!function_exists('sso'))
-{
+if (! function_exists('sso')) {
     function sso(): Laravel\Socialite\Contracts\Provider
     {
         return Socialite::driver('azure');
     }
 }
 
-if(!function_exists('safeJsString'))
-{
+if (! function_exists('safeJsString')) {
 
-    function safeJsString(string $value, $stringDelimiter="'") : string
+    function safeJsString(string $value, $stringDelimiter = "'"): string
     {
-        return str_replace($stringDelimiter,"\\".$stringDelimiter,$value);
+        return str_replace($stringDelimiter, '\\'.$stringDelimiter, $value);
     }
 }
-
-
-

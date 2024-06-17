@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
@@ -28,22 +27,19 @@ class DatabaseSeeder extends Seeder
             JobSeeder::class,
             ContractSeeder::class];
 
-        collect($seeds)->each(function($seeder){
+        collect($seeds)->each(function ($seeder) {
 
-            echo "-->Seeding ".basename($seeder);
+            echo '-->Seeding '.basename($seeder);
 
             $exitCode = Artisan::call('db:seed', [
                 '--class' => $seeder,
                 '--force' => true,
                 //'-vvv' does not bring more output
             ]);
-            if($exitCode<0)
-            {
+            if ($exitCode < 0) {
                 echo " ==> \e[0;31mKO\e[0m\n";
                 Log::error("$seeder KO");
-            }
-            else
-            {
+            } else {
                 echo " ==> \e[0;32mOK\e[0m\n";
                 Log::info("$seeder OK");
             }

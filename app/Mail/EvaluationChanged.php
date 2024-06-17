@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
@@ -20,7 +19,7 @@ class EvaluationChanged extends Mailable
      */
     public function __construct(array $informations)
     {
-        $this->informations=$informations;
+        $this->informations = $informations;
     }
 
     /**
@@ -33,8 +32,8 @@ class EvaluationChanged extends Mailable
         return $this
             ->subject('Marketplace : évaluations mises à jour')
             ->markdown(
-            'emails.evaluation.changed',
-            ['informations'=>$this->informations]
-        );
+                'emails.evaluation.changed',
+                ['informations' => $this->informations]
+            );
     }
 }

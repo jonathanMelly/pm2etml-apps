@@ -16,7 +16,7 @@ class StoreContractRequest extends FormRequest
     {
         return
             $this->user()->can('jobs-apply') /*standard student*/ ||
-            ($this->has("worker") && $this->user()->hasRole(RoleName::TEACHER)) /*teacher makes a manual enrolment*/;
+            ($this->has('worker') && $this->user()->hasRole(RoleName::TEACHER)) /*teacher makes a manual enrolment*/;
     }
 
     /**
@@ -29,8 +29,8 @@ class StoreContractRequest extends FormRequest
         return [
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'job_definition_id'=>'required|int',
-            'worker'=>'string|email'
+            'job_definition_id' => 'required|int',
+            'worker' => 'string|email',
         ];
     }
 }

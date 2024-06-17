@@ -3,20 +3,18 @@
 namespace App\Models;
 
 use App\Exceptions\BadFormatException;
-use Carbon\Traits\Timestamp;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Kirschbaum\PowerJoins\PowerJoins;
 
 class Skill extends Model
 {
-    use SoftDeletes, PowerJoins;
+    use PowerJoins, SoftDeletes;
 
     public const SEPARATOR = ':';
 
-    protected $fillable = ['name','skill_group_id'];
+    protected $fillable = ['name', 'skill_group_id'];
 
     protected static function boot()
     {
@@ -40,27 +38,28 @@ class Skill extends Model
     }
 
     public static function firstOrCreateFromString(string $nameAndGroup,
-                                                   string $separator=self::SEPARATOR): Model|Skill
+        string $separator = self::SEPARATOR): Model|Skill
     {
-        if(!preg_match('/.+:.+/',$nameAndGroup))
-        {
+        if (! preg_match('/.+:.+/', $nameAndGroup)) {
             throw new BadFormatException(__('Wrong skill format, expected ...:...'));
         }
-        $parts = explode($separator,$nameAndGroup);
-        return self::firstOrCreateWithGroup($parts[0],$parts[1],$separator);
+        $parts = explode($separator, $nameAndGroup);
+
+        return self::firstOrCreateWithGroup($parts[0], $parts[1], $separator);
 
     }
 
     public static function firstOrCreateWithGroup(string $skillGroup,
-                                                  string $skillName,
-                                                  string $separator=self::SEPARATOR): Model|Skill
+        string $skillName,
+        string $separator = self::SEPARATOR): Model|Skill
     {
-        $skillGroup = SkillGroup::firstOrCreate(['name'=>trim($skillGroup)]);
+        $skillGroup = SkillGroup::firstOrCreate(['name' => trim($skillGroup)]);
+
         return Skill::withoutGlobalScope('orderByName')
             ->firstOrCreate([
-            'name'=>trim($skillName),
-            'skill_group_id'=>$skillGroup->id
-        ]);
+                'name' => trim($skillName),
+                'skill_group_id' => $skillGroup->id,
+            ]);
     }
 
     public function getFullName(): string

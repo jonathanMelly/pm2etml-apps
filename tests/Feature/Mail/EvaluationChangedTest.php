@@ -14,27 +14,27 @@ test('Evaluation changed email contains relevant informations', function () {
         ContractSeeder::class);
 
     $contract = \App\Models\Contract::firstOrFail();
-    $gm=$contract->workers()->firstOrFail();
-    $group=$gm->group()->first()->groupName()->first()->name;
-    $worker=$gm->user()->first()->getFirstnameL();
-    $job=$contract->jobDefinition()->first()->name;
+    $gm = $contract->workers()->firstOrFail();
+    $group = $gm->group()->first()->groupName()->first()->name;
+    $worker = $gm->user()->first()->getFirstnameL();
+    $job = $contract->jobDefinition()->first()->name;
 
     //be sure to have a log
     $contract->workersContracts()->firstOrFail()->evaluate(true);
-    $log=\App\Models\WorkerContractEvaluationLog::query()->latest()->firstOrFail();
+    $log = \App\Models\WorkerContractEvaluationLog::query()->latest()->firstOrFail();
 
-    $informations[]=[
-        'group'=>$group,
-        'name'=>$worker,
-        'log'=>$log,
-        'job'=>$job,
+    $informations[] = [
+        'group' => $group,
+        'name' => $worker,
+        'log' => $log,
+        'job' => $job,
     ];
 
     $mailable = new \App\Mail\EvaluationChanged($informations);
 
     $mailable->assertSeeInHtml($group);
-    $mailable->assertSeeInOrderInHtml([$group, $worker,$job]);
+    $mailable->assertSeeInOrderInHtml([$group, $worker, $job]);
 
     $mailable->assertSeeInText($group);
-    $mailable->assertSeeInOrderInText([$group, $worker,$job]);
+    $mailable->assertSeeInOrderInText([$group, $worker, $job]);
 });

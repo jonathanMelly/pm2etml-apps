@@ -4,11 +4,15 @@ namespace App\Constants;
 
 class RoleName
 {
-    public const STUDENT='eleve';
-    public const TEACHER='prof';
-    public const PRINCIPAL='mp';
-    public const DEAN='doyen';
-    public const ADMIN='root';
+    public const STUDENT = 'eleve';
+
+    public const TEACHER = 'prof';
+
+    public const PRINCIPAL = 'mp';
+
+    public const DEAN = 'doyen';
+
+    public const ADMIN = 'root';
 
     public const AVAILABLE_ROLES = [
         self::STUDENT,
@@ -16,5 +20,4 @@ class RoleName
         self::PRINCIPAL,
         self::DEAN,
         self::ADMIN];
-
 }

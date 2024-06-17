@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create($this->table(), function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(\App\Models\JobDefinition::class);
-            $table->string("name");
+            $table->string('name');
             $table->unsignedInteger('allocated_time')->nullable()->default(null);
             $table->unsignedInteger('allocated_time_unit')->default(\App\Enums\RequiredTimeUnit::PERIOD->value);
             $table->timestamps();
@@ -29,7 +29,7 @@ return new class extends Migration
         Schema::dropIfExists($this->table());
     }
 
-    public function table():string
+    public function table(): string
     {
         return app(\App\Models\JobDefinitionPart::class)->getTable();
     }

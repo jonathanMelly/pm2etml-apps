@@ -29,13 +29,11 @@ return new class extends Migration
 
         //as there is not yet data on prod, no need to transfer ;-)
 
-        foreach(['success_date','success','success_comment'] as $drop)
-        {
+        foreach (['success_date', 'success', 'success_comment'] as $drop) {
             Schema::table(tbl(\App\Models\Contract::class), function (Blueprint $table) use ($drop) {
                 $table->dropColumn($drop);
             });
         }
-
 
     }
 
@@ -57,8 +55,7 @@ return new class extends Migration
             $table->string('success_comment')->nullable();
         });
 
-        foreach(['success_date','success','success_comment'] as $drop)
-        {
+        foreach (['success_date', 'success', 'success_comment'] as $drop) {
             Schema::table(tbl(\App\Models\WorkerContract::class), function (Blueprint $table) use ($drop) {
                 $table->dropColumn($drop);
             });

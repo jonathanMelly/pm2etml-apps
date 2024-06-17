@@ -8,27 +8,21 @@ namespace App\Services;
 
 class O365EloquantMixTestUserProvider extends O365EloquantMixUserProvider
 {
-
-	/**
-	 * Validate a user against the given credentials.
-	 *
-	 * @param \Illuminate\Contracts\Auth\Authenticatable $user
-	 * @param array $credentials
-	 *
-	 * @return bool
-	 */
-	function validateCredentials(\Illuminate\Contracts\Auth\Authenticatable $user, array $credentials) : bool {
+    /**
+     * Validate a user against the given credentials.
+     */
+    public function validateCredentials(\Illuminate\Contracts\Auth\Authenticatable $user, array $credentials): bool
+    {
 
         $plain = $this->getPassword($credentials);
 
         //This is IMPORTANT to let as it checks standard o365 provider requirements...
-        $username = $this->getUsername($user,$credentials);
-        assert($username!=null);
+        $username = $this->getUsername($user, $credentials);
+        assert($username != null);
 
         $validPassword = config('auth.fake_password');
 
-        return $plain===$validPassword;
+        return $plain === $validPassword;
 
-	}
-
+    }
 }

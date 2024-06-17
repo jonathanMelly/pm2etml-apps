@@ -17,18 +17,20 @@ class JobDefinitionPart extends Model
         'job_definition_id',
         'name',
         'allocated_time',
-        'allocated_time_unit'
+        'allocated_time_unit',
     ];
 
     protected $casts = [
         'allocated_time_unit' => RequiredTimeUnit::class,
     ];
 
-    #[Pure] public function getAllocatedTime(RequiredTimeUnit $targetUnit = RequiredTimeUnit::PERIOD): float
+    #[Pure]
+    public function getAllocatedTime(RequiredTimeUnit $targetUnit = RequiredTimeUnit::PERIOD): float
     {
         if ($this->allocated_time === null) {
             return 0;
         }
+
         return round(RequiredTimeUnit::Convert($this->allocated_time, $this->allocated_time_unit, $targetUnit), 0);
     }
 }

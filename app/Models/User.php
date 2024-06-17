@@ -21,9 +21,9 @@ use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Model implements AuthenticatableContract,AuthorizableContract
+class User extends Model implements AuthenticatableContract, AuthorizableContract
 {
-    use Authenticatable, Authorizable, HasApiTokens, HasFactory, Notifiable, SoftDeletes, HasRoles;
+    use Authenticatable, Authorizable, HasApiTokens, HasFactory, HasRoles, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -35,7 +35,7 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
         'lastname',
         'email',
         'username',
-        'last_logged_at'
+        'last_logged_at',
     ];
 
     /**
@@ -60,61 +60,57 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
     //Added to avoid any issues with others modules deps (sessionHandling for instance...)
     public function getAuthPassword(): string
     {
-        return "o365-external";
+        return 'o365-external';
     }
 
-    public function isAdmin():bool
+    public function isAdmin(): bool
     {
         return $this->hasRole(RoleName::ADMIN);
     }
 
-    public function getInitials():string
+    public function getInitials(): string
     {
         return $this->firstname[0].$this->lastname[0];
     }
-    public function getFirstnameL(bool $withId=false):string
+
+    public function getFirstnameL(bool $withId = false): string
     {
-        return $this->firstname.' '.$this->lastname[0].'.'.($withId?"<{$this->id}>":"");
+        return $this->firstname.' '.$this->lastname[0].'.'.($withId ? "<{$this->id}>" : '');
     }
 
     /**
      * Tells of which jobDefinition this user is a provider
-     * @return BelongsToMany
      */
     public function jobDefinitions(): BelongsToMany
     {
-        return $this->belongsToMany(JobDefinition::class,CustomPivotTableNames::USER_JOB_DEFINITION->value)
+        return $this->belongsToMany(JobDefinition::class, CustomPivotTableNames::USER_JOB_DEFINITION->value)
             ->withTimestamps();
     }
 
-    public function groupMembers():HasMany
+    public function groupMembers(): HasMany
     {
         return $this->hasMany(GroupMember::class);
     }
 
-    /**
-     *
-     * @return BelongsToMany
-     */
-    public function contractsAsAClient() : BelongsToMany
+    public function contractsAsAClient(): BelongsToMany
     {
-        return $this->belongsToMany(Contract::class,CustomPivotTableNames::CONTRACT_USER->value)
+        return $this->belongsToMany(Contract::class, CustomPivotTableNames::CONTRACT_USER->value)
             ->withTimestamps();
     }
 
     public function involvedGroupNames(int $periodId): Collection
     {
         return Cache::rememberForever("involvedGroupNames-$this->id",
-            function() use ($periodId) {
+            function () use ($periodId) {
                 return GroupName::query()
                     ->distinct()
                     ->select('name')
                     ->whereHas('groups.groupMembers',
-                        fn($q) => $q->whereIn('id',
+                        fn ($q) => $q->whereIn('id',
 
                             WorkerContract::query()
-                                ->whereHas('groupMember.group.academicPeriod', fn($q) => $q->where(tbl(AcademicPeriod::class).'.id','=',$periodId))
-                                ->whereHas('contract.clients', fn($q) => $q->where(tbl(User::class).'.id','=',$this->id))
+                                ->whereHas('groupMember.group.academicPeriod', fn ($q) => $q->where(tbl(AcademicPeriod::class).'.id', '=', $periodId))
+                                ->whereHas('contract.clients', fn ($q) => $q->where(tbl(User::class).'.id', '=', $this->id))
                                 ->pluck('group_member_id'))
 
                     )
@@ -123,68 +119,54 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
     }
 
     //Filter and order contracts for the current client for a given job
-    public function contractsAsAClientForJob(JobDefinition $job,int $periodId): Contract|Builder
+    public function contractsAsAClientForJob(JobDefinition $job, int $periodId): Contract|Builder
     {
         $contract_client = CustomPivotTableNames::CONTRACT_USER->value;
 
         return Contract::
             //No power join as using the pivot table as a shortcut than the entire relation
-            join($contract_client,tbl(Contract::class).'.id','=',$contract_client.'.contract_id')
-
-            ->where('job_definition_id','=',$job->id)
-            ->where($contract_client . '.user_id','=',$this->id)
-            ->whereHas('workers.group.academicPeriod',fn($q)=>$q->where(tbl(AcademicPeriod::class).".id",'=',$periodId))
-
-            ->with('workers.user')
-            ->with('workers.group.groupName')
-            ->with('workersContracts')
+            join($contract_client, tbl(Contract::class).'.id', '=', $contract_client.'.contract_id')
+                ->where('job_definition_id', '=', $job->id)
+                ->where($contract_client.'.user_id', '=', $this->id)
+                ->whereHas('workers.group.academicPeriod', fn ($q) => $q->where(tbl(AcademicPeriod::class).'.id', '=', $periodId))
+                ->with('workers.user')
+                ->with('workers.group.groupName')
+                ->with('workersContracts')
 
             //Contract workers
-            ->orderByPowerJoins('workers.group.groupName.year')
-            ->orderByPowerJoins('workers.group.groupName.name')
-            ->orderByPowerJoins('workers.user.lastname')
-            ->orderByPowerJoins('workers.user.firstname');
+                ->orderByPowerJoins('workers.group.groupName.year')
+                ->orderByPowerJoins('workers.group.groupName.name')
+                ->orderByPowerJoins('workers.user.lastname')
+                ->orderByPowerJoins('workers.user.firstname');
     }
 
-    /**
-     *
-     * @param int|null $periodId
-     * @return BelongsToMany | Builder
-     */
-    public function contractsAsAWorker(int $periodId=null): BelongsToMany | Builder
+    public function contractsAsAWorker(?int $periodId = null): BelongsToMany|Builder
     {
         $groupMember = $this->groupMember($periodId);
-        if($groupMember===null)
-        {
-            return Contract::whereNull('id');//empty result
-        }
-        else
-        {
+        if ($groupMember === null) {
+            return Contract::whereNull('id'); //empty result
+        } else {
             return $groupMember->workerContracts();
         }
 
     }
 
-    public function joinGroup(int|null $periodId,string $groupName,int $year =null): GroupMember
+    public function joinGroup(?int $periodId, string $groupName, ?int $year = null): GroupMember
     {
-        $periodId = $periodId??AcademicPeriod::current();
+        $periodId = $periodId ?? AcademicPeriod::current();
 
         //In case of a user switching back to a previously associated-then-dissociated group, we just restore it ! (as db won’t allow us to create another...)
 
         /* @var $trashedJoin GroupMember */
         $trashedJoin = GroupMember::withTrashed()
-            ->where('user_id','=',$this->id)
-            ->whereHas('group.academicPeriod',fn($q)=>$q->whereId($periodId))
-            ->whereHas('group.groupName',fn($q)=>$q->where('name','=',$groupName))->first();
+            ->where('user_id', '=', $this->id)
+            ->whereHas('group.academicPeriod', fn ($q) => $q->whereId($periodId))
+            ->whereHas('group.groupName', fn ($q) => $q->where('name', '=', $groupName))->first();
 
-        if($trashedJoin!==null)
-        {
-            if($trashedJoin->restore())
-            {
+        if ($trashedJoin !== null) {
+            if ($trashedJoin->restore()) {
                 return $trashedJoin;
-            }
-            else
-            {
+            } else {
                 throw new DataIntegrityException('Cannot restore GroupMember for '.$this->email.' / '.$groupName.' for period '.$periodId);
             }
         }
@@ -194,12 +176,12 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
                 'user_id' => $this->id,
                 'group_id' => \App\Models\Group::firstOrCreate([
                     'academic_period_id' => $periodId,
-                    'group_name_id' => \App\Models\GroupName::firstOrCreate(['name' => $groupName,'year' => $year??GroupName::guessGroupNameYear($groupName)])->id
-                ])->id
+                    'group_name_id' => \App\Models\GroupName::firstOrCreate(['name' => $groupName, 'year' => $year ?? GroupName::guessGroupNameYear($groupName)])->id,
+                ])->id,
             ]);
     }
 
-    public function groupMembersForPeriod(int $periodId=null): HasMany
+    public function groupMembersForPeriod(?int $periodId = null): HasMany
     {
         // PERF COMMENT
         // After some basic tests, it’s not obvious if eloquent whereHas (extensively use SQL exist)
@@ -207,75 +189,71 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
         // choosen...
 
         $hasMany = $this->groupMembers();
-        if($periodId!==null)
-        {
-            $hasMany->whereHas('group.academicPeriod',fn($q)=>$q->whereId($periodId));
+        if ($periodId !== null) {
+            $hasMany->whereHas('group.academicPeriod', fn ($q) => $q->whereId($periodId));
         }
-
 
         return $hasMany;
 
     }
 
-    public function groupMember($periodId=null,$withGroupName=false): GroupMember | null
+    public function groupMember($periodId = null, $withGroupName = false): ?GroupMember
     {
         //get current period as default
-        $periodId = $periodId??AcademicPeriod::current();
+        $periodId = $periodId ?? AcademicPeriod::current();
 
         $builder = $this->groupMembersForPeriod($periodId);
-        if($withGroupName)
-        {
+        if ($withGroupName) {
             $builder->with('group.groupName');
         }
+
         return $builder->first();
     }
 
     //REMEMBER that GroupMember is mapped as a standard MODEL to be able to use softdelete on it...
     //So we don’t use belongsToMany or hasManyThrough...
-    public function groups(int|AcademicPeriod $periodId=null):Builder
+    public function groups(int|AcademicPeriod|null $periodId = null): Builder
     {
-        $query = Group::query()->whereHas('groupMembers',fn($q)=>$q->where('user_id','=',$this->id));
-        if($periodId!==null)
-        {
-            if($periodId instanceof AcademicPeriod){
+        $query = Group::query()->whereHas('groupMembers', fn ($q) => $q->where('user_id', '=', $this->id));
+        if ($periodId !== null) {
+            if ($periodId instanceof AcademicPeriod) {
                 $periodId = $periodId->id;
             }
-            $query->where('academic_period_id','=',$periodId);
+            $query->where('academic_period_id', '=', $periodId);
         }
+
         return $query;
     }
 
     //A teacher can have multiple groupNames for a given period...
     //Students should’nt have
-    public function groupNames(int|AcademicPeriod $periodId=null) : Builder
+    public function groupNames(int|AcademicPeriod|null $periodId = null): Builder
     {
         return GroupName::distinct()->select('name')
-            ->whereIn('id',$this->groups($periodId)->pluck('group_name_id'));
+            ->whereIn('id', $this->groups($periodId)->pluck('group_name_id'));
     }
 
-    public function getGroupNames($periodId=null,$printable=false):Collection|string
+    public function getGroupNames($periodId = null, $printable = false): Collection|string
     {
-        $names= $this->groupNames($periodId)->pluck('name');
-        if($printable)
-        {
-            return $names->transform(fn($el)=>strtoupper($el))->implode(',');
+        $names = $this->groupNames($periodId)->pluck('name');
+        if ($printable) {
+            return $names->transform(fn ($el) => strtoupper($el))->implode(',');
         }
+
         return $names;
     }
-
 
     public function getJobDefinitionsWithActiveContracts(int $academicPeriodId): \Illuminate\Database\Eloquent\Collection
     {
         //TODO switch to polymorphic http://novate.co.uk/using-laravel-polymorphic-relationships-for-different-user-profiles/
         //OR https://github.com/calebporzio/parental
         //so that only teacher has this method !
-        if($this->hasRole(RoleName::TEACHER)===false)
-        {
+        if ($this->hasRole(RoleName::TEACHER) === false) {
             throw new \Illuminate\Validation\UnauthorizedException('Only for teacher');
         }
 
         //When a job is trashed, some contracts may still be pending... Let contracts be deleted separately
-        $whereJob="";//"where jd.deleted_at is null";
+        $whereJob = ''; //"where jd.deleted_at is null";
 
         //TODO convert into powerRelation to avoid hard-coded table names and uses soft delete...
         $sqlQuery = "
@@ -295,40 +273,37 @@ class User extends Model implements AuthenticatableContract,AuthorizableContract
                     order by min(c.`end`)
                 ";
 
-        return JobDefinition::fromQuery($sqlQuery,[$this->id,$academicPeriodId]);
+        return JobDefinition::fromQuery($sqlQuery, [$this->id, $academicPeriodId]);
     }
 
     /**
      * To avoid perf issues, cache is used and flushed in controllers when modification is done
      * As hooking events on pivot tables needs add model for them, care must be taken to avoid
      * bad cache data (always flush cache on contract client updates...)
-     * @param int $academicPeriodId
+     *
      * @return float the load percentage
      */
-    public function getClientLoad(int $academicPeriodId) : array
+    public function getClientLoad(int $academicPeriodId): array
     {
-        return Cache::rememberForever("client-".$this->id."-percentage",function() use($academicPeriodId){
+        return Cache::rememberForever('client-'.$this->id.'-percentage', function () use ($academicPeriodId) {
             $contractsForPeriodQuery = Contract::query()
-                ->whereHas('workers.group.academicPeriod',fn($q)=>$q->where(tbl(AcademicPeriod::class).'.id','=',$academicPeriodId));
+                ->whereHas('workers.group.academicPeriod', fn ($q) => $q->where(tbl(AcademicPeriod::class).'.id', '=', $academicPeriodId));
             $totalContractsForPeriod = $contractsForPeriodQuery->count('id');
 
-            if($totalContractsForPeriod===0)
-            {
+            if ($totalContractsForPeriod === 0) {
                 $percentage = 0;
-                $currentUserContracts=0;
-            }
-            else
-            {
+                $currentUserContracts = 0;
+            } else {
                 $currentUserContracts = $contractsForPeriodQuery
-                    ->whereHas('clients',fn($q)=>$q->where(tbl(User::class).'.id','=',$this->id))
+                    ->whereHas('clients', fn ($q) => $q->where(tbl(User::class).'.id', '=', $this->id))
                     ->count('id');
-                $percentage = round($currentUserContracts/$totalContractsForPeriod*100,0);
+                $percentage = round($currentUserContracts / $totalContractsForPeriod * 100, 0);
             }
 
             return [
                 'percentage' => $percentage,
-                'mine'=> $currentUserContracts,
-                'total'=> $totalContractsForPeriod
+                'mine' => $currentUserContracts,
+                'total' => $totalContractsForPeriod,
             ];
         });
 

@@ -2,15 +2,15 @@
 
 namespace App\Enums;
 
-enum JobPriority:int
+enum JobPriority: int
 {
-    case MANDATORY          = 0;
+    case MANDATORY = 0;
     case HIGHLY_RECOMMENDED = 1;
-    case RECOMMENDED        = 2;
-    case FREE             = 3;
+    case RECOMMENDED = 2;
+    case FREE = 3;
 
     public static function last()
     {
-        return self::cases()[sizeof(self::cases())-1];
+        return self::cases()[count(self::cases()) - 1];
     }
 }

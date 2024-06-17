@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class AppAutoRedirects extends TestCase
@@ -18,7 +17,6 @@ class AppAutoRedirects extends TestCase
 
         //$response->assertStatus(301);
         $response->assertRedirect('/dashboard');
-
 
     }
 

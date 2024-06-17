@@ -13,7 +13,6 @@ class JobDefinitionPolicy
     /**
      * Determine whether the user can view any models.
      *
-     * @param  \App\Models\User  $user
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function viewAny(User $user)
@@ -24,7 +23,6 @@ class JobDefinitionPolicy
     /**
      * Determine whether the user can view the model.
      *
-     * @param  \App\Models\User  $user
      * @param  \App\Models\JobDefinition  $job
      * @return \Illuminate\Auth\Access\Response|bool
      */
@@ -37,7 +35,6 @@ class JobDefinitionPolicy
     /**
      * Determine whether the user can create models.
      *
-     * @param  \App\Models\User  $user
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function create(User $user)
@@ -48,52 +45,44 @@ class JobDefinitionPolicy
     /**
      * Determine whether the user can update the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\JobDefinition  $jobDefinition
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function update(User $user, JobDefinition $jobDefinition)
     {
         return $user->can('jobDefinitions') ||
-            ($user->can('jobDefinitions.edit') && $jobDefinition->providers()->find($user)!==null);
+            ($user->can('jobDefinitions.edit') && $jobDefinition->providers()->find($user) !== null);
     }
 
     /**
      * Determine whether the user can delete the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\JobDefinition  $jobDefinition
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function delete(User $user, JobDefinition $jobDefinition)
     {
-        if($user->can('jobDefinitions.trash')){
-            return $user->can('jobDefinitions') || $jobDefinition->providers()->find($user->id)!==null;
+        if ($user->can('jobDefinitions.trash')) {
+            return $user->can('jobDefinitions') || $jobDefinition->providers()->find($user->id) !== null;
         }
     }
 
     /**
      * Determine whether the user can restore the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\JobDefinition  $jobDefinition
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function restore(User $user, JobDefinition $jobDefinition)
     {
         //same as delete (softdelete = trash)
-        return $this->delete($user,$jobDefinition);
+        return $this->delete($user, $jobDefinition);
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\JobDefinition  $jobDefinition
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function forceDelete(User $user, JobDefinition $jobDefinition)
     {
-        return false;//no real delete through web interface
+        return false; //no real delete through web interface
     }
 }

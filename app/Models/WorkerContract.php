@@ -7,20 +7,18 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use JetBrains\PhpStorm\Pure;
 use Kirschbaum\PowerJoins\PowerJoins;
-use phpDocumentor\Reflection\Types\This;
 
 class WorkerContract extends Pivot
 {
-
     use PowerJoins;
 
     // Cannot use Enum... TODO Transform Enum to CONST !!!!
-    public $table='contract_worker';//\App\Enums\CustomPivotTableNames::CONTRACT_GROUP_MEMBER->value;
+    public $table = 'contract_worker'; //\App\Enums\CustomPivotTableNames::CONTRACT_GROUP_MEMBER->value;
 
     public $casts = [
-        'deleted_at'=>'datetime',
+        'deleted_at' => 'datetime',
         'success_date' => 'datetime',
-        'allocated_time_unit' => RequiredTimeUnit::class
+        'allocated_time_unit' => RequiredTimeUnit::class,
     ];
 
     protected static function boot(): void
@@ -28,7 +26,7 @@ class WorkerContract extends Pivot
         parent::boot();
 
         static::addGlobalScope('withoutTrashed', function (Builder $builder) {
-            $builder->whereNull(tbl(WorkerContract::class). '.deleted_at');
+            $builder->whereNull(tbl(WorkerContract::class).'.deleted_at');
         });
     }
 
@@ -42,38 +40,40 @@ class WorkerContract extends Pivot
         return $this->belongsTo(GroupMember::class);
     }
 
-    function evaluate(bool|null $success,$comment=null,$save=true): bool
+    public function evaluate(?bool $success, $comment = null, $save = true): bool
     {
-        $this->success=$success;
-        $this->success_date=now();
-        $this->success_comment=$comment;
+        $this->success = $success;
+        $this->success_date = now();
+        $this->success_comment = $comment;
 
-        if($save)
-        {
+        if ($save) {
             return $this->save();
         }
+
         return true;
     }
 
-    function alreadyEvaluated():bool
+    public function alreadyEvaluated(): bool
     {
-        return $this->success!==null;
+        return $this->success !== null;
     }
 
-    function getSuccessAsBoolString(): string
+    public function getSuccessAsBoolString(): string
     {
-        if(!$this->alreadyEvaluated())
-        {
+        if (! $this->alreadyEvaluated()) {
             return 'n/a';
         }
-        return $this->success?'true':'false';
+
+        return $this->success ? 'true' : 'false';
     }
 
-    #[Pure] public function getAllocatedTime(RequiredTimeUnit $targetUnit = RequiredTimeUnit::PERIOD): float
+    #[Pure]
+    public function getAllocatedTime(RequiredTimeUnit $targetUnit = RequiredTimeUnit::PERIOD): float
     {
         if ($this->allocated_time === null) {
             return 0;
         }
+
         return round(RequiredTimeUnit::Convert($this->allocated_time, $this->allocated_time_unit, $targetUnit), 0);
     }
 
@@ -83,25 +83,22 @@ class WorkerContract extends Pivot
         $allocatedTimeInPeriods = $this->getAllocatedTime(RequiredTimeUnit::PERIOD);
         if ($allocatedTimeInPeriods < JobDefinition::SIZE_MEDIUM_MIN) {
             $size = 'Weak';
-        } else if ($allocatedTimeInPeriods < JobDefinition::SIZE_LARGE_MIN) {
+        } elseif ($allocatedTimeInPeriods < JobDefinition::SIZE_LARGE_MIN) {
             $size = 'Medium';
         } else {
             $size = 'Large';
         }
 
-        return __($size) . ', ~' . $this->getAllocatedTime(RequiredTimeUnit::PERIOD) . 'p';
+        return __($size).', ~'.$this->getAllocatedTime(RequiredTimeUnit::PERIOD).'p';
     }
-
 
     public function softDelete(): bool
     {
-        if($this->isDirty())
-        {
+        if ($this->isDirty()) {
             throw new \Exception("Trying to softDelete a dirty workercontract with id {$this->id}. Please apply your modifications first to avoid any side effect...");
-        }
-        else
-        {
-            $this->deleted_at=now(); //soft delete not implemented on pivot
+        } else {
+            $this->deleted_at = now(); //soft delete not implemented on pivot
+
             return $this->save();
         }
 

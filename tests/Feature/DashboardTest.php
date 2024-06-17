@@ -6,9 +6,8 @@ use Database\Seeders\JobSeeder;
 use Database\Seeders\UserV1Seeder;
 use Illuminate\Testing\TestResponse;
 
-beforeEach(function()
-{
-    $this->multiseed(\Database\Seeders\AcademicPeriodSeeder::class,UserV1Seeder::class);
+beforeEach(function () {
+    $this->multiseed(\Database\Seeders\AcademicPeriodSeeder::class, UserV1Seeder::class);
 });
 
 test('Prof can see FAQ tool and url shortener', function () {
@@ -25,7 +24,7 @@ test('Prof can see FAQ tool and url shortener', function () {
 
 test('Root teacher can see FAQ tool and url shortener', function () {
     //Given
-    $prof = $this->CreateUser(true,\App\Constants\RoleName::ADMIN,\App\Constants\RoleName::TEACHER);
+    $prof = $this->CreateUser(true, \App\Constants\RoleName::ADMIN, \App\Constants\RoleName::TEACHER);
 
     //When
     $response = $this->get('/dashboard');
@@ -37,7 +36,7 @@ test('Root teacher can see FAQ tool and url shortener', function () {
 
 test('Root only can see FAQ tool and url shortener', function () {
     //Given
-    $prof = $this->CreateUser(true,\App\Constants\RoleName::ADMIN);
+    $prof = $this->CreateUser(true, \App\Constants\RoleName::ADMIN);
 
     //When
     $response = $this->get('/dashboard');
@@ -49,22 +48,21 @@ test('Root only can see FAQ tool and url shortener', function () {
 
 function assertSeeAll(TestResponse $response)
 {
-    $response->assertSeeText("dis.section-inf.ch");
-    $response->assertSeeText("ici.section-inf.ch");
+    $response->assertSeeText('dis.section-inf.ch');
+    $response->assertSeeText('ici.section-inf.ch');
 }
 
 test('Eleve cannot see FAQ tool/url shortener but git', function () {
     //Given
     $eleve = $this->CreateUser(roles: \App\Constants\RoleName::STUDENT);
 
-
     //When
     $response = $this->get('/dashboard');
 
     //Then
-    $response->assertDontSeeText("dis.section-inf.ch");
-    $response->assertDontSeeText("ici.section-inf.ch");
-    $response->assertSeeText("git.section-inf.ch");
+    $response->assertDontSeeText('dis.section-inf.ch');
+    $response->assertDontSeeText('ici.section-inf.ch');
+    $response->assertSeeText('git.section-inf.ch');
 });
 
 test('Student see his contracts as a worker and can download summary even for trashed jobs', function () {
@@ -77,22 +75,18 @@ test('Student see his contracts as a worker and can download summary even for tr
     $this->seed(ContractSeeder::class);
 
     $contracts = $eleve->contractsAsAWorker()->get();
-    \PHPUnit\Framework\assertGreaterThan(0,$contracts->count());
-    \PHPUnit\Framework\assertGreaterThan(0,$contracts->filter(fn($c)=>
-    $c->workerContract($eleve->groupMember()->firstOrFail())->firstOrFail()->alreadyEvaluated())->count());
-
+    \PHPUnit\Framework\assertGreaterThan(0, $contracts->count());
+    \PHPUnit\Framework\assertGreaterThan(0, $contracts->filter(fn ($c) => $c->workerContract($eleve->groupMember()->firstOrFail())->firstOrFail()->alreadyEvaluated())->count());
 
     //When
     /* @var $response TestResponse */
     $response = $this->get('/dashboard');
 
     //Then
-    foreach ($contracts as $contract)
-    {
-        $response->assertSeeText(Str::words($contract->jobDefinition->title,3));
-        if($contract->workerContract($eleve->groupMember()->firstOrFail())->firstOrFail()->alreadyEvaluated())
-        {
-            $response->assertSeeText("Bilan d’évaluation");
+    foreach ($contracts as $contract) {
+        $response->assertSeeText(Str::words($contract->jobDefinition->title, 3));
+        if ($contract->workerContract($eleve->groupMember()->firstOrFail())->firstOrFail()->alreadyEvaluated()) {
+            $response->assertSeeText('Bilan d’évaluation');
         }
     }
 
@@ -103,9 +97,9 @@ test('Student see his contracts as a worker and can download summary even for tr
     //then
     $response->assertStatus(200);
     \PHPUnit\Framework\assertStringStartsWith(
-        'attachment; filename=inf-',$response->baseResponse->headers->get('content-disposition'));
+        'attachment; filename=inf-', $response->baseResponse->headers->get('content-disposition'));
     \PHPUnit\Framework\assertStringEndsWith(
-        '.xlsx',$response->baseResponse->headers->get('content-disposition'));
+        '.xlsx', $response->baseResponse->headers->get('content-disposition'));
 
     //And when a project is deleted (by an admin)
     $jobId = $contracts->firstOrFail()->jobDefinition->delete();
@@ -123,22 +117,19 @@ test('Teacher see his contracts as a client', function () {
     $teacher = User::role(\App\Constants\RoleName::TEACHER)->first();
     $this->be($teacher);
 
-
     $jobDefinition = $teacher->getJobDefinitionsWithActiveContracts(\App\Models\AcademicPeriod::current())
         //->where('one_shot','=','false')
         ->firstOrFail();
-    $contracts = $teacher->contractsAsAClientForJob($jobDefinition,\App\Models\AcademicPeriod::current())->get();
-    \PHPUnit\Framework\assertGreaterThan(0,$contracts->count());
+    $contracts = $teacher->contractsAsAClientForJob($jobDefinition, \App\Models\AcademicPeriod::current())->get();
+    \PHPUnit\Framework\assertGreaterThan(0, $contracts->count());
 
     //When
     $response = $this->get('/dashboard');
 
     //Then
     $response->assertSeeText($jobDefinition->title);
-    foreach ($contracts as $contract)
-    {
-        foreach ($contract->workers as $worker)
-        {
+    foreach ($contracts as $contract) {
+        foreach ($contract->workers as $worker) {
             $response->assertSeeText($worker->user->getFirstnameL());
         }
 

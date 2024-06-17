@@ -17,10 +17,10 @@ return new class extends Migration
             $table->id();
 
             $uniques = [];
-            $uniques[]=$table->foreignIdFor(\App\Models\User::class);
-            $uniques[]=$table->foreignIdFor(\App\Models\Group::class);
+            $uniques[] = $table->foreignIdFor(\App\Models\User::class);
+            $uniques[] = $table->foreignIdFor(\App\Models\Group::class);
 
-            collect($uniques)->each(fn($foreign)=>$foreign->constrained());
+            collect($uniques)->each(fn ($foreign) => $foreign->constrained());
 
             $table->unsignedTinyInteger('type')->default(0);
             $table->timestamps();
