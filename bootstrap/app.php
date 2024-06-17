@@ -14,7 +14,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->redirectGuestsTo(fn () => route('login'));
+        $middleware->redirectUsersTo(RouteServiceProvider::HOME);
+
+        $middleware->web([
+            \App\Http\Middleware\Theme::class,
+            \App\Http\Middleware\HandleInertiaRequests::class,
+        ]);
+
+        $middleware->throttleApi();
+
+        $middleware->group('app', [
+            \App\Http\Middleware\AcademicPeriodFilter::class,
+            \App\Http\Middleware\TimeUnitFilter::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
