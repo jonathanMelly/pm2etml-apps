@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,8 +12,6 @@ use Illuminate\Support\Facades\Session;
 
 class AuthenticatedSessionController extends Controller
 {
-
-
     /**
      * Display the login view.
      *
@@ -23,20 +20,16 @@ class AuthenticatedSessionController extends Controller
     public function create(Request $request)
     {
         //old login (used for staging)
-        if(!config('auth.sso_login') || $request->hasAny('standard','old','no-sso','nosso','basic'))
-        {
-            return view("auth.login");
+        if (! config('auth.sso_login') || $request->hasAny('standard', 'old', 'no-sso', 'nosso', 'basic')) {
+            return view('auth.login');
         }
 
-        return view("auth.login-sso");
+        return view('auth.login-sso');
     }
-
-
 
     /**
      * Handle an incoming authentication request.
      *
-     * @param  \App\Http\Requests\Auth\LoginRequest  $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function store(LoginRequest $request)
@@ -48,13 +41,9 @@ class AuthenticatedSessionController extends Controller
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 
-
-
-
     /**
      * Destroy an authenticated session.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(Request $request)
@@ -65,15 +54,13 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        if(config('auth.sso_login'))
-        {
+        if (config('auth.sso_login')) {
             //Logout SSO if needed
             try {
                 $azureLogoutUrl = sso()->getLogoutUrl(route('login'));
+
                 return redirect($azureLogoutUrl);
-            }
-            catch(\Exception $e)
-            {
+            } catch (\Exception $e) {
                 Log::debug('Not sso session, redirecting to standard /');
             }
         }

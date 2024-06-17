@@ -2,17 +2,14 @@
 
 namespace App\Providers;
 
-use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Auth;
-
-use App\Services\O365EloquantMixTestUserProvider;
 use App\Services\O365EloquantMixUserProvider;
+use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 
 class AuthServiceProvider extends ServiceProvider
 {
-
     const O365_DRIVER_NAME = 'o365-eloquent-mix';
 
     /**
@@ -44,14 +41,14 @@ class AuthServiceProvider extends ServiceProvider
             return $user->isAdmin() ? true : null;
         });
 
-
         //Sets dummy password check any other place than prod
         Auth::provider($this::O365_DRIVER_NAME, function ($app, array $config) {
             if ($this->eup == null) {
                 $eupClassName = $config['authenticator'];
                 $this->eup = new $eupClassName($config['model'], $config['endpoint']);
             }
-            Log::debug('['.__CLASS__.'] '.$this->eup::class ." set for ".$this::O365_DRIVER_NAME." with endpoint ".$config['endpoint']);
+            Log::debug('['.__CLASS__.'] '.$this->eup::class.' set for '.$this::O365_DRIVER_NAME.' with endpoint '.$config['endpoint']);
+
             return $this->eup;
         });
 

@@ -24,10 +24,10 @@ class UpdateContractBulkRequest extends FormRequest
     public function rules()
     {
         return [
-            'workersContracts'=>'array',
-            'starts'=>'array',
-            'ends'=>'array',
-            'allocated_times'=>'array'
+            'workersContracts' => 'array',
+            'starts' => 'array',
+            'ends' => 'array',
+            'allocated_times' => 'array',
         ];
     }
 }

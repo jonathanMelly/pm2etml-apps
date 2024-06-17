@@ -44,10 +44,10 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
 
-            $uniques[]=$table->foreignIdFor(Contract::class);
-            $uniques[]=$table->foreignIdFor(GroupMember::class);
+            $uniques[] = $table->foreignIdFor(Contract::class);
+            $uniques[] = $table->foreignIdFor(GroupMember::class);
 
-            collect($uniques)->each(fn($foreign)=>$foreign->constrained()->cascadeOnDelete()->cascadeOnUpdate());
+            collect($uniques)->each(fn ($foreign) => $foreign->constrained()->cascadeOnDelete()->cascadeOnUpdate());
 
             //Only 1 role allowed for now
             $table->unique(collect($uniques)->pluck('name')->toArray());
@@ -58,11 +58,10 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
 
-            $uniques[]=$table->foreignIdFor(Contract::class);
-            $uniques[]=$table->foreignIdFor(User::class);
+            $uniques[] = $table->foreignIdFor(Contract::class);
+            $uniques[] = $table->foreignIdFor(User::class);
 
-            collect($uniques)->each(fn($foreign)=>$foreign->constrained()->cascadeOnDelete()->cascadeOnUpdate());
-
+            collect($uniques)->each(fn ($foreign) => $foreign->constrained()->cascadeOnDelete()->cascadeOnUpdate());
 
             //Only 1 role allowed for now
             $table->unique(collect($uniques)->pluck('name')->toArray());
@@ -77,11 +76,11 @@ return new class extends Migration
     public function down()
     {
         collect($this->tables())->each(
-            fn($table) => Schema::dropIfExists($table)
+            fn ($table) => Schema::dropIfExists($table)
         );
     }
 
-    public function tables():array
+    public function tables(): array
     {
         return [
             app(Contract::class)->getTable(),

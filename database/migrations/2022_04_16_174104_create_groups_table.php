@@ -16,10 +16,10 @@ return new class extends Migration
         Schema::create('groups', function (Blueprint $table) {
             $table->id();
 
-            $uniques[]=$table->foreignIdFor(\App\Models\GroupName::class);
-            $uniques[]=$table->foreignIdFor(\App\Models\AcademicPeriod::class);
+            $uniques[] = $table->foreignIdFor(\App\Models\GroupName::class);
+            $uniques[] = $table->foreignIdFor(\App\Models\AcademicPeriod::class);
 
-            collect($uniques)->each(fn($foreign)=>$foreign->constrained());
+            collect($uniques)->each(fn ($foreign) => $foreign->constrained());
 
             $table->unique(collect($uniques)->pluck('name')->toArray());
 

@@ -45,7 +45,7 @@ return new class extends Migration
         Schema::dropIfExists($this->table());
     }
 
-    public function table():string
+    public function table(): string
     {
         return app(Attachment::class)->getTable();
     }

@@ -18,7 +18,7 @@ class PermissionV2Seeder extends Seeder
 
         \Illuminate\Support\Facades\DB::transaction(function () {
 
-            $p = \Spatie\Permission\Models\Permission::findByName("contracts.edit");
+            $p = \Spatie\Permission\Models\Permission::findByName('contracts.edit');
             $r = \Spatie\Permission\Models\Role::findByName(\App\Constants\RoleName::STUDENT);
             $r->givePermissionTo($p);
         });

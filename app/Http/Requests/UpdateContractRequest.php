@@ -24,9 +24,9 @@ class UpdateContractRequest extends FormRequest
     public function rules()
     {
         return [
-            'start'=>'date|before:end',
-            'end'=>'date|after:start',
-            'clientId'=>'int'
+            'start' => 'date|before:end',
+            'end' => 'date|after:start',
+            'clientId' => 'int',
         ];
     }
 }

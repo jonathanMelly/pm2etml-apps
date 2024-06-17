@@ -6,7 +6,6 @@ use Exception;
 
 class DataIntegrityException extends Exception
 {
-
     /**
      * Render the exception as an HTTP response.
      *

@@ -2,9 +2,9 @@
 
 use App\Enums\CustomPivotTableNames;
 use App\Enums\JobPriority;
+use App\Models\JobDefinition;
 use App\Models\Skill;
 use App\Models\User;
-use App\Models\JobDefinition;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -25,8 +25,7 @@ return new class extends Migration
             $desc = $table->text('description');
 
             //Does not work with sqlite in memory test db
-            if(config('APP_ENV') === 'production')
-            {
+            if (config('APP_ENV') === 'production') {
                 $desc->fulltext();
             }
 
@@ -56,15 +55,14 @@ return new class extends Migration
             $table->timestamps();
             $table->foreignIdFor(User::class)->constrained();
             $table->foreignIdFor(JobDefinition::class)->constrained();
-            $table->unique(array('user_id', 'job_definition_id'));
+            $table->unique(['user_id', 'job_definition_id']);
         });
 
-        Schema::create('job_definition_skill',function(Blueprint $table)
-        {
+        Schema::create('job_definition_skill', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(JobDefinition::class)->constrained();
             $table->foreignIdFor(Skill::class)->constrained();
-            $table->unique(array('skill_id', 'job_definition_id'));
+            $table->unique(['skill_id', 'job_definition_id']);
         });
 
     }
@@ -80,7 +78,7 @@ return new class extends Migration
         Schema::dropIfExists(CustomPivotTableNames::USER_JOB_DEFINITION->value);
     }
 
-    public function table():string
+    public function table(): string
     {
         return app(JobDefinition::class)->getTable();
     }

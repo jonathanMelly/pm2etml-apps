@@ -13,17 +13,22 @@ use Illuminate\Support\Facades\Session;
 
 class SSOController extends Controller
 {
+    const SSO_BRIDGE_CORRELATION_ID_GENERATOR = 'sso-bridge-correlationId-generator:';
 
-    const SSO_BRIDGE_CORRELATION_ID_GENERATOR = "sso-bridge-correlationId-generator:";
     const SSO_BRIDGE_REDIRECT_URI_SESSION_KEY = 'sso-bridge-uri';
+
     const SSO_BRIDGE_CID_SESSION_KEY = 'sso-bridge-cid';
-    const SSO_BRIDGE_CORRELATION_ID_PREFIX_CACHE_KEY = "sso-bridge-correlationId:";
-    const SSO_CORRELATION_ID_PARAM_NAME="correlationId";
-    const SSO_API_KEY_PARAM_NAME="token";
+
+    const SSO_BRIDGE_CORRELATION_ID_PREFIX_CACHE_KEY = 'sso-bridge-correlationId:';
+
+    const SSO_CORRELATION_ID_PARAM_NAME = 'correlationId';
+
+    const SSO_API_KEY_PARAM_NAME = 'token';
 
     public function logout(Request $request)
     {
-        $azureLogoutUrl = sso()->getLogoutUrl($request->input("redirectUri"));
+        $azureLogoutUrl = sso()->getLogoutUrl($request->input('redirectUri'));
+
         return redirect($azureLogoutUrl);
     }
 
@@ -32,10 +37,10 @@ class SSOController extends Controller
         $this->checkApiKey($request);
 
         $correlationId = $request->input(self::SSO_CORRELATION_ID_PARAM_NAME);
-        $ssoData = \Cache::pull(self::SSO_BRIDGE_CORRELATION_ID_PREFIX_CACHE_KEY . $correlationId);
-        if($ssoData===null){
-            Log::warning("Check called for missing/invalid correlationId");
-            $ssoData = ["error"=>"invalid correlationId $correlationId"];
+        $ssoData = \Cache::pull(self::SSO_BRIDGE_CORRELATION_ID_PREFIX_CACHE_KEY.$correlationId);
+        if ($ssoData === null) {
+            Log::warning('Check called for missing/invalid correlationId');
+            $ssoData = ['error' => "invalid correlationId $correlationId"];
         }
 
         return json_encode($ssoData);
@@ -45,38 +50,34 @@ class SSOController extends Controller
     {
         //Handle SSO from external source which MUST give a correlationId saved in session (on external app)
         $redirectUri = $request->get('redirectUri');
-        if(isset($redirectUri)) {
+        if (isset($redirectUri)) {
 
             //V2
             $correlationId = $request->get(self::SSO_CORRELATION_ID_PARAM_NAME);
 
             //Check fon V1 (wait for clients to upgrade)
-            if(!isset($correlationId))
-            {
+            if (! isset($correlationId)) {
                 //CorrelationId must be kept in session of external app
-                $parts = explode("?correlationId=",$redirectUri);
+                $parts = explode('?correlationId=', $redirectUri);
 
-                if(sizeof($parts)!=2)
-                {
-                    $message = "Cannot retrieve correlationId V1 from redirect URI";
-                    Log::warning($message,["redirect"=>$redirectUri]);
-                    abort(403,$message);
+                if (count($parts) != 2) {
+                    $message = 'Cannot retrieve correlationId V1 from redirect URI';
+                    Log::warning($message, ['redirect' => $redirectUri]);
+                    abort(403, $message);
                 }
-                $redirectUri=$parts[0];
+                $redirectUri = $parts[0];
                 $correlationId = $parts[1];
-                Log::warning("Client using cid V1 (included in redirectURI)",["request"=>$request]);
+                Log::warning('Client using cid V1 (included in redirectURI)', ['request' => $request]);
             }
 
             //Bridge request
             if (isset($correlationId)) {
-                Session::put(self::SSO_BRIDGE_REDIRECT_URI_SESSION_KEY,$redirectUri);
+                Session::put(self::SSO_BRIDGE_REDIRECT_URI_SESSION_KEY, $redirectUri);
 
                 //Store it for callback
-                Session::put(self::SSO_BRIDGE_CID_SESSION_KEY,$correlationId);
-            }
-            else
-            {
-                abort(403,"Missing correlationId for sso bridge request");
+                Session::put(self::SSO_BRIDGE_CID_SESSION_KEY, $correlationId);
+            } else {
+                abort(403, 'Missing correlationId for sso bridge request');
             }
 
         }
@@ -88,16 +89,15 @@ class SSOController extends Controller
     {
 
         $ssoUser = sso()->user();
-        Log::debug(var_export($ssoUser,true));
+        Log::debug(var_export($ssoUser, true));
         $ssoUserInfos = $ssoUser->user;
 
         //Avatar seems to be null ... Look at https://github.com/SocialiteProviders/Microsoft/blob/master/MicrosoftUser.php#L7
-        $email = $ssoUserInfos["mail"];
-        $username= $ssoUserInfos["userPrincipalName"];
+        $email = $ssoUserInfos['mail'];
+        $username = $ssoUserInfos['userPrincipalName'];
 
         //Bridge ?
-        if(Session::exists(self::SSO_BRIDGE_REDIRECT_URI_SESSION_KEY))
-        {
+        if (Session::exists(self::SSO_BRIDGE_REDIRECT_URI_SESSION_KEY)) {
             //Expects that redirect uri has form http://...?correlationId=12345
             //and will return http://...
             $redirectURI = Session::pull(self::SSO_BRIDGE_REDIRECT_URI_SESSION_KEY);
@@ -106,14 +106,13 @@ class SSOController extends Controller
             $response = redirect($redirectURI);
 
             //Check is done here because we have a chance to give feedback to user (would be more logic in ssoRedirect)
-            if(\Cache::pull(self::SSO_BRIDGE_CORRELATION_ID_GENERATOR . $correlationId,null)==null)
-            {
-                Log::warning("Received sso with correlationId not generated by us/ missing from the cache");
-                $response->header("Warning",[110,"sso-bridge","CorrelationId should ideally be generated from us, please use ".route('ssobridge.create-correlation-id')]);
+            if (\Cache::pull(self::SSO_BRIDGE_CORRELATION_ID_GENERATOR.$correlationId, null) == null) {
+                Log::warning('Received sso with correlationId not generated by us/ missing from the cache');
+                $response->header('Warning', [110, 'sso-bridge', 'CorrelationId should ideally be generated from us, please use '.route('ssobridge.create-correlation-id')]);
             }
 
-            \Cache::add(self::SSO_BRIDGE_CORRELATION_ID_PREFIX_CACHE_KEY . $correlationId,
-                ["username"=>$username,"email"=>$email],config('auth.sso_bridge_session_ttl'));
+            \Cache::add(self::SSO_BRIDGE_CORRELATION_ID_PREFIX_CACHE_KEY.$correlationId,
+                ['username' => $username, 'email' => $email], config('auth.sso_bridge_session_ttl'));
 
             Log::info("Redirecting sso-bridge-request with cid $correlationId to $redirectURI");
 
@@ -123,18 +122,19 @@ class SSOController extends Controller
         else {
             //Try to match with email or username as data source is not very accurate (best effort)
             $user = User::query()
-                ->where('email','=',$email)
-                ->orWhere('username','=',$username)
+                ->where('email', '=', $email)
+                ->orWhere('username', '=', $username)
                 ->first();
-            if($user!=null)
-            {
+            if ($user != null) {
                 Auth::login($user);
+
                 return redirect('/dashboard');
             }
         }
 
         //Default
         Log::warning("Unknown validated SSO account with username=$username and email=$email");
+
         return redirect('login')->withErrors(['username' => __('Unknown account')]);
 
     }
@@ -148,35 +148,27 @@ class SSOController extends Controller
         try {
             $randomBytes = random_bytes(32);
         } catch (Exception $e) {
-            Log::error("Cannot generate random number ", ["exception"=>$e]);
-            abort(500,"Cannot generate random number");
+            Log::error('Cannot generate random number ', ['exception' => $e]);
+            abort(500, 'Cannot generate random number');
         }
         $ssoCorrelationId = bin2hex($randomBytes);
 
-        Cache::put(self::SSO_BRIDGE_CORRELATION_ID_GENERATOR . $ssoCorrelationId,
-            $request->getClientIp()." | ".now()->toDateTimeLocalString(),60*15);
+        Cache::put(self::SSO_BRIDGE_CORRELATION_ID_GENERATOR.$ssoCorrelationId,
+            $request->getClientIp().' | '.now()->toDateTimeLocalString(), 60 * 15);
 
-        return json_encode([self::SSO_CORRELATION_ID_PARAM_NAME=>$ssoCorrelationId]);
+        return json_encode([self::SSO_CORRELATION_ID_PARAM_NAME => $ssoCorrelationId]);
     }
 
-    /**
-     * @param Request $request
-     * @return void
-     */
     private function checkApiKey(Request $request): void
     {
-        if(Config::get('auth.sso_bridge_api_key_mandatory')) {
-            if ($request->missing(self::SSO_API_KEY_PARAM_NAME))
-            {
-                Log::warning("Missing mandatory api key in check sso bridge call",["request"=>$request]);
+        if (Config::get('auth.sso_bridge_api_key_mandatory')) {
+            if ($request->missing(self::SSO_API_KEY_PARAM_NAME)) {
+                Log::warning('Missing mandatory api key in check sso bridge call', ['request' => $request]);
                 abort(403);
-            }
-            else
-            {
-                $clientToken=$request->input(self::SSO_API_KEY_PARAM_NAME);
-                if($clientToken!=Config::get('auth.sso_bridge_api_key'))
-                {
-                    Log::warning("Bad api key given for sso bridge",["request"=>$request]);
+            } else {
+                $clientToken = $request->input(self::SSO_API_KEY_PARAM_NAME);
+                if ($clientToken != Config::get('auth.sso_bridge_api_key')) {
+                    Log::warning('Bad api key given for sso bridge', ['request' => $request]);
                     abort(403);
                 }
             }

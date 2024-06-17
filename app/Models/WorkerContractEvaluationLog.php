@@ -13,7 +13,7 @@ class WorkerContractEvaluationLog extends Model
      */
     public $timestamps = false;
 
-    protected $casts=[
+    protected $casts = [
         'old_start' => 'datetime',
         'new_start' => 'datetime',
         'old_end' => 'datetime',

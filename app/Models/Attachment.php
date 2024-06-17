@@ -12,7 +12,7 @@ use Parental\HasChildren;
 
 class Attachment extends Model
 {
-    use SoftDeletes, HasChildren;
+    use HasChildren, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -23,9 +23,9 @@ class Attachment extends Model
         'name',
         'storage_path',
         'size',
-        'type',//for STI
+        'type', //for STI
         'attachable_type',
-        'attachable_id'
+        'attachable_id',
     ];
 
     protected $childTypes = [
@@ -36,15 +36,11 @@ class Attachment extends Model
     public static function boot()
     {
         parent::boot();
-        static::deleted(function(Attachment $attachment)
-        {
-            if($attachment->isForceDeleting())
-            {
+        static::deleted(function (Attachment $attachment) {
+            if ($attachment->isForceDeleting()) {
                 info('Permanently deleting '.$attachment->storage_path);
                 uploadDisk()->delete($attachment->storage_path);
-            }
-            else
-            {
+            } else {
                 //Move to deleted subfolder
                 $newPath = dirname($attachment->storage_path).
                     DIRECTORY_SEPARATOR.FileFormat::ATTACHMENT_DELETED_SUBFOLDER.
@@ -60,43 +56,37 @@ class Attachment extends Model
         });
     }
 
-    public function attachable() : MorphTo
+    public function attachable(): MorphTo
     {
         return $this->morphTo();
     }
 
-    public function attachJobDefinition(JobDefinition $jobDefinition, bool $update=true): Attachment
+    public function attachJobDefinition(JobDefinition $jobDefinition, bool $update = true): Attachment
     {
-        if(!uploadDisk()->exists($this->storage_path))
-        {
+        if (! uploadDisk()->exists($this->storage_path)) {
             app('log')->error('Missing attachment related file',
-                ['file'=>$this->storage_path,
-                    'full path'=>uploadDisk()->path($this->storage_path)]);
-            abort(500,'Missing attachment related file');
+                ['file' => $this->storage_path,
+                    'full path' => uploadDisk()->path($this->storage_path)]);
+            abort(500, 'Missing attachment related file');
         }
 
         //Move from pending to final
-        $newPath = dirname($this->storage_path,2).DIRECTORY_SEPARATOR.basename($this->storage_path);
-        if(uploadDisk()->move($this->storage_path,$newPath))
-        {
+        $newPath = dirname($this->storage_path, 2).DIRECTORY_SEPARATOR.basename($this->storage_path);
+        if (uploadDisk()->move($this->storage_path, $newPath)) {
             $this->storage_path = $newPath;
-            $this->attachable_type=MorphTargets::MORPH2_JOB_DEFINITION;
-            $this->attachable_id=$jobDefinition->id;
+            $this->attachable_type = MorphTargets::MORPH2_JOB_DEFINITION;
+            $this->attachable_id = $jobDefinition->id;
 
-            if($update)
-            {
+            if ($update) {
                 $this->update();
             }
 
             return $this;
-        }
-        else
-        {
+        } else {
             app('log')->error('Cannot move attachment from pending to attached folder...',
-                ['old path'=>$this->storage_path,'new path'=>$newPath]);
-            abort(500,'Cannot move attachment from pending to attached folder...');
+                ['old path' => $this->storage_path, 'new path' => $newPath]);
+            abort(500, 'Cannot move attachment from pending to attached folder...');
         }
 
     }
-
 }

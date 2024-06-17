@@ -15,8 +15,6 @@ class DashboardController extends Controller
     /**
      * Handle the incoming request.
      *
-     * @param Request $request
-     * @param SummariesService $statsService
      * @return Application|Factory|View|\Illuminate\Foundation\Application|void
      */
     public function __invoke(Request $request, SummariesService $statsService)
@@ -25,27 +23,22 @@ class DashboardController extends Controller
         $view = view('dashboard');
         $user = auth()->user();
 
-        if($user->hasAnyRole(RoleName::TEACHER,RoleName::STUDENT,RoleName::PRINCIPAL,RoleName::DEAN,RoleName::ADMIN))
-        {
-            $contracts =null;
-            $jobs=null;
-            $periodId = $request->get("academicPeriodId");
+        if ($user->hasAnyRole(RoleName::TEACHER, RoleName::STUDENT, RoleName::PRINCIPAL, RoleName::DEAN, RoleName::ADMIN)) {
+            $contracts = null;
+            $jobs = null;
+            $periodId = $request->get('academicPeriodId');
 
             //Teacher
-            if($user->hasRole(RoleName::TEACHER))
-            {
+            if ($user->hasRole(RoleName::TEACHER)) {
                 //Get jobs as a client
                 $jobs = $user->getJobDefinitionsWithActiveContracts($periodId);
 
                 $candidatesForWork = User::role(RoleName::STUDENT)
-                    ->whereHas('groupMembers.group.academicPeriod', fn($q)=> $q->whereId($periodId))
+                    ->whereHas('groupMembers.group.academicPeriod', fn ($q) => $q->whereId($periodId))
                     ->get();
 
-                $result = $view->with(compact('jobs','candidatesForWork'));
-            }
-            else
-            //Students (auto filtered on student periodId as using groupmember...)
-            {
+                $result = $view->with(compact('jobs', 'candidatesForWork'));
+            } else { //Students (auto filtered on student periodId as using groupmember...)
                 //Get jobs as Workers
                 $query = $user->contractsAsAWorker()
                     ->with('jobDefinition') //eager load definitions as needed on UI
@@ -59,20 +52,17 @@ class DashboardController extends Controller
                 $result = $view->with(compact('contracts'));
             }
 
-
             //Append evaluations summary
             $evaluationsSummaryJsObject = $statsService->getEvaluationsSummary(
                 $user,
                 $periodId,
-                $request->get("timeUnit")
+                $request->get('timeUnit')
             );
 
-            return  $result->with(compact('evaluationsSummaryJsObject','periodId'));
+            return $result->with(compact('evaluationsSummaryJsObject', 'periodId'));
 
-        }
-        else
-        {
-            abort(403,"Missing required role");
+        } else {
+            abort(403, 'Missing required role');
         }
 
     }

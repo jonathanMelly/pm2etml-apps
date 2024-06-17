@@ -15,24 +15,23 @@ use Tests\BrowserKitTestCase;
 
 class ClientContractsEvaluateFormTest extends BrowserKitTestCase
 {
-
     /* @var $teacher User */
     protected User $teacher;
 
     /**
      * @before
+     *
      * @return void
      */
     public function setUpLocal()
     {
-        $this->afterApplicationCreated(function() {
+        $this->afterApplicationCreated(function () {
 
             $this->multiSeed(
                 AcademicPeriodSeeder::class,
                 UserV1Seeder::class,
                 JobSeeder::class,
                 ContractSeeder::class);
-
 
             $this->teacher = User::role(RoleName::TEACHER)->firstOrFail();
             $this->be($this->teacher);
@@ -47,30 +46,30 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
      */
     public function test_teacher_can_evaluate_2_contracts_1okAnd1Ko()
     {
-        $contractsCount=2;
+        $contractsCount = 2;
 
         $clientAndJob = $this->createClientAndJob($contractsCount);
 
-        $this->teacher=$clientAndJob['client'];
+        $this->teacher = $clientAndJob['client'];
 
-        $contractIds = $this->teacher->contractsAsAClientForJob($clientAndJob['job'],AcademicPeriod::current())
+        $contractIds = $this->teacher->contractsAsAClientForJob($clientAndJob['job'], AcademicPeriod::current())
             //->whereNull('success_date')
             ->take($contractsCount)
             ->get('id')->pluck('id')->toArray();
 
-        $wkIds = WorkerContract::query()->whereIn('contract_id',$contractIds)->pluck('id')->toArray();
+        $wkIds = WorkerContract::query()->whereIn('contract_id', $contractIds)->pluck('id')->toArray();
 
-        $comment = "doit chercher par lui-même 15 minutes avant de demander de l’aide";
+        $comment = 'doit chercher par lui-même 15 minutes avant de demander de l’aide';
 
         $logCount = WorkerContractEvaluationLog::query()->count();
 
-        $this->visit('/contracts/evaluate/'.(implode(',',$wkIds)))
+        $this->visit('/contracts/evaluate/'.(implode(',', $wkIds)))
             //->submitForm(__('Confirm'),['password'=>config('auth.fake_password')])
             ->submitForm(trans('Save evaluation results'), [
                 'workersContracts' => $wkIds,
-                'success-'.$wkIds[0]=>'true',
-                'success-'.$wkIds[1]=>'false',
-                'comment-'.$wkIds[1]=>$comment,
+                'success-'.$wkIds[0] => 'true',
+                'success-'.$wkIds[1] => 'false',
+                'comment-'.$wkIds[1] => $comment,
 
             ])
             ->seeText($contractsCount.' contrats mis à jour')
@@ -78,24 +77,23 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
             ->seePageIs('/dashboard');
 
         //Check trigger
-        $this->assertEquals($logCount + sizeof($contractIds), WorkerContractEvaluationLog::query()->count());
+        $this->assertEquals($logCount + count($contractIds), WorkerContractEvaluationLog::query()->count());
 
         //check data
-        $this->assertEquals(WorkerContract::whereId($wkIds[0])->firstOrFail()->success,true);
-        $this->assertEquals(WorkerContract::whereId($wkIds[1])->firstOrFail()->success,false);
-        $this->assertEquals(WorkerContract::whereId($wkIds[1])->firstOrFail()->success_comment,$comment);
+        $this->assertEquals(WorkerContract::whereId($wkIds[0])->firstOrFail()->success, true);
+        $this->assertEquals(WorkerContract::whereId($wkIds[1])->firstOrFail()->success, false);
+        $this->assertEquals(WorkerContract::whereId($wkIds[1])->firstOrFail()->success_comment, $comment);
     }
 
     public function testDummy()
     {
         $this->createClientAndJob(1);
         $logCount = WorkerContractEvaluationLog::query()->count();
-        $c=WorkerContract::query()->firstOrFail();
+        $c = WorkerContract::query()->firstOrFail();
         $c->evaluate(true);
         $this->assertEquals(WorkerContract::query()->firstOrFail()->fresh()->success, true);
         //sleep(3);
         $this->assertEquals($logCount + 1, WorkerContractEvaluationLog::query()->count());
 
     }
-
 }

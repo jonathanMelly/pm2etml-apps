@@ -8,8 +8,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-
-    private const TRIGGER="contract_worker_eval_log";
+    private const TRIGGER = 'contract_worker_eval_log';
 
     /**
      * Run the migrations.
@@ -76,6 +75,6 @@ return new class extends Migration
             $table->drop();
         });
 
-        DB::unprepared("DROP TRIGGER ".self::TRIGGER);
+        DB::unprepared('DROP TRIGGER '.self::TRIGGER);
     }
 };

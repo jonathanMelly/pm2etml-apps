@@ -55,41 +55,35 @@ class EvaluationReportCommand extends Command
             ->get();
 
         //Group by client
-        $contractsPerClient=[];
-        foreach($logs as $log)
-        {
+        $contractsPerClient = [];
+        foreach ($logs as $log) {
             //Contract has most probably been deleted, lets update the status without notification
-            if($log->contract === null)
-            {
+            if ($log->contract === null) {
                 $dummyDate = Carbon::now();
                 $dummyDate->setHour(12)->setMinute(12)->setSecond(12);
-                $log->reported_at=$dummyDate;
+                $log->reported_at = $dummyDate;
                 $log->save();
+
                 continue;
             }
 
             /* @var $log WorkerContractEvaluationLog */
-            foreach($log->contract->clients->pluck('email') as $client)
-            {
-                if(!array_key_exists($client,$contractsPerClient))
-                {
-                    $contractsPerClient[$client]=[];
+            foreach ($log->contract->clients->pluck('email') as $client) {
+                if (! array_key_exists($client, $contractsPerClient)) {
+                    $contractsPerClient[$client] = [];
                 }
 
-                $contractsPerClient[$client][]=$log;
+                $contractsPerClient[$client][] = $log;
             }
 
         }
 
-        foreach ($contractsPerClient as $clientEmail=>$logs)
-        {
+        foreach ($contractsPerClient as $clientEmail => $logs) {
             $informations = [];
-            foreach ($logs as $log)
-            {
+            foreach ($logs as $log) {
                 /* @var $log WorkerContractEvaluationLog */
 
-                foreach ($log->contract->workersContracts as $workerContract)
-                {
+                foreach ($log->contract->workersContracts as $workerContract) {
                     /* @var $log WorkerContractEvaluationLog */
                     /* @var $worker User */
                     /* @var $workerContract \App\Models\WorkerContract */
@@ -97,26 +91,25 @@ class EvaluationReportCommand extends Command
                     $worker = $workerContract->groupMember->user;
                     $group = $workerContract->groupMember->group->groupName->name;
 
-                    $informations[]=[
-                        'group'=>$group,
-                        'name'=>$worker->getFirstnameL(),
-                        'log'=>$log,
-                        'job'=>Str::limit($log->contract->jobDefinition->title,10),
+                    $informations[] = [
+                        'group' => $group,
+                        'name' => $worker->getFirstnameL(),
+                        'log' => $log,
+                        'job' => Str::limit($log->contract->jobDefinition->title, 10),
                     ];
                 }
 
             }
 
-            $sortedInfo = collect($informations)->sortBy([['group','asc'],['name','asc']]);
+            $sortedInfo = collect($informations)->sortBy([['group', 'asc'], ['name', 'asc']]);
 
             Mail::to($clientEmail)
                 ->send(new EvaluationChanged($sortedInfo->toArray()));
 
-            Log::info('Evaluation report ['.sizeof($informations).' update(s)] sent to '.$clientEmail.']');
+            Log::info('Evaluation report ['.count($informations).' update(s)] sent to '.$clientEmail.']');
 
             //Wait for mail to be sent before marked as reported...
-            foreach ($logs as $log)
-            {
+            foreach ($logs as $log) {
                 $log->reported_at = now();
                 $log->update();
             }

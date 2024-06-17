@@ -2,9 +2,9 @@
 
 namespace App\Enums;
 
-enum GroupMemberType:int
+enum GroupMemberType: int
 {
-    case STUDENT   = 0;
+    case STUDENT = 0;
 
     case TEACHER = 1;
 

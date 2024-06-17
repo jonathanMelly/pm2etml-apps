@@ -11,16 +11,14 @@ class Kernel extends ConsoleKernel
     /**
      * Define the application's command schedule.
      *
-     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
      * @return void
      */
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
         $schedule
-            ->command(EvaluationReportCommand::class)->dailyAt("07:45")->weekdays()
-            ->sentryMonitor('pm2etml-intranet-cron-evaluation-report')
-        ;
+            ->command(EvaluationReportCommand::class)->dailyAt('07:45')->weekdays()
+            ->sentryMonitor('pm2etml-intranet-cron-evaluation-report');
 
     }
 

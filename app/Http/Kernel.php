@@ -45,8 +45,8 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            Theme::class,//theme switcher,
-            \App\Http\Middleware\HandleInertiaRequests::class,//inertia middleware
+            Theme::class, //theme switcher,
+            \App\Http\Middleware\HandleInertiaRequests::class, //inertia middleware
 
         ],
 
@@ -56,10 +56,10 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
 
-        'app' =>[
-            AcademicPeriodFilter::class,//sets current working periodId
-            TimeUnitFilter::class,//sets default timeunit]
-        ]
+        'app' => [
+            AcademicPeriodFilter::class, //sets current working periodId
+            TimeUnitFilter::class, //sets default timeunit]
+        ],
     ];
 
     /**
@@ -70,7 +70,7 @@ class Kernel extends HttpKernel
      * @var array<string, class-string|string>
      */
     protected $routeMiddleware = [
-        'auth' => \App\Http\Middleware\Authenticate::class,//do not check further filters if not auth (redirected),
+        'auth' => \App\Http\Middleware\Authenticate::class, //do not check further filters if not auth (redirected),
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
         'can' => \Illuminate\Auth\Middleware\Authorize::class,

@@ -64,7 +64,7 @@ return [
         'users' => [
             'driver' => 'o365-eloquent-mix',
             'model' => App\Models\User::class,
-            'authenticator' => env('AUTHENTICATOR',\App\Services\O365EloquantMixUserProvider::class),
+            'authenticator' => env('AUTHENTICATOR', \App\Services\O365EloquantMixUserProvider::class),
             /**
              * https://laravel.com/docs/5.4/configuration#accessing-configuration-values
              * If you execute the config:cache command during your deployment process,
@@ -85,17 +85,17 @@ return [
     |
     */
 
-    'password_timeout' => env('PASSWORD_CONFIRM_TIMEOUT',300)/*10800*/,
+    'password_timeout' => env('PASSWORD_CONFIRM_TIMEOUT', 300)/*10800*/,
 
-    'fake_password' => env('FAKE_AUTHENTICATOR_PASSWORD','section-inf.2022'),
+    'fake_password' => env('FAKE_AUTHENTICATOR_PASSWORD', 'section-inf.2022'),
 
     //if false, standard login will be shown (with sso as an option)
-    'sso_login' => env('SSO_LOGIN',true),
+    'sso_login' => env('SSO_LOGIN', true),
 
     //Time in seconds while the correlationId of an sso login request is valid
-    'sso_bridge_session_ttl'=> env('SSO_BRIDGE_SESSION_TTL',10),
+    'sso_bridge_session_ttl' => env('SSO_BRIDGE_SESSION_TTL', 10),
 
-    'sso_bridge_api_key_mandatory' => env('SSO_BRIDGE_API_KEY_MANDATORY',true),
-    'sso_bridge_api_key'=>  env('SSO_BRIDGE_API_KEY')
+    'sso_bridge_api_key_mandatory' => env('SSO_BRIDGE_API_KEY_MANDATORY', true),
+    'sso_bridge_api_key' => env('SSO_BRIDGE_API_KEY'),
 
 ];

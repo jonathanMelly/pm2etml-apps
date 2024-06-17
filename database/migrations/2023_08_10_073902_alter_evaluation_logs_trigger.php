@@ -3,13 +3,10 @@
 use App\Models\WorkerContract;
 use App\Models\WorkerContractEvaluationLog;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-
-    private const TRIGGER="contract_worker_eval_log";
+    private const TRIGGER = 'contract_worker_eval_log';
 
     /**
      * Run the migrations.
@@ -18,16 +15,16 @@ return new class extends Migration
      */
     public function up()
     {
-        DB::unprepared("DROP TRIGGER ".self::TRIGGER);
+        DB::unprepared('DROP TRIGGER '.self::TRIGGER);
 
         //Trigger conditional format is not the same with sqlite and mysql
-        $mysqlConditionStart="";
-        $mysqlConditionEnd="";
-        $sqliteCondition= "WHEN NEW.success IS NOT NULL";
-        if(!app()->environment('testing','litedb')){
-            $sqliteCondition="";
-            $mysqlConditionStart="IF NEW.success != NULL THEN";
-            $mysqlConditionEnd="END IF;";
+        $mysqlConditionStart = '';
+        $mysqlConditionEnd = '';
+        $sqliteCondition = 'WHEN NEW.success IS NOT NULL';
+        if (! app()->environment('testing', 'litedb')) {
+            $sqliteCondition = '';
+            $mysqlConditionStart = 'IF NEW.success != NULL THEN';
+            $mysqlConditionEnd = 'END IF;';
         }
 
         //As trigger syntax is different on sqlite (tests) and mariadb and
@@ -64,7 +61,7 @@ return new class extends Migration
      */
     public function down()
     {
-        DB::unprepared("DROP TRIGGER ".self::TRIGGER);
+        DB::unprepared('DROP TRIGGER '.self::TRIGGER);
         //As trigger syntax is different on sqlite (tests) and mariadb and
         //there don’t seem to need conditions (only updates should be for success...), the trigger is left SIMPLE !
         DB::unprepared(

@@ -2,51 +2,46 @@
 
 namespace Tests\Feature;
 
-use App\Constants\DiskNames;
 use App\Constants\RoleName;
 use App\DateFormat;
-use App\Models\AcademicPeriod;
-use App\Models\Group;
-use App\Models\GroupMember;
 use App\Models\JobDefinition;
-use App\Models\JobDefinitionMainImageAttachment;
 use Database\Seeders\AcademicPeriodSeeder;
 use Database\Seeders\GroupSeeder;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Artisan;
 use Tests\BrowserKitTestCase;
 
 class JobApplyFormTest extends BrowserKitTestCase
 {
     protected JobDefinition $job;
+
     protected $formPage;
+
     protected $teacher;
 
     /**
      * @before
+     *
      * @return void
      */
     public function setUpLocal()
     {
-        $this->afterApplicationCreated(function() {
+        $this->afterApplicationCreated(function () {
 
-            $this->multiSeed(AcademicPeriodSeeder::class,GroupSeeder::class);
+            $this->multiSeed(AcademicPeriodSeeder::class, GroupSeeder::class);
 
             $student = $this->createUser(roles: RoleName::STUDENT);
 
-            $this->teacher = $this->createUser(false,'prof');
+            $this->teacher = $this->createUser(false, 'prof');
 
             $this->job = JobDefinition::factory()
-                ->afterCreating(function(JobDefinition $jobD)
-                {
+                ->afterCreating(function (JobDefinition $jobD) {
                     $jobD->providers()->attach($this->teacher->id);
 
                     //Image
-                    $this->createAttachment('storage.png',image:true)->attachJobDefinition($jobD);
+                    $this->createAttachment('storage.png', image: true)->attachJobDefinition($jobD);
                 })
                 ->create();
 
-            $this->formPage="/jobs-apply/".$this->job->id;
+            $this->formPage = '/jobs-apply/'.$this->job->id;
         });
     }
 
@@ -67,8 +62,7 @@ class JobApplyFormTest extends BrowserKitTestCase
             ->select($this->teacher->id, 'client-0')
             ->press(__('Apply'))
             ->seePageIs('/dashboard')
-            ->seeText(__('New contract successfully registered'))
-        ;
+            ->seeText(__('New contract successfully registered'));
 
         //ko (already registered)
         $this->visit($this->formPage)
@@ -78,16 +72,14 @@ class JobApplyFormTest extends BrowserKitTestCase
             ->select($this->teacher->id, 'client-0')
             ->press(__('Apply'))
             ->seePageIs($this->formPage)
-            ->seeText(__('There already is a contract for this job'))
-        ;
+            ->seeText(__('There already is a contract for this job'));
     }
 
     public function test_user_can_apply_for_a_job_with_any_teacher()
     {
         $date = now()->format(DateFormat::HTML_FORMAT);
 
-        $otherProvider = $this->createUser(false,'prof');
-
+        $otherProvider = $this->createUser(false, 'prof');
 
         //ko (already registered)
         $temp = $this->visit($this->formPage);
@@ -103,8 +95,7 @@ class JobApplyFormTest extends BrowserKitTestCase
             ->select($this->teacher->id, 'client-0')
             ->press(__('Apply'))
             ->seePageIs('/dashboard')
-            ->seeText(__('New contract successfully registered'))
-        ;
+            ->seeText(__('New contract successfully registered'));
     }
 
     /**
@@ -116,7 +107,7 @@ class JobApplyFormTest extends BrowserKitTestCase
     {
         $startDate = now();
         $endDate = now()->subDay();
-        self::assertNotEquals($startDate,$endDate);
+        self::assertNotEquals($startDate, $endDate);
 
         //ok
         $this->visit($this->formPage)
@@ -126,7 +117,6 @@ class JobApplyFormTest extends BrowserKitTestCase
             ->select($this->teacher->id, 'client-0')
             ->press(__('Apply'))
             ->seePageIs($this->formPage)
-            ->seeText(__('validation.after_or_equal', ['attribute' => 'end date', 'date' => 'start date']))
-        ;
+            ->seeText(__('validation.after_or_equal', ['attribute' => 'end date', 'date' => 'start date']));
     }
 }

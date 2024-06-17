@@ -24,7 +24,7 @@ class DestroyAllContractRequest extends FormRequest
     public function rules()
     {
         return [
-            'job_id'=>'required|int'
+            'job_id' => 'required|int',
         ];
     }
 }

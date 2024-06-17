@@ -12,10 +12,11 @@ class SmartiesController extends Controller
      */
     public function __construct()
     {
-        if(!config('app.smarties_enabled')){
+        if (! config('app.smarties_enabled')) {
             throw new \Exception('Smarties is not enabled');
         }
     }
+
     /**
      * Display a listing of the resource.
      */

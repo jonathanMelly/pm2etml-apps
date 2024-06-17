@@ -25,42 +25,41 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::redirect("/","dashboard");
+Route::redirect('/', 'dashboard');
 
 //Authenticated
-Route::middleware(['auth','app'])->group(function () {
+Route::middleware(['auth', 'app'])->group(function () {
 
-    Route::get('dashboard',DashboardController::class)->name('dashboard');
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     //JOBS
     Route::resource('jobDefinitions', JobDefinitionController::class);
-    Route::get('marketplace',[JobDefinitionController::class,'marketPlace'])
+    Route::get('marketplace', [JobDefinitionController::class, 'marketPlace'])
         ->name('marketplace');
 
     //CONTRACTS
     Route::get('jobs-apply/{jobDefinition}',
-        [ContractController::class,'createApply'])
+        [ContractController::class, 'createApply'])
         ->name('jobs-apply-for');
 
-    Route::delete('contracts.destroyAll',[ContractController::class,'destroyAll'])
+    Route::delete('contracts.destroyAll', [ContractController::class, 'destroyAll'])
         ->name('contracts.destroyAll');
 
-    Route::get('contracts/evaluate/{ids}',[ContractController::class,'evaluate']);
-    Route::get('contracts/bulkEdit/{ids}',[ContractController::class,'bulkEdit']);
-
+    Route::get('contracts/evaluate/{ids}', [ContractController::class, 'evaluate']);
+    Route::get('contracts/bulkEdit/{ids}', [ContractController::class, 'bulkEdit']);
 
     //Bulk operations on contracts
-    Route::post('contracts/eval',[ContractController::class,'evaluateApply'])
+    Route::post('contracts/eval', [ContractController::class, 'evaluateApply'])
         ->name('contracts.evaluate');
-    Route::post('contracts/bulkUpdate',[ContractController::class,'bulkUpdate'])
+    Route::post('contracts/bulkUpdate', [ContractController::class, 'bulkUpdate'])
         ->name('contracts.bulkUpdate');
 
     //Add basic CRUD actions for contracts
     Route::resource('contracts', ContractController::class);
 
     //Files (images) handling (avoid any injected script in image as returning the file as file !)
-    Route::get(FileFormat::DMZ_ASSET_URL.'/{file?}', [DmzAssetController::class,'getFile'])
-        ->where('file','(.*)')
+    Route::get(FileFormat::DMZ_ASSET_URL.'/{file?}', [DmzAssetController::class, 'getFile'])
+        ->where('file', '(.*)')
         ->name('dmz-asset');
 
     Route::post('job-image-attachment', JobDefinitionMainImageAttachmentController::class)
@@ -69,7 +68,7 @@ Route::middleware(['auth','app'])->group(function () {
         ->name('job-definition-doc-attachment.store');
 
     //For now, destroy is same for any kind of attachment...
-    Route::delete('attachments/{attachment}',[AttachmentController::class,'destroy'])
+    Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy'])
         ->name('attachment.destroy');
 
     //AUTH RELATED
@@ -79,7 +78,7 @@ Route::middleware(['auth','app'])->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 
-    Route::get('evaluation-export',\App\Http\Controllers\EvaluationExportController::class)->name('evaluation-export');
+    Route::get('evaluation-export', \App\Http\Controllers\EvaluationExportController::class)->name('evaluation-export');
 });
 
 //LOGIN
@@ -91,20 +90,20 @@ Route::middleware('guest')->group(function () {
 
 //SSO
 Route::get('auth/redirect', [SSOController::class, 'ssoLoginRedirect'])->name('sso-login-redirect');
-Route::get('auth/callback',[SSOController::class,'ssoCallback'])->name('sso-callback');
+Route::get('auth/callback', [SSOController::class, 'ssoCallback'])->name('sso-callback');
 
 //SSO BRIDGE
-Route::get('auth/bridge/cid',[SSOController::class,'createCorrelationId'])
+Route::get('auth/bridge/cid', [SSOController::class, 'createCorrelationId'])
     ->name('ssobridge.create-correlation-id')
     ->middleware('throttle:sso');
-Route::get('auth/bridge/check',[SSOController::class,'check'])
+Route::get('auth/bridge/check', [SSOController::class, 'check'])
     ->middleware('throttle:sso')->name('ssobridge.check');
-Route::get('auth/bridge/logout',[SSOController::class,'logout']);
+Route::get('auth/bridge/logout', [SSOController::class, 'logout']);
 
 //DEPLOY
-Route::get('deploy/optimize',[DeployController::class,'optimize']);
-Route::get('deploy/clearCache',[DeployController::class,'clearCache']);
+Route::get('deploy/optimize', [DeployController::class, 'optimize']);
+Route::get('deploy/clearCache', [DeployController::class, 'clearCache']);
 
 //apps
-require __DIR__ .'/apps-manager.php';
-require __DIR__ .'/apps-smarties.php';
+require __DIR__.'/apps-manager.php';
+require __DIR__.'/apps-smarties.php';

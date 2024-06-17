@@ -31,11 +31,12 @@ class SyncUsersCommand extends Command
 
     Supported formats are described in third-party library https://docs.laravel-excel.com/3.1/imports/import-formats.html';
 
-    public const RESULT_HEADERS = ['+ ADDED','- REMOVED','# UPDATED','= SAME','* RESTORED','! WARNING','/!\\ ERROR'];
+    public const RESULT_HEADERS = ['+ ADDED', '- REMOVED', '# UPDATED', '= SAME', '* RESTORED', '! WARNING', '/!\\ ERROR'];
 
     //For verbose output infos
-    public const OUTPUT_APPEND=0;
-    public const OUTPUT_NEW_LINE=1;
+    public const OUTPUT_APPEND = 0;
+
+    public const OUTPUT_NEW_LINE = 1;
 
     /**
      * Create a new command instance.
@@ -49,20 +50,17 @@ class SyncUsersCommand extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return int
      */
     public function handle(): int
     {
         $input = $this->argument('input');
         $commit = $this->option('commit');
 
-        if(!file_exists($input))
-        {
+        if (! file_exists($input)) {
             $this->error('File does not exist: '.$input);
+
             return 2;
         }
-
 
         //Courtesy of https://stackoverflow.com/questions/22906844/laravel-using-try-catch-with-dbtransaction
         DB::beginTransaction();
@@ -76,16 +74,15 @@ class SyncUsersCommand extends Command
             $import->withOutput($this->output)->import($input);
 
             $import = $import->firstSheetImport;
-            $errors=[];
+            $errors = [];
             foreach ($import->failures() as $failure) {
-                $row =$failure->row(); // row that went wrong
+                $row = $failure->row(); // row that went wrong
                 //$attribute = $failure->attribute(); // either heading key (if using heading row concern) or column index
-                $description=implode(',',$failure->errors()); // Actual error messages from Laravel validator
+                $description = implode(',', $failure->errors()); // Actual error messages from Laravel validator
                 //$value =implode(',',$failure->values()); // The values of the row that has failed.
 
-                $errors[]="Line $row : $description";
+                $errors[] = "Line $row : $description";
             }
-
 
             //Stats
             $addedCount = count($import->added);
@@ -93,10 +90,10 @@ class SyncUsersCommand extends Command
             $deleted = count($import->deleted);
             $sameCount = count($import->same);
             $restoredCount = count($import->restored);
-            $warningCount=count($import->warning);
-            $errorsCount=count($errors);
+            $warningCount = count($import->warning);
+            $errorsCount = count($errors);
 
-            $this->table(self::RESULT_HEADERS,[[
+            $this->table(self::RESULT_HEADERS, [[
                 $addedCount,
                 $deleted,
                 $updatedCount,
@@ -105,33 +102,27 @@ class SyncUsersCommand extends Command
                 $warningCount,
                 $errorsCount]]);
 
-            if($this->output->isVerbose())
-            {
+            if ($this->output->isVerbose()) {
                 $this->newLine();
-                $i=0;
-                foreach([
-                            ['info',$import->added,$addedCount,self::OUTPUT_NEW_LINE],
-                            ['info',$import->deleted,$deleted,self::OUTPUT_APPEND],
-                            ['info',$import->updated,$updatedCount,self::OUTPUT_NEW_LINE],
-                            ['',$import->same,$sameCount,self::OUTPUT_APPEND],
-                            ['info',$import->restored,$restoredCount,self::OUTPUT_APPEND],
-                            ['comment',$import->warning,$warningCount,self::OUTPUT_NEW_LINE],
-                            ['error',$errors,$errorsCount,self::OUTPUT_NEW_LINE]
-                        ] as $report)
-                {
+                $i = 0;
+                foreach ([
+                    ['info', $import->added, $addedCount, self::OUTPUT_NEW_LINE],
+                    ['info', $import->deleted, $deleted, self::OUTPUT_APPEND],
+                    ['info', $import->updated, $updatedCount, self::OUTPUT_NEW_LINE],
+                    ['', $import->same, $sameCount, self::OUTPUT_APPEND],
+                    ['info', $import->restored, $restoredCount, self::OUTPUT_APPEND],
+                    ['comment', $import->warning, $warningCount, self::OUTPUT_NEW_LINE],
+                    ['error', $errors, $errorsCount, self::OUTPUT_NEW_LINE],
+                ] as $report) {
                     $data = $report[1];
                     $style = $report[0];
 
-                    if(count($data)>0)
-                    {
+                    if (count($data) > 0) {
                         $this->line(self::RESULT_HEADERS[$i].'['.$report[2].']', $style);
-                        $data=collect($data)->sort();
-                        if($report[3]==self::OUTPUT_NEW_LINE)
-                        {
-                            $data->each(fn($el)=>$this->line('    '.$el));
-                        }
-                        else
-                        {
+                        $data = collect($data)->sort();
+                        if ($report[3] == self::OUTPUT_NEW_LINE) {
+                            $data->each(fn ($el) => $this->line('    '.$el));
+                        } else {
                             $this->line($data->implode(','));
                         }
 
@@ -142,28 +133,25 @@ class SyncUsersCommand extends Command
 
             }
 
-            if($commit && (
+            if ($commit && (
                 $this->option('force') ||
-                $this->confirm('Commit ?')))
-            {
+                $this->confirm('Commit ?'))) {
                 DB::commit();
                 $this->output->success('Operations committed');
+
                 return 0;
-            }
-            else
-            {
+            } else {
                 $this->rollback();
+
                 return 3;
             }
 
-        }
-        catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             $this->rollback();
             $this->error($e);
+
             return 1;
         }
-
 
     }
 

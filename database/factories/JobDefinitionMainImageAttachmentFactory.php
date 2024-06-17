@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Constants\AttachmentTypes;
 use App\Constants\MorphTargets;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -21,7 +20,7 @@ class JobDefinitionMainImageAttachmentFactory extends Factory
         return [
             'name' => $this->faker->text(10).'.png',
             'storage_path' => $this->faker->text(10).'-storage.png',
-            'attachable_type' => MorphTargets::MORPH2_JOB_DEFINITION
+            'attachable_type' => MorphTargets::MORPH2_JOB_DEFINITION,
         ];
     }
 }

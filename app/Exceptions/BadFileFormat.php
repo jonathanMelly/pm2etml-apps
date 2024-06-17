@@ -7,9 +7,10 @@ use JetBrains\PhpStorm\Pure;
 
 class BadFileFormat extends Exception
 {
-    #[Pure] public function __construct(string $bad, array $allowed, int $code = 0, ?Throwable $previous = null)
+    #[Pure]
+    public function __construct(string $bad, array $allowed, int $code = 0, ?Throwable $previous = null)
     {
-        parent::__construct('Attachment format '.$bad.' not allowed [allowed='.implode(',',$allowed).']', $code, $previous);
+        parent::__construct('Attachment format '.$bad.' not allowed [allowed='.implode(',', $allowed).']', $code, $previous);
     }
 
     /**

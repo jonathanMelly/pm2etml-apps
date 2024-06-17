@@ -13,26 +13,26 @@ class Group extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable =['academic_period_id','group_name_id'];
+    protected $fillable = ['academic_period_id', 'group_name_id'];
 
-    public function groupName():BelongsTo
+    public function groupName(): BelongsTo
     {
         return $this->belongsTo(GroupName::class);
     }
 
-    public function academicPeriod():BelongsTo
+    public function academicPeriod(): BelongsTo
     {
         return $this->belongsTo(AcademicPeriod::class);
     }
 
-    public function groupMembers():HasMany
+    public function groupMembers(): HasMany
     {
         return $this->hasMany(GroupMember::class);
     }
 
     //Shortcut (not belongstomany as GroupMember is softDelete...)
-    public function users():HasManyThrough
+    public function users(): HasManyThrough
     {
-        return $this->hasManyThrough(User::class,GroupMember::class);
+        return $this->hasManyThrough(User::class, GroupMember::class);
     }
 }
