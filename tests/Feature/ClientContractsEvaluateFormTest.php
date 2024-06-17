@@ -57,7 +57,7 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
 
         $wkIds = WorkerContract::query()->whereIn('contract_id', $contractIds)->pluck('id')->toArray();
 
-        $comment = 'doit chercher par lui-même 15 minutes avant de demander de l’aide';
+        $comment = 'doit chercher par lui-meme 15 minutes avant de demander de l’aide';
 
         $logCount = WorkerContractEvaluationLog::query()->count();
 

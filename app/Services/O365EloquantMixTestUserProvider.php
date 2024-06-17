@@ -6,6 +6,8 @@
 
 namespace App\Services;
 
+use Illuminate\Contracts\Auth\Authenticatable as UserContract;
+
 class O365EloquantMixTestUserProvider extends O365EloquantMixUserProvider
 {
     /**
@@ -24,5 +26,10 @@ class O365EloquantMixTestUserProvider extends O365EloquantMixUserProvider
 
         return $plain === $validPassword;
 
+    }
+
+    public function rehashPasswordIfRequired(UserContract $user, array $credentials, bool $force = false)
+    {
+        //Nothing to be done here
     }
 }

@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -48,6 +49,10 @@ class AppServiceProvider extends ServiceProvider
             MorphTargets::MORPH2_JOB_DEFINITION => JobDefinition::class,
             MorphTargets::MORPH2_USER => User::class, //Used for spatie permissions
         ]);
+
+        Event::listen(function (\SocialiteProviders\Manager\SocialiteWasCalled $event) {
+            $event->extendSocialite('azure', \SocialiteProviders\Azure\Provider::class);
+        });
 
         $this->bootRoute();
     }

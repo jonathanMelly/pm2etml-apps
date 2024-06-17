@@ -18,7 +18,7 @@
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="DB_DATABASE" value="storage/testing-database.sqlite"/>
         <env name="DB_FOREIGN_KEYS" value="true"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
@@ -26,6 +26,7 @@
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="SSO_BRIDGE_API_KEY" value="key123"/>
         <env name="SSO_BRIDGE_API_KEY_MANDATORY" value="true"/>
+        <env name="APP_LOCALE" value="fr"/>
     </php>
     <source>
         <include>
