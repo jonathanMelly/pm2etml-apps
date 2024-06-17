@@ -20,9 +20,12 @@ class JobDefinitionPart extends Model
         'allocated_time_unit',
     ];
 
-    protected $casts = [
-        'allocated_time_unit' => RequiredTimeUnit::class,
-    ];
+    protected function casts(): array
+    {
+        return [
+            'allocated_time_unit' => RequiredTimeUnit::class,
+        ];
+    }
 
     #[Pure]
     public function getAllocatedTime(RequiredTimeUnit $targetUnit = RequiredTimeUnit::PERIOD): float

@@ -49,11 +49,14 @@ class JobDefinition extends Model
         'one_shot',
     ];
 
-    protected $casts = [
-        'priority' => JobPriority::class,
-        'allocated_time_unit' => RequiredTimeUnit::class,
-        'published_date' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'priority' => JobPriority::class,
+            'allocated_time_unit' => RequiredTimeUnit::class,
+            'published_date' => 'datetime',
+        ];
+    }
 
     public function scopeFilter(Builder $query, Request $request)
     {
