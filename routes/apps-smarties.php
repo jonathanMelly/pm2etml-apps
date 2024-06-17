@@ -5,13 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 //allow modular activation of the smarties app
 if (config('app.smarties_enabled')) {
-    Route::group(
-        [
-            'prefix' => 'apps/smarties',
-            'as' => 'smarties.',
-            'middleware' => ['auth', 'app'],
-        ],
-        //Route::inertia('/', 'index');
+    Route::prefix('apps/smarties')->name('smarties.')->middleware('auth', 'app')->group(//Route::inertia('/', 'index');
         fn () => Route::get('/', [SmartiesController::class, 'index'])
     );
 }
