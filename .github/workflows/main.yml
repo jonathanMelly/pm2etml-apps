@@ -59,7 +59,7 @@ jobs:
       - name: generate dist
         run: |
           npm install
-          npm build:vite
+          npm run build:vite
 
       #TESTS
       - name: Execute tests (Unit and Feature tests) via Pest
