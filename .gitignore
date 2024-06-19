@@ -28,3 +28,6 @@ Homestead.json
 /tests/data/testdb.sqlite
 /php_errors.log
 /storage/testing-database.sqlite*
+
+#generated for IDE completion...
+resources/js/ziggy.d.ts

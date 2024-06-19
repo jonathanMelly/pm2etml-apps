@@ -4,6 +4,8 @@ import * as path from "path";
 // import react from '@vitejs/plugin-react';
 import vue from '@vitejs/plugin-vue';
 import i18n from 'laravel-vue-i18n/vite';
+import {tscWatch} from "vite-plugin-tsc-watch";
+import {watch} from "vite-plugin-watch";
 
 export default defineConfig({
     plugins: [
@@ -37,6 +39,11 @@ export default defineConfig({
             },
         }),
         i18n(),
+        watch({
+            pattern: "routes/**/*.php",
+            command: "php artisan ziggy:generate --types-only",
+        }),
+        tscWatch()
     ],
     resolve: {
         alias: {

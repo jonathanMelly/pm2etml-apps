@@ -1,6 +1,7 @@
 {
     "extends": "@vue/tsconfig/tsconfig.dom.json",
     "compilerOptions": {
+        "noEmit": true,
         "strict": true,
         "allowJs": true,
         "noImplicitAny": false,
