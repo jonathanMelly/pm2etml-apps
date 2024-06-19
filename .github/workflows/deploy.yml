@@ -18,6 +18,18 @@ jobs:
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
+      - name: Setup node for dist build
+        if: ${{ needs.release-please.outputs.release_created }} #regen on release
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+          cache: 'npm'
+
+      - name: generate dist
+        if: ${{ needs.release-please.outputs.release_created }} #regen on release
+        run: |
+          npm install
+          npm build:vite
 
       # Courtesy of https://blog.benoitblanchon.fr/github-action-run-ssh-commands/
       - name: Configure SSH

@@ -53,12 +53,13 @@ jobs:
       - name: Setup node for dist build
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: 'package.json'
+          cache: 'npm'
 
       - name: generate dist
         run: |
           npm install
-          ./vite build
+          npm build:vite
 
       #TESTS
       - name: Execute tests (Unit and Feature tests) via Pest

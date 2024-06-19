@@ -1,4 +1,8 @@
 {
+    "engines" : {
+        "npm" : ">=10",
+        "node" : ">=20"
+    },
     "private": true,
     "scripts": {
         "dev": "run-p -n dev:*",
