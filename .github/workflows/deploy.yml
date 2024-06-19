@@ -18,18 +18,6 @@ jobs:
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
-      - name: Setup node for dist build
-        if: ${{ needs.release-please.outputs.release_created }} #regen on release
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'npm'
-
-      - name: generate dist
-        if: ${{ needs.release-please.outputs.release_created }} #regen on release
-        run: |
-          npm install
-          npm run build:vite
 
       # Courtesy of https://blog.benoitblanchon.fr/github-action-run-ssh-commands/
       - name: Configure SSH
@@ -54,5 +42,10 @@ jobs:
       - name: Run deploy script by ssh
         run: ssh deploy 'cd ${{ secrets.DEPLOY_DIR }} && bash ./scripts/deploy.sh ${{inputs.sha}} --no-interaction'
 
+      - uses: actions/cache@v4
+        with:
+          path: build
+          key: vite-assets
+
       - name: Updates dist
-        run: scp -Ar public/build/ deploy:${{ secrets.DEPLOY_DIR }}/public/build/
+        run: scp -Ar build/ deploy:${{ secrets.DEPLOY_DIR }}/public/build/
