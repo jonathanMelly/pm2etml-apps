@@ -20,10 +20,10 @@ jobs:
     steps:
 
       #restore latest cache
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache@v4
         with:
-          path: build
-          key: vite-assets-unknown
+          path: public/build
+          key: vite-assets-${{ hashFiles('public/build/manifest.json') }}
           restore-keys: vite-assets-
 
       # Courtesy of https://blog.benoitblanchon.fr/github-action-run-ssh-commands/
@@ -50,4 +50,4 @@ jobs:
         run: ssh deploy 'cd ${{ secrets.DEPLOY_DIR }} && bash ./scripts/deploy.sh ${{inputs.sha}} --no-interaction'
 
       - name: Updates dist
-        run: scp -Ar build/ deploy:${{ secrets.DEPLOY_DIR }}/public/build/
+        run: scp -Ar public/build/ deploy:${{ secrets.DEPLOY_DIR }}/public/build/

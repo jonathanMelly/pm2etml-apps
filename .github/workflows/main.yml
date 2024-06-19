@@ -62,7 +62,7 @@ jobs:
           npm run build:vite
 
       #Generates a new cache on updated manifest
-      - uses: actions/cache/save@v4
+      - uses: actions/cache@v4
         with:
           path: public/build
           key: vite-assets-${{ hashFiles('public/build/manifest.json') }}
