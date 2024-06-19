@@ -19,6 +19,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      #restore cache
+      - uses: actions/cache/restore@v4
+        with:
+          path: build
+          key: vite-assets
+
       # Courtesy of https://blog.benoitblanchon.fr/github-action-run-ssh-commands/
       - name: Configure SSH
         run: |
@@ -41,11 +47,6 @@ jobs:
 
       - name: Run deploy script by ssh
         run: ssh deploy 'cd ${{ secrets.DEPLOY_DIR }} && bash ./scripts/deploy.sh ${{inputs.sha}} --no-interaction'
-
-      - uses: actions/cache@v4
-        with:
-          path: build
-          key: vite-assets
 
       - name: Updates dist
         run: scp -Ar build/ deploy:${{ secrets.DEPLOY_DIR }}/public/build/
