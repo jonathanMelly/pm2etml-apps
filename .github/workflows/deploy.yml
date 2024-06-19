@@ -19,11 +19,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      #restore cache
+      #restore latest cache
       - uses: actions/cache/restore@v4
         with:
           path: build
-          key: vite-assets
+          key: vite-assets-unknown
+          restore-keys: vite-assets-
 
       # Courtesy of https://blog.benoitblanchon.fr/github-action-run-ssh-commands/
       - name: Configure SSH

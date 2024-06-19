@@ -61,10 +61,11 @@ jobs:
           npm install
           npm run build:vite
 
+      #Generates a new cache on updated manifest
       - uses: actions/cache/save@v4
         with:
           path: public/build
-          key: vite-assets
+          key: vite-assets-${{ hashFiles('public/build/manifest.json') }}
 
       #TESTS
       - name: Execute tests (Unit and Feature tests) via Pest
