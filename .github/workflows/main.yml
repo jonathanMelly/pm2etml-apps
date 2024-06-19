@@ -49,6 +49,17 @@ jobs:
         run: |
          mkdir -p database
          touch database/database.sqlite
+
+      - name: Setup node for dist build
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: generate dist
+        run: |
+          npm install
+          ./vite build
+
       #TESTS
       - name: Execute tests (Unit and Feature tests) via Pest
         env:
