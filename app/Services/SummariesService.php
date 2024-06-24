@@ -83,6 +83,9 @@ class SummariesService
         if (isset($wContractsBaseQuery)) {
             $wContracts = $wContractsBaseQuery
                 ->with('contract.jobDefinition')
+                ->with('contract.clients')
+                ->with('groupMember.group.groupName')
+                ->with('groupMember.user')
 
                 ->where('allocated_time', '>', 0)
 
