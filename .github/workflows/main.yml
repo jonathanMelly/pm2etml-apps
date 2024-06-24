@@ -61,18 +61,18 @@ jobs:
           npm install
           npm run build:vite
 
-      #Generates a new cache on updated manifest
-      - uses: actions/cache@v4
-        with:
-          path: public/build
-          key: vite-assets-${{ hashFiles('public/build/manifest.json') }}
-
       #TESTS
       - name: Execute tests (Unit and Feature tests) via Pest
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: "database/database.sqlite"
         run: php artisan test -p --coverage-clover clover.xml
+
+      #Generates a new cache on updated manifest and validated tests
+      - uses: actions/cache@v4
+        with:
+         path: public/build
+         key: vite-assets-${{ hashFiles('public/build/manifest.json') }}
 
       - name: Generate coverage badge
         # You may pin to the exact commit or the version.
