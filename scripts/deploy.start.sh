@@ -34,7 +34,11 @@ function deploy()
 
   log=storage/logs/deploy-$(date +%F_%Hh%MM%Ss).log
 
-  php='/opt/php82/bin/php'
+  #load shared configs
+  . deploy.config.sh
+
+  #sets the rest
+  # shellcheck disable=SC2154
   composer="$php $(which composer)"
   composer_install="$composer install --optimize-autoloader --no-dev --no-interaction"
 
@@ -105,11 +109,9 @@ function deploy()
       #Migrate
       echo "-->DB migrate" && \
       $php artisan migrate --no-interaction --force && \
-      echo "-->DB migrate OK" && \
+      echo "-->DB migrate OK" && echo "deploy finished, [App is still offline, key=$secret], waiting for post actions before going UP again" \
 
-      #Put back site online
-      echo "-->Stop Maintenance" && \
-      $php artisan up || echo "An ERROR occurred, please consult log $log [App is still offline, key=$secret]"
+
   } 2>&1 | $tee "$log"
 
 }

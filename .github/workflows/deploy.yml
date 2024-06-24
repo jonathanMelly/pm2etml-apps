@@ -46,8 +46,11 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
 
-      - name: Run deploy script by ssh
-        run: ssh deploy 'cd ${{ secrets.DEPLOY_DIR }} && bash ./scripts/deploy.sh ${{inputs.sha}} --no-interaction'
+      - name: Run deploy script START by ssh
+        run: ssh deploy 'cd ${{ secrets.DEPLOY_DIR }} && bash ./scripts/deploy.start.sh ${{inputs.sha}} --no-interaction'
 
       - name: Updates dist
         run: scp -Ar public/build/ deploy:${{ secrets.DEPLOY_DIR }}/public/build/
+
+      - name: Run deploy script END
+        run: ssh deploy 'cd ${{ secrets.DEPLOY_DIR }} && bash ./scripts/deploy.end.sh ${{inputs.sha}} --no-interaction'
