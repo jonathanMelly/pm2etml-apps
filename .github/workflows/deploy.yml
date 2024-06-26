@@ -49,8 +49,8 @@ jobs:
       - name: Run deploy script START by ssh
         run: ssh deploy 'cd ${{ secrets.DEPLOY_DIR }} && bash ./scripts/deploy.start.sh ${{inputs.sha}} --no-interaction'
 
-      - name: Updates dist
-        run: scp -Ar public/build/ deploy:${{ secrets.DEPLOY_DIR }}/public/build/
+      - name: Updates vite build files
+        run: rsync -avH --delete-after public/build deploy:${{ secrets.DEPLOY_DIR }}/public
 
       - name: Run deploy script END
         run: ssh deploy 'cd ${{ secrets.DEPLOY_DIR }} && bash ./scripts/deploy.end.sh ${{inputs.sha}} --no-interaction'
