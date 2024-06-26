@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.46.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.45.0...v1.46.0) (2024-06-26)
+
+
+### Features
+
+* **dashboard:** improve perf on contracts loading ([0ba57bf](https://github.com/jonathanMelly/pm2etml-apps/commit/0ba57bf7a3d1b026eba380e04a797074c09fe836))
+
 ## [1.45.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.44.0...v1.45.0) (2024-06-17)
 
 
