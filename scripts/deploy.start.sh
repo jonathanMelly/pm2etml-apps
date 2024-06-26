@@ -35,7 +35,8 @@ function deploy()
   log=storage/logs/deploy-$(date +%F_%Hh%MM%Ss).log
 
   #load shared configs
-  . deploy.config.sh
+  SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+  . "$SCRIPT_DIR"/deploy.config.sh
 
   #sets the rest
   # shellcheck disable=SC2154

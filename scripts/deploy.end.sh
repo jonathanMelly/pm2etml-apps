@@ -1,7 +1,8 @@
 #!/bin/bash
 
-#load shared config
-. deploy.config.sh
+#load shared configs
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+. "$SCRIPT_DIR"/deploy.config.sh
 
 #Put back site online
 # shellcheck disable=SC2154
