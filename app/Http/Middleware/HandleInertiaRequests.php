@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\View\Components\RootLayout;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -63,8 +64,13 @@ class HandleInertiaRequests extends Middleware
                 return [
                     'success' => $request->session()->get('success'),
                     'error' => $request->session()->get('error'),
+                    'message' => $request->session()->get('message'),
                 ];
             },
+            'theme' =>session('theme')??'light',
+            'lang' => str_replace('_', '-', app()->getLocale()),
+            'version' => RootLayout::computeVersion(),
+            'environment'=>app()->environment(),
         ]);
     }
 }
