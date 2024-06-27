@@ -20,7 +20,7 @@
             <div>
                 <x-label for="username" :value="__('Username')" />
 
-                <input id="username" placeholder="{{__('Your username')}}"
+                <input id="username" placeholder="{{__('Your username')}}" autocomplete="username"
                          class="block mt-1 w-full input input-bordered input-primary text-base-content" type="email" name="username" value="{{old('username')}}" required autofocus />
             </div>
 
