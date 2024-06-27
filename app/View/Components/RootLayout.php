@@ -16,18 +16,28 @@ class RootLayout extends \Illuminate\View\Component
      */
     public function render()
     {
-        $version = Cache::rememberForever('version', function () {
+        $version = $this->computeVersion();
+
+        return view('layouts.root')->with(compact('version'));
+    }
+
+    /**
+     * @return mixed
+     */
+    public static function computeVersion(): mixed
+    {
+        return Cache::rememberForever('version', function () {
 
             $tag = shell_exec('git describe --tags');
             $sha = shell_exec('git rev-parse --short HEAD');
 
             //short sha is appended to $tag if it’s not pointing to tag
-            $isRelease = ! Str::contains($tag, $sha);
+            $isRelease = !Str::contains($tag, $sha);
 
-            $href = 'https://github.com/jonathanMelly/pm2etml-intranet/'.
+            $href = 'https://github.com/jonathanMelly/pm2etml-apps/' .
                 ($isRelease ?
-                    'releases/tag/'.$tag :
-                    'commit/'.$sha
+                    'releases/tag/' . $tag :
+                    'commit/' . $sha
                 );
 
             $versionText = Str::substr($tag, 1);
@@ -36,13 +46,11 @@ class RootLayout extends \Illuminate\View\Component
                 'staging' => '/!\\STAGING/!\\ ',
             ];
             if (array_key_exists(app()->environment(), $prefixes)) {
-                $versionText = $prefixes[app()->environment()].' '.$versionText;
+                $versionText = $prefixes[app()->environment()] . ' ' . $versionText;
             }
 
-            return '<a target="_blank" href="'.$href.'">'.$versionText.'</a>';
+            return '<a target="_blank" href="' . $href . '">' . $versionText . '</a>';
 
         });
-
-        return view('layouts.root')->with(compact('version'));
     }
 }
