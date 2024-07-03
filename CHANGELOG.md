@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.47.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.46.0...v1.47.0) (2024-07-03)
+
+
+### Features
+
+* **apps:** integrated app footer for apps ([5a1c50d](https://github.com/jonathanMelly/pm2etml-apps/commit/5a1c50df92282b007a270eea013f00ef85f48df4))
+* **mail:** added info log for mail evaluation report ([53f88d8](https://github.com/jonathanMelly/pm2etml-apps/commit/53f88d83b0f5083951c06e7c1fff20a56f4a7d64))
+
+
+### Bug Fixes
+
+* **login:** add autocomplete attribute for username ([e2d4536](https://github.com/jonathanMelly/pm2etml-apps/commit/e2d4536cbeb9523d842c9bea075019f2a81127a7))
+
 ## [1.46.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.45.0...v1.46.0) (2024-06-26)
 
 
