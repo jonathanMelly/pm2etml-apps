@@ -113,6 +113,8 @@ class EvaluationReportCommand extends Command
             }
         }
 
+        Log::info('Evaluation report finished, handled '.count($logs).' evaluation logs entries');
+
         return 0;
     }
 }
