@@ -135,6 +135,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     {
         $groupMember = $this->groupMember($periodId);
         if ($groupMember === null) {
+            //This should never happen !(any student must have a groupMember)
             return Contract::whereNull('id'); //empty result
         } else {
             return $groupMember->workerContracts();
