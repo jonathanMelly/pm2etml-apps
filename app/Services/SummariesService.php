@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\WorkerContract;
 use App\SwissFrenchDateFormat;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use LaravelIdea\Helper\App\Models\_IH_WorkerContract_C;
 
 class SummariesService
@@ -52,6 +53,12 @@ class SummariesService
 
         if ($user->hasRole(RoleName::STUDENT)) {
             $groupMember = $user->groupMember($academicPeriodId);
+
+            if($groupMember===null)
+            {
+                Log::warning("Missing group member for user ".$user->id." and academic period ".$academicPeriodId);
+                return '{}';
+            }
 
             $wContractsBaseQuery = WorkerContract::where('group_member_id', '=', $groupMember->id);
 
