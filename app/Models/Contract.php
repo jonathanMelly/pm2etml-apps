@@ -93,6 +93,6 @@ class Contract extends Model
             $remainingDays = today()->diffInDays($this->end);
         }
 
-        return ['percentage' => $progressPercentage, 'remainingDays' => $remainingDays];
+        return ['percentage' => $progressPercentage, 'remainingDays' => round($remainingDays)];
     }
 }
