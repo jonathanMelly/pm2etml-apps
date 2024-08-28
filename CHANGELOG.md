@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.47.2](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.47.1...v1.47.2) (2024-08-28)
+
+
+### Bug Fixes
+
+* **warning no groupid:** only for students ([9c2a390](https://github.com/jonathanMelly/pm2etml-apps/commit/9c2a3907fc969666535bfdc8cca5f4bb57019fae))
+
 ## [1.47.1](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.47.0...v1.47.1) (2024-08-28)
 
 
