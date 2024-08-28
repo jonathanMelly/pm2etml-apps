@@ -143,7 +143,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
                 ->orderByPowerJoins('workers.user.firstname');
     }
 
-    public function contractsAsAWorker(?int $periodId = null): BelongsToMany|WorkerContract
+    public function contractsAsAWorker(?int $periodId = null): BelongsToMany|WorkerContract|Builder
     {
         $groupMember = $this->groupMember($periodId);
         if ($groupMember === null) {
