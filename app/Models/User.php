@@ -18,6 +18,7 @@ use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -147,6 +148,8 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         $groupMember = $this->groupMember($periodId);
         if ($groupMember === null) {
             //This should never happen !(any student must have a groupMember)
+            Log::warning("Missing groupmember for user with id: $this->id and periodId $periodId");
+
             return Contract::whereNull('id'); //empty result
         } else {
             return $groupMember->workerContracts();
