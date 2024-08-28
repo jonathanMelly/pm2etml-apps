@@ -143,14 +143,17 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
                 ->orderByPowerJoins('workers.user.firstname');
     }
 
-    public function contractsAsAWorker(?int $periodId = null): BelongsToMany|Builder
+    public function contractsAsAWorker(?int $periodId = null): BelongsToMany|WorkerContract|Builder
     {
         $groupMember = $this->groupMember($periodId);
         if ($groupMember === null) {
-            //This should never happen !(any student must have a groupMember)
-            Log::warning("Missing groupmember for user with id: $this->id and periodId $periodId");
+            //This should never happen !(any student must have a groupMember for the platform to work...)
+            if($this->hasRole(RoleName::STUDENT))
+            {
+                Log::warn("Missing groupmember for user with id: $this->id and periodId $periodId");
+            }
 
-            return Contract::whereNull('id'); //empty result
+            return WorkerContract::whereNull('id'); //empty result
         } else {
             return $groupMember->workerContracts();
         }
