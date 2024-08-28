@@ -2,7 +2,7 @@ name: staging
 
 on:
   push:
-    branches: [ main ]
+    branches: [ dev ]
     #Disable action for unrelated build stuff
     paths-ignore:
       - 'CHANGELOG.md'
@@ -11,7 +11,7 @@ on:
       - 'README.md'
       - 'doc/*'
   pull_request:
-    branches: [ main ]
+    branches: [ dev ]
     #Disable action for unrelated build stuff
     paths-ignore:
       - 'CHANGELOG.md'
