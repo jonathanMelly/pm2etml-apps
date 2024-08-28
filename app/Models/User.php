@@ -66,7 +66,18 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
     public function getFirstnameL(bool $withId = false): string
     {
-        return $this->firstname.' '.$this->lastname[0].'.'.($withId ? "<{$this->id}>" : '');
+        return $this->getFirstnameLX(1,$withId);
+    }
+
+    public function getFirstnameLX($x=0,bool $withId = false): string
+    {
+        return $this->firstname.' '. mb_substr($this->lastname, 0,$x).'.'.($withId ? "<{$this->id}>" : '');
+    }
+
+    //Not perfect (do not handle clashes but avoids adding this data for now)
+    public function getAcronym(): string
+    {
+        return mb_strtoupper(mb_substr($this->firstname,0,1).mb_substr($this->lastname,0,1).mb_substr($this->lastname,-1,1));
     }
 
     /**
