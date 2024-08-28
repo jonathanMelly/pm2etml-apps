@@ -143,7 +143,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
                 ->orderByPowerJoins('workers.user.firstname');
     }
 
-    public function contractsAsAWorker(?int $periodId = null): BelongsToMany|WorkerContract|Builder
+    public function contractsAsAWorker(?int $periodId = null): BelongsToMany|Contract|Builder
     {
         $groupMember = $this->groupMember($periodId);
         if ($groupMember === null) {
@@ -152,8 +152,9 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
             {
                 Log::warn("Missing groupmember for user with id: $this->id and periodId $periodId");
             }
-
-            return WorkerContract::whereNull('id'); //empty result
+            //WARNING, this tricks makes the jobdef scan (jobdefcontroller->marketplace) work in any state...
+            //Do not modify this unless you know what you do
+            return Contract::whereNull('id'); //empty result
         } else {
             return $groupMember->workerContracts();
         }
