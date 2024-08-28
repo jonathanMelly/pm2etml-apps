@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.47.1](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.47.0...v1.47.1) (2024-08-28)
+
+
+### Bug Fixes
+
+* **mp providers:** add 3 letters of name +dynamic acronym ([3841e85](https://github.com/jonathanMelly/pm2etml-apps/commit/3841e85fab9e288d698274a5a1cb674a7394d535))
+* **mp providers:** add 3 letters of name +dynamic acronym ([f1136fe](https://github.com/jonathanMelly/pm2etml-apps/commit/f1136fe830e79f83f3cc33fffab82caac9fa44ea))
+* **remaining time:** round ([6b5f71b](https://github.com/jonathanMelly/pm2etml-apps/commit/6b5f71b46a7ce69da0f0e74e1b6f5c496fd1b587))
+* **remaining time:** round ([77b4d25](https://github.com/jonathanMelly/pm2etml-apps/commit/77b4d2523ac01f44ef29fd97b5f3b6ad5daf6f99))
+* **summaries:** do not crash if missing groupmember ([9ec7bfc](https://github.com/jonathanMelly/pm2etml-apps/commit/9ec7bfcadf17ccd92ca2ed491ef9ab4119898cbb))
+* **summaries:** do not crash if missing groupmember ([9edd208](https://github.com/jonathanMelly/pm2etml-apps/commit/9edd2083474e5f9c093d14c693006e151837af58))
+
 ## [1.47.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.46.0...v1.47.0) (2024-07-03)
 
 
