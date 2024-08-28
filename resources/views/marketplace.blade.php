@@ -19,7 +19,7 @@
             <select class="select select-sm" name="provider">
                 <option selected value="">{{__('Any provider')}}</option>
                 @foreach($providers as $provider)
-                    <option @selected(request('provider')==$provider->id) value="{{$provider->id}}">{{$provider->getFirstnameL()}}</option>
+                    <option @selected(request('provider')==$provider->id) value="{{$provider->id}}">[{{$provider->getAcronym()}}] {{$provider->getFirstnameLX(3)}}</option>
                 @endforeach
             </select>
 
