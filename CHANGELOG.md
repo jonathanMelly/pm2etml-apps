@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.47.3](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.47.2...v1.47.3) (2024-08-28)
+
+
+### Bug Fixes
+
+* **mp:** if teacher is not master it’s ok... ([c36ac5c](https://github.com/jonathanMelly/pm2etml-apps/commit/c36ac5ca4f6016a6585ca14abd7956e5434a1674))
+
 ## [1.47.2](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.47.1...v1.47.2) (2024-08-28)
 
 
