@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.48.1](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.48.0...v1.48.1) (2024-10-30)
+
+
+### Bug Fixes
+
+* **deploy:** fix missing vitepress cache content ([02c185e](https://github.com/jonathanMelly/pm2etml-apps/commit/02c185e2c2366e33c6c91353f33582e004dfaaa8))
+
 ## [1.48.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.47.3...v1.48.0) (2024-10-30)
 
 
