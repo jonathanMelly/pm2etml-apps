@@ -167,11 +167,29 @@ class SSOController extends Controller
                 abort(403);
             } else {
                 $clientToken = $request->input(self::SSO_API_KEY_PARAM_NAME);
-                if ($clientToken != Config::get('auth.sso_bridge_api_key')) {
+                if (! $this->isApiKeyValid($clientToken) ) {
                     Log::warning('Bad api key given for sso bridge', ['request' => $request]);
                     abort(403);
                 }
             }
         }
+    }
+
+    private function isApiKeyValid(string $apiKey): bool
+    {
+        $keys = Cache::remember("sso_bridge_api_keys",30, function(){
+            return json_decode(Config::get('auth.sso_bridge_api_keys'),true);
+        });
+
+        $found = array_search($apiKey, $keys);
+        if($found){
+            Log::debug("Valid key from $found");
+            return true;
+        }
+        else{
+            Log::warning("Invalid sso key : $apiKey");
+            return false;
+        }
+
     }
 }

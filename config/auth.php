@@ -24,6 +24,6 @@ return [
 
     'sso_bridge_api_key_mandatory' => env('SSO_BRIDGE_API_KEY_MANDATORY', true),
 
-    'sso_bridge_api_key' => env('SSO_BRIDGE_API_KEY'),
+    'sso_bridge_api_keys' => env('SSO_BRIDGE_API_KEYS'),
 
 ];
