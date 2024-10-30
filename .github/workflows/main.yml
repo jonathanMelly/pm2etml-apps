@@ -1,4 +1,4 @@
-name: release-please
+name: main
 
 on:
   push:
@@ -92,8 +92,9 @@ jobs:
           # includes
           include: '["coverage_badge.svg"]'
 
-  deploy-to-staging:
+  deploy-wip-to-staging:
     needs: buildAndTest
+    if: ${{ ! needs.release-please.outputs.release_created }}
     uses: ./.github/workflows/deploy.yml
     secrets: inherit
     with:
@@ -101,6 +102,7 @@ jobs:
 
   deploy-release-to-staging:
     needs: [release-please,buildAndTest]
+    if: ${{ needs.release-please.outputs.release_created }}
     uses: ./.github/workflows/deploy.yml
     secrets: inherit
     with:
