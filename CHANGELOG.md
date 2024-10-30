@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.48.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.47.3...v1.48.0) (2024-10-30)
+
+
+### Features
+
+* **bridge:** allow multiple api keys ([056e787](https://github.com/jonathanMelly/pm2etml-apps/commit/056e787be0a6b00f2605e10270f1e72516117692))
+
 ## [1.47.3](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.47.2...v1.47.3) (2024-08-28)
 
 
