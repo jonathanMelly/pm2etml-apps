@@ -2,7 +2,8 @@ name: staging
 
 on:
   push:
-    branches: [ dev ]
+    #WARNING: do not change main -> test as vite cache generation is not found anymore...
+    branches: [ main ]
     #Disable action for unrelated build stuff
     paths-ignore:
       - 'CHANGELOG.md'
@@ -11,7 +12,7 @@ on:
       - 'README.md'
       - 'doc/*'
   pull_request:
-    branches: [ dev ]
+    branches: [ main ]
     #Disable action for unrelated build stuff
     paths-ignore:
       - 'CHANGELOG.md'
@@ -97,9 +98,9 @@ jobs:
           # includes
           include: '["coverage_badge.svg"]'
 
-  deploy-to-staging:
-    needs: test
-    uses: ./.github/workflows/deploy.yml
-    secrets: inherit
-    with:
-      environment: staging
+#  deploy-to-staging:
+#    needs: test
+#    uses: ./.github/workflows/deploy.yml
+#    secrets: inherit
+#    with:
+#      environment: staging
