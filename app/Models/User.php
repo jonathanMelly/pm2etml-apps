@@ -150,7 +150,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
             //This should never happen !(any student must have a groupMember for the platform to work...)
             if($this->hasRole(RoleName::STUDENT))
             {
-                Log::warn("Missing groupmember for user with id: $this->id and periodId $periodId");
+                Log::warning("Missing groupmember for user with id: $this->id and periodId $periodId");
             }
             //WARNING, this tricks makes the jobdef scan (jobdefcontroller->marketplace) work in any state...
             //Do not modify this unless you know what you do
