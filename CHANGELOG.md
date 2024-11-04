@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.48.2](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.48.1...v1.48.2) (2024-11-04)
+
+
+### Bug Fixes
+
+* **nomad student:** log info for nomad students ([6e6d100](https://github.com/jonathanMelly/pm2etml-apps/commit/6e6d1001154ee2bbd1573c8df6d648b6821f9e3d))
+
 ## [1.48.1](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.48.0...v1.48.1) (2024-10-30)
 
 
