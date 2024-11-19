@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.48.3](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.48.2...v1.48.3) (2024-11-19)
+
+
+### Bug Fixes
+
+* **download:** try to get nice looking filename back when downloading ([bcc62ae](https://github.com/jonathanMelly/pm2etml-apps/commit/bcc62ae169063d7cf8590ff7c8b482ffc247ce32))
+
 ## [1.48.2](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.48.1...v1.48.2) (2024-11-04)
 
 
