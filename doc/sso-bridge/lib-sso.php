@@ -73,15 +73,24 @@ function GenerateCorrelationId(string $apiKey, bool $storeInSession = true)
  */
 function RetrieveSSOLoginInfos(string $token, string $correlationId): SSOLoginInfo
 {
-    $ssoResult = file_get_contents(SSO_PORTAL.'bridge/check?token='.$token.'&correlationId='.$correlationId);
-    $loginInfos = json_decode($ssoResult, true);
+    $url = SSO_PORTAL.'bridge/check?token='.$token.'&correlationId='.$correlationId;
+    $ssoResult = file_get_contents($url);
 
     $result = new SSOLoginInfo();
-    if (! array_key_exists('error', $loginInfos)) {
-        $result->username = $loginInfos['username'];
-        $result->email = $loginInfos['email'];
-    } else {
-        $result->error = $loginInfos['error'];
+    if($ssoResult)
+    {
+        $loginInfos = json_decode($ssoResult, true);
+
+        if (! array_key_exists('error', $loginInfos)) {
+            $result->username = $loginInfos['username'];
+            $result->email = $loginInfos['email'];
+        } else {
+            $result->error = $loginInfos['error'];
+        }
+
+
+    } else{
+        $result->error ="Cannot GET $url (see logs for more details, probably network issue...)";
     }
 
     return $result;
