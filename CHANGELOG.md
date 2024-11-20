@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.49.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.48.3...v1.49.0) (2024-11-20)
+
+
+### Features
+
+* **sso:** added log for sso bridge check ([4326232](https://github.com/jonathanMelly/pm2etml-apps/commit/432623257e59bd613173bcde4b8c0011ac699be8))
+
 ## [1.48.3](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.48.2...v1.48.3) (2024-11-19)
 
 
