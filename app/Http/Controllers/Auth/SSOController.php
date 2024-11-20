@@ -34,6 +34,10 @@ class SSOController extends Controller
 
     public function check(Request $request)
     {
+        Log::info("SSO Check request {url} from {from}",[
+            'url'=>$request->fullUrl(),
+            'from'=> join(",", $request->ips())]
+        );
         $this->checkApiKey($request);
 
         $correlationId = $request->input(self::SSO_CORRELATION_ID_PARAM_NAME);
