@@ -34,7 +34,7 @@ class SSOController extends Controller
 
     public function check(Request $request)
     {
-        Log::info("SSO Check request {url} from {from}",[
+        Log::debug("SSO Check request {url} from {from}",[
             'url'=>$request->fullUrl(),
             'from'=> join(",", $request->ips())]
         );
