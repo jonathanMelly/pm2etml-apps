@@ -76,7 +76,7 @@ test('Test valid teachers and students import', function () {
         ->expectsOutputToContain('stud2@eduvaud.ch')
         ->expectsOutputToContain('Le champ login est obligatoire')
         ->expectsOutputToContain('ghost ghost<?> marked as deleted but was never added before -> ignoring')
-        ->expectsOutputToContain('repe t.<5> : repetition, deleted cids: 1 | wcids:1')
+        ->expectsOutputToContain('repe to.<5> : repetition, deleted cids: 1 | wcids:1')
         ->expectsTable(\App\Console\Commands\SyncUsersCommand::RESULT_HEADERS, [[/*+*/ '5', /*-*/ '2', /*#*/ '10', /*=*/ '1', /***/ '1', /*!*/ '3', /*/!\*/ '3']])
         ->assertExitCode(0);
 

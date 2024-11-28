@@ -67,7 +67,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
     public function getFirstnameL(bool $withId = false): string
     {
-        return $this->getFirstnameLX(1,$withId);
+        return $this->getFirstnameLX(2,$withId);
     }
 
     public function getFirstnameLX($x=0,bool $withId = false): string
