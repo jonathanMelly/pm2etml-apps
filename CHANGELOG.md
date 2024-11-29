@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.50.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.49.0...v1.50.0) (2024-11-29)
+
+
+### Features
+
+* **logs:** add pail to help with logs ([15b0d20](https://github.com/jonathanMelly/pm2etml-apps/commit/15b0d208b8467478cad7e5ef42c8e5995cf3a504))
+* **sso:** switched check log in debug ([dc699cd](https://github.com/jonathanMelly/pm2etml-apps/commit/dc699cdb73ee5d8b24f644da3b5151c0b574218a))
+* **worker contracts:** show past contracts ([4b14d5e](https://github.com/jonathanMelly/pm2etml-apps/commit/4b14d5ebf1be98e1c219e2216fc32b375e86a19e))
+
+
+### Bug Fixes
+
+* **names:** added one letter to last name ([deb9bd5](https://github.com/jonathanMelly/pm2etml-apps/commit/deb9bd5b5387847b055923fb4d4d191e9dae4d46))
+
 ## [1.49.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.48.3...v1.49.0) (2024-11-20)
 
 
