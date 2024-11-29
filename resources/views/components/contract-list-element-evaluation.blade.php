@@ -1,3 +1,4 @@
+
 @php
     $multiple = $contract->workers_count > 1;
 @endphp

@@ -10,18 +10,32 @@
             {{-- MY CONTRACTS --}}
         @hasanyrole(\App\Constants\RoleName::TEACHER.'|'.\App\Constants\RoleName::STUDENT)
             <div class="bg-base-200 bg-opacity-40 overflow-hidden shadow-sm sm:rounded-lg border-secondary border-2 border-opacity-20 hover:border-opacity-30">
-                <div class="p-6">
-                    <div class="prose pb-2 -p-6">
-                        <h1 class="text-base-content">{{__('My contracts')}}</h1>
-                    </div>
-
+                <div class="p-6" x-data="{showPast:$persist(false)}">
                     {{-- CONTRACTS AS A WORKER --}}
                     @role(\App\Constants\RoleName::STUDENT)
-                    @if($contracts->isEmpty())
-                        <p>{{__('No contracts, you may apply at')}} <a class="link-secondary" href="{{route('marketplace')}}">{{__('Market place')}}</a></p>
-                    @else
-                        <x-worker-contract-list :contracts="$contracts" />
-                    @endempty
+
+
+                        <div class="prose pb-2 p-1 min-w-full bg-base-100/50 rounded-box">
+                            <h1 class="text-base-content"><i class="fa-solid fa-sm fa-caret-down"></i>{{__('My current contracts')}} <i class="fa-solid fa-xs fa-clock mr-1"></i></h1>
+                        </div>
+
+                        @if($contracts->isEmpty())
+                            <p>{{__('No contracts, you may apply at')}} <a class="link-secondary" href="{{route('marketplace')}}">{{__('Market place')}}</a></p>
+                        @else
+                            <x-worker-contract-list :contracts="$contracts" :past="false" />
+                        @endif
+
+
+
+                        @if(!$past_contracts->isEmpty())
+
+                            <div class="prose pb-2 p-1 mt-5 flex min-w-full bg-base-100/75 rounded-box">
+                                <h2 class="text-base-content w-full hover:cursor-pointer flex" @click="showPast = !showPast">
+
+                                    <i class="fa-solid fa-sm hover:cursor-pointer mt-4" :class="showPast?'fa-caret-down':'fa-caret-right'"></i> {{__('Old contracts')}} <i class="fa-history fa-solid fa-xs mt-4 ml-2"></i></h2>
+                            </div>
+                            <x-worker-contract-list :contracts="$past_contracts" :past="true" />
+                        @endempty
                     @endrole
 
                     {{-- CLIENTS CONTRACT (current workers) --}}

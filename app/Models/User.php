@@ -143,6 +143,17 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
                 ->orderByPowerJoins('workers.user.firstname');
     }
 
+    public function pastContractsAsAWorker(?int $currentPeriodId = null): Contract|Builder
+    {
+       return Contract::whereRelation('workers.user','id','=',$this->id)
+            ->whereRelation('workers.group.academicPeriod','id','<',$currentPeriodId)
+           ->with('jobDefinition') //eager load definitions as needed on UI
+           ->with('clients') //eager load clients as needed on UI
+           ->with('workersContracts')
+           ->orderByDesc('end')
+           ->orderByDesc('start');
+    }
+
     public function contractsAsAWorker(?int $periodId = null): BelongsToMany|Contract|Builder
     {
         $groupMember = $this->groupMember($periodId);
