@@ -47,6 +47,7 @@ class JobDefinition extends Model
         'image_attachment_id',
         'allocated_time',
         'one_shot',
+        'by_application',
     ];
 
     protected function casts(): array
