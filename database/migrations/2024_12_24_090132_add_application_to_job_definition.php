@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table("job_definitions", function (Blueprint $table) {
-            $table->dropSoftDeletes();
+            $table->dropColumn('by_application');
         });
     }
 };
