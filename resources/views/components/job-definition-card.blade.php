@@ -86,6 +86,11 @@
                 <i class="fa-solid fa-meteor fa-xl"></i>
                 </div>
             @endif
+            @if($job->by_application)
+                <div class="tooltip hover:cursor-help" data-tip="{{__('By application means that instead of hiring, we simply take note of the wish to be hired for the job')}}">
+                <i class="fa-solid fa-meteor fa-xl"></i>
+                </div>
+            @endif
             </div>
 
         </div>

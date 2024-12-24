@@ -397,6 +397,20 @@
                             </p>
                         </div>
                     </div>
+                    <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0">
+                        <div class="w-full px-3 mb-6 md:mb-0">
+                            <label class="block uppercase tracking-wide text-base-content text-xs font-bold mb-2"
+                                   for="one_shot">
+                                {{__('By application')}}
+                            </label>
+                            <input @checked(old('by_application',$job->by_application)) id="by_application" name="by_application"
+                                   type="checkbox"
+                                   class="toggle" value="1"/>
+                            <p class="text-accent-content text-sm italic">
+                                {{__('By application means that instead of hiring, we simply take note of the wish to be hired for the job')}}
+                            </p>
+                        </div>
+                    </div>
                     <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0 flex flex-col"
                          x-data="{
                             skills:{{old('skills',$job->skills->transform(fn($skill)=>$skill->getFullName())->toJson())}},
