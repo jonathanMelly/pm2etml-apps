@@ -205,9 +205,36 @@ class ContractController extends Controller
         return view('job-apply')->with(compact('jobDefinition', 'parts'));
     }
 
+    /**
+     * Show the Applicant / Job matrix
+     */
     public function pendingContractApplications()
     {
-        return "Demandes en attente";
+        // row header
+        $applicants = WorkerContract::query()
+            ->where('application_status', '>', 0)
+            ->join('group_members', 'contract_worker.group_member_id', '=', 'group_members.id')
+            ->join('users', 'group_members.user_id', '=', 'users.id')
+            ->selectRaw('CONCAT(users.firstname, " ", users.lastname) as full_name')
+            ->distinct()
+            ->get()
+            ->pluck('full_name')
+            ->toArray();
+        // column headers
+        $jobTitles = WorkerContract::query()
+            ->where('application_status', '>', 0)
+            ->join('group_members', 'contract_worker.group_member_id', '=', 'group_members.id')
+            ->join('contracts', 'contract_worker.contract_id', '=', 'contracts.id')
+            ->join('job_definitions', 'contracts.job_definition_id', '=', 'job_definitions.id')
+            ->distinct()
+            ->pluck('job_definitions.title')
+            ->toArray();
+
+        // table content, indexed by applicant names and job titles
+        foreach (WorkerContract::where('application_status', '>', 0)->get() as $app) {
+            $matrix[$app->groupMember->user->firstname . " " . $app->groupMember->user->lastname][$app->contract->jobDefinition->title] = $app;
+        }
+        return view('pendingApplications-view')->with(compact('matrix', 'applicants', 'jobTitles'));
     }
 
     /**

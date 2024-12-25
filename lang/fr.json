@@ -325,5 +325,6 @@
     "Show following groups :": "Afficher les classes suivantes: ",
     "Nothing to show": "Rien à afficher",
     "Not confirmed": "Non confirmé",
-    "Pending applications": "Souhaits à valider"
+    "Pending applications": "Souhaits à valider",
+    "priority": "priorité"
 }
