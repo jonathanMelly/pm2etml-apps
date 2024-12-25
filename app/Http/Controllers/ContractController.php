@@ -205,6 +205,11 @@ class ContractController extends Controller
         return view('job-apply')->with(compact('jobDefinition', 'parts'));
     }
 
+    public function pendingContractApplications()
+    {
+        return "Demandes en attente";
+    }
+
     /**
      * Display the specified resource.
      *

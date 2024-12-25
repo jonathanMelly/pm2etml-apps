@@ -324,5 +324,6 @@
     "Start date :start must be before end date :end": "La date de début :start doit être antérieure à la date de fin :end",
     "Show following groups :": "Afficher les classes suivantes: ",
     "Nothing to show": "Rien à afficher",
-    "Not confirmed": "Non confirmé"
+    "Not confirmed": "Non confirmé",
+    "Pending applications": "Souhaits à valider"
 }
