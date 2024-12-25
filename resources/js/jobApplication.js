@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
         element.addEventListener("click", function (e) {
             spnJobTitle.innerText = e.target.dataset.application_job;
             spnJobApplicant.innerText = e.target.dataset.application_applicant;
+            inpApplicationId.value = e.target.dataset.application_id;
             overlay.style.display = "block";
             popup.style.display = "block";
         });

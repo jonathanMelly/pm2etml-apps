@@ -84,6 +84,7 @@ Route::middleware(['auth', 'app'])->group(function () {
 
     // Manage pending wishes. Should ideally be protected by "non-student" privileges
     Route::get('applications', [ContractController::class, 'pendingContractApplications'])->name('applications');
+    Route::post('applications', [ContractController::class, 'confirmApplication'])->name('applications.confirm');
 });
 
 //LOGIN
