@@ -17,16 +17,20 @@ use App\Models\JobDefinition;
 use App\Models\JobDefinitionPart;
 use App\Models\User;
 use App\Models\WorkerContract;
+use App\Models\WorkerContractEvaluationLog;
 use App\SwissFrenchDateFormat;
+use Exception;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Response;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ContractController extends Controller
 {
@@ -237,6 +241,34 @@ class ContractController extends Controller
         return view('pendingApplications-view')->with(compact('matrix', 'applicants', 'jobTitles'));
     }
 
+    /**
+     * Confirms a worker application for a job for which he had expressed a wish
+     * This will make the mandate permanent and remove all other demands for the job
+     * unless explicitely told not to
+     */
+    public function confirmApplication(Request $request)
+    {
+        //SECURITY CHECKS (as this area is opened to students who might want to play with ids...)
+        $this->authorize('contracts.edit');
+
+        $wc = WorkerContract::find($request->input('applicationid'));
+        $wc->application_status = 0;
+        $wc->save();
+
+        // Destroy other contracts, unless explicitely told otherwise
+        if (!$request->has('keep')) {
+            // Gather the affected contracts
+            $contracts = Contract::where('job_definition_id', $wc->contract->job_definition_id)
+                ->where('id', '!=', $wc->contract_id)
+                ->get()
+                ->pluck('id')
+                ->toArray();
+            // Must delete logs explicitely, because soft deletes won't cascade
+            WorkerContractEvaluationLog::whereIn('contract_id', $contracts)->forceDelete();
+            Contract::whereIn('id', $contracts)->forceDelete();
+        }
+        return redirect('/applications');
+    }
     /**
      * Display the specified resource.
      *

@@ -115,7 +115,19 @@
         <p id="spnJobTitle" class="emphasize"></p>
         <p>{{ __('to') }}:</p>
         <p id="spnJobApplicant" class="emphasize"></p>
-        <button id="closePopup">Confirmer</button>
+        <form method="post" action="{{ route('applications.confirm') }}" class="w-auto">
+            @csrf
+            <input type="hidden" id="inpApplicationId" name="applicationid" />
+            <button type="submit" class="mb-5">Confirmer</button>
+            <div class="float-right fixed-bottom mt-5 text">
+                <small>
+                    <label for="keep">
+                        {{__('Keep other applications')}}
+                    </label>
+                    <input id="keep" name="keep" type="checkbox" value="1" />
+                </small>
+            </div>
+        </form>
     </div>
 
 </x-app-layout>
