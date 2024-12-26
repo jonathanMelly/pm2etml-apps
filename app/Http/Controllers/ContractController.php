@@ -235,6 +235,7 @@ class ContractController extends Controller
             ->toArray();
 
         // table content, indexed by applicant names and job titles
+        $matrix = array(array());
         foreach (WorkerContract::where('application_status', '>', 0)->get() as $app) {
             $matrix[$app->groupMember->user->firstname . " " . $app->groupMember->user->lastname][$app->contract->jobDefinition->title] = $app;
         }
