@@ -144,6 +144,22 @@ class JobDefinition extends Model
         //->with('workers.user',fn($q)=>$q->orderBy('lastname')->orderBy('firstname'));
     }
 
+    /**
+     * Returns the pending application (i.e: application_status > 0) of the user for this job ...
+     * ... or null if he has not applied or is confirmed
+     */
+    public function pendingApplicationFrom(User $user): ?WorkerContract
+    {
+        return WorkerContract::whereHas('groupMember', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })
+            ->whereHas('contract', function ($q) {
+                $q->where('job_definition_id', $this->id);
+            })
+            ->where('application_status', '>', 0)
+            ->first();
+    }
+
     public function providers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, CustomPivotTableNames::USER_JOB_DEFINITION->value)

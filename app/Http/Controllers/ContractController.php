@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -270,6 +271,23 @@ class ContractController extends Controller
         }
         return redirect('/applications');
     }
+
+    /**
+     * Cancel a pending application (i.e: application_status > 0)
+     * Only the subscriber is allowed to do it
+     */
+    public function cancelApplication(Request $request)
+    {
+        $app = WorkerContract::find($request->input('applicationid'));
+        if (!$app || $app->groupMember->user_id != Auth::user()->id || $app->application_status <= 0) {
+            return redirect('/dashboard')
+                ->with('error', __('Something unorthodox happened...'));
+        }
+        $app->delete();
+        return redirect('/dashboard')
+            ->with('success', __('Your resignation has been noted'));
+    }
+
     /**
      * Display the specified resource.
      *
