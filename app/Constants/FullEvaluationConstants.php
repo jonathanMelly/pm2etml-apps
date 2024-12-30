@@ -52,57 +52,57 @@ class FullEvaluationConstants
       return $index === false ? null : $index;
    }
 
-   // valeur par défaut des critères 
-   public const CRITERIAS_LIST = [
-      [
-         'id' => 1,
-         'name' => 'Régularité',
-         'category' => 'PROFESSIONNELLES',
-         'description' => "Évalue la constance et la régularité dans l'exécution des tâches."
-      ],
-      [
-         'id' => 2,
-         'name' => 'Qualité',
-         'category' => 'PROFESSIONNELLES',
-         'description' => "Mesure la précision, la conformité et la qualité du travail effectué."
-      ],
-      [
-         'id' => 3,
-         'name' => 'Maîtrise',
-         'category' => 'PROFESSIONNELLES',
-         'description' => "Évalue le niveau de maîtrise des compétences techniques spécifiques au poste."
-      ],
-      [
-         'id' => 4,
-         'name' => 'Autonomie',
-         'category' => 'PROFESSIONNELLES',
-         'description' => "Mesure la capacité à travailler de manière autonome et à gérer les tâches sans supervision constante."
-      ],
-      [
-         'id' => 5,
-         'name' => 'Organisation',
-         'category' => 'METHODOLOGIQUES',
-         'description' => "Évalue l'efficacité dans l'organisation et la structuration des processus de travail."
-      ],
-      [
-         'id' => 6,
-         'name' => 'Communication',
-         'category' => 'METHODOLOGIQUES',
-         'description' => "Mesure la clarté, la pertinence et l'efficacité de la communication verbale et écrite."
-      ],
-      [
-         'id' => 7,
-         'name' => 'Innovation',
-         'category' => 'METHODOLOGIQUES',
-         'description' => "Évalue la capacité à innover et à intégrer des pratiques durables dans le cadre du travail."
-      ],
-      [
-         'id' => 8,
-         'name' => 'Esprit d’Équipe',
-         'category' => 'SOCIALES',
-         'description' => "Mesure l'aptitude à collaborer efficacement au sein d'une équipe multidisciplinaire."
-      ]
-   ];
+   // // valeur par défaut des critères 
+   // public const CRITERIAS_LIST = [
+   //    [
+   //       'id' => 1,
+   //       'name' => 'Régularité',
+   //       'category' => 'PROFESSIONNELLES',
+   //       'description' => "Évalue la constance et la régularité dans l'exécution des tâches."
+   //    ],
+   //    [
+   //       'id' => 2,
+   //       'name' => 'Qualité',
+   //       'category' => 'PROFESSIONNELLES',
+   //       'description' => "Mesure la précision, la conformité et la qualité du travail effectué."
+   //    ],
+   //    [
+   //       'id' => 3,
+   //       'name' => 'Maîtrise',
+   //       'category' => 'PROFESSIONNELLES',
+   //       'description' => "Évalue le niveau de maîtrise des compétences techniques spécifiques au poste."
+   //    ],
+   //    [
+   //       'id' => 4,
+   //       'name' => 'Autonomie',
+   //       'category' => 'PROFESSIONNELLES',
+   //       'description' => "Mesure la capacité à travailler de manière autonome et à gérer les tâches sans supervision constante."
+   //    ],
+   //    [
+   //       'id' => 5,
+   //       'name' => 'Organisation',
+   //       'category' => 'METHODOLOGIQUES',
+   //       'description' => "Évalue l'efficacité dans l'organisation et la structuration des processus de travail."
+   //    ],
+   //    [
+   //       'id' => 6,
+   //       'name' => 'Communication',
+   //       'category' => 'METHODOLOGIQUES',
+   //       'description' => "Mesure la clarté, la pertinence et l'efficacité de la communication verbale et écrite."
+   //    ],
+   //    [
+   //       'id' => 7,
+   //       'name' => 'Innovation',
+   //       'category' => 'METHODOLOGIQUES',
+   //       'description' => "Évalue la capacité à innover et à intégrer des pratiques durables dans le cadre du travail."
+   //    ],
+   //    [
+   //       'id' => 8,
+   //       'name' => 'Esprit d’Équipe',
+   //       'category' => 'SOCIALES',
+   //       'description' => "Mesure l'aptitude à collaborer efficacement au sein d'une équipe multidisciplinaire."
+   //    ]
+   // ];
 
    // Structure de sauvegarde JSON pour l'évaluation
    public const JSON_TEMPLATE = [

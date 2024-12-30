@@ -13,6 +13,7 @@ use App\Http\Controllers\JobDefinitionController;
 use App\Http\Controllers\JobDefinitionDocAttachmentController;
 use App\Http\Controllers\JobDefinitionMainImageAttachmentController;
 use App\Http\Controllers\EvaluationController;
+use App\Http\Controllers\CriteriaController;
 
 use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
@@ -53,7 +54,14 @@ Route::middleware(['auth', 'app'])->group(function () {
 
     // Start HCS
     Route::get('evaluation/fullEvaluation/{ids}', [EvaluationController::class, 'fullEvaluation'])->name('evaluation.fullEvaluation');
-    Route::post('evaluation/storeEvaluation', [EvaluationController::class, 'storeEvaluation'])->name('evaluation.storeEvaluation');
+    Route::post('evaluation/storeEvaluation', [EvaluationController::class, 'storeEvaluation'])->name('evaluation.storeEvaluation');;
+
+    // Route pour afficher le formulaire de création ou de modification des critères personnalisés
+    Route::get('/criterias/create', [CriteriaController::class, 'create'])->name('create.custom_criterias');
+
+    // Route pour mettre à jour les critères personnalisés
+    Route::post('/criterias/update', [CriteriaController::class, 'update'])->name('update.custom_criterias');
+
     // End HCS
 
 

@@ -69,15 +69,16 @@ window.updateSliderValue = function (slider) {
 
 // Fonction qui permet de changer l'onglet (eval80 vs eval100)
 window.changeTab = function (onClickBtn, indexCalByLoad = null) {
-
    const TAB_80 = '80';
    const TAB_100 = '100';
    const tabName = onClickBtn.id.replace('btn', 'range');
    const studentId = onClickBtn.id.split('-')[1];
    const buttonClass = state.isTeacher ? 'btn-secondary' : 'btn-primary';
+   console.log(indexCalByLoad, !state.isTeacher);
 
-   if (indexCalByLoad == ! null) {
-      console.log(indexCalByLoad);
+   if (indexCalByLoad !== null && !state.isTeacher) {
+      console.log('dans changeTab : ', indexCalByLoad);
+
       // Calcule les résultats finaux
       calculateFinalResults(studentId, state.evaluationLevels[indexCalByLoad]);
 
@@ -87,7 +88,20 @@ window.changeTab = function (onClickBtn, indexCalByLoad = null) {
          range.disabled = true;
       });
 
-   }
+      // Affiche les consignes à suivre
+      if (indexCalByLoad <= 2) {
+         alert(
+            'Votre enseignant a mis à jour votre évaluation formative.\n' +
+            'Merci de consulter la note. ' +
+            'Si demandé, vous pouvez créer une auto-évaluation supplémentaire en cliquant sur auto100.'
+         );
+      } else {
+         alert(
+            'Votre enseignant a mis à jour votre évaluation sommative.\n' +
+            'Merci de consulter la note finale.'
+         );
+      }
+      }
    else {
 
       let idsRangesDisabled = `[id^="${tabName}-"]`;
@@ -234,10 +248,18 @@ function loadFrom(js) {
    appreciations.forEach((app, indexLevel) => {
       try {
          loadFromJsonSave(js, indexLevel);
+
+         // Appeler validateEvaluation uniquement lors du dernier tour
+         if (indexLevel === appreciations.length - 1) {
+            // Appel de la fonction validateEvaluation afin de mettre à jour 
+            // l'état des boutons (préfixe = '33-btn-')
+            validateEvaluation(js.student_Id + '-btn-', js.evaluations[0].appreciations[indexLevel].level);
+         }
       } catch (error) {
          console.error(`Erreur lors du chargement de l'appréciation niveau ${indexLevel} pour l'étudiant ${js.student_Id} :`, error);
       }
    });
+
 }
 
 function loadFromJsonSave(js, indexLevel) {
@@ -293,11 +315,6 @@ function loadFromJsonSave(js, indexLevel) {
          }
       });
    });
-
-   // Appel de la fonction validateEvaluation afin de mettre à jour 
-   // l'état des boutons (préfixe = '33-btn-')
-   validateEvaluation(js.student_Id + '-btn-', indexLevel);
-
 }
 
 // Fonction de mise à jour de la remarque générale (à définir selon votre logique)

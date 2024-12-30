@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Evaluation;
 use App\Models\Appreciation;
 use App\Models\Criteria;
-use app\Models\User;
-use App\Models\Contract;
+use App\Models\DefaultCriteria;
+
 
 use App\Http\Requests\StoreEvaluationRequest;
 
@@ -133,7 +133,6 @@ class EvaluationController extends Controller
       }
    }
 
-
    private function updateEvaluation(array $data)
    {
       Log::info('Début de la mise à jour de l\'évaluation', ['data' => $data]);
@@ -248,8 +247,6 @@ class EvaluationController extends Controller
       }
    }
 
-
-
    private function processAppreciations(Evaluation $evaluation, array $appreciations)
    {
       foreach ($appreciations as $appreciationData) {
@@ -271,9 +268,6 @@ class EvaluationController extends Controller
          }
       }
    }
-
-
-
 
    /**
     * Charge les évaluations associées à un contrat spécifique.
@@ -322,14 +316,29 @@ class EvaluationController extends Controller
       }
    }
 
-
-
-   private function getCriteriaGrouped(): \Illuminate\Support\Collection
+   private function getCriteriaGrouped($userCustomId): \Illuminate\Support\Collection
    {
-      return collect(FullEvaluationConstants::CRITERIAS_LIST)
-         ->groupBy(fn($crit) => strtoupper(trim($crit['category'])));
+      // Vérifier si des préférences existent pour cet utilisateur
+      $userCriterias = DefaultCriteria::where('user_id', $userCustomId)->get();
+
+      // Si des préférences existent, les utiliser
+      if ($userCriterias->isNotEmpty()) {
+         return $userCriterias->groupBy(fn($crit) => strtoupper(trim($crit['category'])));
+      }
+
+      // Sinon, utiliser les critères par défaut
+      $defaultCriterias = DefaultCriteria::where('user_id', 0)->get();
+
+      return $defaultCriterias->groupBy(fn($crit) => strtoupper(trim($crit['category'])));
    }
 
+
+   public function getCriterias()
+   {
+      $criterias = DefaultCriteria::where('user_id', 0)->get();
+
+      return $criterias;
+   }
 
 
    /**
@@ -469,15 +478,24 @@ class EvaluationController extends Controller
       })->toArray();
    }
 
+   private function getInitialVisibleCategories($tabCriterias)
+   {
+      $visibleCategories = [];
+      foreach ($tabCriterias as $key => $value) {
+         $visibleCategories[$key] = true;
+      }
+      return $visibleCategories;
+   }
+
    private function renderEvaluationPage($studentsDetails, bool $isTeacher, array $allJsonSave)
    {
       return view('contracts-fullEvaluation', [
          'studentsDatas' => $studentsDetails->toArray(),
-         'visibleCategories' => FullEvaluationConstants::INITIAL_VISIBLE_CATEGORIES,
+         'visibleCategories' => $this->getInitialVisibleCategories($this->getCriteriaGrouped($isTeacher ? auth()->user()->id : 0)),
          'visibleSliders' => FullEvaluationConstants::INITIAL_VISIBLE_CURSORS,
          'evaluationLevels' => FullEvaluationConstants::EVALUATION_LEVELS,
          'appreciationLabels' => FullEvaluationConstants::APPRECIATION_LABELS,
-         'criteriaGrouped' => $this->getCriteriaGrouped(),
+         'criteriaGrouped' => $this->getCriteriaGrouped($isTeacher ? auth()->user()->id : 0),
          'isTeacher' => $isTeacher,
          'jsonSave' => $allJsonSave,
       ]);
