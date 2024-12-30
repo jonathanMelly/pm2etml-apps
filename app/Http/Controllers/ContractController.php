@@ -3,21 +3,29 @@
 namespace App\Http\Controllers;
 
 use App\Constants\RoleName;
-use App\DateFormat;
+use App\Constants\FullEvaluationConstants;
+
 use App\Enums\RequiredTimeUnit;
+
 use App\Http\Middleware\AcademicPeriodFilter;
 use App\Http\Requests\ContractEvaluationRequest;
+use App\Http\Requests\FullEvaluationRequest;
 use App\Http\Requests\DestroyAllContractRequest;
 use App\Http\Requests\StoreContractRequest;
 use App\Http\Requests\UpdateContractBulkRequest;
 use App\Http\Requests\UpdateContractRequest;
+
 use App\Models\AcademicPeriod;
+use App\Models\Evaluation;
 use App\Models\Contract;
 use App\Models\JobDefinition;
 use App\Models\JobDefinitionPart;
 use App\Models\User;
 use App\Models\WorkerContract;
+
 use App\SwissFrenchDateFormat;
+use App\DateFormat;
+use App\Models\Role;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,6 +35,9 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use PhpOffice\PhpSpreadsheet\Shared\Trend\Trend;
+
+use function Sentry\init;
 
 class ContractController extends Controller
 {
@@ -88,7 +99,7 @@ class ContractController extends Controller
 
                 //Allow a teacher manually add a job without showing parts options on the UI
                 //=>when doing this, the teacher will be the client for all parts (student can change that afterwards if needed...)
-                $clientIdKey = 'client-'.$part->id;
+                $clientIdKey = 'client-' . $part->id;
                 if ($request->has($clientIdKey)) {
                     $clientId = $request->input($clientIdKey);
                 } else {
@@ -127,7 +138,6 @@ class ContractController extends Controller
             } else {
                 return back()->withErrors(__('Only teachers can assign custom worker'))->withInput();
             }
-
         } //If not teacher with worker, only students can apply for contract
         else {
             if (! $loggedUser->hasRole(RoleName::STUDENT) /*double check role... but should be done with permissions*/) {
@@ -142,7 +152,8 @@ class ContractController extends Controller
         if ($targetWorker->contractsAsAWorker()
             ->where('job_definition_id', '=', $jobDefinitionId)
             ->whereIn('name', $partsDetails->pluck('name'))
-            ->exists()) {
+            ->exists()
+        ) {
             return back()->withErrors(__('There already is a contract for this job'))->withInput();
         }
 
@@ -168,7 +179,7 @@ class ContractController extends Controller
 
                 $contract->save();
                 $contract->clients()->attach($clientId);
-                Cache::forget('client-'.$clientId.'-percentage');
+                Cache::forget('client-' . $clientId . '-percentage');
                 Cache::forget("involvedGroupNames-$clientId");
                 $contract->workers()->attach($targetWorker->groupMember()->id); //set worker
 
@@ -262,16 +273,14 @@ class ContractController extends Controller
             }
 
             //Only save if no errors...
-            $contracts->each(fn ($c) => $c->save());
+            $contracts->each(fn($c) => $c->save());
             DB::commit();
-
         } catch (\Throwable $t) {
             DB::rollBack();
             throw $t;
         }
 
         return $this->createUpdateResponse($updated);
-
     }
 
     //TODO refactor to have only use workercontract... ?
@@ -297,14 +306,18 @@ class ContractController extends Controller
             if ($start != null && $end != null) {
                 if ($start->isBefore($period->start) || $end->isAfter($period->end)) {
                     $message = __('Dates must be included within current academic period');
-                    $errors = ['workersContract'.($bulk ? "s.$index" : '') => $message];
+                    $errors = ['workersContract' . ($bulk ? "s.$index" : '') => $message];
 
                     return back()->withErrors($errors)->withInput();
                 } elseif ($start->isAfter($end)) {
-                    $message = __('Start date :start must be before end date :end',
-                        ['start' => $start->format(SwissFrenchDateFormat::DATE),
-                            'end' => $end->format(SwissFrenchDateFormat::DATE)]);
-                    $errors = ['workersContract'.($bulk ? "s.$index" : '') => $message];
+                    $message = __(
+                        'Start date :start must be before end date :end',
+                        [
+                            'start' => $start->format(SwissFrenchDateFormat::DATE),
+                            'end' => $end->format(SwissFrenchDateFormat::DATE)
+                        ]
+                    );
+                    $errors = ['workersContract' . ($bulk ? "s.$index" : '') => $message];
 
                     return back()->withErrors($errors)->withInput();
                 }
@@ -317,7 +330,7 @@ class ContractController extends Controller
                         $contract->$field = $newDate;
                         $isUpdated = $contract->save();
                         if ($isUpdated) {
-                            Log::info('userid '.$user->id.' updated contract with id '.$contract->id.' => '.$field.' to '.$newDate);
+                            Log::info('userid ' . $user->id . ' updated contract with id ' . $contract->id . ' => ' . $field . ' to ' . $newDate);
                         }
                     }
                 }
@@ -330,7 +343,7 @@ class ContractController extends Controller
                     $workerContract->allocated_time = $allocated_time;
                     $isUpdated = $workerContract->save();
                     if ($isUpdated) {
-                        Log::info('userid '.$user->id.' updated worker contract with id '.$workerContract->id.' => allocated_time to '.$allocated_time);
+                        Log::info('userid ' . $user->id . ' updated worker contract with id ' . $workerContract->id . ' => allocated_time to ' . $allocated_time);
                     }
                 }
             }
@@ -341,19 +354,18 @@ class ContractController extends Controller
                 $periodIdFilter = $request->get(AcademicPeriodFilter::ACADEMIC_PERIOD_ID_REQUEST_PARAM);
                 $gm = $user->groupMember($periodIdFilter);
                 if ($contract->workerContract($gm)->firstOrFail()->alreadyEvaluated()) {
-                    Log::warning('userid '.$user->id.' tried to update already evaluated contract with id '.$contract->id.' => clientId to '.$clientId);
+                    Log::warning('userid ' . $user->id . ' tried to update already evaluated contract with id ' . $contract->id . ' => clientId to ' . $clientId);
                 } else {
                     $oldClientId = $contract->clients->firstOrFail()->id;
                     $changes = $contract->clients()->sync([$clientId]);
-                    if (collect($changes)->transform(fn ($k) => count($k))->sum() > 0) {
+                    if (collect($changes)->transform(fn($k) => count($k))->sum() > 0) {
                         $isUpdated = true;
-                        Cache::forget('client-'.$oldClientId.'-percentage');
-                        Cache::forget('client-'.$clientId.'-percentage');
+                        Cache::forget('client-' . $oldClientId . '-percentage');
+                        Cache::forget('client-' . $clientId . '-percentage');
                         Cache::forget("involvedGroupNames-$clientId");
-                        Log::info('userid '.$user->id.' updated contract with id '.$contract->id.' : client moved from id '.$oldClientId.' => '.$clientId);
+                        Log::info('userid ' . $user->id . ' updated contract with id ' . $contract->id . ' : client moved from id ' . $oldClientId . ' => ' . $clientId);
                     }
                 }
-
             }
 
             //Smartly end transaction /!\WARNING: either force commit (even without changes), OR let this code because if transaction is not terminated
@@ -373,7 +385,6 @@ class ContractController extends Controller
             DB::rollBack();
             throw $t;
         }
-
     }
 
     /**
@@ -398,7 +409,7 @@ class ContractController extends Controller
         }
 
         $jobId = $request->get('job_id');
-        $contracts = $request->get('job-'.$jobId.'-contracts');
+        $contracts = $request->get('job-' . $jobId . '-contracts');
 
         $deleted = DB::transaction(function () use ($user, $contracts) {
             $deleted = 0;
@@ -408,24 +419,24 @@ class ContractController extends Controller
                         //Manual trash as WorkContract is a pivot and cannot softdelete
                         if ($workerContract->update(['deleted_at' => now()])) {
                             $deleted++;
-                            Log::info('userid'.$user->id.' deleted worker contract with id '.$workerContract->id);
+                            Log::info('userid' . $user->id . ' deleted worker contract with id ' . $workerContract->id);
                             $clientId = $workerContract->contract->clients->firstOrFail()->id;
-                            Cache::forget('client-'.$clientId.'-percentage');
+                            Cache::forget('client-' . $clientId . '-percentage');
                             Cache::forget("involvedGroupNames-$clientId");
 
                             //softdelete contract if not any workers on it...
-                            $contractDeleted = $workerContract->contract->whereDoesntHave('workersContracts',
+                            $contractDeleted = $workerContract->contract->whereDoesntHave(
+                                'workersContracts',
                                 function ($query) {
                                     return $query->whereNull('deleted_at');
-                                })->delete();
+                                }
+                            )->delete();
 
-                            Log::info('userid'.$user->id.' also deleted '.$contractDeleted.' related contract with id '.$workerContract->contract->id);
-
+                            Log::info('userid' . $user->id . ' also deleted ' . $contractDeleted . ' related contract with id ' . $workerContract->contract->id);
                         }
                     } else {
                         Log::warning('trying to delete contracts which do not belong');
                     }
-
                 }
             );
 
@@ -434,13 +445,14 @@ class ContractController extends Controller
 
         if ($deleted > 0) {
             return redirect('/dashboard')
-                ->with('success',
-                    trans_choice(':number contract deleted|:number contracts deleted', $deleted, ['number' => $deleted]));
+                ->with(
+                    'success',
+                    trans_choice(':number contract deleted|:number contracts deleted', $deleted, ['number' => $deleted])
+                );
         } else {
             return redirect('/dashboard')
                 ->with('error', __('No contract deleted, wrong request ?'));
         }
-
     }
 
     public function evaluate(string $ids)
@@ -455,22 +467,20 @@ class ContractController extends Controller
         $this->authorize('contracts.edit');
 
         return $this->getBulkView($ids, view('contracts-bulkEdit'));
-
     }
 
     public function evaluateApply(ContractEvaluationRequest $request)
     {
-
         $contracts = $this->getContractsForModifications(collect($request->workersContracts)->join(','), true);
 
         $updated = 0;
         foreach ($contracts as $contract) {
             foreach ($contract->workersContracts as $workerContract) {
 
-                $success = filter_var($request->input('success-'.$workerContract->id), FILTER_VALIDATE_BOOLEAN);
+                $success = filter_var($request->input('success-' . $workerContract->id), FILTER_VALIDATE_BOOLEAN);
                 $comment = null;
                 if (! $success) {
-                    $commentAttributeName = 'comment-'.$workerContract->id;
+                    $commentAttributeName = 'comment-' . $workerContract->id;
                     $comment = $request->input($commentAttributeName);
                     if (empty(trim($comment))) {
                         return back()
@@ -481,26 +491,29 @@ class ContractController extends Controller
                 if ($workerContract->evaluate($success, $comment)) {
                     $updated++;
                 }
-
             }
         }
 
         return redirect('/dashboard')
-            ->with('success',
-                trans_choice(':number contract updated|:number contracts updated', $updated, ['number' => $updated]));
+            ->with(
+                'success',
+                trans_choice(':number contract updated|:number contracts updated', $updated, ['number' => $updated])
+            );
     }
 
     /**
      * @return Contract[]|Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Query\Builder[]|\Illuminate\Support\Collection
      */
-    protected function getContractsForModifications(string $ids, bool $workersContractsIds = false): \Illuminate\Support\Collection|array|\Illuminate\Database\Eloquent\Collection
-    {
-        $queryIds = collect(explode(',', $ids))->filter(fn ($el) => is_numeric($el))->toArray();
+    protected function getContractsForModifications(
+        string $ids,
+        bool $workersContractsIds = false
+    ): \Illuminate\Support\Collection|array|\Illuminate\Database\Eloquent\Collection {
+        $queryIds = collect(explode(',', $ids))->filter(fn($el) => is_numeric($el))->toArray();
 
         $query = Contract::query();
 
         if ($workersContractsIds) {
-            $query->whereHas('workersContracts', fn ($q) => $q->whereIn(tbl(WorkerContract::class).'.id', $queryIds));
+            $query->whereHas('workersContracts', fn($q) => $q->whereIn(tbl(WorkerContract::class) . '.id', $queryIds));
         } else {
             $query->whereIn('id', $queryIds);
         }
@@ -508,14 +521,13 @@ class ContractController extends Controller
         //Non admin users can only modify their contracts...
         $user = auth()->user();
         if ($user->cannot('contracts')) {
-            $query->whereHas('clients', fn ($q) => $q->where('user_id', '=', $user->id));
+            $query->whereHas('clients', fn($q) => $q->where('user_id', '=', $user->id));
         }
 
         return $query
             ->with('workers.user')
             ->with('workersContracts.groupMember')
             ->get();
-
     }
 
     public function createUpdateResponse(int $updated): \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector

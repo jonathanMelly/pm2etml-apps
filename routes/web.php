@@ -12,6 +12,9 @@ use App\Http\Controllers\DmzAssetController;
 use App\Http\Controllers\JobDefinitionController;
 use App\Http\Controllers\JobDefinitionDocAttachmentController;
 use App\Http\Controllers\JobDefinitionMainImageAttachmentController;
+use App\Http\Controllers\EvaluationController;
+
+use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -34,31 +37,31 @@ Route::middleware(['auth', 'app'])->group(function () {
 
     //JOBS
     Route::resource('jobDefinitions', JobDefinitionController::class);
-    Route::get('marketplace', [JobDefinitionController::class, 'marketPlace'])
-        ->name('marketplace');
+    Route::get('marketplace', [JobDefinitionController::class, 'marketPlace'])->name('marketplace');
 
     //CONTRACTS
-    Route::get('jobs-apply/{jobDefinition}',
-        [ContractController::class, 'createApply'])
-        ->name('jobs-apply-for');
+    Route::get('jobs-apply/{jobDefinition}', [ContractController::class, 'createApply'])->name('jobs-apply-for');
 
-    Route::delete('contracts.destroyAll', [ContractController::class, 'destroyAll'])
-        ->name('contracts.destroyAll');
+    Route::delete('contracts.destroyAll', [ContractController::class, 'destroyAll'])->name('contracts.destroyAll');
 
     Route::get('contracts/evaluate/{ids}', [ContractController::class, 'evaluate']);
     Route::get('contracts/bulkEdit/{ids}', [ContractController::class, 'bulkEdit']);
 
     //Bulk operations on contracts
-    Route::post('contracts/eval', [ContractController::class, 'evaluateApply'])
-        ->name('contracts.evaluate');
-    Route::post('contracts/bulkUpdate', [ContractController::class, 'bulkUpdate'])
-        ->name('contracts.bulkUpdate');
+    Route::post('contracts/eval', [ContractController::class, 'evaluateApply'])->name('contracts.evaluate');
+    Route::post('contracts/bulkUpdate', [ContractController::class, 'bulkUpdate'])->name('contracts.bulkUpdate');
+
+    // Start HCS
+    Route::get('evaluation/fullEvaluation/{ids}', [EvaluationController::class, 'fullEvaluation'])->name('evaluation.fullEvaluation');
+    Route::post('evaluation/storeEvaluation', [EvaluationController::class, 'storeEvaluation'])->name('evaluation.storeEvaluation');
+    // End HCS
+
 
     //Add basic CRUD actions for contracts
     Route::resource('contracts', ContractController::class);
 
     //Files (images) handling (avoid any injected script in image as returning the file as file !)
-    Route::get(FileFormat::DMZ_ASSET_URL.'/{file?}', [DmzAssetController::class, 'getFile'])
+    Route::get(FileFormat::DMZ_ASSET_URL . '/{file?}', [DmzAssetController::class, 'getFile'])
         ->where('file', '(.*)')
         ->name('dmz-asset');
 
@@ -85,7 +88,6 @@ Route::middleware(['auth', 'app'])->group(function () {
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
-
 });
 
 //SSO
@@ -105,5 +107,5 @@ Route::get('deploy/optimize', [DeployController::class, 'optimize']);
 Route::get('deploy/clearCache', [DeployController::class, 'clearCache']);
 
 //apps
-require __DIR__.'/apps-manager.php';
-require __DIR__.'/apps-smarties.php';
+require __DIR__ . '/apps-manager.php';
+require __DIR__ . '/apps-smarties.php';

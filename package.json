@@ -1,12 +1,12 @@
 {
-    "engines" : {
-        "npm" : ">=10",
-        "node" : ">=20"
+    "engines": {
+        "npm": ">=10",
+        "node": ">=20"
     },
     "private": true,
     "scripts": {
         "dev": "run-p -n dev:*",
-        "dev:php": "php artisan serve --port 80 --ansi",
+        "dev:php": "php artisan serve --port 8080 --ansi",
         "dev:vite": "vite",
         "build": "run-s -n build:*",
         "build:ziggy": "php artisan ziggy:generate --types-only",
@@ -44,5 +44,8 @@
         "vite-plugin-watch": "^0.3.1",
         "vue-tsc": "^2.0.19"
     },
-    "type": "module"
+    "type": "module",
+    "dependencies": {
+        "composer": "^4.1.0"
+    }
 }

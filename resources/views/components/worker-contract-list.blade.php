@@ -1,4 +1,4 @@
-    <div @class(['overflow-x-auto'=>!$past]) {{$past?"x-show=showPast":""}}>
+    <div @class(['overflow-x-auto' => !$past]) {{ $past ? 'x-show=showPast' : '' }}>
         <table class="table table-compact table-zebra w-full">
             <!-- head -->
             <thead>
@@ -8,9 +8,9 @@
             </thead>
 
             <tbody>
-            @foreach($contracts as $contract)
-                <x-worker-contract-list-element :contract="$contract" :past="$past" />
-            @endforeach
+                @foreach ($contracts as $contract)
+                    <x-worker-contract-list-element :contract="$contract" :past="$past" />
+                @endforeach
             </tbody>
 
             <!-- foot -->
@@ -22,5 +22,3 @@
 
         </table>
     </div>
-
-
