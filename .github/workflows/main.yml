@@ -1,34 +1,28 @@
-name: staging
+name: main
 
 on:
   push:
-    branches: [ dev ]
-    #Disable action for unrelated build stuff
-    paths-ignore:
-      - 'CHANGELOG.md'
-      - 'version.txt'
-      - '.github/workflows/prod.yml'
-      - 'README.md'
-      - 'doc/*'
-  pull_request:
-    branches: [ dev ]
-    #Disable action for unrelated build stuff
-    paths-ignore:
-      - 'CHANGELOG.md'
-      - 'version.txt'
-      - '.github/workflows/prod.yml'
-      - 'README.md'
-      - 'doc/*'
-
-  workflow_dispatch:
+    branches: [ main ]
 
 jobs:
-  test:
 
+  #Base release please workflow
+  release-please:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      sha: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          release-type: simple
+          #default-branch: main
 
+  buildAndTest:
+    needs: release-please
+    runs-on: ubuntu-latest
     environment: staging
-
     steps:
       - uses: shivammathur/setup-php@v2
         with:
@@ -47,8 +41,8 @@ jobs:
         run: chmod -R 777 storage bootstrap/cache
       - name: Create Database
         run: |
-         mkdir -p database
-         touch database/database.sqlite
+          mkdir -p database
+          touch database/database.sqlite
 
       - name: Setup node for dist build
         uses: actions/setup-node@v4
@@ -71,8 +65,8 @@ jobs:
       #Generates a new cache on updated manifest and validated tests
       - uses: actions/cache@v4
         with:
-         path: public/build
-         key: vite-assets-${{ hashFiles('public/build/manifest.json') }}
+          path: public/build
+          key: vite-assets-${{ hashFiles('public/build/manifest.json') }}
 
       - name: Generate coverage badge
         # You may pin to the exact commit or the version.
@@ -97,9 +91,30 @@ jobs:
           # includes
           include: '["coverage_badge.svg"]'
 
-  deploy-to-staging:
-    needs: test
+  deploy-wip-to-staging:
+    needs: buildAndTest
+    if: ${{ ! needs.release-please.outputs.release_created }}
     uses: ./.github/workflows/deploy.yml
     secrets: inherit
     with:
       environment: staging
+
+  deploy-release-to-staging:
+    needs: [release-please,buildAndTest]
+    if: ${{ needs.release-please.outputs.release_created }}
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit
+    with:
+      environment: staging
+      sha: ${{ needs.release-please.outputs.sha }}
+
+  #There is a 15 minutes timeout for prod real deploy
+  deploy-release-to-production:
+    needs: [release-please,deploy-release-to-staging]
+    if: ${{ needs.release-please.outputs.release_created }}
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit
+    with:
+      environment: production
+      sha: ${{ needs.release-please.outputs.sha }}
+

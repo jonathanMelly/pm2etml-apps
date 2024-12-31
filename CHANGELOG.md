@@ -1,5 +1,61 @@
 # Changelog
 
+## [1.50.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.49.0...v1.50.0) (2024-11-29)
+
+
+### Features
+
+* **logs:** add pail to help with logs ([15b0d20](https://github.com/jonathanMelly/pm2etml-apps/commit/15b0d208b8467478cad7e5ef42c8e5995cf3a504))
+* **sso:** switched check log in debug ([dc699cd](https://github.com/jonathanMelly/pm2etml-apps/commit/dc699cdb73ee5d8b24f644da3b5151c0b574218a))
+* **worker contracts:** show past contracts ([4b14d5e](https://github.com/jonathanMelly/pm2etml-apps/commit/4b14d5ebf1be98e1c219e2216fc32b375e86a19e))
+
+
+### Bug Fixes
+
+* **names:** added one letter to last name ([deb9bd5](https://github.com/jonathanMelly/pm2etml-apps/commit/deb9bd5b5387847b055923fb4d4d191e9dae4d46))
+
+## [1.49.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.48.3...v1.49.0) (2024-11-20)
+
+
+### Features
+
+* **sso:** added log for sso bridge check ([4326232](https://github.com/jonathanMelly/pm2etml-apps/commit/432623257e59bd613173bcde4b8c0011ac699be8))
+
+## [1.48.3](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.48.2...v1.48.3) (2024-11-19)
+
+
+### Bug Fixes
+
+* **download:** try to get nice looking filename back when downloading ([bcc62ae](https://github.com/jonathanMelly/pm2etml-apps/commit/bcc62ae169063d7cf8590ff7c8b482ffc247ce32))
+
+## [1.48.2](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.48.1...v1.48.2) (2024-11-04)
+
+
+### Bug Fixes
+
+* **nomad student:** log info for nomad students ([6e6d100](https://github.com/jonathanMelly/pm2etml-apps/commit/6e6d1001154ee2bbd1573c8df6d648b6821f9e3d))
+
+## [1.48.1](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.48.0...v1.48.1) (2024-10-30)
+
+
+### Bug Fixes
+
+* **deploy:** fix missing vitepress cache content ([02c185e](https://github.com/jonathanMelly/pm2etml-apps/commit/02c185e2c2366e33c6c91353f33582e004dfaaa8))
+
+## [1.48.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.47.3...v1.48.0) (2024-10-30)
+
+
+### Features
+
+* **bridge:** allow multiple api keys ([056e787](https://github.com/jonathanMelly/pm2etml-apps/commit/056e787be0a6b00f2605e10270f1e72516117692))
+
+## [1.47.3](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.47.2...v1.47.3) (2024-08-28)
+
+
+### Bug Fixes
+
+* **mp:** if teacher is not master it’s ok... ([c36ac5c](https://github.com/jonathanMelly/pm2etml-apps/commit/c36ac5ca4f6016a6585ca14abd7956e5434a1674))
+
 ## [1.47.2](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.47.1...v1.47.2) (2024-08-28)
 
 

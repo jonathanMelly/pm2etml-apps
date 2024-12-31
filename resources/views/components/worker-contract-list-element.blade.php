@@ -1,3 +1,7 @@
+@props([
+    'past'=>false,
+    'contract'=>$contract
+])
 @php
 $progress = $contract->getProgress();
 $progressPercentage = $progress['percentage'];
@@ -5,7 +9,18 @@ $remainingDays = $progress['remainingDays'];
 
 /* @var $contract \App\Models\Contract */
 /* @var $wc \App\Models\WorkerContract*/
-$wc = $contract->workerContract(auth()->user()->groupMember())->firstOrFail();
+    $wc = $contract
+        ->workersContracts()
+        ->whereRelation('groupMember.user','id','=',auth()->user()->id)
+        ->first();
+
+    if($wc === null)
+    {
+        $error = "Could not find worker contract for $contract";
+        \Illuminate\Support\Facades\Log::error($error);
+        throw new \App\Exceptions\DataIntegrityException($error);
+    }
+
 
 @endphp
 <tr>
@@ -35,7 +50,7 @@ $wc = $contract->workerContract(auth()->user()->groupMember())->firstOrFail();
     </td>
     <td>
         {{collect($contract->clients)->transform(fn ($user)=>$user->getFirstnameL())->join(',')}}
-        @if(!$wc->alreadyEvaluated())
+        @if(!$wc->alreadyEvaluated() && !$past)
         <i onclick="switchClient{{$wc->id}}.showModal()" class="fa-solid fa-edit hover:cursor-pointer"></i>
         <dialog id="switchClient{{$wc->id}}" class="modal">
             <div class="modal-box">
@@ -69,13 +84,16 @@ $wc = $contract->workerContract(auth()->user()->groupMember())->firstOrFail();
     <td>
         {{$contract->end->format(\App\SwissFrenchDateFormat::DATE)}}
     </td>
+    @if(!$past)
     <td class="text-center">
         <div class="radial-progress" style="--value:{{$progressPercentage}};--size:3rem;--thickness: 2px">{{$progressPercentage}}%</div>
     </td>
+    @endif
     {{-- EFFORT --}}
     <td class="text-center">
         {{$wc->getAllocationDetails()}}
     </td>
+    @if(!$past)
     <td class="text-center">
         @if($progressPercentage<100)
             {{$remainingDays}} {{$remainingDays>1?__('days'):__('day')}}
@@ -83,5 +101,6 @@ $wc = $contract->workerContract(auth()->user()->groupMember())->firstOrFail();
             <i class="fa-solid fa-flag-checkered"></i>
             @endif
     </td>
-    <x-contract-list-element-evaluation :contract="$contract" />
+    @endif
+    <x-contract-list-element-evaluation :contract="$contract" :past="$past" />
 </tr>

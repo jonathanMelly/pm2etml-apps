@@ -19,12 +19,14 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(Request $request)
     {
-        //old login (used for staging)
-        if (! config('auth.sso_login') || $request->hasAny('standard', 'old', 'no-sso', 'nosso', 'basic')) {
-            return view('auth.login');
+        if((config('auth.sso_login') || $request->hasAny('sso','o365')) &&
+            !$request->hasAny('old','standard','local','no-sso', 'nosso', 'basic') ) {
+            return view('auth.login-sso');
         }
 
-        return view('auth.login-sso');
+        //old login (used for dev,staging)
+        return view('auth.login');
+
     }
 
     /**

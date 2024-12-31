@@ -17,6 +17,7 @@
         "intervention/image": "^2.7",
         "kirschbaum-development/eloquent-power-joins": "^3.5",
         "laravel/framework": "^11.10",
+        "laravel/pail": "^1.2",
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.11",
         "laravel/tinker": "^2.9",

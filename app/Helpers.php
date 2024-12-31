@@ -1,9 +1,9 @@
 <?php
 
-//currently empty
 use App\Models\Attachment;
 use Carbon\Carbon;
 use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Crypt;
 
 if (! function_exists('ordinal')) {
     function ordinal(int $number): string
@@ -44,7 +44,7 @@ if (! function_exists('attachmentPathInUploadDisk')) {
 if (! function_exists('attachmentUri')) {
     function attachmentUri(Attachment $attachment): string
     {
-        return route('dmz-asset', ['file' => $attachment->storage_path]);
+        return route('dmz-asset', ['file' => $attachment->storage_path,'name' => Crypt::encryptString($attachment->name)]);
     }
 }
 

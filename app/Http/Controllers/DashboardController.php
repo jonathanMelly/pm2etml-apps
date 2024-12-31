@@ -9,6 +9,8 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -26,6 +28,7 @@ class DashboardController extends Controller
         if ($user->hasAnyRole(RoleName::TEACHER, RoleName::STUDENT, RoleName::PRINCIPAL, RoleName::DEAN, RoleName::ADMIN)) {
             $contracts = null;
             $jobs = null;
+            $past_contracts = collect();
             $periodId = $request->get('academicPeriodId');
 
             //Teacher
@@ -50,6 +53,8 @@ class DashboardController extends Controller
 
                 $contracts = $query->get();
                 $result = $view->with(compact('contracts'));
+                $past_contracts = Cache::rememberForever($user->id.$periodId,fn() => $user->pastContractsAsAWorker($periodId)->get());
+
             }
 
             //Append evaluations summary
@@ -59,7 +64,7 @@ class DashboardController extends Controller
                 $request->get('timeUnit')
             );
 
-            return $result->with(compact('evaluationsSummaryJsObject', 'periodId'));
+            return $result->with(compact('evaluationsSummaryJsObject', 'periodId','past_contracts'));
 
         } else {
             abort(403, 'Missing required role');

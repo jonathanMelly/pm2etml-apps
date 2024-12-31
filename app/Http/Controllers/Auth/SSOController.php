@@ -34,6 +34,10 @@ class SSOController extends Controller
 
     public function check(Request $request)
     {
+        Log::debug("SSO Check request {url} from {from}",[
+            'url'=>$request->fullUrl(),
+            'from'=> join(",", $request->ips())]
+        );
         $this->checkApiKey($request);
 
         $correlationId = $request->input(self::SSO_CORRELATION_ID_PARAM_NAME);
@@ -167,7 +171,8 @@ class SSOController extends Controller
                 abort(403);
             } else {
                 $clientToken = $request->input(self::SSO_API_KEY_PARAM_NAME);
-                if (! $this->isApiKeyValid($clientToken) ) {
+
+                if (empty($clientToken) || ! $this->isApiKeyValid($clientToken) ) {
                     Log::warning('Bad api key given for sso bridge', ['request' => $request]);
                     abort(403);
                 }

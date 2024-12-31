@@ -67,7 +67,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
     public function getFirstnameL(bool $withId = false): string
     {
-        return $this->getFirstnameLX(1, $withId);
+        return $this->getFirstnameLX(2,$withId);
     }
 
     public function getFirstnameLX($x = 0, bool $withId = false): string
@@ -160,13 +160,24 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
             ->orderByPowerJoins('workers.user.firstname');
     }
 
+    public function pastContractsAsAWorker(?int $currentPeriodId = null): Contract|Builder
+    {
+       return Contract::whereRelation('workers.user','id','=',$this->id)
+            ->whereRelation('workers.group.academicPeriod','id','<',$currentPeriodId)
+           ->with('jobDefinition') //eager load definitions as needed on UI
+           ->with('clients') //eager load clients as needed on UI
+           ->with('workersContracts')
+           ->orderByDesc('end')
+           ->orderByDesc('start');
+    }
+
     public function contractsAsAWorker(?int $periodId = null): BelongsToMany|Contract|Builder
     {
         $groupMember = $this->groupMember($periodId);
         if ($groupMember === null) {
             //This should never happen !(any student must have a groupMember for the platform to work...)
             if ($this->hasRole(RoleName::STUDENT)) {
-                Log::warn("Missing groupmember for user with id: $this->id and periodId $periodId");
+                Log::warning("Missing groupmember for user with id: $this->id and periodId $periodId");
             }
             //WARNING, this tricks makes the jobdef scan (jobdefcontroller->marketplace) work in any state...
             //Do not modify this unless you know what you do

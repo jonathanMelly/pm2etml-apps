@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 
 class DmzAssetController extends Controller
 {
@@ -24,6 +25,13 @@ class DmzAssetController extends Controller
             $mimeType = Cache::rememberForever($mimeCacheKey, function () use ($path, $disk) {
                 return $disk->mimeType($path);
             });
+
+            //As "download" attribute of href doesn’t seem to always work, try to do better
+            if ($request->has("name"))
+            {
+                return response()->download($disk->path($path),
+                    Crypt::decryptString($request->get("name")), ['Content-Type' => $mimeType]);
+            }
 
             return response()->file($disk->path($path), ['Content-Type' => $mimeType]);
         }
