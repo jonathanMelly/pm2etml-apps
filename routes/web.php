@@ -82,10 +82,16 @@ Route::middleware(['auth', 'app'])->group(function () {
 
     Route::get('evaluation-export', \App\Http\Controllers\EvaluationExportController::class)->name('evaluation-export');
 
-    // Manage pending wishes. Should ideally be protected by "non-student" privileges
-    Route::get('applications', [ContractController::class, 'pendingContractApplications'])->name('applications');
-    Route::post('applications', [ContractController::class, 'confirmApplication'])->name('applications.confirm');
-    Route::delete('applications', [ContractController::class, 'cancelApplication'])->name('applications.resign');
+    // Manage pending wishes
+    Route::group(['middleware' => ['role:prof']], function () {
+        Route::get('applications', [ContractController::class, 'pendingContractApplications'])
+            ->name('applications');
+        Route::post('applications', [ContractController::class, 'confirmApplication'])
+            ->name('applications.confirm');
+        Route::delete('applications', [ContractController::class, 'cancelApplication'])
+            ->name('applications.resign');
+    });
+
 });
 
 //LOGIN
