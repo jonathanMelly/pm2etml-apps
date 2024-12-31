@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
-class job-application-wish extends Component
+class JobApplicationWish extends Component
 {
     /**
      * Create a new component instance.
