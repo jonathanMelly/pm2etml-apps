@@ -86,3 +86,11 @@ php artisan migrate:fresh --seed
 npm run dev
 ```
 
+## Tests
+```shell
+php artisan test -p
+```
+> `-p` => parallèle
+
+> En cas de problème "bizarre", faire un `npm build` avant
+
