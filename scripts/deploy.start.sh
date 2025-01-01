@@ -40,7 +40,6 @@ function deploy()
 
   #sets the rest
   # shellcheck disable=SC2154
-  composer="$php $(which composer)"
   composer_install="$composer install --optimize-autoloader --no-dev --no-interaction"
 
   tee="/bin2/tee -a"

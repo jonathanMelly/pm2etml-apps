@@ -26,6 +26,7 @@ class StoreUpdateJobDefinitionRequest extends FormRequest
             'required_xp_years' => 'numeric|required',
             'priority' => 'numeric|required',
             'one_shot' => 'sometimes|int|in:1',
+            'by_application' => 'sometimes|int|in:1',
             'image' => 'required',
             'other_attachments' => 'json|nullable',
             'any_attachment_to_delete' => 'json|nullable',
