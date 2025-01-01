@@ -17,7 +17,7 @@
                     d="M16.5 3a2.121 2.121 0 0 0-3 0L4.64 11.36a1 1 0 0 0-.29.71v3.59a1 1 0 0 0 1 1h3.59a1 1 0 0 0 .71-.29L21 7.5a2.121 2.121 0 0 0-3-3l-1.5 1.5">
                 </path>
             </svg>
-            {{ __('messages.edit_custom_criteria') }}
+            {{ __('fullEvaluation.btnCustomCriteria') }}
         </a>
 
         <!-- Affichage du nom de l'étudiant avec fond coloré -->

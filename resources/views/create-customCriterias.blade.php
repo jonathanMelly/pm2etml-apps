@@ -6,7 +6,7 @@
                     xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
-                {{ __('messages.edit_custom_criteria') }}
+                {{ __('customCriterias.edit') }}
             </h1>
 
             {{-- @if (session('success'))
@@ -34,7 +34,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
                             </path>
                         </svg>
-                        {{ __('messages.save_changes') }}
+                        {{ __('customCriterias.btnSaveChanges') }}
                     </button>
                 </div>
             </form>
