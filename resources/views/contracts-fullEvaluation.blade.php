@@ -17,7 +17,7 @@
                     d="M16.5 3a2.121 2.121 0 0 0-3 0L4.64 11.36a1 1 0 0 0-.29.71v3.59a1 1 0 0 0 1 1h3.59a1 1 0 0 0 .71-.29L21 7.5a2.121 2.121 0 0 0-3-3l-1.5 1.5">
                 </path>
             </svg>
-            Personnaliser les critères
+            {{ __('messages.edit_custom_criteria') }}
         </a>
 
         <!-- Affichage du nom de l'étudiant avec fond coloré -->
@@ -83,7 +83,8 @@
                 <!-- Affichage des informations selon le rôle de l'utilisateur (enseignant ou étudiant) -->
                 @if ($isTeacher)
                     <!-- Informations de l'étudiant (enseignant vue) -->
-                    <h3 class="text-xl font-semibold text-blue-600"> Étudiant :<span
+                    <h3 class="text-xl font-semibold text-blue-600"> {{ __('fullEvaluation.studentLabel') }} :
+                        <span
                             class="text-gray-800">{{ $studentDetails->student_firstname .
                                 ' ' .
                                 $studentDetails->student_lastname .
@@ -93,12 +94,11 @@
                         </span>
                     </h3>
 
-                    </h3>
-                    <h4 class="text-lg font-bold text-gray-700">Projet : <span
+                    <h4 class="text-lg font-bold text-gray-700">{{ __('fullEvaluation.projectName') }} : <span
                             class="font-medium">{{ $studentDetails->project_name . ' (' . $studentDetails->job_id . ')' }}</span>
                     </h4>
 
-                    <h4 class="text-lg font-bold text-gray-700">Classe : <span
+                    <h4 class="text-lg font-bold text-gray-700">{{ __('fullEvaluation.className') }}<span
                             class="font-medium">{{ $studentDetails->class_name . ' (' . $studentDetails->class_id . ')' }}</span>
                     </h4>
 
@@ -108,14 +108,14 @@
                     </button>
                 @else
                     <!-- Informations de l'enseignant (étudiant vue) -->
-                    <h3 class="text-xl font-semibold text-green-700">Enseignant : <span
+                    <h3 class="text-xl font-semibold text-green-700">{{ __('fullEvaluation.teacherName') }} : <span
                             class="text-gray-800">{{ $studentDetails->evaluator_firstname . ' ' . $studentDetails->evaluator_lastname . ' (' . $studentDetails->evaluator_id . ')' }}</span>
                     </h3>
-                    <h4 class="text-lg font-bold  text-gray-700">Projet : <span
+                    <h4 class="text-lg font-bold  text-gray-700">{{ __('fullEvaluation.projectName') }} : <span
                             class="font-medium">{{ $studentDetails->project_name . ' (' . $studentDetails->job_id . ')' }}</span>
                     </h4>
 
-                    <h4 class="text-lg font-bold text-gray-700">Classe : <span
+                    <h4 class="text-lg font-bold text-gray-700">{{ __('fullEvaluation.className') }} : <span
                             class="font-medium">{{ $studentDetails->class_name . '(' . $studentDetails->class_id . ')' }}</span>
                     </h4>
                 @endif
@@ -144,7 +144,7 @@
                                 <button type="button"
                                     class="eval-tab-btn btn {{ $hasEval80 ? 'btn-secondary' : 'btn-outline' }}"
                                     data-level="eval80" onclick="changeTab(this)"
-                                    id="id-{{ $studentDetails->student_id }}-btn-eval80">Éval3/4
+                                    id="id-{{ $studentDetails->student_id }}-btn-eval80">{{ __('fullEvaluation.eval3_4') }}
                                 </button>
 
                                 <!-- Évaluation 100 -->
@@ -152,7 +152,7 @@
                                     class="eval-tab-btn btn {{ $hasEval100 ? 'btn-secondary' : 'btn-outline' }}"
                                     data-level="eval100" onclick="changeTab(this)"
                                     id="id-{{ $studentDetails->student_id }}-btn-eval100" {{ $hasEval80 ? 'disabled' : '' }}>
-                                    Éval100
+                                    {{ __('fullEvaluation.eval100') }}
                                 </button>
                             @endrole
 
@@ -161,21 +161,21 @@
                                 <button type="button"
                                     class="eval-tab-btn btn {{ $hasAuto80 ? 'btn-primary' : 'btn-outline' }}"
                                     data-level="auto80" onclick="changeTab(this)"
-                                    id="id-{{ $studentDetails->student_id }}-btn-auto80">Auto3/4
+                                    id="id-{{ $studentDetails->student_id }}-btn-auto80">{{ __('fullEvaluation.auto3_4') }}
                                 </button>
                                 <!-- Auto-évaluation 100 -->
                                 <button type="button"
                                     class="eval-tab-btn btn {{ $hasAuto100 ? 'btn-primary' : 'btn-outline' }}"
                                     data-level="auto100" onclick="changeTab(this)"
                                     id="id-{{ $studentDetails->student_id }}-btn-auto100"
-                                    {{ $hasAuto80 ? 'disabled' : '' }}>Auto100
+                                    {{ $hasAuto80 ? 'disabled' : '' }}>{{ __('fullEvaluation.auto100') }}
                                 </button>
                             @endrole
                         @endhasanyrole
 
                         <button type="button" class="eval-tab-btn btn btn-outline btn-success"
                             id="id-{{ $studentDetails->student_id }}-validation-btn"
-                            onclick="validateEvaluation('{{ $studentDetails->student_id }}-btn-')">Validation
+                            onclick="validateEvaluation('{{ $studentDetails->student_id }}-btn-')">{{ __('fullEvaluation.btnValidation') }}
                         </button>
                     </div>
 
@@ -185,7 +185,10 @@
                             <div class="category-container mb-4 p-3 bg-gray-300 rounded-md relative"
                                 id="id-{{ $studentDetails->student_id }}-{{ strtolower($category) }}-container"
                                 class="category-header flex justify-between items-center mb-4">
-                                <h2 class="text-xl font-bold text-cyan-700 ">{{ $category }}</h2>
+                                <h2 class="text-xl font-bold text-cyan-700">
+                                    {{ __('fullEvaluation.' . $category) }}
+                                </h2>
+
                                 <button type="button"
                                     class="btn btn-sm bg-gray-500 text-white p-2 rounded absolute top-3 right-2"
                                     onclick="toggleVisibility('id-{{ $studentDetails->student_id }}-{{ strtolower($category) }}-container')">
@@ -201,7 +204,7 @@
                                             <span
                                                 class="hidden absolute bg-gray-700 text-white p-2 rounded mt-[-50px] shadow-lg"
                                                 id="description-{{ $criterion['id'] }}">
-                                                {{ $criterion['description'] }}
+                                                {{ __('fullEvaluation.criterias' . $criterion['id'] . '_description') }}
                                             </span>
                                             <x-criterion-card :criterion="$criterion" :visible-sliders="$visibleSliders" :appreciation-labels="$appreciationLabels"
                                                 :is-teacher="$isTeacher" :evaluation-levels="$evaluationLevels" :id-student="$studentDetails->student_id" />
@@ -241,8 +244,9 @@
                         <div class="w-full lg:w-[90%]">
                             <label for="id-{{ $studentDetails->student_id }}-generalRemark"
                                 class="text-xl font-semibold text-cyan-600 block mb-2">
-                                Remarque générale :
+                                {{ __('fullEvaluation.general_remark') }}
                             </label>
+
                             <textarea id="id-{{ $studentDetails->student_id }}-generalRemark" name="generalRemark"
                                 class="textarea textarea-bordered bg-gray-100 w-full h-48 resize-none rounded-md shadow-sm p-2 border-gray-300 focus:ring-cyan-500 focus:border-cyan-500">
                             </textarea>
@@ -254,12 +258,12 @@
                             <div class="w-full bg-orange-100 rounded-md h-48 shadow-sm p-6 flex flex-col items-center">
                                 <h3 id="finalResultTitle" class="font-semibold text-xl text-gray-800 ">
                                     <!-- Titre dynamique selon l'évaluation -->
-                                    {{ $isTeacher ? 'Formative' : 'Auto-Évaluation' }}
+                                    {{ $isTeacher ? __('fullEvaluation.msgFormative') : __('fullEvaluation.msgAutoEval') }}
                                 </h3>
 
                                 <p id="finalResultContent" class="text-lg font-medium text-gray-500 mt-10">
                                     <!-- Résultat ici par. Résultat par défaut NA-->
-                                    NA
+                                    A
                                 </p>
                                 <span class="text-xs absolute bottom-1 right-1" id='spanResult'> 80% </span>
                             </div>
@@ -278,7 +282,7 @@
                             class="p-2 rounded {{ $isUpdate ? 'bg-orange-500 hover:bg-orange-600' : 'bg-purple-500 hover:bg-purple-600' }} font-semibold text-gray-100"
                             data-student-id="{{ $studentDetails->student_id }}"
                             data-update="{{ $isUpdate ? true : false }}">
-                            {{ $isUpdate ? 'Mettre à jour l\'évaluation' : 'Soumettre l\'évaluation' }}
+                            {{ $isUpdate ? __('fullEvaluation.msgUpdateEval') : __('fullEvaluation.msgSubmitEval') }}
                         </button>
                     </div>
 
