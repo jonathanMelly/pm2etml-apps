@@ -6,16 +6,14 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\SSOController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\CriteriaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeployController;
 use App\Http\Controllers\DmzAssetController;
+use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\JobDefinitionController;
 use App\Http\Controllers\JobDefinitionDocAttachmentController;
 use App\Http\Controllers\JobDefinitionMainImageAttachmentController;
-use App\Http\Controllers\EvaluationController;
-use App\Http\Controllers\CriteriaController;
-
-use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -38,19 +36,27 @@ Route::middleware(['auth', 'app'])->group(function () {
 
     //JOBS
     Route::resource('jobDefinitions', JobDefinitionController::class);
-    Route::get('marketplace', [JobDefinitionController::class, 'marketPlace'])->name('marketplace');
+    Route::get('marketplace', [JobDefinitionController::class, 'marketPlace'])
+        ->name('marketplace');
 
     //CONTRACTS
-    Route::get('jobs-apply/{jobDefinition}', [ContractController::class, 'createApply'])->name('jobs-apply-for');
+    Route::get(
+        'jobs-apply/{jobDefinition}',
+        [ContractController::class, 'createApply']
+    )
+        ->name('jobs-apply-for');
 
-    Route::delete('contracts.destroyAll', [ContractController::class, 'destroyAll'])->name('contracts.destroyAll');
+    Route::delete('contracts.destroyAll', [ContractController::class, 'destroyAll'])
+        ->name('contracts.destroyAll');
 
     Route::get('contracts/evaluate/{ids}', [ContractController::class, 'evaluate']);
     Route::get('contracts/bulkEdit/{ids}', [ContractController::class, 'bulkEdit']);
 
     //Bulk operations on contracts
-    Route::post('contracts/eval', [ContractController::class, 'evaluateApply'])->name('contracts.evaluate');
-    Route::post('contracts/bulkUpdate', [ContractController::class, 'bulkUpdate'])->name('contracts.bulkUpdate');
+    Route::post('contracts/eval', [ContractController::class, 'evaluateApply'])
+        ->name('contracts.evaluate');
+    Route::post('contracts/bulkUpdate', [ContractController::class, 'bulkUpdate'])
+        ->name('contracts.bulkUpdate');
 
     // Start HCS
     Route::get('evaluation/fullEvaluation/{ids}', [EvaluationController::class, 'fullEvaluation'])->name('evaluation.fullEvaluation');
@@ -63,7 +69,6 @@ Route::middleware(['auth', 'app'])->group(function () {
     Route::post('/criterias/update', [CriteriaController::class, 'update'])->name('update.custom_criterias');
 
     // End HCS
-
 
     //Add basic CRUD actions for contracts
     Route::resource('contracts', ContractController::class);
@@ -90,6 +95,17 @@ Route::middleware(['auth', 'app'])->group(function () {
         ->name('logout');
 
     Route::get('evaluation-export', \App\Http\Controllers\EvaluationExportController::class)->name('evaluation-export');
+
+    // Manage pending wishes
+    Route::group(['middleware' => ['role:prof']], function () {
+        Route::get('applications', [ContractController::class, 'pendingContractApplications'])
+            ->name('applications');
+        Route::post('applications', [ContractController::class, 'confirmApplication'])
+            ->name('applications.confirm');
+        Route::delete('applications', [ContractController::class, 'cancelApplication'])
+            ->name('applications.resign');
+    });
+
 });
 
 //LOGIN

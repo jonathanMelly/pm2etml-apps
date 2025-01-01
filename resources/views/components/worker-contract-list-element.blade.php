@@ -3,12 +3,12 @@
     'contract' => $contract,
 ])
 @php
-    $progress = $contract->getProgress();
-    $progressPercentage = $progress['percentage'];
-    $remainingDays = $progress['remainingDays'];
+$progress = $contract->getProgress();
+$progressPercentage = $progress['percentage'];
+$remainingDays = $progress['remainingDays'];
 
-    /* @var $contract \App\Models\Contract */
-    /* @var $wc \App\Models\WorkerContract*/
+/* @var $contract \App\Models\Contract */
+/* @var $wc \App\Models\WorkerContract*/
     $wc = $contract
         ->workersContracts()
         ->whereRelation('groupMember.user', 'id', '=', auth()->user()->id)
@@ -43,6 +43,9 @@
                         @endif
                     </div>
                 </div>
+                @if($wc->application_status > 0)
+                <div class="indicator-item indicator-start badge badge-warning -mt-2 text-xs" title="Votre engagement n'est pas encore confirmé. Il ne s'agit pour l'instant que d'un souhait de priorité {{ $wc->application_status }}">{{__('Not confirmed')}}</div>
+                @endif
             </div>
         </a>
     </td>
@@ -56,11 +59,11 @@
                     <p class="py-4">{{ __('Select new client') }}</p>
                     <form method="post" action="{{ route('contracts.update', [$contract]) }}"
                         id="contract-{{ $contract->id }}-form" x-on:submit.prevent>
-                        @method('PATCH')
-                        @csrf
-                        <x-client-select name="clientId" :selected="$contract->clients->first()->id" :job-definition="$contract->jobDefinition" :with-stats="true" />
-                    </form>
-                    <div class="modal-action">
+                    @method('PATCH')
+                    @csrf
+                    <x-client-select name="clientId" :selected="$contract->clients->first()->id" :job-definition="$contract->jobDefinition" :with-stats="true" />
+                </form>
+                <div class="modal-action">
 
                         <button class="btn btn-success"
                             onclick="spin('saveButton{{ $contract->id }}');document.querySelector('#contract-{{ $contract->id }}-form').submit()">

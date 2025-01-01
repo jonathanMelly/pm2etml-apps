@@ -3,41 +3,35 @@
 namespace App\Http\Controllers;
 
 use App\Constants\RoleName;
-use App\Constants\FullEvaluationConstants;
-
+use App\DateFormat;
 use App\Enums\RequiredTimeUnit;
-
 use App\Http\Middleware\AcademicPeriodFilter;
 use App\Http\Requests\ContractEvaluationRequest;
-use App\Http\Requests\FullEvaluationRequest;
 use App\Http\Requests\DestroyAllContractRequest;
 use App\Http\Requests\StoreContractRequest;
 use App\Http\Requests\UpdateContractBulkRequest;
 use App\Http\Requests\UpdateContractRequest;
-
 use App\Models\AcademicPeriod;
-use App\Models\Evaluation;
 use App\Models\Contract;
 use App\Models\JobDefinition;
 use App\Models\JobDefinitionPart;
 use App\Models\User;
 use App\Models\WorkerContract;
-
+use App\Models\WorkerContractEvaluationLog;
 use App\SwissFrenchDateFormat;
-use App\DateFormat;
-use App\Models\Role;
+use Exception;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Response;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
-use PhpOffice\PhpSpreadsheet\Shared\Trend\Trend;
-
-use function Sentry\init;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ContractController extends Controller
 {
@@ -164,9 +158,10 @@ class ContractController extends Controller
         if ($start->isBefore($period->start) || $end->isAfter($period->end)) {
             return back()->withErrors(__('Dates must be within current academic period'))->withInput();
         }
+        $wishPriority = $request->has('wish_priority') ? $request->input('wish_priority') : 0;
 
         $firstContract = null;
-        DB::transaction(function () use ($start, $end, &$firstContract, $jobDefinitionId, $partsDetails, $targetWorker) {
+        DB::transaction(function () use ($start, $end, &$firstContract, $jobDefinitionId, $partsDetails, $targetWorker, $wishPriority) {
             foreach ($partsDetails as $partsDetail) {
                 $contract = Contract::make();
                 $contract->start = $start;
@@ -187,6 +182,7 @@ class ContractController extends Controller
                 $workerContract = $contract->workerContract($targetWorker->groupMember())->firstOrFail();
                 $workerContract->name = $partsDetail['name'];
                 $workerContract->allocated_time = $partsDetail['time'];
+                $workerContract->application_status = $wishPriority;
                 $workerContract->save();
 
                 if ($firstContract == null) {
@@ -212,6 +208,84 @@ class ContractController extends Controller
 
         //form to apply for a job
         return view('job-apply')->with(compact('jobDefinition', 'parts'));
+    }
+
+    /**
+     * Show the Applicant / Job matrix
+     */
+    public function pendingContractApplications()
+    {
+        // row header
+        $applicants = WorkerContract::query()
+            ->where('application_status', '>', 0)
+            ->join('group_members', 'contract_worker.group_member_id', '=', 'group_members.id')
+            ->join('users', 'group_members.user_id', '=', 'users.id')
+            ->selectRaw('CONCAT(users.firstname, " ", users.lastname) as full_name')
+            ->distinct()
+            ->get()
+            ->pluck('full_name')
+            ->toArray();
+        // column headers
+        $jobTitles = WorkerContract::query()
+            ->where('application_status', '>', 0)
+            ->join('group_members', 'contract_worker.group_member_id', '=', 'group_members.id')
+            ->join('contracts', 'contract_worker.contract_id', '=', 'contracts.id')
+            ->join('job_definitions', 'contracts.job_definition_id', '=', 'job_definitions.id')
+            ->distinct()
+            ->pluck('job_definitions.title')
+            ->toArray();
+
+        // table content, indexed by applicant names and job titles
+        $matrix = array(array());
+        foreach (WorkerContract::where('application_status', '>', 0)->get() as $app) {
+            $matrix[$app->groupMember->user->firstname . " " . $app->groupMember->user->lastname][$app->contract->jobDefinition->title] = $app;
+        }
+        return view('pendingApplications-view')->with(compact('matrix', 'applicants', 'jobTitles'));
+    }
+
+    /**
+     * Confirms a worker application for a job for which he had expressed a wish
+     * This will make the mandate permanent and remove all other demands for the job
+     * unless explicitely told not to
+     */
+    public function confirmApplication(Request $request)
+    {
+        //SECURITY CHECKS (as this area is opened to students who might want to play with ids...)
+        $this->authorize('contracts.edit');
+
+        $wc = WorkerContract::find($request->input('applicationid'));
+        $wc->application_status = 0;
+        $wc->save();
+
+        // Destroy other contracts, unless explicitely told otherwise
+        if (!$request->has('keep')) {
+            // Gather the affected contracts
+            $contracts = Contract::where('job_definition_id', $wc->contract->job_definition_id)
+                ->where('id', '!=', $wc->contract_id)
+                ->get()
+                ->pluck('id')
+                ->toArray();
+            // Must delete logs explicitely, because soft deletes won't cascade
+            WorkerContractEvaluationLog::whereIn('contract_id', $contracts)->forceDelete();
+            Contract::whereIn('id', $contracts)->forceDelete();
+        }
+        return redirect('/applications');
+    }
+
+    /**
+     * Cancel a pending application (i.e: application_status > 0)
+     * Only the subscriber is allowed to do it
+     */
+    public function cancelApplication(Request $request)
+    {
+        $app = WorkerContract::find($request->input('applicationid'));
+        if (!$app || $app->groupMember->user_id != Auth::user()->id || $app->application_status <= 0) {
+            return redirect('/dashboard')
+                ->with('error', __('Something unorthodox happened...'));
+        }
+        $app->delete();
+        return redirect('/dashboard')
+            ->with('success', __('Your resignation has been noted'));
     }
 
     /**
@@ -471,6 +545,7 @@ class ContractController extends Controller
 
     public function evaluateApply(ContractEvaluationRequest $request)
     {
+
         $contracts = $this->getContractsForModifications(collect($request->workersContracts)->join(','), true);
 
         $updated = 0;
@@ -504,10 +579,8 @@ class ContractController extends Controller
     /**
      * @return Contract[]|Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Query\Builder[]|\Illuminate\Support\Collection
      */
-    protected function getContractsForModifications(
-        string $ids,
-        bool $workersContractsIds = false
-    ): \Illuminate\Support\Collection|array|\Illuminate\Database\Eloquent\Collection {
+    protected function getContractsForModifications(string $ids, bool $workersContractsIds = false): \Illuminate\Support\Collection|array|\Illuminate\Database\Eloquent\Collection
+    {
         $queryIds = collect(explode(',', $ids))->filter(fn($el) => is_numeric($el))->toArray();
 
         $query = Contract::query();
