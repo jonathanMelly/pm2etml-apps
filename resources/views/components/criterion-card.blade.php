@@ -3,12 +3,13 @@
     dark:bg-gray-800 border border-gray-200 
     dark:border-gray-700 rounded-md p-3 hover:shadow-lg transition-shadow duration-300">
     <!-- Nom du critère -->
-    <div data-criterion-name={{ $criterion['name'] }}
+    <div data-criterion-name="{{ $criterion['name'] }}"
         class="criterion-name text-xl font-bold 
-        text-gray-800 dark:text-white mb-3 
-        text-center overflow-hidden whitespace-nowrap overflow-ellipsis max-w-xs">
-        {{ $criterion['name'] }}
+     text-gray-800 dark:text-white mb-3 
+     text-center overflow-hidden whitespace-nowrap overflow-ellipsis max-w-xs">
+        {{ __($criterion['name']) }}
     </div>
+
 
     <!-- Conteneur des curseurs -->
     {{-- Problème d'alignement causé par les labels --}}
@@ -34,8 +35,10 @@
         <!-- Curseur Eval 80% -->
         <div class="flex space-x-2 items-center" id="id-{{ $idStudent }}-eval80-{{ $criterion['id'] }}">
             <label for="range-eval80-{{ $criterion['id'] }}"
-                class="w-[80px] text-sm  text-gray-600 dark:text-gray-300 font-medium mb-1">Eval3/4:
+                class="w-[80px] text-sm text-gray-600 dark:text-gray-300 font-medium mb-1">
+                {{ __('Eval3/4:') }}
             </label>
+
             <input type="range" min="0" max="3" @if ($isTeacher) value="2" @endif
                 class="range range-secondary range-sm w-full disabled:cursor-not-allowed " aria-label="Évaluation à 80%"
                 id="id-{{ $idStudent }}-range-eval80-{{ $criterion['id'] }}" data-student-id="{{ $idStudent }}"
@@ -54,8 +57,9 @@
                 id="id-{{ $idStudent }}-{{ $type }}-{{ $criterion['id'] }}" style="display:none">
                 <label for="{{ $idStudent }}-range-{{ $type }}-{{ $criterion['id'] }}"
                     class="w-[80px] text-sm text-ellipsis text-gray-600 dark:text-gray-300 font-medium mb-1">
-                    {{ ucfirst($type === 'auto100' ? 'auto100' : 'eval100') }}:
+                    {{ ucfirst(__($type === 'auto100' ? 'auto100' : 'eval100')) }}:
                 </label>
+
                 <input type="range" min="0" max="3" value="2"
                     class="range range-sm  {{ $type === 'auto100' ? 'range-primary' : 'range-secondary' }} w-full disabled:cursor-not-allowed"
                     aria-label="{{ ucfirst($type) }}" data-student-id="{{ $idStudent }}"
@@ -79,14 +83,17 @@
             <label class="label flex items-center space-x-1 cursor-pointer">
                 <input type="checkbox" class="checkbox checkbox-error" data-exclude-id="{{ $criterion['id'] }}"
                     id="id-{{ $idStudent }}-exclude-{{ $criterion['id'] }}" data-student-id="{{ $idStudent }}"
-                    onclick="toggleExclusion(this)" {{ $criterion['id'] === 8 ? 'checked' : '' }} <span
-                    class="label-text text-gray-900 dark:text-gray-200 font-medium">Exclure de l'évaluation</span>
+                    onclick="toggleExclusion(this)" {{ $criterion['id'] === 8 ? 'checked' : '' }}>
+                <span
+                    class="label-text text-gray-900 dark:text-gray-200 font-medium">{{ __('Exclure de l\'évaluation') }}</span>
             </label>
         </div>
 
         <div class="remark">
             <label for="{{ $idStudent }}-remark-{{ $criterion['id'] }}"
-                class="block font-medium text-gray-900 dark:text-gray-200">Remarques :</label>
+                class="block font-medium text-gray-900 dark:text-gray-200">
+                {{ __('Remarques :') }}
+            </label>
             <textarea data-student-id="{{ $idStudent }}" data-textarea-id="{{ $criterion['id'] }}"
                 id="id-{{ $idStudent }}-remark-{{ $criterion['id'] }}" name="remark[$idStudent-$criterion['id'] }}]"
                 class="textarea textarea-bordered w-full focus:ring-2 focus:ring-indigo-600 focus:outline-none resize-none 
