@@ -1,9 +1,9 @@
 <x-app-layout>
-
-    <head>
-        @vite(['resources/css/app.css', 'resources/js/evaluation.js'])
-        <title>Évaluation pratique</title>
-    </head>
+    @push('custom-scripts')
+        @once
+            @vite(['resources/js/evaluation.js'])
+        @endonce
+    @endpush
 
     <div id="eval" class="evaluation-form space-y-4 p-6 relative">
 
