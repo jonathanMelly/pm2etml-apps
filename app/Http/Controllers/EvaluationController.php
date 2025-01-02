@@ -20,9 +20,9 @@ use Illuminate\Support\Facades\DB;
 class EvaluationController extends Controller
 {
    /**
-    * Enregistre une nouvelle évaluation pour un étudiant, 
+    * Enregistre une nouvelle évaluation pour un étudiant,
     * y compris les appréciations et les critères associés.
-    * 
+    *
     * Cette fonction reçoit une requête POST contenant les données d'évaluation sous forme de JSON.
     * Elle valide et traite les appréciations et les critères associés à chaque étudiant. L'évaluation
     * est ensuite sauvegardée dans la base de données, et les relations avec les critères et appréciations
@@ -30,14 +30,14 @@ class EvaluationController extends Controller
     *
     * En cas de succès, un message de confirmation est renvoyé avec les détails de l'évaluation enregistrée.
     * En cas d'erreur (données invalides ou problème lors de la sauvegarde), un message d'erreur est renvoyé.
-    * 
+    *
     * La transaction est utilisée pour garantir l'intégrité des données en cas d'échec d'une des étapes.
     *
-    * @param  \App\Http\Requests\StoreEvaluati onRequest  $request 
+    * @param  \App\Http\Requests\StoreEvaluati onRequest  $request
     * : La requête contenant les données de l'évaluation à enregistrer.
-    * @return \Illuminate\Http\JsonResponse 
+    * @return \Illuminate\Http\JsonResponse
     * : La réponse JSON contenant un message de succès ou d'erreur, selon le résultat de l'opération.
-    * 
+    *
     * @throws \Exception En cas d'erreur lors du traitement ou de la sauvegarde des données.
     */
    public function storeEvaluation(StoreEvaluationRequest $request)
@@ -271,10 +271,10 @@ class EvaluationController extends Controller
 
    /**
     * Charge les évaluations associées à un contrat spécifique.
-    * 
+    *
     * Cette fonction retourne toutes les évaluations liées à un contrat donné, avec leurs appréciations
     * et critères associés. Le contrat est identifié par son ID.
-    * 
+    *
     * @param int $contractId : ID du contrat dont on veut charger les évaluations.
     * @return \Illuminate\Http\JsonResponse : Réponse JSON contenant les évaluations ou un message d'erreur.
     */
@@ -323,13 +323,13 @@ class EvaluationController extends Controller
 
       // Si des préférences existent, les utiliser
       if ($userCriterias->isNotEmpty()) {
-         return $userCriterias->groupBy(fn($crit) => strtoupper(trim($crit['category'])));
+         return $userCriterias->groupBy(fn($crit) => trim($crit['category']));
       }
 
       // Sinon, utiliser les critères par défaut
       $defaultCriterias = DefaultCriteria::where('user_id', 0)->get();
 
-      return $defaultCriterias->groupBy(fn($crit) => strtoupper(trim($crit['category'])));
+      return $defaultCriterias->groupBy(fn($crit) => trim($crit['category']));
    }
 
 
@@ -379,14 +379,14 @@ class EvaluationController extends Controller
 
    /**
     * Gère l'affichage de l'évaluation complète pour plusieurs contrats.
-    * 
-    * Cette méthode récupère les détails des contrats liés aux identifiants fournis, 
+    *
+    * Cette méthode récupère les détails des contrats liés aux identifiants fournis,
     * détermine si l'utilisateur est enseignant, et prépare les données nécessaires
     * pour afficher la vue Blade d'évaluation complète.
-    * 
+    *
     * @param string $ids Une chaîne contenant les identifiants des contrats, séparés par des virgules.
     * @return \Illuminate\View\View La vue de l'évaluation complète avec les données nécessaires.
-    * 
+    *
     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException Si aucun contrat n'est trouvé.
     */
    public function fullEvaluation(string $ids)

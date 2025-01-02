@@ -76,7 +76,7 @@
         <span class="label-text">{{ __('Category') }}</span>
     </label>
     <input type="text" id="category-{{ $index }}" name="criterias[{{ $index }}][category]"
-        value="{{ $criteria->category ?? '' }}" class="input input-bordered w-full" required>
+        value="{{ __($criteria->category) }}" class="input input-bordered w-full" required>
 
     <label for="description-{{ $index }}" class="label flex items-center mt-2">
         <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"

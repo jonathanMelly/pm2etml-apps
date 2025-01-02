@@ -7,7 +7,7 @@
         class="criterion-name text-xl font-bold
      text-gray-800 dark:text-white mb-3
      text-center overflow-hidden whitespace-nowrap overflow-ellipsis max-w-xs">
-        {{ __('Name') }}
+        {{ $criterion['name'] }}
     </div>
 
 
