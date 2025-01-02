@@ -35,7 +35,7 @@
                             d="M16.5 3a2.121 2.121 0 0 0-3 0L4.64 11.36a1 1 0 0 0-.29.71v3.59a1 1 0 0 0 1 1h3.59a1 1 0 0 0 .71-.29L21 7.5a2.121 2.121 0 0 0-3-3l-1.5 1.5">
                         </path>
                     </svg>
-                    {{ __('fullEvaluation.btnCustomCriteria') }}
+                    {{ __('Edit criteria') }}
                 </a>
             @endif
 
@@ -88,7 +88,7 @@
                 <!-- Affichage des informations selon le rôle de l'utilisateur (enseignant ou étudiant) -->
                 @if ($isTeacher)
                     <!-- Informations de l'étudiant (enseignant vue) -->
-                    <h3 class="text-xl font-semibold text-blue-600"> {{ __('fullEvaluation.studentLabel') }} :
+                    <h3 class="text-xl font-semibold text-blue-600"> {{ __('Student') }} :
                         <span
                             class="text-gray-800">{{ $studentDetails->student_firstname .
                                 ' ' .
@@ -99,11 +99,11 @@
                         </span>
                     </h3>
 
-                    <h4 class="text-lg font-bold text-gray-700">{{ __('fullEvaluation.projectName') }} : <span
+                    <h4 class="text-lg font-bold text-gray-700">{{ __('Project name') }} : <span
                             class="font-medium">{{ $studentDetails->project_name . ' (' . $studentDetails->job_id . ')' }}</span>
                     </h4>
 
-                    <h4 class="text-lg font-bold text-gray-700">{{ __('fullEvaluation.className') }}<span
+                    <h4 class="text-lg font-bold text-gray-700">{{ __('Class name') }}<span
                             class="font-medium">{{ $studentDetails->class_name . ' (' . $studentDetails->class_id . ')' }}</span>
                     </h4>
 
@@ -113,14 +113,14 @@
                     </button>
                 @else
                     <!-- Informations de l'enseignant (étudiant vue) -->
-                    <h3 class="text-xl font-semibold text-green-700">{{ __('fullEvaluation.teacherName') }} : <span
+                    <h3 class="text-xl font-semibold text-green-700">{{ __('Teacher name') }} : <span
                             class="text-gray-800">{{ $studentDetails->evaluator_firstname . ' ' . $studentDetails->evaluator_lastname . ' (' . $studentDetails->evaluator_id . ')' }}</span>
                     </h3>
-                    <h4 class="text-lg font-bold  text-gray-700">{{ __('fullEvaluation.projectName') }} : <span
+                    <h4 class="text-lg font-bold  text-gray-700">{{ __('Project name') }} : <span
                             class="font-medium">{{ $studentDetails->project_name . ' (' . $studentDetails->job_id . ')' }}</span>
                     </h4>
 
-                    <h4 class="text-lg font-bold text-gray-700">{{ __('fullEvaluation.className') }} : <span
+                    <h4 class="text-lg font-bold text-gray-700">{{ __('Class name') }} : <span
                             class="font-medium">{{ $studentDetails->class_name . '(' . $studentDetails->class_id . ')' }}</span>
                     </h4>
                 @endif
@@ -149,7 +149,7 @@
                                 <button type="button"
                                     class="eval-tab-btn btn {{ $hasEval80 ? 'btn-secondary' : 'btn-outline' }}"
                                     data-level="eval80" onclick="changeTab(this)"
-                                    id="id-{{ $studentDetails->student_id }}-btn-eval80">{{ __('fullEvaluation.eval3_4') }}
+                                    id="id-{{ $studentDetails->student_id }}-btn-eval80">{{ __('Evaluation 3/4') }}
                                 </button>
 
                                 <!-- Évaluation 100 -->
@@ -157,7 +157,7 @@
                                     class="eval-tab-btn btn {{ $hasEval100 ? 'btn-secondary' : 'btn-outline' }}"
                                     data-level="eval100" onclick="changeTab(this)"
                                     id="id-{{ $studentDetails->student_id }}-btn-eval100" {{ $hasEval80 ? 'disabled' : '' }}>
-                                    {{ __('fullEvaluation.eval100') }}
+                                    {{ __('Evaluation 100%') }}
                                 </button>
                             @endrole
 
@@ -166,21 +166,21 @@
                                 <button type="button"
                                     class="eval-tab-btn btn {{ $hasAuto80 ? 'btn-primary' : 'btn-outline' }}"
                                     data-level="auto80" onclick="changeTab(this)"
-                                    id="id-{{ $studentDetails->student_id }}-btn-auto80">{{ __('fullEvaluation.auto3_4') }}
+                                    id="id-{{ $studentDetails->student_id }}-btn-auto80">{{ __('Auto evaluation 3/4') }}
                                 </button>
                                 <!-- Auto-évaluation 100 -->
                                 <button type="button"
                                     class="eval-tab-btn btn {{ $hasAuto100 ? 'btn-primary' : 'btn-outline' }}"
                                     data-level="auto100" onclick="changeTab(this)"
                                     id="id-{{ $studentDetails->student_id }}-btn-auto100"
-                                    {{ $hasAuto80 ? 'disabled' : '' }}>{{ __('fullEvaluation.auto100') }}
+                                    {{ $hasAuto80 ? 'disabled' : '' }}>{{ __('Auto evaluation 100%') }}
                                 </button>
                             @endrole
                         @endhasanyrole
 
                         <button type="button" class="eval-tab-btn btn btn-outline btn-success"
                             id="id-{{ $studentDetails->student_id }}-validation-btn"
-                            onclick="validateEvaluation('{{ $studentDetails->student_id }}-btn-')">{{ __('fullEvaluation.btnValidation') }}
+                            onclick="validateEvaluation('{{ $studentDetails->student_id }}-btn-')">{{ __('Validate') }}
                         </button>
                     </div>
 
@@ -191,7 +191,7 @@
                                 id="id-{{ $studentDetails->student_id }}-{{ strtolower($category) }}-container"
                                 class="category-header flex justify-between items-center mb-4">
                                 <h2 class="text-xl font-bold text-cyan-700">
-                                    {{ __('fullEvaluation.' . $category) }}
+                                    {{ __($category) }}
                                 </h2>
 
                                 <button type="button"
@@ -209,7 +209,7 @@
                                             <span
                                                 class="hidden absolute bg-gray-700 text-white p-2 rounded mt-[-50px] shadow-lg"
                                                 id="description-{{ $criterion['id'] }}">
-                                                {{ __('fullEvaluation.criterias' . $criterion['id'] . '_description') }}
+                                                {{  __('fullEvaluation.criterias' . $criterion['id'] . '_description') }}
                                             </span>
                                             <x-criterion-card :criterion="$criterion" :visible-sliders="$visibleSliders" :appreciation-labels="$appreciationLabels"
                                                 :is-teacher="$isTeacher" :evaluation-levels="$evaluationLevels" :id-student="$studentDetails->student_id" />
@@ -249,7 +249,7 @@
                         <div class="w-full lg:w-[90%]">
                             <label for="id-{{ $studentDetails->student_id }}-generalRemark"
                                 class="text-xl font-semibold text-cyan-600 block mb-2">
-                                {{ __('fullEvaluation.general_remark') }}
+                                {{ __('General remark') }}
                             </label>
 
                             <textarea id="id-{{ $studentDetails->student_id }}-generalRemark" name="generalRemark"
@@ -263,7 +263,7 @@
                             <div class="w-full bg-orange-100 rounded-md h-48 shadow-sm p-6 flex flex-col items-center">
                                 <h3 id="finalResultTitle" class="font-semibold text-xl text-gray-800 ">
                                     <!-- Titre dynamique selon l'évaluation -->
-                                    {{ $isTeacher ? __('fullEvaluation.msgFormative') : __('fullEvaluation.msgAutoEval') }}
+                                    {{ $isTeacher ? __('Formative evaluation') : __('Auto evaluation') }}
                                 </h3>
 
                                 <p id="finalResultContent" class="text-lg font-medium text-gray-500 mt-10">
@@ -287,7 +287,7 @@
                             class="p-2 rounded {{ $isUpdate ? 'bg-orange-500 hover:bg-orange-600' : 'bg-purple-500 hover:bg-purple-600' }} font-semibold text-gray-100"
                             data-student-id="{{ $studentDetails->student_id }}"
                             data-update="{{ $isUpdate ? true : false }}">
-                            {{ $isUpdate ? __('fullEvaluation.msgUpdateEval') : __('fullEvaluation.msgSubmitEval') }}
+                            {{ $isUpdate ? __('Update evaluation') : __('Submit evaluation') }}
                         </button>
                     </div>
 
