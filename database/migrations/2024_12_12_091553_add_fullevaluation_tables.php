@@ -16,16 +16,6 @@ class AddEvaluationTables extends Migration
         // Création de la permission
         \Spatie\Permission\Models\Permission::create(['name' => 'evaluation.storeEvaluation']);
 
-        // Table users
-        Schema::table('users', function (Blueprint $table) {
-            $table->index('email', 'idx_email');
-        });
-
-        // Table role_has_permissions
-        Schema::table('role_has_permissions', function (Blueprint $table) {
-            $table->index('permission_id', 'idx_permission_id');
-        });
-
         // Table evaluations
         Schema::create('evaluations', function (Blueprint $table) {
             $table->id();
@@ -36,12 +26,6 @@ class AddEvaluationTables extends Migration
             $table->text('student_remark')->nullable();
             $table->timestamps();
 
-            // Ajout des index
-            $table->index('evaluator_id', 'idx_evaluator_id');
-            $table->index('student_id', 'idx_student_id');
-            $table->index('job_definitions_id', 'idx_project_name'); // Index pour job_definitions_id
-            $table->index('class_id', 'evaluations_group_names_FK');
-            
             // Ajout de la contrainte unique
             $table->unique(['evaluator_id', 'student_id', 'class_id', 'job_definitions_id'], 'evaluations_unique');
         });
@@ -56,7 +40,7 @@ class AddEvaluationTables extends Migration
 
             // Ajout des index
             $table->index('evaluation_id', 'idx_evaluation_id');
-            $table->index('date', 'idx_date'); 
+            $table->index('date', 'idx_date');
         });
 
         // Table criterias
@@ -74,6 +58,16 @@ class AddEvaluationTables extends Migration
             $table->index('appreciation_id', 'idx_appreciation_id');
             $table->index('checked', 'idx_checked');
         });
+
+        Schema::create('default_criterias', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('category');
+            $table->text('description');
+            $table->timestamps();
+            $table->unsignedBigInteger('user_id')->nullable(); // Permet les valeurs nulles pour les critères par défaut
+            $table->integer('position'); // Ajout de la colonne position
+        });
     }
 
     /**
@@ -86,35 +80,10 @@ class AddEvaluationTables extends Migration
         // Suppression de la permission en cas de rollback
         \Spatie\Permission\Models\Permission::where('name', 'evaluation.storeEvaluation')->delete();
 
-        // Suppression des index
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropIndex('idx_email');
-        });
-
-        Schema::table('role_has_permissions', function (Blueprint $table) {
-            $table->dropIndex('idx_permission_id');
-        });
-
-        Schema::table('evaluations', function (Blueprint $table) {
-            $table->dropIndex('idx_evaluator_id');
-            $table->dropIndex('idx_student_id');
-            $table->dropIndex('idx_project_name');
-            $table->dropIndex('evaluations_group_names_FK');
-        });
-
-        Schema::table('appreciations', function (Blueprint $table) {
-            $table->dropIndex('idx_evaluation_id');
-            $table->dropIndex('idx_date');
-        });
-
-        Schema::table('criterias', function (Blueprint $table) {
-            $table->dropIndex('idx_appreciation_id');
-            $table->dropIndex('idx_checked');
-        });
-
         // Suppression des tables
         Schema::dropIfExists('criterias');
         Schema::dropIfExists('appreciations');
         Schema::dropIfExists('evaluations');
+        Schema::dropIfExists('default_criterias');
     }
 }
