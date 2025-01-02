@@ -13,11 +13,9 @@ class CreateDefaultCriteriasTable extends Migration
             $table->string('name');
             $table->string('category');
             $table->text('description');
-            $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
-            $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP'))->onUpdate(DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestamps();
             $table->unsignedBigInteger('user_id')->nullable(); // Permet les valeurs nulles pour les critères par défaut
             $table->integer('position'); // Ajout de la colonne position
-            $table->primary('id');
         });
     }
 
