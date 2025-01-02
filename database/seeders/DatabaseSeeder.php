@@ -23,7 +23,8 @@ class DatabaseSeeder extends Seeder
             UserV1Seeder::class,
             SkillSeeder::class,
             JobSeeder::class,
-            ContractSeeder::class];
+            ContractSeeder::class,
+            DefaultCriteriaSeeder::class,];
 
         collect($seeds)->each(function ($seeder) {
 

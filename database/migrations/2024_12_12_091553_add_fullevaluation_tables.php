@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddEvaluationTables extends Migration
+return new class extends Migration
 {
 
     public function up()
@@ -71,4 +71,4 @@ class AddEvaluationTables extends Migration
         Schema::dropIfExists('evaluations');
         Schema::dropIfExists('default_criterias');
     }
-}
+};
