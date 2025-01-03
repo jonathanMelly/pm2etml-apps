@@ -18,12 +18,12 @@
         <div class="flex space-x-2 items-center" id="id-{{ $idStudent }}-auto80-{{ $criterion['id'] }}">
             <label for="{{ $idStudent }}-range-auto80-{{ $criterion['id'] }}"
                 class="w-[80px] text-sm  text-gray-600 dark:text-gray-300 font-medium mb-1">
-                Auto3/4:
+                {{ __('Auto evaluation 3/4') }}
             </label>
             <input type="range" min="0" max="3" @if (!$isTeacher) value="2" @endif
                 class="range range-primary range-sm w-full disabled:cursor-not-allowed"
                 data-student-id="{{ $idStudent }}" data-criterion-id="{{ $criterion['id'] }}" data-level="auto80"
-                aria-label="Auto Évaluation à 80%" id="id-{{ $idStudent }}-range-auto80-{{ $criterion['id'] }}"
+                aria-label="{{__('Auto evaluation 3/4')}}" id="id-{{ $idStudent }}-range-auto80-{{ $criterion['id'] }}"
                 value="{{ $sliderValues['auto80'][$criterion['id']] ?? 0 }}" oninput="updateSliderValue(this)"
                 @if ($isTeacher) disabled @endif>
             <div id="id-{{ $idStudent }}-result-auto80-{{ $criterion['id'] }}"
@@ -36,7 +36,7 @@
         <div class="flex space-x-2 items-center" id="id-{{ $idStudent }}-eval80-{{ $criterion['id'] }}">
             <label for="range-eval80-{{ $criterion['id'] }}"
                 class="w-[80px] text-sm text-gray-600 dark:text-gray-300 font-medium mb-1">
-                {{ __('Auto evaluation 3/4') }}
+                {{ __('Evaluation 3/4') }}
             </label>
 
             <input type="range" min="0" max="3" @if ($isTeacher) value="2" @endif
