@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 class DefaultCriteria extends Model
 {
@@ -22,17 +23,21 @@ class DefaultCriteria extends Model
         return $this->belongsTo(User::class);
     }
 
-    public static function getUserCriterias($userId)
+    public static function getUserCriterias($userId): Collection
     {
-        return self::where('user_id', $userId)->orderBy('position')->get();
+        return self::where('user_id', $userId)
+            ->orderBy('position')
+            ->get();
     }
 
-    public static function getDefaultCriterias()
+    public static function getDefaultCriteria(): Collection
     {
-        return self::where('user_id', 0)->orderBy('position')->get();
+        return self::where('user_id', 0)
+            ->orderBy('position')
+            ->get();
     }
 
-    public static function saveUserCriterias($criteriasData, $userId)
+    public static function saveUserCriteria($criteriasData, $userId)
     {
         // Supprimer uniquement les critères personnalisés pour l'utilisateur connecté
         self::where('user_id', $userId)->delete();
@@ -56,7 +61,7 @@ class DefaultCriteria extends Model
         return true;
     }
 
-    public static function resetUserCriterias($userId)
+    public static function resetUserCriteria($userId)
     {
         // Supprimer uniquement les critères personnalisés pour l'utilisateur connecté
         self::where('user_id', $userId)->delete();
@@ -64,17 +69,4 @@ class DefaultCriteria extends Model
         return 'Critères personnalisés réinitialisés avec succès !';
     }
 
-    public static function cloneDefaultCriteriasForUser($userId)
-    {
-        $defaultCriterias = self::where('user_id', 0)->orderBy('position')->get();
-
-        foreach ($defaultCriterias as $defaultCriteria) {
-            $criteria = $defaultCriteria->replicate();
-            $criteria->user_id = $userId;
-            $criteria->id = null; // Laisse Laravel générer un nouvel ID
-            $criteria->save();
-        }
-
-        return 'Critères par défaut clonés pour l\'utilisateur avec succès !';
-    }
 }
