@@ -26,6 +26,7 @@ class StoreContractRequest extends FormRequest
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'job_definition_id' => 'required|int',
+            'wish_priority' => 'sometimes',
             'worker' => 'string|email',
         ];
     }

@@ -4,8 +4,8 @@ import * as path from "path";
 // import react from '@vitejs/plugin-react';
 import vue from '@vitejs/plugin-vue';
 import i18n from 'laravel-vue-i18n/vite';
-import {tscWatch} from "vite-plugin-tsc-watch";
-import {watch} from "vite-plugin-watch";
+import { tscWatch } from "vite-plugin-tsc-watch";
+import { watch } from "vite-plugin-watch";
 
 export default defineConfig({
     plugins: [
@@ -13,7 +13,7 @@ export default defineConfig({
             //css
             'resources/css/app.css', //mainly tailwind
             'resources/sass/app.scss', //mainly fa
-
+            'resources/css/fullEvaluation.css',
             //test
 
             //js
@@ -23,6 +23,7 @@ export default defineConfig({
 
             'resources/js/dropzone.js', //for draq/drop file upload
             'resources/js/dashboard-charts.js',
+            'resources/js/evaluation.js',
 
             //inertia
             'resources/js/apps.ts',//

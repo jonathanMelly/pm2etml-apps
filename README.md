@@ -3,7 +3,7 @@
 Plateforme de mise en relation entre le monde du travail et les apprentis...
 
 ## Bridge SSO
-Voir [SSO](doc/sso-bridge/)
+Voir [SSO](doc/sso-bridge/README.md)
 
 ## Environnement de développement
 Si vous voulez contribuer au projet, voici comment monter l’environnement de développement.
@@ -16,7 +16,7 @@ git clone git@github.com:jonathanMelly/pm2etml-intranet.git
 ### Prérequis
 - PHP 8.1
 - Composer
-- NPM
+- PNPM
 
 OU
 
@@ -31,7 +31,7 @@ composer install
 ### Dépendances Javascript
 Si nécessaire, installer NPM
 ```shell
-npm install
+pnpm install
 ```
 
 ### Fichier de configuration
@@ -83,6 +83,14 @@ php artisan migrate:fresh --seed
 
 ## Démarrage de l’application
 ```shell
-npm run dev
+pnpm dev
 ```
+
+## Tests
+```shell
+php artisan test -p
+```
+> `-p` => parallèle
+
+> En cas de problème "bizarre", faire un `npm build` avant
 

@@ -32,6 +32,10 @@
                                    class=" input input-secondary input-bordered">
                         </label>
 
+                        @if ($jobDefinition->by_application)
+                        <x-job-application-wish />
+                        @endif
+
                         <x-client-select :job-definition="$jobDefinition" :parts="$parts" />
 
                         <button type="submit" class="btn btn-neutral w-36 place-self-center" onclick="spin('applyButton')">
