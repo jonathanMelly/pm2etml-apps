@@ -6,7 +6,8 @@
     "private": true,
     "scripts": {
         "dev": "run-p -n dev:*",
-        "dev:php": "php artisan serve --port 8080 --ansi",
+        "dev:clean": "php artisan optimize:clear",
+        "dev:php": "php artisan serve --port 80 --ansi",
         "dev:vite": "vite",
         "build": "run-s -n build:*",
         "build:ziggy": "php artisan ziggy:generate --types-only",
@@ -45,7 +46,5 @@
         "vue-tsc": "^2.0.19"
     },
     "type": "module",
-    "dependencies": {
-        "composer": "^4.1.0"
-    }
+    "packageManager": "pnpm@9.11.0+sha512.0a203ffaed5a3f63242cd064c8fb5892366c103e328079318f78062f24ea8c9d50bc6a47aa3567cabefd824d170e78fa2745ed1f16b132e16436146b7688f19b"
 }
