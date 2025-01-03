@@ -25,7 +25,7 @@
         "@vue/tsconfig": "^0.5.1",
         "alpinejs": "^3.10.2",
         "autoprefixer": "^10.4.2",
-        "axios": "^0.25",
+        "axios": "^1.7.4",
         "daisyui": "^4.6.0",
         "dropzone": "^6.0.0-beta.2",
         "echarts": "^5.5.0",
