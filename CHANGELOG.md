@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.51.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.50.0...v1.51.0) (2025-01-06)
+
+
+### Features
+
+* **application:** Allow the worker to enter wish priority ([f8be28f](https://github.com/jonathanMelly/pm2etml-apps/commit/f8be28f9b77dda80d4b4e32d23af404b22a48ed9))
+* **application:** Perform project allocation ([9ece71b](https://github.com/jonathanMelly/pm2etml-apps/commit/9ece71bcc998e4b1aa18799375c0407e07108797))
+* **application:** Provide a button to teachers who have pending applications ([9be791d](https://github.com/jonathanMelly/pm2etml-apps/commit/9be791dc57f0e082585c31194b011c77ef86c181))
+* **application:** Resign from job ([f2c89d4](https://github.com/jonathanMelly/pm2etml-apps/commit/f2c89d49d61a486f00d24388c6ec0a8a5b1af243))
+* **application:** Show popup for project allocation ([fda5a34](https://github.com/jonathanMelly/pm2etml-apps/commit/fda5a34559789404b4c4b955d0dec3609d438a51))
+* **application:** Show the applicant/job matrix ([2ce512e](https://github.com/jonathanMelly/pm2etml-apps/commit/2ce512e21f024a121b28361e1ec200db8982e80f))
+* **hire handling:** only allow to teachers ([b570756](https://github.com/jonathanMelly/pm2etml-apps/commit/b570756a57d03051e79cc4a9c33701de938045c4))
+* **job def:** Add the 'by_application' field to job definition ([292848c](https://github.com/jonathanMelly/pm2etml-apps/commit/292848c69796d3c0936eb5fa007404cd40a6de99))
+
+
+### Bug Fixes
+
+* **applications:** Don't crash when all jobs have been allocated ([3e10fc4](https://github.com/jonathanMelly/pm2etml-apps/commit/3e10fc493ca8412cc4fffdcacb157af199e7b53e))
+* **axios:** use non affected by security issue version ([8792962](https://github.com/jonathanMelly/pm2etml-apps/commit/87929628f473d67228ba26f708d53413ef87bc89))
+* **hire:** fixed filename ([a668186](https://github.com/jonathanMelly/pm2etml-apps/commit/a668186010908d22e77bf3259672e9f0b838c596))
+* **npm:** added vue missing ts ([455c761](https://github.com/jonathanMelly/pm2etml-apps/commit/455c761997c0b5a1c0d69cc5341983e5077a7960))
+* **wish priority:** Save the value entered by the user ;) ([c376349](https://github.com/jonathanMelly/pm2etml-apps/commit/c376349c6db2c8a7d09ea8972913f04c09d07cb7))
+
 ## [1.50.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.49.0...v1.50.0) (2024-11-29)
 
 
