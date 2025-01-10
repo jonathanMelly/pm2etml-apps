@@ -17,7 +17,7 @@ class ContractPolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->can('contracts.view');
     }
 
     /**
@@ -27,7 +27,7 @@ class ContractPolicy
      */
     public function view(User $user, Contract $contract): bool
     {
-        //
+        return $user->can('contracts.view');
     }
 
     /**
@@ -54,6 +54,7 @@ class ContractPolicy
 
             return $result;
         }
+        return false;
     }
 
     /**
@@ -63,7 +64,7 @@ class ContractPolicy
      */
     public function delete(User $user, Contract $contract): bool
     {
-        //
+        return $user->can('contracts.trash');
     }
 
     /**
@@ -73,7 +74,7 @@ class ContractPolicy
      */
     public function restore(User $user, Contract $contract): bool
     {
-        //
+        return $user->can('contracts.restore');
     }
 
     /**
@@ -83,6 +84,6 @@ class ContractPolicy
      */
     public function forceDelete(User $user, Contract $contract): bool
     {
-        //
+        return false;
     }
 }
