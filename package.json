@@ -7,7 +7,7 @@
     "scripts": {
         "dev": "run-p -n dev:*",
         "dev:clean": "php artisan optimize:clear",
-        "dev:php": "php artisan serve --port 80 --ansi",
+        "dev:php": "php artisan serve --host localhost --port 80 --ansi",
         "dev:vite": "vite",
         "build": "run-s -n build:*",
         "build:ziggy": "php artisan ziggy:generate --types-only",
