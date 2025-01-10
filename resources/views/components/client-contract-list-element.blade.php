@@ -12,7 +12,9 @@
 
     $hideDone = false;
 
-    $hideUponRequest = $wc->alreadyEvaluated()?"x-show=\"!hideAlreadyEvaluated && showGroup_$groupName\"":"x-show=\"showGroup_$groupName\"";
+    $hideUponRequest = $wc->alreadyEvaluated() ?
+        "x-show=\"!hideAlreadyEvaluated && showGroup_$groupName\""
+        :"x-show=\"showGroup_$groupName\"";
 @endphp
 <tr {!! $hideUponRequest !!} class="worker-contract">
     <td>
@@ -22,6 +24,43 @@
         </label>
     </td>
     <td>
+        @if($wc->remediation_status == \App\Constants\RemediationStatus::ASKED_BY_WORKER)
+
+            <dialog id="acceptRemediation{{$wc->id}}" class="modal">
+                <div class="modal-box">
+                    <h3 class="font-bold text-lg">{{__('Accept ?')}}</h3>
+
+                    <div class="modal-action">
+
+                        <button class="btn btn-success" onclick="spin('saveButton{{$contract->id}}');document.querySelector('#remediation-{{$contract->id}}-form').submit()">
+                            <span id="saveButton{{$contract->id}}" class="hidden"></span>
+                            {{__('Accept remediation')}}
+                        </button>
+
+                        <form method="dialog">
+                            <!-- if there is a button in form, it will close the modal -->
+                            <button class="btn btn-error">{{__('Cancel')}}</button>
+                        </form>
+                    </div>
+                </div>
+            </dialog>
+            <form method="post" action="{{route('contracts.update',[$contract])}}" id="remediation-{{$contract->id}}-form"
+                  x-on:submit.prevent>
+                @method('PATCH')
+                @csrf
+                <input type="hidden" name="remediation-accept" value="1">
+
+            </form>
+
+            <span class="indicator-item indicator-start badge badge-warning -mt-2 text-xs cursor-pointer"
+                  onclick="acceptRemediation{{$wc->id}}.showModal()">
+                {{__('Remediation request')}}
+                <i class="ml-2 fa-solid fa-arrow-right" ></i>
+            </span>
+
+        @elseif($wc->remediation_status >= \App\Constants\RemediationStatus::CONFIRMED_BY_CLIENT)
+            <span class="indicator-item indicator-start badge badge-info -mt-2 text-xs">{{__('Remediation')}}</span>
+        @endif
         {{$wc->name==""?__("main"):$wc->name}} ({{$wc->getAllocatedTime()}}p)
     </td>
     <td>

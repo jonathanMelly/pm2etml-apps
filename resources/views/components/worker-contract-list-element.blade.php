@@ -21,6 +21,8 @@ $remainingDays = $progress['remainingDays'];
         throw new \App\Exceptions\DataIntegrityException($error);
     }
 
+    $canRemediate = $wc->canRemediate();
+
 
 @endphp
 <tr>
@@ -36,6 +38,13 @@ $remainingDays = $progress['remainingDays'];
                     @if(session('contractId')==$contract->id)
                     <span class="indicator-item indicator-start badge badge-primary -mt-2 text-xs">{{__('new')}}</span>
                     @endif
+                    @if($wc->remediation_status == \App\Constants\RemediationStatus::ASKED_BY_WORKER)
+                        <span class="indicator-item indicator-start badge badge-warning -mt-2 text-xs">
+                            {{__('Remediation request sent')}} <i class="ml-2 fa-solid fa-hourglass"></i>
+                        </span>
+                    @elseif($wc->remediation_status >= \App\Constants\RemediationStatus::CONFIRMED_BY_CLIENT)
+                        <span class="indicator-item indicator-start badge badge-info -mt-2 text-xs">{{__('Remediation')}}</span>
+                    @endif
                     <div class="lg:font-bold lg:text-base text-xs">{{Str::words($contract->jobDefinition->title,3)}}
                         @if($wc->name!="")
                         ({{$wc->name}})
@@ -50,11 +59,39 @@ $remainingDays = $progress['remainingDays'];
     </td>
     <td>
         {{collect($contract->clients)->transform(fn ($user)=>$user->getFirstnameL())->join(',')}}
-        @if(!$wc->alreadyEvaluated() && !$past)
-        <i onclick="switchClient{{$wc->id}}.showModal()" class="fa-solid fa-edit hover:cursor-pointer"></i>
+        @if((!$wc->alreadyEvaluated() && !$past)|| $canRemediate )
+            @if(!$canRemediate)
+                <i onclick="switchClient{{$wc->id}}.showModal()" class="fa-solid fa-edit hover:cursor-pointer"></i>
+            @endif
         <dialog id="switchClient{{$wc->id}}" class="modal">
             <div class="modal-box">
-                <h3 class="font-bold text-lg">{{__('Switch client')}}</h3>
+                <h3 class="font-bold text-lg">
+                    @if($canRemediate)
+                        {{__('Remediate with')}}</h3>
+                <div role="alert" class="alert alert-warning">
+                        <i class="fa-solid fa-warning"></i>
+
+                    <span>{{__('Remediation must be first discussed with new client and is subject to validation')}}</span>
+                </div>
+
+                <label class="input-group flex justify-between mt-2">
+                    <div class="self-center justify-self-end">{{__('Start date')}}</div>
+                    <input type="date" name="start_date" value="{{old('start_date')??now()->format(\App\DateFormat::HTML_FORMAT)}}"
+                           class=" input input-bordered input-primary">
+                </label>
+
+                <label class="input-group flex justify-between">
+                    <div class="self-center justify-self-end">{{__('End date')}}</div>
+                    <input type="date" name="end_date" value="{{old('end_date')??now()->addWeeks(3)->format(\App\DateFormat::HTML_FORMAT)}}"
+                           class=" input input-secondary input-bordered">
+                </label>
+
+                    @else
+                        {{__('Switch client')}}
+                    </h3>
+                    @endif
+
+
                 <p class="py-4">{{__('Select new client')}}</p>
                 <form method="post" action="{{route('contracts.update',[$contract])}}" id="contract-{{$contract->id}}-form"
                     x-on:submit.prevent>

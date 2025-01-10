@@ -1,6 +1,7 @@
 
 @php
     $multiple = $contract->workers_count > 1;
+    /* @var $workerContract \App\Models\WorkerContract */
 @endphp
 <td class="text-left ">
     @foreach($contract->workersContracts as $workerContract)
@@ -13,6 +14,7 @@
         @if($workerContract->alreadyEvaluated())
             </div>
         @elseif(isset($job))
+            {{-- by default, show not already evaluated jobs --}}
             <script>
                 document.addEventListener("DOMContentLoaded", function () {
                     Alpine.store('show{{$job->id}}', true)
@@ -20,6 +22,14 @@
             </script>
         @endif
     </div>
+        @role(\App\Constants\RoleName::STUDENT)
+        @if($workerContract->canRemediate())
+            <button class="text-xs" onclick="switchClient{{$workerContract->id}}.showModal()">
+                <i class="fa-solid fa-wrench fa-xs"></i> {{__('Ask for remediation')}}
+            </button>
+        @endif
+        @endrole
+
 
     @endforeach
     <div class="ml-1">

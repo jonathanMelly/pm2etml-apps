@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\RemediationStatus;
 use App\Constants\RoleName;
 use App\DateFormat;
 use App\Enums\RequiredTimeUnit;
@@ -49,6 +50,7 @@ class ContractController extends Controller
     public function index()
     {
         //
+        abort(404);
     }
 
     /**
@@ -59,7 +61,7 @@ class ContractController extends Controller
     public function create(JobDefinition $jobDefinition)
     {
         //Not used...see createApply...
-        return view('contract-create')->with(compact('jobDefinition'));
+        abort(404);
     }
 
     /**
@@ -296,6 +298,7 @@ class ContractController extends Controller
     public function show(Contract $contract)
     {
         //
+        abort(404);
     }
 
     /**
@@ -306,6 +309,7 @@ class ContractController extends Controller
     public function edit(Contract $contract)
     {
         //
+        abort(404);
     }
 
     /**
@@ -362,7 +366,7 @@ class ContractController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateContractRequest $request, Contract $contract, $index = -1, ?WorkerContract $workerContract = null): \Symfony\Component\HttpFoundation\Response|int
+    public function update(UpdateContractRequest $request, Contract $contract, $index = -1 /*used in case of bulk*/, ?WorkerContract $workerContract = null /*used in case of bulk*/): \Symfony\Component\HttpFoundation\Response|int
     {
         DB::beginTransaction();
         try {
@@ -374,70 +378,100 @@ class ContractController extends Controller
             $user = auth()->user();
             $isUpdated = false;
 
-            /* @var $start Carbon */
-            $start = $request->input('start');
-            $end = $request->input('end');
-            if ($start != null && $end != null) {
-                if ($start->isBefore($period->start) || $end->isAfter($period->end)) {
-                    $message = __('Dates must be included within current academic period');
-                    $errors = ['workersContract' . ($bulk ? "s.$index" : '') => $message];
+            //Only teachers can anything else than client
+            if($user->hasRole(RoleName::TEACHER)) {
+                /* @var $start Carbon */
+                $start = $request->input('start');
+                $end = $request->input('end');
+                if ($start != null && $end != null) {
+                    if ($start->isBefore($period->start) || $end->isAfter($period->end)) {
+                        $message = __('Dates must be included within current academic period');
+                        $errors = ['workersContract' . ($bulk ? "s.$index" : '') => $message];
 
-                    return back()->withErrors($errors)->withInput();
-                } elseif ($start->isAfter($end)) {
-                    $message = __(
-                        'Start date :start must be before end date :end',
-                        [
-                            'start' => $start->format(SwissFrenchDateFormat::DATE),
-                            'end' => $end->format(SwissFrenchDateFormat::DATE)
-                        ]
-                    );
-                    $errors = ['workersContract' . ($bulk ? "s.$index" : '') => $message];
+                        return back()->withErrors($errors)->withInput();
+                    } elseif ($start->isAfter($end)) {
+                        $message = __(
+                            'Start date :start must be before end date :end',
+                            [
+                                'start' => $start->format(SwissFrenchDateFormat::DATE),
+                                'end' => $end->format(SwissFrenchDateFormat::DATE)
+                            ]
+                        );
+                        $errors = ['workersContract' . ($bulk ? "s.$index" : '') => $message];
 
-                    return back()->withErrors($errors)->withInput();
-                }
+                        return back()->withErrors($errors)->withInput();
+                    }
 
-                //Smart update
-                foreach (['start', 'end'] as $field) {
-                    /* @var $newDate \Carbon\Carbon */
-                    $newDate = $request->input($field);
-                    if (! $newDate->isSameDay($contract->$field)) {
-                        $contract->$field = $newDate;
-                        $isUpdated = $contract->save();
-                        if ($isUpdated) {
-                            Log::info('userid ' . $user->id . ' updated contract with id ' . $contract->id . ' => ' . $field . ' to ' . $newDate);
+                    //Smart update
+                    foreach (['start', 'end'] as $field) {
+                        /* @var $newDate \Carbon\Carbon */
+                        $newDate = $request->input($field);
+                        if (!$newDate->isSameDay($contract->$field)) {
+                            $contract->$field = $newDate;
+                            $isUpdated = $contract->save();
+                            if ($isUpdated) {
+                                Log::info('userid ' . $user->id . ' updated contract with id ' . $contract->id . ' => ' . $field . ' to ' . $newDate);
+                            }
                         }
                     }
                 }
-            }
 
-            //Allocated time
-            if ($workerContract !== null) {
-                $allocated_time = $request->input('allocated_time');
-                if ($allocated_time !== null && $allocated_time != $workerContract->getAllocatedTime(RequiredTimeUnit::PERIOD)) {
-                    $workerContract->allocated_time = $allocated_time;
-                    $isUpdated = $workerContract->save();
-                    if ($isUpdated) {
-                        Log::info('userid ' . $user->id . ' updated worker contract with id ' . $workerContract->id . ' => allocated_time to ' . $allocated_time);
+                //Allocated time only allowed through bulk
+                if ($workerContract !== null) {
+                    $allocated_time = $request->input('allocated_time');
+                    if ($allocated_time !== null && $allocated_time != $workerContract->getAllocatedTime(RequiredTimeUnit::PERIOD)) {
+                        $workerContract->allocated_time = $allocated_time;
+                        $isUpdated = $workerContract->save();
+                        Log::info('userid ' . $user->id . ' updated worker contract with id ' . $workerContract->id
+                            . ' => allocated_time : ' . $allocated_time);
                     }
                 }
+
+                $remediationAccept = $request->input('remediation-accept');
+                if ($remediationAccept !== null) {
+                    $workerContract = $contract->workersContracts()->firstOrFail();
+                    /** @noinspection PhpIntRangesMismatchInspection */
+                    $workerContract->remediation_status = $remediationAccept ?
+                        RemediationStatus::CONFIRMED_BY_CLIENT
+                        :RemediationStatus::REFUSED_BY_CLIENT;
+                    $isUpdated = $workerContract->save();
+                }
+
+                if ($isUpdated) {
+                    Log::info('userid ' . $user->id . ' updated worker contract with id ' . $workerContract->id
+                        . ' => remediation status : '.$workerContract->remediation_status);
+                }
+
             }
 
-            //Clients
-            $clientId = $request->input('clientId');
-            if ($clientId !== null) {
-                $periodIdFilter = $request->get(AcademicPeriodFilter::ACADEMIC_PERIOD_ID_REQUEST_PARAM);
-                $gm = $user->groupMember($periodIdFilter);
-                if ($contract->workerContract($gm)->firstOrFail()->alreadyEvaluated()) {
-                    Log::warning('userid ' . $user->id . ' tried to update already evaluated contract with id ' . $contract->id . ' => clientId to ' . $clientId);
-                } else {
-                    $oldClientId = $contract->clients->firstOrFail()->id;
-                    $changes = $contract->clients()->sync([$clientId]);
-                    if (collect($changes)->transform(fn($k) => count($k))->sum() > 0) {
-                        $isUpdated = true;
-                        Cache::forget('client-' . $oldClientId . '-percentage');
-                        Cache::forget('client-' . $clientId . '-percentage');
-                        Cache::forget("involvedGroupNames-$clientId");
-                        Log::info('userid ' . $user->id . ' updated contract with id ' . $contract->id . ' : client moved from id ' . $oldClientId . ' => ' . $clientId);
+            else if ($user->hasRole(RoleName::STUDENT))
+            {
+                //Update clients (only or with remediation)
+                $clientId = $request->input('clientId');
+                if ($clientId !== null) {
+                    $periodIdFilter = $request->get(AcademicPeriodFilter::ACADEMIC_PERIOD_ID_REQUEST_PARAM);
+                    $gm = $user->groupMember($periodIdFilter);
+                    $workerContract = $contract->workerContract($gm)->firstOrFail();
+                    if ($workerContract->alreadyEvaluated() && !$workerContract->canRemediate()) {
+                        Log::warning('userid ' . $user->id . ' tried to update non remediable already evaluated contract with id ' . $contract->id . ' => clientId to ' . $clientId);
+                    } else {
+                        $oldClientId = $contract->clients->firstOrFail()->id;
+                        $changes = $contract->clients()->sync([$clientId]);
+                        if (collect($changes)->transform(fn($k) => count($k))->sum() > 0) {
+                            $isUpdated = true;
+                            Cache::forget('client-' . $oldClientId . '-percentage');
+                            Cache::forget('client-' . $clientId . '-percentage');
+                            Cache::forget("involvedGroupNames-$clientId");
+                            Log::info('userid ' . $user->id . ' updated contract with id ' . $contract->id . ' : client moved from id ' . $oldClientId . ' => ' . $clientId);
+                        }
+
+                        //Remediation
+                        if($workerContract->canRemediate())
+                        {
+                            /** @noinspection PhpIntRangesMismatchInspection */
+                            $workerContract->remediation_status = RemediationStatus::ASKED_BY_WORKER;
+                            $isUpdated = $workerContract->save();
+                        }
                     }
                 }
             }

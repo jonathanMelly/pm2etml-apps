@@ -226,7 +226,9 @@ class SummariesService
             /* @var $contract Contract */
             $contract = $wContract->contract;
 
-            if ($wContract->alreadyEvaluated() && $wContract->getAllocatedTime() > 0) {
+            //Do not use $wContract->alreadyEvaluated because it handles remediation
+            //But even with remediation, we keep the old result...
+            if ($wContract->success !== null && $wContract->getAllocatedTime() > 0) {
 
                 $groupMember = $wContract->groupMember;
                 $worker = $groupMember->user;

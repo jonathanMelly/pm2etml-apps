@@ -20,9 +20,10 @@ class UpdateContractRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'start' => 'date|before:end',
-            'end' => 'date|after:start',
-            'clientId' => 'int',
+            'start' => 'sometimes|date|before:end',
+            'end' => 'sometimes|date|after:start',
+            'clientId' => 'sometimes|int',
+            'remediation-accept' => 'sometimes|int',
         ];
     }
 }
