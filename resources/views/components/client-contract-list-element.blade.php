@@ -36,6 +36,7 @@
                             @method('PATCH')
                             @csrf
                             <input type="hidden" name="remediation-accept" value="1" id="rem-{{$contract->id}}">
+                            <input type="submit" class="hidden" value="{{__('Yes')}}">{{-- for laravel simple test frmwk --}}
                             <button class="btn btn-success" onclick="spin('remYes{{$contract->id}}');
                                 document.getElementById('remediation-{{$contract->id}}-form').submit()">
                                 <span id="remYes{{$contract->id}}" class="hidden"></span>
