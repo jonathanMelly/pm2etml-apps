@@ -84,8 +84,7 @@ class WorkerContract extends Pivot
 
     public function hasPendingRemediation(): bool
     {
-        return !($this->remediation_status==RemediationStatus::NONE
-            || $this->remediation_status==RemediationStatus::EVALUATED);
+        return $this->remediation_status===RemediationStatus::CONFIRMED_BY_CLIENT;
     }
 
     public function getSuccessAsBoolString(): string

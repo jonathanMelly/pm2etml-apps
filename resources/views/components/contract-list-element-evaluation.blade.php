@@ -3,7 +3,7 @@
     $multiple = $contract->workers_count > 1;
     /* @var $workerContract \App\Models\WorkerContract */
 @endphp
-<td class="text-left ">
+<td class="text-left flex">
     @foreach($contract->workersContracts as $workerContract)
 
     <div class="ml-5 w-7 bg-opacity-50 bg-{{$workerContract->alreadyEvaluated()?($workerContract->success?'success':'error'):'warning'}}">
@@ -24,7 +24,7 @@
     </div>
         @role(\App\Constants\RoleName::STUDENT)
         @if($workerContract->canRemediate())
-            <button class="text-xs" onclick="switchClient{{$workerContract->id}}.showModal()">
+            <button class="ml-2 btn btn-outline btn-xs btn-success text-xs" onclick="switchClient{{$workerContract->id}}.showModal()">
                 <i class="fa-solid fa-wrench fa-xs"></i> {{__('Ask for remediation')}}
             </button>
         @endif

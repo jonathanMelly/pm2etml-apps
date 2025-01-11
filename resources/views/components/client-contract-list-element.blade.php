@@ -28,36 +28,44 @@
 
             <dialog id="acceptRemediation{{$wc->id}}" class="modal">
                 <div class="modal-box">
-                    <h3 class="font-bold text-lg">{{__('Accept ?')}}</h3>
+                    <h3 class="font-bold text-lg">{{__('Validate remediation request for :name and project :project',["name"=>$workers,"project"=>$contract->jobDefinition->title])}} ?</h3>
 
                     <div class="modal-action">
+                        <form>{{-- Firts form seems to be eaten by something ??? --}}</form>
+                        <form method="post" action="{{route('contracts.update',[$contract])}}" id="remediation-{{$contract->id}}-form" x-on:submit.prevent>
+                            @method('PATCH')
+                            @csrf
+                            <input type="hidden" name="remediation-accept" value="1" id="rem-{{$contract->id}}">
+                            <button class="btn btn-success" onclick="spin('remYes{{$contract->id}}');
+                                document.getElementById('remediation-{{$contract->id}}-form').submit()">
+                                <span id="remYes{{$contract->id}}" class="hidden"></span>
+                                {{__('Yes')}}
+                            </button>
+                            <button class="btn btn-error ml-1" onclick="document.getElementById('rem-{{$contract->id}}').value='0';
+                                spin('remNo{{$contract->id}}');document.getElementById('remediation-{{$contract->id}}-form').submit()">
+                                <span id="remNo{{$contract->id}}" class="hidden"></span>
+                                {{__('No')}}
+                            </button>
 
-                        <button class="btn btn-success" onclick="spin('saveButton{{$contract->id}}');document.querySelector('#remediation-{{$contract->id}}-form').submit()">
-                            <span id="saveButton{{$contract->id}}" class="hidden"></span>
-                            {{__('Accept remediation')}}
-                        </button>
+                        </form>
+
 
                         <form method="dialog">
                             <!-- if there is a button in form, it will close the modal -->
-                            <button class="btn btn-error">{{__('Cancel')}}</button>
+                            <button class="btn btn-outline ml-1">{{__('Cancel')}}</button>
                         </form>
                     </div>
                 </div>
             </dialog>
-            <form method="post" action="{{route('contracts.update',[$contract])}}" id="remediation-{{$contract->id}}-form"
-                  x-on:submit.prevent>
-                @method('PATCH')
-                @csrf
-                <input type="hidden" name="remediation-accept" value="1">
 
-            </form>
 
             <span class="indicator-item indicator-start badge badge-warning -mt-2 text-xs cursor-pointer"
                   onclick="acceptRemediation{{$wc->id}}.showModal()">
                 {{__('Remediation request')}}
                 <i class="ml-2 fa-solid fa-arrow-right" ></i>
             </span>
-
+        @elseif($wc->remediation_status === \App\Constants\RemediationStatus::REFUSED_BY_CLIENT)
+            <span class="indicator-item indicator-start badge badge-error -mt-2 text-xs">{{__('Remediation refused')}}</span>
         @elseif($wc->remediation_status >= \App\Constants\RemediationStatus::CONFIRMED_BY_CLIENT)
             <span class="indicator-item indicator-start badge badge-info -mt-2 text-xs">{{__('Remediation')}}</span>
         @endif

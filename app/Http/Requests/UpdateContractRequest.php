@@ -22,6 +22,8 @@ class UpdateContractRequest extends FormRequest
         return [
             'start' => 'sometimes|date|before:end',
             'end' => 'sometimes|date|after:start',
+            'start_date' => 'sometimes|date|before:end_date',//for remediation
+            'end_date' => 'sometimes|date|after:start_date',//for remediation
             'clientId' => 'sometimes|int',
             'remediation-accept' => 'sometimes|int',
         ];

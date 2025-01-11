@@ -20,19 +20,18 @@ use App\Models\User;
 use App\Models\WorkerContract;
 use App\Models\WorkerContractEvaluationLog;
 use App\SwissFrenchDateFormat;
-use Exception;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Response;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
-use Maatwebsite\Excel\Facades\Excel;
 
 class ContractController extends Controller
 {
@@ -378,50 +377,21 @@ class ContractController extends Controller
             $user = auth()->user();
             $isUpdated = false;
 
-            //Only teachers can anything else than client
+            //Teachers reserved (except date that can be adjusted upon remediation too)
             if($user->hasRole(RoleName::TEACHER)) {
-                /* @var $start Carbon */
-                $start = $request->input('start');
-                $end = $request->input('end');
-                if ($start != null && $end != null) {
-                    if ($start->isBefore($period->start) || $end->isAfter($period->end)) {
-                        $message = __('Dates must be included within current academic period');
-                        $errors = ['workersContract' . ($bulk ? "s.$index" : '') => $message];
 
-                        return back()->withErrors($errors)->withInput();
-                    } elseif ($start->isAfter($end)) {
-                        $message = __(
-                            'Start date :start must be before end date :end',
-                            [
-                                'start' => $start->format(SwissFrenchDateFormat::DATE),
-                                'end' => $end->format(SwissFrenchDateFormat::DATE)
-                            ]
-                        );
-                        $errors = ['workersContract' . ($bulk ? "s.$index" : '') => $message];
-
-                        return back()->withErrors($errors)->withInput();
-                    }
-
-                    //Smart update
-                    foreach (['start', 'end'] as $field) {
-                        /* @var $newDate \Carbon\Carbon */
-                        $newDate = $request->input($field);
-                        if (!$newDate->isSameDay($contract->$field)) {
-                            $contract->$field = $newDate;
-                            $isUpdated = $contract->save();
-                            if ($isUpdated) {
-                                Log::info('userid ' . $user->id . ' updated contract with id ' . $contract->id . ' => ' . $field . ' to ' . $newDate);
-                            }
-                        }
-                    }
+                $dateResult = $this->handleDateAdjustment($request, $contract,$period,$user,$bulk,$index);
+                if($dateResult instanceof \Symfony\Component\HttpFoundation\RedirectResponse) {
+                    return $dateResult;
                 }
+                $isUpdated |= $dateResult;
 
-                //Allocated time only allowed through bulk
+                //Allocated time only allowed through bulk currently
                 if ($workerContract !== null) {
                     $allocated_time = $request->input('allocated_time');
                     if ($allocated_time !== null && $allocated_time != $workerContract->getAllocatedTime(RequiredTimeUnit::PERIOD)) {
                         $workerContract->allocated_time = $allocated_time;
-                        $isUpdated = $workerContract->save();
+                        $isUpdated |= $workerContract->save();
                         Log::info('userid ' . $user->id . ' updated worker contract with id ' . $workerContract->id
                             . ' => allocated_time : ' . $allocated_time);
                     }
@@ -434,7 +404,7 @@ class ContractController extends Controller
                     $workerContract->remediation_status = $remediationAccept ?
                         RemediationStatus::CONFIRMED_BY_CLIENT
                         :RemediationStatus::REFUSED_BY_CLIENT;
-                    $isUpdated = $workerContract->save();
+                    $isUpdated |= $workerContract->save();
                 }
 
                 if ($isUpdated) {
@@ -458,7 +428,7 @@ class ContractController extends Controller
                         $oldClientId = $contract->clients->firstOrFail()->id;
                         $changes = $contract->clients()->sync([$clientId]);
                         if (collect($changes)->transform(fn($k) => count($k))->sum() > 0) {
-                            $isUpdated = true;
+                            $isUpdated |= true;
                             Cache::forget('client-' . $oldClientId . '-percentage');
                             Cache::forget('client-' . $clientId . '-percentage');
                             Cache::forget("involvedGroupNames-$clientId");
@@ -468,9 +438,18 @@ class ContractController extends Controller
                         //Remediation
                         if($workerContract->canRemediate())
                         {
+                            $start = Carbon::createFromFormat(DateFormat::HTML_FORMAT, $request->input('start_date'));
+                            $end = Carbon::createFromFormat(DateFormat::HTML_FORMAT, $request->input('end_date'));
+                            $request->merge(["start"=>$start,"end"=>$end]);
+                            $dateResult = $this->handleDateAdjustment($request, $contract,$period,$user,$bulk,$index);
+                            if($dateResult instanceof \Symfony\Component\HttpFoundation\RedirectResponse) {
+                                return $dateResult;
+                            }
+                            $isUpdated |= $dateResult;
+
                             /** @noinspection PhpIntRangesMismatchInspection */
                             $workerContract->remediation_status = RemediationStatus::ASKED_BY_WORKER;
-                            $isUpdated = $workerContract->save();
+                            $isUpdated |= $workerContract->save();
                         }
                     }
                 }
@@ -654,5 +633,47 @@ class ContractController extends Controller
         $job = $contracts->firstOrFail()->jobDefinition;
 
         return $view->with(compact('contracts', 'job'));
+    }
+
+    private function handleDateAdjustment(UpdateContractRequest $request, Contract $contract,AcademicPeriod $period,
+                                          User $user,bool $bulk,int $index) : RedirectResponse|bool
+    {
+        /* @var $start Carbon */
+        $start = $request->input('start');
+        $end = $request->input('end');
+        if ($start != null && $end != null) {
+            if ($start->isBefore($period->start) || $end->isAfter($period->end)) {
+                $message = __('Dates must be included within current academic period');
+                $errors = ['workersContract' . ($bulk ? "s.$index" : '') => $message];
+
+                return back()->withErrors($errors)->withInput();
+            } elseif ($start->isAfter($end)) {
+                $message = __(
+                    'Start date :start must be before end date :end',
+                    [
+                        'start' => $start->format(SwissFrenchDateFormat::DATE),
+                        'end' => $end->format(SwissFrenchDateFormat::DATE)
+                    ]
+                );
+                $errors = ['workersContract' . ($bulk ? "s.$index" : '') => $message];
+
+                return back()->withErrors($errors)->withInput();
+            }
+
+            //Smart update
+            foreach (['start', 'end'] as $field) {
+                /* @var $newDate \Carbon\Carbon */
+                $newDate = $request->input($field);
+                if (!$newDate->isSameDay($contract->$field)) {
+                    $contract->$field = $newDate;
+                    $isUpdated = $contract->save();
+                    if ($isUpdated) {
+                        Log::info('userid ' . $user->id . ' updated contract with id ' . $contract->id . ' => ' . $field . ' to ' . $newDate);
+                    }
+                }
+            }
+            return $isUpdated??false;
+        }
+        return false;
     }
 }
