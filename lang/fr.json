@@ -59,7 +59,6 @@
     "If you did not request a password reset, no further action is required.": "Si vous n'avez pas demandé de réinitialisation de mot de passe, vous pouvez ignorer ce message.",
     "If you do not have an account, you may create one by clicking the button below. After creating an account, you may click the invitation acceptance button in this email to accept the team invitation:": "Si vous n'avez pas de compte, vous pouvez en créer un en cliquant sur le bouton ci-dessous. Ensuite, vous pourrez cliquer sur le bouton de cet e-mail pour accepter l'invitation de rejoindre l'équipe :",
     "If you're having trouble clicking the \":actionText\" button, copy and paste the URL below\ninto your web browser:": "Si le bouton \":actionText\" ne fonctionne pas, copiez/collez l'adresse ci-dessous dans votre navigateur :\n",
-    "If you’re having trouble clicking the \":actionText\" button, copy and paste the URL below\ninto your web browser:": "Si le bouton \":actionText\" ne fonctionne pas, copiez/collez l'adresse ci-dessous dans votre navigateur :\n",
     "Last active": "Dernier actif",
     "Last used": "Dernière utilisation",
     "Leave": "Quitter",
@@ -357,5 +356,6 @@
     "Menu": "Menu",
     "Infos": "Infos",
     "Actions": "Actions",
-    "No jobs": "Pas d'emplois"
+    "No jobs": "Pas d'emplois",
+    "Validate remediation request for :name and project :project": "Valider la demande de remédiation pour :name et le projet :project"
 }
