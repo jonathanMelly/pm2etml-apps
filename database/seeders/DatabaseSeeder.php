@@ -28,7 +28,8 @@ class DatabaseSeeder extends Seeder
             PermissionV3Seeder::class,
             EvaluationSettingsSeeder::class,
 
-        ];
+        ,
+            DefaultCriteriaSeeder::class,];
 
         collect($seeds)->each(function ($seeder) {
 

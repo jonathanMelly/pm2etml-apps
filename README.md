@@ -16,7 +16,7 @@ git clone git@github.com:jonathanMelly/pm2etml-intranet.git
 ### Prérequis
 - PHP 8.1
 - Composer
-- NPM
+- PNPM
 
 OU
 
@@ -31,7 +31,7 @@ composer install
 ### Dépendances Javascript
 Si nécessaire, installer NPM
 ```shell
-npm install
+pnpm install
 ```
 
 ### Fichier de configuration
@@ -83,7 +83,7 @@ php artisan migrate:fresh --seed
 
 ## Démarrage de l’application
 ```shell
-npm run dev
+pnpm dev
 ```
 
 ## Tests

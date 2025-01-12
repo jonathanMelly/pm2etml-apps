@@ -1,9 +1,9 @@
 <x-app-layout>
-
-    <head>
-        @vite(['resources/css/app.css', 'resources/js/evaluation.js'])
-        <title>Évaluation pratique</title>
-    </head>
+    @push('custom-scripts')
+        @once
+            @vite(['resources/js/evaluation.js'])
+        @endonce
+    @endpush
 
     <div id="eval" class="evaluation-form space-y-4 p-6 relative">
 
@@ -38,6 +38,16 @@
                 'studentData' => $studentsDatas,
                 'jsonSave' => $jsonSave,
             ]" />
+
+
+            @if ($isTeacher)
+                <!-- Bouton pour modifier les critères personnalisés -->
+                <a href="{{ route('criterias.create') }}"
+                    class="flex items-center absolute z-10 top-[1.8rem] right-[4.7rem] text-gray-600 hover:text-cyan-400">
+                    <img class="w-6 h-6 mr-2" src="{{ asset('img/up-arrow.svg') }}" alt="uparrow">
+                    {{ __('Edit criteria') }}
+                </a>
+            @endif
 
             {{--
                 Ce bloc de code PHP dans une vue Blade effectue les opérations suivantes :
@@ -97,7 +107,7 @@
                 <!-- Affichage des informations selon le rôle de l'utilisateur (enseignant ou étudiant) -->
                 @if ($isTeacher)
                     <!-- Informations de l'étudiant (enseignant vue) -->
-                    <h3 class="text-xl font-semibold text-blue-600"> {{ __('fullEvaluation.studentLabel') }} :
+                    <h3 class="text-xl font-semibold text-blue-600"> {{ __('Student') }} :
                         <span
                             class="text-gray-800">{{ $studentDetails->student_firstname .
                                 ' ' .
@@ -108,11 +118,11 @@
                         </span>
                     </h3>
 
-                    <h4 class="text-lg font-bold text-gray-700">{{ __('fullEvaluation.projectName') }} : <span
+                    <h4 class="text-lg font-bold text-gray-700">{{ __('Project name') }} : <span
                             class="font-medium">{{ $studentDetails->project_name . ' (' . $studentDetails->job_id . ')' }}</span>
                     </h4>
 
-                    <h4 class="text-lg font-bold text-gray-700">{{ __('fullEvaluation.className') }}<span
+                    <h4 class="text-lg font-bold text-gray-700">{{ __('Class name') }}<span
                             class="font-medium">{{ $studentDetails->class_name . ' (' . $studentDetails->class_id . ')' }}</span>
                     </h4>
 
@@ -122,14 +132,14 @@
                     </button>
                 @else
                     <!-- Informations de l'enseignant (étudiant vue) -->
-                    <h3 class="text-xl font-semibold text-green-700">{{ __('fullEvaluation.teacherName') }} : <span
+                    <h3 class="text-xl font-semibold text-green-700">{{ __('Teacher name') }} : <span
                             class="text-gray-800">{{ $studentDetails->evaluator_firstname . ' ' . $studentDetails->evaluator_lastname . ' (' . $studentDetails->evaluator_id . ')' }}</span>
                     </h3>
-                    <h4 class="text-lg font-bold  text-gray-700">{{ __('fullEvaluation.projectName') }} : <span
+                    <h4 class="text-lg font-bold  text-gray-700">{{ __('Project name') }} : <span
                             class="font-medium">{{ $studentDetails->project_name . ' (' . $studentDetails->job_id . ')' }}</span>
                     </h4>
 
-                    <h4 class="text-lg font-bold text-gray-700">{{ __('fullEvaluation.className') }} : <span
+                    <h4 class="text-lg font-bold text-gray-700">{{ __('Class name') }} : <span
                             class="font-medium">{{ $studentDetails->class_name . '(' . $studentDetails->class_id . ')' }}</span>
                     </h4>
                 @endif
@@ -162,35 +172,35 @@
                                     id="id-{{ $studentDetails->student_id }}-btn-eval80">{{ __('fullEvaluation.eval80') }}
                                 </button>
 
-                                <!-- Évaluation 100 -->
-                                <button type="button"
-                                    class="eval-tab-btn btn {{ $hasEval100 ? 'btn-secondary' : 'btn-outline' }}"
-                                    data-level="eval100" onclick="changeTab(this)"
-                                    id="id-{{ $studentDetails->student_id }}-btn-eval100" {{ $hasEval80 ? 'disabled' : '' }}>
-                                    {{ __('fullEvaluation.eval100') }}
-                                </button>
-                            @endrole
+                            <!-- Évaluation 100 -->
+                            <button type="button"
+                                class="eval-tab-btn btn {{ $hasEval100 ? 'btn-secondary' : 'btn-outline' }}"
+                                data-level="eval100" onclick="changeTab(this)"
+                                id="id-{{ $studentDetails->student_id }}-btn-eval100" {{ $hasEval80 ? 'disabled' : '' }}>
+                                {{ __('Evaluation 100%') }}
+                            </button>
+                        @endrole
 
-                            @role(\App\Constants\RoleName::STUDENT)
-                                <!-- Auto-évaluation 80 -->
-                                <button type="button"
-                                    class="eval-tab-btn btn {{ $hasAuto80 ? 'btn-primary' : 'btn-outline' }}"
-                                    data-level="auto80" onclick="changeTab(this)"
-                                    id="id-{{ $studentDetails->student_id }}-btn-auto80">{{ __('fullEvaluation.auto3_4') }}
-                                </button>
-                                <!-- Auto-évaluation 100 -->
-                                <button type="button"
-                                    class="eval-tab-btn btn {{ $hasAuto100 ? 'btn-primary' : 'btn-outline' }}"
-                                    data-level="auto100" onclick="changeTab(this)"
-                                    id="id-{{ $studentDetails->student_id }}-btn-auto100"
-                                    {{ $hasAuto80 ? 'disabled' : '' }}>{{ __('fullEvaluation.auto100') }}
-                                </button>
-                            @endrole
-                        @endhasanyrole
+                        @role(\App\Constants\RoleName::STUDENT)
+                            <!-- Auto-évaluation 80 -->
+                            <button type="button"
+                                class="eval-tab-btn btn {{ $hasAuto80 ? 'btn-primary' : 'btn-outline' }}"
+                                data-level="auto80" onclick="changeTab(this)"
+                                id="id-{{ $studentDetails->student_id }}-btn-auto80">{{ __('Auto evaluation 3/4') }}
+                            </button>
+                            <!-- Auto-évaluation 100 -->
+                            <button type="button"
+                                class="eval-tab-btn btn {{ $hasAuto100 ? 'btn-primary' : 'btn-outline' }}"
+                                data-level="auto100" onclick="changeTab(this)"
+                                id="id-{{ $studentDetails->student_id }}-btn-auto100"
+                                {{ !$hasAuto80 ? 'disabled' : '' }}>{{ __('Auto evaluation 100%') }}
+                            </button>
+                        @endrole
+
 
                         <button type="button" class="eval-tab-btn btn btn-outline btn-success"
                             id="id-{{ $studentDetails->student_id }}-validation-btn"
-                            onclick="validateEvaluation('{{ $studentDetails->student_id }}-btn-')">{{ __('fullEvaluation.btnValidation') }}
+                            onclick="validateEvaluation('{{ $studentDetails->student_id }}-btn-')">{{ __('Validate') }}
                         </button>
                     </div>
 
@@ -201,7 +211,7 @@
                                 id="id-{{ $studentDetails->student_id }}-{{ strtolower($category) }}-container"
                                 class="category-header flex justify-between items-center mb-4">
                                 <h2 class="text-xl font-bold text-cyan-700">
-                                    {{ __('fullEvaluation.' . $category) }}
+                                    {{ __($category) }}
                                 </h2>
 
                                 <button type="button"
@@ -219,7 +229,7 @@
                                             <span
                                                 class="hidden absolute bg-gray-700 text-white p-2 rounded mt-[-50px] shadow-lg"
                                                 id="description-{{ $criterion['id'] }}">
-                                                {{-- {{ __('fullEvaluation.criterias' . $criterion['id'] . '_description') }} --}}
+                                                {{-- {{  $criterion['description'] }} --}}
                                                 {{ $criterion['description'] }}
                                             </span>
                                             <x-criterion-card :criterion="$criterion" :visible-sliders="$visibleSliders" :appreciation-labels="$appreciationLabels"
@@ -260,7 +270,7 @@
                     <div class="remark mt-4 relative w-full">
                         <label for="generalRemark"
                             class="w-full block font-medium text-gray-900 dark:text-gray-200 mb-2">
-                            {{ __('fullEvaluation.general_remark') }}
+                            {{ __('General remark') }}
                         </label>
 
                         <div class="flex h-44 relative">
@@ -338,7 +348,7 @@
                             class="p-2 rounded {{ $isUpdate ? 'bg-orange-500 hover:bg-orange-600' : 'bg-purple-500 hover:bg-purple-600' }} font-semibold text-gray-100"
                             data-student-id="{{ $studentDetails->student_id }}"
                             data-update="{{ $isUpdate ? true : false }}">
-                            {{ $isUpdate ? __('fullEvaluation.msgUpdateEval') : __('fullEvaluation.msgSubmitEval') }}
+                            {{ $isUpdate ? __('Update evaluation') : __('Submit evaluation') }}
                         </button>
                     </div>
 

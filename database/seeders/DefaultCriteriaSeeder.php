@@ -1,4 +1,5 @@
 <?php
+namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\DefaultCriteria;
@@ -7,15 +8,16 @@ class DefaultCriteriaSeeder extends Seeder
 {
     public function run()
     {
+        DefaultCriteria::where('user_id', '=', '0')->delete();
         $criterias = [
-            ['criteria_name' => 'Régularité', 'category' => 'PROFESSIONNELLES', 'description' => "Évalue la constance et la régularité dans l'exécution des tâches.", 'position' => 1],
-            ['criteria_name' => 'Qualité', 'category' => 'PROFESSIONNELLES', 'description' => "Mesure la précision, la conformité et la qualité du travail effectué.", 'position' => 2],
-            ['criteria_name' => 'Maîtrise', 'category' => 'PROFESSIONNELLES', 'description' => "Évalue le niveau de maîtrise des compétences techniques spécifiques au poste.", 'position' => 3],
-            ['criteria_name' => 'Autonomie', 'category' => 'PROFESSIONNELLES', 'description' => "Mesure la capacité à travailler de manière autonome et à gérer les tâches sans supervision constante.", 'position' => 4],
-            ['criteria_name' => 'Organisation', 'category' => 'METHODOLOGIQUES', 'description' => "Évalue l'efficacité dans l'organisation et la structuration des processus de travail.", 'position' => 5],
-            ['criteria_name' => 'Communication', 'category' => 'METHODOLOGIQUES', 'description' => "Mesure la clarté, la pertinence et l'efficacité de la communication verbale et écrite.", 'position' => 6],
-            ['criteria_name' => 'Innovation', 'category' => 'METHODOLOGIQUES', 'description' => "Évalue la capacité à innover et à intégrer des pratiques durables dans le cadre du travail.", 'position' => 7],
-            ['criteria_name' => 'Esprit d’Équipe', 'category' => 'SOCIALES', 'description' => "Mesure l'aptitude à collaborer efficacement au sein d'une équipe multidisciplinaire.", 'position' => 8]
+            ['name' => 'Régularité', 'category' => 'Professional skills', 'description' => "Assesses consistency and regularity in task performance.", 'position' => 1],
+            ['name' => 'Qualité', 'category' => 'Professional skills', 'description' => "Measures the accuracy, conformity and quality of work performed.", 'position' => 2],
+            ['name' => 'Maîtrise', 'category' => 'Professional skills', 'description' => "Assesses the level of mastery of technical skills specific to the position.", 'position' => 3],
+            ['name' => 'Autonomie', 'category' => 'Professional skills', 'description' => "Measures the ability to work independently and manage tasks without constant supervision.", 'position' => 4],
+            ['name' => 'Organisation', 'category' => 'Methodological skills', 'description' => "Evaluates the effectiveness in organizing and structuring work processes.", 'position' => 5],
+            ['name' => 'Communication', 'category' => 'Methodological skills', 'description' => "Measures the clarity, relevance and effectiveness of verbal and written communication.", 'position' => 6],
+            ['name' => 'Innovation', 'category' => 'Methodological skills', 'description' => "Assesses the ability to innovate and integrate sustainable practices into the workplace.", 'position' => 7],
+            ['name' => 'Esprit d’Équipe', 'category' => 'Social skills', 'description' => "Measures the ability to collaborate effectively within a multidisciplinary team.", 'position' => 8]
         ];
 
         foreach ($criterias as $criteria) {

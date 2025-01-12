@@ -1,12 +1,13 @@
 <?php
 
 use App\Constants\FileFormat;
+use App\Constants\RoleName;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\SSOController;
 use App\Http\Controllers\ContractController;
-use App\Http\Controllers\CriteriaController;
+use App\Http\Controllers\FullevaluationCriteriaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeployController;
 use App\Http\Controllers\DmzAssetController;
@@ -63,10 +64,12 @@ Route::middleware(['auth', 'app'])->group(function () {
     Route::post('evaluation/storeEvaluation', [EvaluationController::class, 'storeEvaluation'])->name('evaluation.storeEvaluation');;
 
     // Route pour afficher le formulaire de création ou de modification des critères personnalisés
-    Route::get('/criterias/create', [CriteriaController::class, 'create'])->name('create.custom_criterias');
-
-    // Route pour mettre à jour les critères personnalisés
-    Route::post('/criterias/update', [CriteriaController::class, 'update'])->name('update.custom_criterias');
+    Route::group(['middleware' => ['role:'.implode("|",RoleName::TEACHER_AND_HIGHER_RANK)]], function () {
+        Route::get('/criterias/create', [FullevaluationCriteriaController::class, 'create'])
+            ->name('criterias.create');
+        Route::post('/criterias/update', [FullevaluationCriteriaController::class, 'update'])
+            ->name('criterias.update');
+    });
 
     // End HCS
 
@@ -97,7 +100,7 @@ Route::middleware(['auth', 'app'])->group(function () {
     Route::get('evaluation-export', \App\Http\Controllers\EvaluationExportController::class)->name('evaluation-export');
 
     // Manage pending wishes
-    Route::group(['middleware' => ['role:prof']], function () {
+    Route::group(['middleware' => ['role:'.implode("|",RoleName::TEACHER_AND_HIGHER_RANK)]], function () {
         Route::get('applications', [ContractController::class, 'pendingContractApplications'])
             ->name('applications');
         Route::post('applications', [ContractController::class, 'confirmApplication'])

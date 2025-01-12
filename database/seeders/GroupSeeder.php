@@ -55,7 +55,7 @@ class GroupSeeder extends Seeder
         }
 
         //Groups
-        AcademicPeriod::all()->each(function ($academicPeriod) {
+        AcademicPeriod::where('id','<','31' /*until 2050*/)->each(function ($academicPeriod) {
             GroupName::all()->each(function ($groupName) use ($academicPeriod) {
                 Group::firstOrCreate([
                     'academic_period_id' => $academicPeriod->id,
