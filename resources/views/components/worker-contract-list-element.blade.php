@@ -39,7 +39,7 @@ $remainingDays = $progress['remainingDays'];
                     <span class="indicator-item indicator-start badge badge-primary -mt-2 text-xs">{{__('new')}}</span>
                     @endif
                     @if($wc->remediation_status == \App\Constants\RemediationStatus::ASKED_BY_WORKER)
-                        <span class="indicator-item indicator-start badge badge-warning -mt-2 text-xs ml-10">
+                        <span class="indicator-item indicator-start badge badge-warning -mt-2 text-xs ml-20">
                             {{__('Remediation request sent')}} <i class="ml-2 fa-solid fa-hourglass"></i>
                         </span>
                     @elseif($wc->remediation_status == \App\Constants\RemediationStatus::REFUSED_BY_CLIENT)
