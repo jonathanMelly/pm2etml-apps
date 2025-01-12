@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.52.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.51.0...v1.52.0) (2025-01-12)
+
+
+### Features
+
+* **remediation:** student can request a remediation that is validated (or refused) by the client... Evaluation can then be changed ([1066ba8](https://github.com/jonathanMelly/pm2etml-apps/commit/1066ba8b1b4ccd8f5730c432fa9b2891ac5efdac))
+
+
+### Bug Fixes
+
+* **app name:** remove traces of intranet ([67cd1b4](https://github.com/jonathanMelly/pm2etml-apps/commit/67cd1b49a6119dbb89d55be7e264d89492df7842))
+
 ## [1.51.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.50.0...v1.51.0) (2025-01-06)
 
 
