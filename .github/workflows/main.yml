@@ -28,6 +28,13 @@ jobs:
         with:
           php-version: '8.2'
           coverage: xdebug
+          cache: composer  # This enables composer cache
+
+      - uses: actions/cache/restore@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+
       - uses: actions/checkout@v4
 
       #SETUP LARAVEL
@@ -35,6 +42,11 @@ jobs:
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
       - name: Install Dependencies
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+      - uses: actions/cache/save@v4
+        if: success()
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
       - name: Generate key
         run: php artisan key:generate
       - name: Directory Permissions
