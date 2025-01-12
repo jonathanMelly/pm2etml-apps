@@ -15,47 +15,48 @@
     {{-- Problème d'alignement causé par les labels --}}
     <div class="slider-container space-y-4 border-t border-gray-300 dark:border-gray-600 pt-4">
         <!-- Curseur Auto 80% -->
-        <div class="flex space-x-2 items-center" id="id-{{ $idStudent }}-auto80-{{ $criterion['id'] }}">
-            <label for="{{ $idStudent }}-range-auto80-{{ $criterion['id'] }}"
+        <div class="flex space-x-2 items-center" id="id-{{ $idStudent }}-auto80-{{ $criterion['position'] }}">
+            <label for="{{ $idStudent }}-range-auto80-{{ $criterion['position'] }}"
                 class="w-[80px] text-sm  text-gray-600 dark:text-gray-300 font-medium mb-1">
                 Auto3/4:
             </label>
             <input type="range" min="0" max="3" @if (!$isTeacher) value="2" @endif
                 class="range range-primary range-sm w-full disabled:cursor-not-allowed"
-                data-student-id="{{ $idStudent }}" data-criterion-id="{{ $criterion['id'] }}" data-level="auto80"
-                aria-label="Auto Évaluation à 80%" id="id-{{ $idStudent }}-range-auto80-{{ $criterion['id'] }}"
-                value="{{ $sliderValues['auto80'][$criterion['id']] ?? 0 }}" oninput="updateSliderValue(this)"
+                data-student-id="{{ $idStudent }}" data-criterion-id="{{ $criterion['position'] }}"
+                data-level="auto80" aria-label="Auto Évaluation à 80%"
+                id="id-{{ $idStudent }}-range-auto80-{{ $criterion['position'] }}"
+                value="{{ $sliderValues['auto80'][$criterion['position']] ?? 0 }}" oninput="updateSliderValue(this)"
                 @if ($isTeacher) disabled @endif>
-            <div id="id-{{ $idStudent }}-result-auto80-{{ $criterion['id'] }}"
+            <div id="id-{{ $idStudent }}-result-auto80-{{ $criterion['position'] }}"
                 class="w-12 text-sm text-gray-500 dark:text-gray-300 ml-2">
-                {{ $appreciationLabels[$sliderValues['auto80'][$criterion['id']] ?? 0] }}
+                {{ $appreciationLabels[$sliderValues['auto80'][$criterion['position']] ?? 0] }}
             </div>
         </div>
 
         <!-- Curseur Eval 80% -->
-        <div class="flex space-x-2 items-center" id="id-{{ $idStudent }}-eval80-{{ $criterion['id'] }}">
-            <label for="range-eval80-{{ $criterion['id'] }}"
+        <div class="flex space-x-2 items-center" id="id-{{ $idStudent }}-eval80-{{ $criterion['position'] }}">
+            <label for="range-eval80-{{ $criterion['position'] }}"
                 class="w-[80px] text-sm text-gray-600 dark:text-gray-300 font-medium mb-1">
                 {{ __('Eval3/4:') }}
             </label>
 
             <input type="range" min="0" max="3" @if ($isTeacher) value="2" @endif
                 class="range range-secondary range-sm w-full disabled:cursor-not-allowed " aria-label="Évaluation à 80%"
-                id="id-{{ $idStudent }}-range-eval80-{{ $criterion['id'] }}" data-student-id="{{ $idStudent }}"
-                data-criterion-id="{{ $criterion['id'] }}" data-level="eval80"
-                value="{{ $sliderValues['eval80'][$criterion['id']] ?? 0 }}" oninput="updateSliderValue(this)"
-                @if (!$isTeacher) disabled @endif>
-            <div id="id-{{ $idStudent }}-result-eval80-{{ $criterion['id'] }}"
+                id="id-{{ $idStudent }}-range-eval80-{{ $criterion['position'] }}"
+                data-student-id="{{ $idStudent }}" data-criterion-id="{{ $criterion['position'] }}"
+                data-level="eval80" value="{{ $sliderValues['eval80'][$criterion['position']] ?? 0 }}"
+                oninput="updateSliderValue(this)" @if (!$isTeacher) disabled @endif>
+            <div id="id-{{ $idStudent }}-result-eval80-{{ $criterion['position'] }}"
                 class="w-12 text-sm text-gray-500 dark:text-gray-300 ml-2">
-                {{ $appreciationLabels[$sliderValues['eval80'][$criterion['id']] ?? 0] }}
+                {{ $appreciationLabels[$sliderValues['eval80'][$criterion['position']] ?? 0] }}
             </div>
         </div>
 
         <!-- Curseurs selon le rôle Auto et Eval 100% -->
         @foreach (['auto100', 'eval100'] as $type)
             <div class="flex space-x-2 items-center"
-                id="id-{{ $idStudent }}-{{ $type }}-{{ $criterion['id'] }}" style="display:none">
-                <label for="{{ $idStudent }}-range-{{ $type }}-{{ $criterion['id'] }}"
+                id="id-{{ $idStudent }}-{{ $type }}-{{ $criterion['position'] }}" style="display:none">
+                <label for="{{ $idStudent }}-range-{{ $type }}-{{ $criterion['position'] }}"
                     class="w-[80px] text-sm text-ellipsis text-gray-600 dark:text-gray-300 font-medium mb-1">
                     {{ ucfirst(__($type === 'auto100' ? 'auto100' : 'eval100')) }}:
                 </label>
@@ -63,14 +64,14 @@
                 <input type="range" min="0" max="3" value="2"
                     class="range range-sm  {{ $type === 'auto100' ? 'range-primary' : 'range-secondary' }} w-full disabled:cursor-not-allowed"
                     aria-label="{{ ucfirst($type) }}" data-student-id="{{ $idStudent }}"
-                    data-criterion-id="{{ $criterion['id'] }}" data-student-id="{{ $idStudent }}"
+                    data-criterion-id="{{ $criterion['position'] }}" data-student-id="{{ $idStudent }}"
                     data-level={{ $type }}
-                    id="id-{{ $idStudent }}-range-{{ $type }}-{{ $criterion['id'] }}"
-                    value="{{ $sliderValues[$type][$criterion['id']] ?? 0 }}" oninput="updateSliderValue(this)"
+                    id="id-{{ $idStudent }}-range-{{ $type }}-{{ $criterion['position'] }}"
+                    value="{{ $sliderValues[$type][$criterion['position']] ?? 0 }}" oninput="updateSliderValue(this)"
                     {{ $type === 'auto100' || (!$isTeacher && $type === 'eval100') ? 'disabled' : '' }}>
-                <div id="id-{{ $idStudent }}-result-{{ $type }}-{{ $criterion['id'] }}"
+                <div id="id-{{ $idStudent }}-result-{{ $type }}-{{ $criterion['position'] }}"
                     class="w-12 text-sm text-gray-500 dark:text-gray-300 ml-2">
-                    {{ $appreciationLabels[$sliderValues[$type][$criterion['id']] ?? 0] }}
+                    {{ $appreciationLabels[$sliderValues[$type][$criterion['position']] ?? 0] }}
                 </div>
             </div>
         @endforeach
@@ -81,21 +82,23 @@
     <div class="options-and-remarks mt-3 space-y-2">
         <div class="exclude-checkbox">
             <label class="label flex items-center space-x-1 cursor-pointer">
-                <input type="checkbox" class="checkbox checkbox-error" data-exclude-id="{{ $criterion['id'] }}"
-                    id="id-{{ $idStudent }}-exclude-{{ $criterion['id'] }}" data-student-id="{{ $idStudent }}"
-                    onclick="toggleExclusion(this)" {{ $criterion['id'] === 8 ? 'checked' : '' }}>
+                <input type="checkbox" class="checkbox checkbox-error" data-exclude-id="{{ $criterion['position'] }}"
+                    id="id-{{ $idStudent }}-exclude-{{ $criterion['position'] }}"
+                    data-student-id="{{ $idStudent }}" onclick="toggleExclusion(this)"
+                    {{ $criterion['position'] === 8 ? 'checked' : '' }}>
                 <span
                     class="label-text text-gray-900 dark:text-gray-200 font-medium">{{ __('Exclure de l\'évaluation') }}</span>
             </label>
         </div>
 
         <div class="remark">
-            <label for="{{ $idStudent }}-remark-{{ $criterion['id'] }}"
+            <label for="{{ $idStudent }}-remark-{{ $criterion['position'] }}"
                 class="block font-medium text-gray-900 dark:text-gray-200">
                 {{ __('Remarques :') }}
             </label>
-            <textarea data-student-id="{{ $idStudent }}" data-textarea-id="{{ $criterion['id'] }}"
-                id="id-{{ $idStudent }}-remark-{{ $criterion['id'] }}" name="remark[$idStudent-$criterion['id'] }}]"
+            <textarea data-student-id="{{ $idStudent }}" data-textarea-id="{{ $criterion['position'] }}"
+                id="id-{{ $idStudent }}-remark-{{ $criterion['position'] }}"
+                name="remark[$idStudent-$criterion['position'] }}]"
                 class="textarea textarea-bordered w-full focus:ring-2 focus:ring-indigo-600 focus:outline-none resize-none 
             text-gray-900 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 
             hover:border-gray-400 dark:hover:border-gray-500 p-2">

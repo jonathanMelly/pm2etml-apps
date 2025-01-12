@@ -25,19 +25,56 @@ document.addEventListener('DOMContentLoaded', function () {
    const sliders = document.querySelectorAll('.range');
    sliders.forEach(slider => { syncSliders(slider); });
 
-});
+   if (state.isTeacher) {
+      // Cibler les zones de texte avec un clic droit
+      document.querySelectorAll('.remark textarea').forEach((textarea) => {
+         textarea.addEventListener('contextmenu', (event) => {
+            event.preventDefault(); // Empêche le menu contextuel par défaut
 
-function syncSliders(slider) {
-   const id = slider.id.replace('-range', '-result');
-   const resultLabel = document.getElementById(id);
-   // id = id-38-result-eval80-5
-   if (resultLabel) {
-      resultLabel.textContent = state.appreciationLabels[slider.value];
-   } else {
-      console.error('Erreur : Label résultat non trouvé', id);
+            // Basculer en mode "to-do"
+            const container = textarea.closest('.remark');
+            const todoListContainer = container.querySelector('#todo-list-container');
+
+            textarea.classList.add('hidden'); // Cache la zone de texte
+            todoListContainer.classList.remove('hidden'); // Affiche la liste de tâches
+
+            // Ajouter les classes Tailwind nécessaires pour Flexbox 
+            todoListContainer.classList.add('flex', 'gap-5', 'flex-wrap');
+
+         });
+      });
    }
 
+
+});
+
+
+/**
+ * Met à jour le label associé au range (slider).
+ *
+ * Cette fonction prend un élément slider en paramètre, extrait l'ID du label associé,
+ * et met à jour le contenu textuel du label en fonction de la valeur du slider.
+ * Si le label n'est pas trouvé, un message d'erreur est affiché dans la console.
+ *
+ * @param {HTMLElement} slider - L'élément slider dont la valeur a changé.
+ */
+function syncSliders(slider) {
+   // Extrait l'ID du label associé en remplaçant '-range' par '-result' dans l'ID du slider.
+   const id = slider.id.replace('-range', '-result');
+
+   // Récupère l'élément label associé en utilisant l'ID généré.
+   const resultLabel = document.getElementById(id);
+
+   // Vérifie si le label existe.
+   if (resultLabel) {
+      // Met à jour le contenu textuel du label avec la valeur correspondante dans state.appreciationLabels.
+      resultLabel.textContent = state.appreciationLabels[slider.value];
+   } else {
+      // Affiche un message d'erreur dans la console si le label n'est pas trouvé.
+      console.error('Erreur : Label résultat non trouvé', id);
+   }
 }
+
 
 function getEvaluationLevelIndex(levelName) {
    return state.evaluationLevels.indexOf(levelName);
@@ -64,6 +101,8 @@ function displayError(studentId, message) {
 window.updateSliderValue = function (slider) {
    const id = slider.id.replace('-range', '-result');
    syncSliders(slider);
+
+   console.log('update: ', id.split('-')[1], id.split('-')[3]);
    calculateFinalResults(id.split('-')[1], id.split('-')[3]);
 };
 
@@ -101,7 +140,7 @@ window.changeTab = function (onClickBtn, indexCalByLoad = null) {
             'Merci de consulter la note finale.'
          );
       }
-      }
+   }
    else {
 
       let idsRangesDisabled = `[id^="${tabName}-"]`;
@@ -290,17 +329,22 @@ function loadFromJsonSave(js, indexLevel) {
          const criterionId = card.querySelector('[data-criterion-id]').dataset.criterionId;
 
          const criterion = js.evaluations[0].appreciations[indexLevel].criteria.find(crit => {
+
             const critId = parseInt(crit.id, 10);
             const criterionIdInt = parseInt(criterionId, 10);
-            // console.log(`Comparing crit.id: ${critId} with criterionId: ${criterionIdInt}`);
+
+            console.log(`Comparing crit.id: ${critId} with criterionId: ${criterionIdInt}`);
             return critId === criterionIdInt;
          });
 
-         // console.log('Criterion found:', criterion);
+         console.log('Criterion found:', criterion);
 
          if (criterion) {
             const sliders = card.querySelectorAll('input[type="range"]');
             const slider = Array.from(sliders).find(sl => sl.dataset.level === state.evaluationLevels[js.evaluations[0].appreciations[indexLevel].level]);
+
+            slider.parentElement.style.display = 'flex';
+
             if (slider) {
                slider.value = criterion.value;
             }
@@ -320,8 +364,12 @@ function loadFromJsonSave(js, indexLevel) {
 // Fonction de mise à jour de la remarque générale (à définir selon votre logique)
 function setGeneralRemark(studentId, remark) {
    const remarkElement = document.querySelector(`#id-${studentId}-generalRemark`);
+
+   console.log(`#id-${studentId}-generalRemark`);
+
    if (remarkElement) {
       remarkElement.value = remark;
+
    }
 }
 // #endregion
@@ -572,19 +620,6 @@ function handleMissingForm(studentId, buttonId) {
  */
 function calculateFinalResults(student_id, levelName) {
 
-   // Les divs à traiter
-   const divSamllFinalResult = document.getElementById(`id-${student_id}-small_finalResult`);
-   const divFinalResult = document.getElementById(`id-${student_id}-finalResult`);
-
-   // Sélectionner les sliders avec les attributs spécifiques
-   const sliders = document.querySelectorAll(
-      `input[type="range"][data-level="${levelName}"][data-student-id="${student_id}"]`
-   );
-
-   // Sélectionner les checkboxes avec les attributs spécifiques
-   const checkboxes = document.querySelectorAll(
-      `input[type="checkbox"][data-student-id="${student_id}"]`
-   );
 
    // Variables pour calculer les scores et statistiques
    let count = 8;
@@ -600,38 +635,56 @@ function calculateFinalResults(student_id, levelName) {
    let smallFinalResultTitle = '';
    let spanResult = ''
 
+   // pour le fond 
+   let bgClass = null;
+
+   // Les divs à traiter
+   const divSamllFinalResult = document.getElementById(`id-${student_id}-small_finalResult`);
+   const divFinalResult = document.getElementById(`id-${student_id}-finalResult`);
+
+   // Sélectionner les sliders avec les attributs spécifiques
+   const sliders = document.querySelectorAll(
+      `input[type="range"][data-level="${levelName}"][data-student-id="${student_id}"]`
+   );
+
+   // Sélectionner les checkboxes avec les attributs spécifiques
+   const checkboxes = document.querySelectorAll(
+      `input[type="checkbox"][data-student-id="${student_id}"]`
+   );
+
    // Assigner un titre en fonction du levelName
    switch (levelName) {
-      case 'auto80':
+      case state.evaluationLevels[0]:
          finalResultTitle = 'Auto-évaluation';
-         smallFinalResultTitle = 'A';
+         smallFinalResultTitle = 'A: ';
          spanResult = '80%';
          break;
-      case 'eval80':
+      case state.evaluationLevels[2]:
          finalResultTitle = 'Formative';
-         smallFinalResultTitle = 'F';
+         smallFinalResultTitle = 'F: ';
          spanResult = '80%';
+
          break;
-      case 'eval100':
+      case state.evaluationLevels[3]:
          finalResultTitle = 'Sommative';
-         smallFinalResultTitle = 'S';
+         smallFinalResultTitle = 'S: ';
          spanResult = '100%';
          break;
-      case 'auto100':
+      case state.evaluationLevels[1]:
          finalResultTitle = 'Auto-évaluation';
          smallFinalResultTitle = 'A+: ';
          spanResult = '100%';
          break;
       default:
          finalResultTitle = 'Erreur';
-         smallFinalResultTitle = 'X:';
+         smallFinalResultTitle = 'X: ';
          spanResult = '404';
          break;
    }
 
    // Afficher les titres dans les divs correspondantes
-   divFinalResult.querySelector('#finalResultTitle').innerHTML = finalResultTitle;
-   divSamllFinalResult.querySelector('#smallResultTitle').innerHTML = smallFinalResultTitle;
+   divFinalResult.querySelector(`#finalResultTitle-${student_id}`).innerHTML = finalResultTitle;
+   divSamllFinalResult.querySelector(`#smallResultTitle-${student_id}`).innerHTML = smallFinalResultTitle;
    divFinalResult.querySelector('#spanResult').innerHTML = spanResult;
 
    // Parcours des catégories dans criteriaGrouped
@@ -641,7 +694,7 @@ function calculateFinalResults(student_id, levelName) {
          const isExcluded = Array.from(checkboxes).some(checkbox => {
             // Vérifie si la checkbox correspond au critère et à l'élève
             return (
-               checkbox.dataset.excludeId === `${crit.id}` &&
+               checkbox.dataset.excludeId === `${crit.position}` &&
                checkbox.dataset.studentId === `${student_id}` &&
                checkbox.checked
             );
@@ -654,11 +707,11 @@ function calculateFinalResults(student_id, levelName) {
 
          // Trouver le slider associé au critère
          const slider = Array.from(sliders).find(slider => {
-            const match = slider.dataset.criterionId === `${crit.id}`;
+            const match = slider.dataset.criterionId === `${crit.position}`;
             return match;
          });
 
-         // console.log('slide: ', slider);
+         console.log('slide: ', slider);
          if (slider) {
             // console.log('valeur du slider selon le critère : ', slider.value);
             const value = parseInt(slider.value, 10); // Convertir en entier
@@ -673,21 +726,41 @@ function calculateFinalResults(student_id, levelName) {
       });
    });
 
+
    // Déterminer l'appréciation en fonction des scores obtenus
    if (naCount > 0) {
-      result = state.appreciationLabels[0]; // NA - Non évalué
-   }
-   else if (paCount > 0) {
-      result = state.appreciationLabels[1]; // PA - Pas assez
-   }
-   else {
-      if (aCount > Math.floor(count / 2, 0)) {
+      result = state.appreciationLabels[0]; // NA - Non acquis
+      bgClass = 'bg-error';
+   } else if (paCount > 0) {
+      result = state.appreciationLabels[1]; // PA - Partiellement acquis
+      bgClass = 'bg-warning';
+   } else {
+      if (aCount > Math.floor(count / 2)) {
          result = state.appreciationLabels[2]; // A - Approuvé
-      }
-      else {
-         result = state.appreciationLabels[3]; // LA - Largement Approuvé
+         bgClass = 'bg-success';
+      } else {
+         result = state.appreciationLabels[3]; // LA - Largement approuvé
+         bgClass = 'bg-info';
       }
    }
+
+   // Fonction pour supprimer les classes de couleur de fond existantes
+   function removeBackgroundClasses(element) {
+      element.classList.forEach(className => {
+         if (className.startsWith('bg-')) {
+            element.classList.remove(className);
+         }
+      });
+   }
+
+   // Supprimer les classes de couleur de fond existantes
+   removeBackgroundClasses(divFinalResult);
+   removeBackgroundClasses(divSamllFinalResult);
+
+   // Ajouter la nouvelle classe de couleur de fond
+   divFinalResult.classList.add(bgClass);
+   divSamllFinalResult.classList.add(bgClass);
+
    // Afficher le résultat dans les divs
    divFinalResult.querySelector('#finalResultContent').innerHTML = result;
    divFinalResult.classList.replace('hidden', 'flex');
@@ -696,3 +769,58 @@ function calculateFinalResults(student_id, levelName) {
 
 
 // #endregion
+
+// #region: toDoList
+let todo_listAdd = [];
+let todo_listRemove = [];
+
+// Ajouter une nouvelle tâche
+window.addTodoItem = function (btn) {
+
+   // const areaRemark = document.getElementById('remark-general-area');
+   const container = btn.closest('#todo-list-container');
+   const newItem = document.createElement('div');
+
+   if (todo_listRemove.length === 0) {
+      todo_listAdd.push(btn.parentElement.children.length - 3);
+      newItem.id = btn.parentElement.children.length - 3;
+   } else {
+      newItem.id = todo_listRemove.pop();
+   }
+
+   newItem.className = 'todo-item flex items-center space-x-2 mx-3 my-1';
+   newItem.innerHTML = `<input type ="checkbox" class="checkbox" >
+      <input type="text" class="input input-bordered flex-1 text-gray-900 dark:text-gray-200  dark:bg-gray-700">
+         <button type="button" class="btn" onclick="removeTodoItem(this)">
+            <i class="fas fa-trash-alt m-0 text-red-600 text-lg"></i>
+         </button>`;
+
+   // Si vous préférez le texte ... =>  ${window.LangRemoveTask}
+
+   // Sélectionnez l'élément avec l'ID 'msgTodo' parmi les enfants de btn.parentElement
+   const msgTodoElement = btn.parentElement.querySelector('#msgTodo');
+
+   // Vérifiez si l'élément existe et ajoutez la classe 'hidden'
+   if (msgTodoElement) {
+      msgTodoElement.classList.add('hidden');
+   }
+   container.insertBefore(newItem, btn);
+};
+
+
+// Supprimer une tâche
+window.removeTodoItem = function (btn) {
+   const item = btn.closest('.todo-item');
+   const id = item.id;
+   todo_listRemove.push(id);
+   item.remove();
+};
+
+
+
+window.updateTextareaGeneralRemark = function (textarea, counter) {
+   const maxLength = 10000;
+   const currentLength = textarea.value.length;
+   const remainingCharacters = maxLength - currentLength;
+   counter.textContent = remainingCharacters + '/' + maxLength;
+}

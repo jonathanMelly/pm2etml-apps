@@ -32,14 +32,25 @@ class DefaultCriteria extends Model
         return self::where('user_id', 0)->orderBy('position')->get();
     }
 
+
     public static function saveUserCriterias($criteriasData, $userId)
     {
         // Supprimer uniquement les critères personnalisés pour l'utilisateur connecté
         self::where('user_id', $userId)->delete();
 
         foreach ($criteriasData as $index => $data) {
-            // Les positions vont de 1 à 8
-            $position = $index + 1; // Car les index de tableau commencent à 0
+            // Si l'index dépasse 8, on log et on arrête la fonction
+            if ($index >= 8) {
+                Log::warning('Tentative d\'assignation d\'une position supérieure à 8 pour l\'utilisateur', [
+                    'user_id' => $userId,
+                    'invalid_index' => $index,
+                    'criterias_data' => $criteriasData,
+                ]);
+                return false; // Quitte la fonction
+            }
+
+            // La position est l'index + 1
+            $position = $index + 1;
 
             // On crée un nouveau critère ou met à jour l'existant pour l'utilisateur
             $criteria = self::where('user_id', $userId)->where('position', $position)->first() ?? new self();
@@ -55,6 +66,7 @@ class DefaultCriteria extends Model
 
         return true;
     }
+
 
     public static function resetUserCriterias($userId)
     {

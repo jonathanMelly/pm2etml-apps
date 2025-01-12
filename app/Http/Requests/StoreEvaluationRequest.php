@@ -69,7 +69,7 @@ class StoreEvaluationRequest extends FormRequest
             'evaluation_data.evaluator_name' => ['required', 'string', 'max:255'],
             'evaluation_data.job_id' => ['required', 'integer'],
             'evaluation_data.job_title' => ['required', 'string', 'max:255'],
-            'evaluation_data.student_remark' => ['nullable', 'string', 'max:255'],
+            'evaluation_data.student_remark' => ['nullable', 'string', 'max:10000'],
 
             // Validation pour la section des appréciations
             'evaluation_data.appreciations' => ['required', 'array'],

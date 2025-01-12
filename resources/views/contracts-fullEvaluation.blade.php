@@ -7,7 +7,23 @@
 
     <div id="eval" class="evaluation-form space-y-4 p-6 relative">
 
-
+        {{-- Affiche le bouton pour personnaliser les critères uniquement pour l'enseignant --}}
+        @if ($isTeacher)
+            <span>
+                <!-- Bouton pour modifier les critères personnalisés -->
+                <a href="{{ route('create.custom_criterias') }}"
+                    class="flex items-center absolute z-10 top-11 right-20 text-gray-600 hover:text-cyan-400">
+                    <svg class="w-6 h-6 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 20h9"></path>
+                        <path
+                            d="M16.5 3a2.121 2.121 0 0 0-3 0L4.64 11.36a1 1 0 0 0-.29.71v3.59a1 1 0 0 0 1 1h3.59a1 1 0 0 0 .71-.29L21 7.5a2.121 2.121 0 0 0-3-3l-1.5 1.5">
+                        </path>
+                    </svg>
+                    {{ __('fullEvaluation.btnCustomCriteria') }}
+                </a>
+            </span>
+        @endif
 
         <!-- Affichage du nom de l'étudiant avec fond coloré -->
         @foreach ($studentsDatas as $studentDetails)
@@ -23,22 +39,14 @@
                 'jsonSave' => $jsonSave,
             ]" />
 
-
-            @if ($isTeacher)
-                <!-- Bouton pour modifier les critères personnalisés -->
-                <a href="{{ route('create.custom_criterias') }}"
-                    class="flex items-center absolute z-10 top-[1.8rem] right-[4.7rem] text-gray-600 hover:text-cyan-400">
-                    <svg class="w-6 h-6 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 20h9"></path>
-                        <path
-                            d="M16.5 3a2.121 2.121 0 0 0-3 0L4.64 11.36a1 1 0 0 0-.29.71v3.59a1 1 0 0 0 1 1h3.59a1 1 0 0 0 .71-.29L21 7.5a2.121 2.121 0 0 0-3-3l-1.5 1.5">
-                        </path>
-                    </svg>
-                    {{ __('fullEvaluation.btnCustomCriteria') }}
-                </a>
-            @endif
-
+            {{--
+                Ce bloc de code PHP dans une vue Blade effectue les opérations suivantes :
+                1. Recherche les données d'évaluation pour l'étudiant actuel en comparant les identifiants.
+                2. Vérifie si des évaluations existent pour cet étudiant.
+                3. Si des évaluations existent, il extrait les niveaux d'évaluation.
+                4. Initialise des variables booléennes pour différents niveaux d'évaluation.
+                5. Met à jour ces variables en fonction des niveaux trouvés dans les évaluations.
+            --}}
             @php
                 // Trouve les données d'évaluation pour l'étudiant actuel
                 $jsonStudent = collect($jsonSave)->first(
@@ -85,6 +93,7 @@
 
             <div id="idStudent-{{ $studentDetails->student_id }}"
                 class="student-info mb-6 p-4 bg-gray-200 rounded-lg shadow-sm relative">
+
                 <!-- Affichage des informations selon le rôle de l'utilisateur (enseignant ou étudiant) -->
                 @if ($isTeacher)
                     <!-- Informations de l'étudiant (enseignant vue) -->
@@ -127,8 +136,9 @@
 
                 <!-- Div pour le petit résultat caché (en haut à droite) -->
                 <div id="id-{{ $studentDetails->student_id }}-small_finalResult"
-                    class="bg-gray-800 text-white text-sm rounded-xl shadow-lg p-3 absolute top-6 right-[5rem] hidden transition-all duration-500 ease-in-out transform scale-95 hover:scale-100">
-                    <h3 class="text-xs font-semibold" id="smallResultTitle"></h3>
+                    class=" text-white text-sm rounded-xl shadow-lg p-3 absolute top-10 right-24 
+                    hidden transition-all duration-500 ease-in-out transform scale-95 hover:scale-100">
+                    <h3 class="text-xs font-semibold" id="smallResultTitle-{{ $studentDetails->student_id }}"></h3>
                     <p id="smallResultContent" class="text-lg font-medium"> <!-- Contenu caché ici --> </p>
                 </div>
 
@@ -141,7 +151,7 @@
                 <form method="post" action="{{ route('evaluation.storeEvaluation') }}" class="space-y-2">
                     @csrf
 
-                    <!-- Onglets d'évaluation -->
+                    <!-- Onglets d'évaluation (buttons)-->
                     <div class="evaluation-tabs flex space-x-6" id="id-{{ $studentDetails->student_id }}-btn">
                         @hasanyrole(\App\Constants\RoleName::TEACHER . '|' . \App\Constants\RoleName::STUDENT)
                             @role(\App\Constants\RoleName::TEACHER)
@@ -149,7 +159,7 @@
                                 <button type="button"
                                     class="eval-tab-btn btn {{ $hasEval80 ? 'btn-secondary' : 'btn-outline' }}"
                                     data-level="eval80" onclick="changeTab(this)"
-                                    id="id-{{ $studentDetails->student_id }}-btn-eval80">{{ __('fullEvaluation.eval3_4') }}
+                                    id="id-{{ $studentDetails->student_id }}-btn-eval80">{{ __('fullEvaluation.eval80') }}
                                 </button>
 
                                 <!-- Évaluation 100 -->
@@ -209,7 +219,8 @@
                                             <span
                                                 class="hidden absolute bg-gray-700 text-white p-2 rounded mt-[-50px] shadow-lg"
                                                 id="description-{{ $criterion['id'] }}">
-                                                {{ __('fullEvaluation.criterias' . $criterion['id'] . '_description') }}
+                                                {{-- {{ __('fullEvaluation.criterias' . $criterion['id'] . '_description') }} --}}
+                                                {{ $criterion['description'] }}
                                             </span>
                                             <x-criterion-card :criterion="$criterion" :visible-sliders="$visibleSliders" :appreciation-labels="$appreciationLabels"
                                                 :is-teacher="$isTeacher" :evaluation-levels="$evaluationLevels" :id-student="$studentDetails->student_id" />
@@ -237,45 +248,85 @@
                                                 description.classList.add('hidden');
                                             });
                                         });
+
+                                        // Déclare une variable JavaScript avec la traduction du bouton "Supprimer"
+                                        window.LangRemoveTask = @json(__('fullEvaluation.remove_task'));
                                     </script>
                                 </div>
                             </div>
                         @endforeach
                     </div>
 
-                    <!-- Remarque générale -->
-                    <div class="general-remark mt-4 flex flex-col lg:flex-row gap-6 items-end">
-                        <!-- Colonne 85% -->
-                        <div class="w-full lg:w-[90%]">
-                            <label for="id-{{ $studentDetails->student_id }}-generalRemark"
-                                class="text-xl font-semibold text-cyan-600 block mb-2">
-                                {{ __('fullEvaluation.general_remark') }}
-                            </label>
+                    <div class="remark mt-4 relative w-full">
+                        <label for="generalRemark"
+                            class="w-full block font-medium text-gray-900 dark:text-gray-200 mb-2">
+                            {{ __('fullEvaluation.general_remark') }}
+                        </label>
 
-                            <textarea id="id-{{ $studentDetails->student_id }}-generalRemark" name="generalRemark"
-                                class="textarea textarea-bordered bg-gray-100 w-full h-48 resize-none rounded-md shadow-sm p-2 border-gray-300 focus:ring-cyan-500 focus:border-cyan-500">
-                            </textarea>
-                        </div>
+                        <div class="flex h-44 relative">
+                            <div class="flex w-full  mx-3 space-y-2 rounded-md border border-gray-300 dark:border-gray-600 
+                                bg-gray-50 dark:bg-gray-800 dark:text-gray-200"
+                                id="generalRemark-area">
+                                <!-- Zone de texte par défaut -->
+                                <textarea id="id-{{ $studentDetails->student_id }}-generalRemark" name="generalRemark"
+                                    class="textarea textarea-bordered w-full dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 px-4 resize-none"
+                                    oninput="updateTextareaGeneralRemark(this, document.getElementById('charCounter'))"
+                                    onfocus="updateTextareaGeneralRemark(this, document.getElementById('charCounter'))">                                </textarea>
 
-                        <!-- Colonne 15%, alignée en bas -->
-                        <div id="id-{{ $studentDetails->student_id }}-finalResult"
-                            class="lg:w-[10%] w-full flex-col items-center lg:items-start relative ">
-                            <div class="w-full bg-orange-100 rounded-md h-48 shadow-sm p-6 flex flex-col items-center">
-                                <h3 id="finalResultTitle" class="font-semibold text-xl text-gray-800 ">
-                                    <!-- Titre dynamique selon l'évaluation -->
-                                    {{ $isTeacher ? __('fullEvaluation.msgFormative') : __('fullEvaluation.msgAutoEval') }}
-                                </h3>
+                                <span id="charCounter" class="absolute right-56 -bottom-[1.75rem] textarea-info">
+                                    10000/10000
+                                </span>
 
-                                <p id="finalResultContent" class="text-lg font-medium text-gray-500 mt-10">
-                                    <!-- Résultat ici par. Résultat par défaut NA-->
-                                    A
-                                </p>
-                                <span class="text-xs absolute bottom-1 right-1" id='spanResult'> 80% </span>
+                                <!-- Cette partie est en cours de développement -->
+                                <!-- L'idée ici est de faire en sorte que l'enseignant puisse choisir entre une remarque et une liste to-do. -->
+                                <!-- Je dois trouver une solution élégante pour permettre l'affichage côté étudiant et déterminer quoi faire si une to-do est faite côté enseignant. -->
+
+                                @if ($isTeacher)
+                                    <!-- Conteneur des tâches (caché par défaut) -->
+                                    <div id="todo-list-container"
+                                        class="hidden p-3 my-2 scroll-m-2 overflow-y-auto h-[10rem]">
+                                        <h6 id='msgTodo'>{{ __('fullEvaluation.msgTodo') }}</h6>
+                                        <div class="todo-item  my-1 space-x-2">
+                                            {{-- 
+                                            <input type="checkbox" class="checkbox">
+                                            <input type="text" class="input input-bordered flex-1 text-gray-900"
+                                                placeholder="{{ __('fullEvaluation.task_placeholder') }}">
+                                            <button type="button" class="btn btn-sm btn-ghost"
+                                                onclick="removeTodoItem(this)"> <i class="fas fa-trash-alt"></i>
+                                                {{-- 
+                                                {{ __('fullEvaluation.remove_task') }} 
+                                                --}}
+                                            {{-- </button> --}}
+                                        </div>
+                                        <!-- Bouton Ajouter -->
+                                        <button type="button"
+                                            class="btn btn-primary rounded absolute right-56 -bottom-[3rem]"
+                                            onclick="addTodoItem(this)">
+                                            {{ __('fullEvaluation.add_task') }}
+                                        </button>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div id="id-{{ $studentDetails->student_id }}-finalResult" class="relative bg-success">
+                                <div class="w-full rounded-lg shadow-sm p-6 flex flex-col items-center"
+                                    style="min-height: 11rem;">
+                                    <h6 id="finalResultTitle-{{ $studentDetails->student_id }}"
+                                        class="font-semibold text-xl text-gray-800">
+                                        {{ $isTeacher ? __('fullEvaluation.msgFormative') : __('fullEvaluation.msgAutoEval') }}
+                                    </h6>
+                                    <p id="finalResultContent"
+                                        class="text-xl font-extrabold text-gray-700 align-middle mt-5 font-serif">
+                                        A
+                                    </p>
+                                    <span id="spanResult"
+                                        class="absolute bottom-1 right-1 bg-indigo-300 text-white px-2 py-1 rounded-full text-sm">
+                                        80%
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
-
-
                     <input type="hidden" name="evaluation_data"
                         id="evaluation-data-{{ $studentDetails->student_id }}">
                     <div class="flex justify-end">
@@ -291,7 +342,6 @@
                         </button>
                     </div>
 
-
                     <!-- Affichage des niveaux pour vérification -->
                     {{-- @if ($isUpdate)
                         <div>
@@ -303,9 +353,10 @@
                             </ul>
                         </div>
                     @endif --}}
-
                 </form>
             </div>
         @endforeach
+        <!-- Liens de pagination -->
+        {{ $studentsDatas->links() }}
     </div>
 </x-app-layout>

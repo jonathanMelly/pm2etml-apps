@@ -86,6 +86,5 @@ class PermissionV1Seeder extends Seeder
             //should be handled by AuthServiceProvider
             //$role->givePermissionTo(Permission::all());
         });
-
     }
 }
