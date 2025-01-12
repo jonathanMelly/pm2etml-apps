@@ -1,4 +1,4 @@
-# PM2ETML-INTRANET [![staging](https://github.com/jonathanMelly/pm2etml-intranet/actions/workflows/main.yml/badge.svg)](https://github.com/jonathanMelly/pm2etml-intranet/actions/workflows/main.yml) ![coverage](http://intranet.pm2etml.ch/coverage_badge.svg) [![wakatime](https://wakatime.com/badge/user/bf7fcc14-d7d0-41c4-99cb-bbe8ecef41bf/project/4fb00346-5e05-4e6b-a906-57e91c256d09.svg)](https://wakatime.com/@bf7fcc14-d7d0-41c4-99cb-bbe8ecef41bf/projects/ctusfaxkkd)
+# PM2ETML-APPS [![staging](https://github.com/jonathanMelly/pm2etml-apps/actions/workflows/main.yml/badge.svg)](https://github.com/jonathanMelly/pm2etml-apps/actions/workflows/main.yml) ![coverage](http://apps.pm2etml.ch/coverage_badge.svg) [![wakatime](https://wakatime.com/badge/user/bf7fcc14-d7d0-41c4-99cb-bbe8ecef41bf/project/4fb00346-5e05-4e6b-a906-57e91c256d09.svg)](https://wakatime.com/@bf7fcc14-d7d0-41c4-99cb-bbe8ecef41bf/projects/ctusfaxkkd)
 
 Plateforme de mise en relation entre le monde du travail et les apprentis...
 

@@ -36,7 +36,7 @@ $remainingDays = $progress['remainingDays'];
             <div>
                 <div class="indicator">
                     @if(session('contractId')==$contract->id)
-                    <span class="indicator-item indicator-start badge badge-primary -mt-2 text-xs">{{__('new')}}</span>
+                    <span class="indicator-item inpnpndicator-start badge badge-primary -mt-2 text-xs">{{__('new')}}</span>
                     @endif
                     @if($wc->remediation_status == \App\Constants\RemediationStatus::ASKED_BY_WORKER)
                         <span class="indicator-item indicator-start badge badge-warning -mt-2 text-xs ml-20">
