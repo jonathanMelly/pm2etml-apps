@@ -126,7 +126,7 @@
                                         <button class="btn btn-outline btn-neutral btn-xs"
                                                 id="addContractButton{{$job->id}}"
                                                 onclick="addContract{{$job->id}}.showModal()">
-                                            <i class="fa-solid fa-user-plus"></i>{{__('Ajouter un contrat')}}
+                                            <i class="fa-solid fa-user-plus"></i>{{__('Add a contract')}}
                                         </button>
                                         <dialog id="addContract{{$job->id}}" class="modal">
                                             <div class="modal-box">
