@@ -19,12 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      #restore latest cache
+      #restore built assets from cache
       - uses: actions/cache@v4
         with:
           path: public/build
-          key: vite-assets-${{ hashFiles('public/build/manifest.json') }}
-          restore-keys: vite-assets-
+          key: vite-assets-${{ github.sha }}
 
       # Courtesy of https://blog.benoitblanchon.fr/github-action-run-ssh-commands/
       - name: Configure SSH

@@ -58,7 +58,7 @@ jobs:
       - name: generate dist
         run: |
           pnpm install
-          pnpm build
+          pnpm build:vite
 
       #TESTS
       - name: Execute tests (Unit and Feature tests) via Pest
@@ -71,7 +71,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: public/build
-          key: vite-assets-${{ hashFiles('public/build/manifest.json') }}
+          key: vite-assets-${{ github.sha }}
 
       - name: Generate coverage badge
         # You may pin to the exact commit or the version.
