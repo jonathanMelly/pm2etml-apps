@@ -12,9 +12,9 @@ class FullevaluationCriteriaController extends Controller
       $userId = auth()->id();
       $criteria = DefaultCriteria::getUserCriterias($userId);
 
-       if ($criteria->isEmpty()) {
-           $criteria = DefaultCriteria::getDefaultCriteria();
-       }
+      if ($criteria->isEmpty()) {
+         $criteria = DefaultCriteria::getDefaultCriteria();
+      }
 
       return view('fullevaluation-criteria-create', compact('criteria'));
    }
@@ -27,6 +27,6 @@ class FullevaluationCriteriaController extends Controller
       DefaultCriteria::saveUserCriteria($criteriasData, $userId);
 
       return redirect()->route('dashboard')
-          ->with('success', __("Custom criteria updated successfully"));
+         ->with('success', __("Custom criteria updated successfully"));
    }
 }

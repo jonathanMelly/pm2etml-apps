@@ -7,11 +7,23 @@
 
     <div id="eval" class="evaluation-form space-y-4 p-6 relative">
 
+        <!-- Injection du script d'état -->
+        <x-script-state :state="[
+            'visibleCategories' => $visibleCategories,
+            'visibleSliders' => $visibleSliders,
+            'evaluationLevels' => $evaluationLevels,
+            'appreciationLabels' => $appreciationLabels,
+            'criteriaGrouped' => $criteriaGrouped,
+            'isTeacher' => $isTeacher,
+            'studentData' => $studentsDatas,
+            'jsonSave' => $jsonSave,
+        ]" />
+
         {{-- Affiche le bouton pour personnaliser les critères uniquement pour l'enseignant --}}
         @if ($isTeacher)
             <span>
                 <!-- Bouton pour modifier les critères personnalisés -->
-                <a href="{{ route('create.custom_criterias') }}"
+                <a href="{{ route('criterias.create') }}"
                     class="flex items-center absolute z-10 top-11 right-20 text-gray-600 hover:text-cyan-400">
                     <svg class="w-6 h-6 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg">
@@ -27,28 +39,6 @@
 
         <!-- Affichage du nom de l'étudiant avec fond coloré -->
         @foreach ($studentsDatas as $studentDetails)
-            <!-- Injection du script d'état -->
-            <x-script-state :state="[
-                'visibleCategories' => $visibleCategories,
-                'visibleSliders' => $visibleSliders,
-                'evaluationLevels' => $evaluationLevels,
-                'appreciationLabels' => $appreciationLabels,
-                'criteriaGrouped' => $criteriaGrouped,
-                'isTeacher' => $isTeacher,
-                'studentData' => $studentsDatas,
-                'jsonSave' => $jsonSave,
-            ]" />
-
-
-            @if ($isTeacher)
-                <!-- Bouton pour modifier les critères personnalisés -->
-                <a href="{{ route('criterias.create') }}"
-                    class="flex items-center absolute z-10 top-[1.8rem] right-[4.7rem] text-gray-600 hover:text-cyan-400">
-                    <img class="w-6 h-6 mr-2" src="{{ asset('img/up-arrow.svg') }}" alt="uparrow">
-                    {{ __('Edit criteria') }}
-                </a>
-            @endif
-
             {{--
                 Ce bloc de code PHP dans une vue Blade effectue les opérations suivantes :
                 1. Recherche les données d'évaluation pour l'étudiant actuel en comparant les identifiants.
@@ -192,181 +182,177 @@
                                 <button type="button"
                                     class="eval-tab-btn btn {{ $hasAuto100 ? 'btn-primary' : 'btn-outline' }}"
                                     data-level="auto100" onclick="changeTab(this)"
-                                    id="id-{{ $studentDetails->student_id }}-btn-auto100"
-                                    {{ !$hasAuto80 ? 'disabled' : '' }}>{{ __('Auto evaluation 100%') }}
+                                    id="id-{{ $studentDetails->student_id }}-btn-auto100" {{ !$hasAuto80 ? 'disabled' : '' }}>
+                                    {{ __('Auto evaluation 100%') }}
                                 </button>
                             @endrole
+                        @endhasanyrole
 
+                        <button type="button" class="eval-tab-btn btn btn-outline btn-success"
+                            id="id-{{ $studentDetails->student_id }}-validation-btn"
+                            onclick="validateEvaluation('{{ $studentDetails->student_id }}-btn-')">{{ __('Validate') }}
+                        </button>
+                    </div>
 
-                            <button type="button" class="eval-tab-btn btn btn-outline btn-success"
-                                id="id-{{ $studentDetails->student_id }}-validation-btn"
-                                onclick="validateEvaluation('{{ $studentDetails->student_id }}-btn-')">{{ __('Validate') }}
-                            </button>
-                        </div>
+                    <!-- Section des critères -->
+                    <div id="id-{{ $studentDetails->student_id }}-criterias" class="space-y-3">
+                        @foreach ($criteriaGrouped as $category => $criterions)
+                            <div class="category-container mb-4 p-3 bg-gray-300 rounded-md relative"
+                                id="id-{{ $studentDetails->student_id }}-{{ strtolower($category) }}-container">
 
-                        <!-- Section des critères -->
-                        <div id="id-{{ $studentDetails->student_id }}-criterias" class="space-y-3">
-                            @foreach ($criteriaGrouped as $category => $criterions)
-                                <div class="category-container mb-4 p-3 bg-gray-300 rounded-md relative"
-                                    id="id-{{ $studentDetails->student_id }}-{{ strtolower($category) }}-container"
-                                    class="category-header flex justify-between items-center mb-4">
-                                    <h2 class="text-xl font-bold text-cyan-700">
-                                        {{ __($category) }}
-                                    </h2>
+                                <h2 class="text-xl font-bold text-cyan-700">
+                                    {{ __($category) }}
+                                </h2>
 
-                                    <button type="button"
-                                        class="btn btn-sm bg-gray-500 text-white p-2 rounded absolute top-3 right-2"
-                                        onclick="toggleVisibility('id-{{ $studentDetails->student_id }}-{{ strtolower($category) }}-container')">
-                                        {{ $visibleCategories[$category] ? '▲' : '▼' }}
-                                    </button>
+                                <button type="button"
+                                    class="btn btn-sm bg-gray-500 text-white p-2 rounded absolute top-3 right-2"
+                                    onclick="toggleVisibility('id-{{ $studentDetails->student_id }}-{{ strtolower($category) }}-container')">
+                                    {{ $visibleCategories[$category] ? '▲' : '▼' }}
+                                </button>
 
-                                    <!-- Grille de critères (4 colonnes) avec fond pour chaque critère -->
-                                    <div class="criteria-grid grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-                                        style="display: $visibleCategories[$category] ? 'block' : 'none' }}">
-                                        {{-- attention doit implémenter l'id de l'user pour etre unique --}}
-                                        @foreach ($criterions as $criterion)
-                                            <div class="mt-2 relative group">
-                                                <span
-                                                    class="hidden absolute bg-gray-700 text-white p-2 rounded mt-[-50px] shadow-lg"
-                                                    id="description-{{ $criterion['id'] }}">
-                                                    {{-- {{  $criterion['description'] }} --}}
-                                                    {{ $criterion['description'] }}
-                                                </span>
-                                                <x-criterion-card :criterion="$criterion" :visible-sliders="$visibleSliders" :appreciation-labels="$appreciationLabels"
-                                                    :is-teacher="$isTeacher" :evaluation-levels="$evaluationLevels" :id-student="$studentDetails->student_id" />
-                                            </div>
-                                        @endforeach
+                                <!-- Grille de critères (4 colonnes) avec fond pour chaque critère -->
+                                <div class="criteria-grid grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+                                    style="display: {{ $visibleCategories[$category] ? 'grid' : 'none' }};">
 
-                                        <!-- Script pour afficher la popup d'aide concernant le critère à évaluer "handover" -->
+                                    {{-- attention doit implémenter l'id de l'user pour etre unique --}}
+                                    @foreach ($criterions as $criterion)
+                                        <div class="mt-2 relative group">
+                                            <span
+                                                class="hidden absolute bg-gray-700 text-white p-2 rounded mt-[-50px] shadow-lg"
+                                                id="description-{{ $criterion['id'] }}">
+                                                {{-- {{  $criterion['description'] }} --}}
+                                                {{ $criterion['description'] }}
+                                            </span>
+                                            <x-criterion-card :criterion="$criterion" :visible-sliders="$visibleSliders" :appreciation-labels="$appreciationLabels"
+                                                :is-teacher="$isTeacher" :evaluation-levels="$evaluationLevels" :id-student="$studentDetails->student_id" />
+                                        </div>
+                                    @endforeach
 
-                                        <script>
-                                            document.querySelectorAll('.group').forEach(function(element) {
-                                                let timeout;
+                                    <!-- Script pour afficher la popup d'aide concernant le critère à évaluer "handover" -->
+                                    <script>
+                                        document.querySelectorAll('.group').forEach(function(element) {
+                                            let timeout;
 
-                                                element.addEventListener('mouseenter', function() {
-                                                    const description = element.querySelector('span');
-                                                    timeout = setTimeout(function() {
-                                                        description.classList.remove('hidden');
-                                                        description.classList.add('block');
-                                                    }, 7000); // 7 secondes
-                                                });
-
-                                                element.addEventListener('mouseleave', function() {
-                                                    const description = element.querySelector('span');
-                                                    clearTimeout(timeout); // Annule le setTimeout
-                                                    description.classList.remove('block');
-                                                    description.classList.add('hidden');
-                                                });
+                                            element.addEventListener('mouseenter', function() {
+                                                const description = element.querySelector('span');
+                                                timeout = setTimeout(function() {
+                                                    description.classList.remove('hidden');
+                                                    description.classList.add('block');
+                                                }, 7000); // 7 secondes
                                             });
 
-                                            // Déclare une variable JavaScript avec la traduction du bouton "Supprimer"
-                                            window.LangRemoveTask = @json(__('fullEvaluation.remove_task'));
-                                        </script>
-                                    </div>
+                                            element.addEventListener('mouseleave', function() {
+                                                const description = element.querySelector('span');
+                                                clearTimeout(timeout); // Annule le setTimeout
+                                                description.classList.remove('block');
+                                                description.classList.add('hidden');
+                                            });
+                                        });
+
+                                        // Déclare une variable JavaScript avec la traduction du bouton "Supprimer"
+                                        window.LangRemoveTask = @json(__('fullEvaluation.remove_task'));
+                                    </script>
                                 </div>
-                            @endforeach
-                        </div>
+                            </div>
+                        @endforeach
+                    </div>
 
-                        <div class="remark mt-4 relative w-full">
-                            <label for="generalRemark"
-                                class="w-full block font-medium text-gray-900 dark:text-gray-200 mb-2">
-                                {{ __('General remark') }}
-                            </label>
+                    {{-- Champ remarque --}}
+                    <div class="remark mt-4 relative w-full">
+                        <label for="generalRemark"
+                            class="w-full block font-medium text-gray-900 dark:text-gray-200 mb-2">
+                            {{ __('General remark') }}
+                        </label>
 
-                            <div class="flex h-44 relative">
-                                <div class="flex w-full  mx-3 space-y-2 rounded-md border border-gray-300 dark:border-gray-600 
+                        <div class="flex h-44 relative">
+                            <div class="flex w-full  mx-3 space-y-2 rounded-md border border-gray-300 dark:border-gray-600 
                                 bg-gray-50 dark:bg-gray-800 dark:text-gray-200"
-                                    id="generalRemark-area">
-                                    <!-- Zone de texte par défaut -->
-                                    <textarea id="id-{{ $studentDetails->student_id }}-generalRemark" name="generalRemark"
-                                        class="textarea textarea-bordered w-full dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 px-4 resize-none"
-                                        oninput="updateTextareaGeneralRemark(this, document.getElementById('charCounter'))"
-                                        onfocus="updateTextareaGeneralRemark(this, document.getElementById('charCounter'))">                                </textarea>
+                                id="generalRemark-area">
+                                <!-- Zone de texte par défaut -->
+                                <textarea id="id-{{ $studentDetails->student_id }}-generalRemark" name="generalRemark"
+                                    class="textarea textarea-bordered w-full dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 px-4 resize-none"
+                                    oninput="updateTextareaGeneralRemark(this, document.getElementById('charCounter'))"
+                                    onfocus="updateTextareaGeneralRemark(this, document.getElementById('charCounter'))">                                
+                                    </textarea>
 
-                                    <span id="charCounter" class="absolute right-56 -bottom-[1.75rem] textarea-info">
-                                        10000/10000
-                                    </span>
+                                <span id="charCounter" class="absolute right-56 -bottom-[1.75rem] textarea-info">
+                                    10000/10000
+                                </span>
 
-                                    <!-- Cette partie est en cours de développement -->
-                                    <!-- L'idée ici est de faire en sorte que l'enseignant puisse choisir entre une remarque et une liste to-do. -->
-                                    <!-- Je dois trouver une solution élégante pour permettre l'affichage côté étudiant et déterminer quoi faire si une to-do est faite côté enseignant. -->
+                                <!-- Cette partie est en cours de développement -->
+                                <!-- L'idée ici est de faire en sorte que l'enseignant puisse choisir entre une remarque et une liste to-do. -->
+                                <!-- Je dois trouver une solution élégante pour permettre l'affichage côté étudiant et déterminer quoi faire si une to-do est faite côté enseignant. -->
 
-                                    @if ($isTeacher)
-                                        <!-- Conteneur des tâches (caché par défaut) -->
-                                        <div id="todo-list-container"
-                                            class="hidden p-3 my-2 scroll-m-2 overflow-y-auto h-[10rem]">
-                                            <h6 id='msgTodo'>{{ __('fullEvaluation.msgTodo') }}</h6>
-                                            <div class="todo-item  my-1 space-x-2">
-                                                {{-- 
-                                            <input type="checkbox" class="checkbox">
-                                            <input type="text" class="input input-bordered flex-1 text-gray-900"
-                                                placeholder="{{ __('fullEvaluation.task_placeholder') }}">
-                                            <button type="button" class="btn btn-sm btn-ghost"
-                                                onclick="removeTodoItem(this)"> <i class="fas fa-trash-alt"></i>
-                                                {{-- 
-                                                {{ __('fullEvaluation.remove_task') }} 
-                                                --}}
-                                                {{-- </button> --}}
-                                            </div>
-                                            <!-- Bouton Ajouter -->
-                                            <button type="button"
-                                                class="btn btn-primary rounded absolute right-56 -bottom-[3rem]"
-                                                onclick="addTodoItem(this)">
-                                                {{ __('fullEvaluation.add_task') }}
-                                            </button>
+                                {{-- ToDo List for Teacher --}}
+                                @if ($isTeacher)
+                                    <!-- Conteneur des tâches (caché par défaut) -->
+                                    <div id="todo-list-container"
+                                        class="hidden p-3 my-2 scroll-m-2 overflow-y-auto h-[10rem]">
+                                        <h6 id='msgTodo'>{{ __('fullEvaluation.msgTodo') }}</h6>
+                                        <div class="todo-item  my-1 space-x-2">
+                                            {{-- 
+                                                <input type="checkbox" class="checkbox">
+                                                <input type="text" class="input input-bordered flex-1 text-gray-900"
+                                                    placeholder="{{ __('fullEvaluation.task_placeholder') }}">
+                                                <button type="button" class="btn btn-sm btn-ghost"
+                                                    onclick="removeTodoItem(this)"> <i class="fas fa-trash-alt"></i>
+                                                    {{-- 
+                                                    {{ __('fullEvaluation.remove_task') }} 
+                                                    --}}
+                                            {{-- </button> --}}
                                         </div>
-                                    @endif
-                                </div>
-
-                                <div id="id-{{ $studentDetails->student_id }}-finalResult" class="relative bg-success">
-                                    <div class="w-full rounded-lg shadow-sm p-6 flex flex-col items-center"
-                                        style="min-height: 11rem;">
-                                        <h6 id="finalResultTitle-{{ $studentDetails->student_id }}"
-                                            class="font-semibold text-xl text-gray-800">
-                                            {{ $isTeacher ? __('fullEvaluation.msgFormative') : __('fullEvaluation.msgAutoEval') }}
-                                        </h6>
-                                        <p id="finalResultContent"
-                                            class="text-xl font-extrabold text-gray-700 align-middle mt-5 font-serif">
-                                            A
-                                        </p>
-                                        <span id="spanResult"
-                                            class="absolute bottom-1 right-1 bg-indigo-300 text-white px-2 py-1 rounded-full text-sm">
-                                            80%
-                                        </span>
+                                        <!-- Bouton Ajouter -->
+                                        <button type="button"
+                                            class="btn btn-primary rounded absolute right-56 -bottom-[3rem]"
+                                            onclick="addTodoItem(this)">
+                                            {{ __('fullEvaluation.add_task') }}
+                                        </button>
                                     </div>
+                                @endif
+                            </div>
+
+                            <div id="id-{{ $studentDetails->student_id }}-finalResult" class="relative bg-success">
+                                <div class="w-full rounded-lg shadow-sm p-6 flex flex-col items-center"
+                                    style="min-height: 11rem;">
+                                    <h6 id="finalResultTitle-{{ $studentDetails->student_id }}"
+                                        class="font-semibold text-xl text-gray-800">
+                                        {{ $isTeacher ? __('fullEvaluation.msgFormative') : __('fullEvaluation.msgAutoEval') }}
+                                    </h6>
+                                    <p id="finalResultContent"
+                                        class="text-xl font-extrabold text-gray-700 align-middle mt-5 font-serif">
+                                        A
+                                    </p>
+                                    <span id="spanResult"
+                                        class="absolute bottom-1 right-1 bg-indigo-300 text-white px-2 py-1 rounded-full text-sm">
+                                        80%
+                                    </span>
                                 </div>
                             </div>
                         </div>
-                        <input type="hidden" name="evaluation_data"
-                            id="evaluation-data-{{ $studentDetails->student_id }}">
-                        <div class="flex justify-end">
-                            <!-- Champ caché pour indiquer s'il s'agit d'une mise à jour -->
-                            <input type="hidden" name="isUpdate" value="{{ $isUpdate ? 'true' : 'false' }}">
+                    </div>
 
-                            <!-- Affichage dynamique des boutons -->
-                            <button type="submit" id="id-{{ $studentDetails->student_id }}-buttonSubmit"
-                                class="p-2 rounded {{ $isUpdate ? 'bg-orange-500 hover:bg-orange-600' : 'bg-purple-500 hover:bg-purple-600' }} font-semibold text-gray-100"
-                                data-student-id="{{ $studentDetails->student_id }}"
-                                data-update="{{ $isUpdate ? true : false }}">
-                                {{ $isUpdate ? __('Update evaluation') : __('Submit evaluation') }}
-                            </button>
-                        </div>
+                    <input type="hidden" name="evaluation_data"
+                        id="evaluation-data-{{ $studentDetails->student_id }}">
 
-                        <!-- Affichage des niveaux pour vérification -->
-                        {{-- @if ($isUpdate)
-                        <div>
-                            <strong>Niveaux d'évaluation actuels :</strong>
-                            <ul>
-                                @foreach ($levels as $level)
-                                    <li>Évaluation Niveau: {{ $level }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif --}}
-                    </form>
-                </div>
-            @endforeach
-            <!-- Liens de pagination -->
-            {{ $studentsDatas->links() }}
-        </div>
-    </x-app-layout>
+                    <div class="flex justify-end">
+                        <!-- Champ caché pour indiquer s'il s'agit d'une mise à jour -->
+                        <input type="hidden" name="isUpdate" value="{{ $isUpdate ? 'true' : 'false' }}">
+
+                        <!-- Affichage dynamique des boutons -->
+                        <button type="submit" id="id-{{ $studentDetails->student_id }}-buttonSubmit"
+                            class="p-2 rounded {{ $isUpdate ? 'bg-orange-500 hover:bg-orange-600' : 'bg-purple-500 hover:bg-purple-600' }} font-semibold text-gray-100"
+                            data-student-id="{{ $studentDetails->student_id }}"
+                            data-update="{{ $isUpdate ? true : false }}">
+                            {{ $isUpdate ? __('Update evaluation') : __('Submit evaluation') }}
+                        </button>
+                    </div>
+
+                </form>
+
+                <!-- Liens de pagination -->
+                {{ $studentsDatas->links() }}
+            </div>
+        @endforeach
+    </div>
+
+</x-app-layout>
