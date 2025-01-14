@@ -5,7 +5,7 @@
             <!-- Évaluation 80 -->
             <button type="button" class="eval-tab-btn btn {{ $hasEval80 ? 'btn-secondary' : 'btn-outline' }}" data-level="eval80"
                 onclick="changeTab(this)" id="id-{{ $studentId }}-btn-eval80">
-                {{ __('fullEvaluation.eval80') }}
+                {{ __('Evaluation 3/4') }}
             </button>
 
             <!-- Évaluation 100 -->

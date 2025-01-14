@@ -19,7 +19,7 @@
             'jsonSave' => $jsonSave,
         ]" />
 
-        <x-custom-criteria-button :route="route('criterias.create')" :label="__('fullEvaluation.btnCustomCriteria')" :is-teacher="$isTeacher" />
+        <x-custom-criteria-button :route="route('criterias.create')" :label="__('Edit criteria')" :is-teacher="$isTeacher" />
 
         <!-- Affichage du nom de l'étudiant avec fond coloré -->
         @foreach ($studentsDatas as $studentDetails)
@@ -82,7 +82,7 @@
                 <x-student-info :isTeacher="$isTeacher" :studentDetails="$studentDetails" />
                 <!-- Div pour le petit résultat caché (en haut à droite) -->
                 <div id="id-{{ $studentDetails->student_id }}-small_finalResult"
-                    class=" text-white text-sm rounded-xl shadow-lg p-3 absolute top-10 right-24 
+                    class=" text-white text-sm rounded-xl shadow-lg p-3 absolute top-10 right-24
                     hidden transition-all duration-500 ease-in-out transform scale-95 hover:scale-100">
                     <h3 class="text-xs font-semibold" id="smallResultTitle-{{ $studentDetails->student_id }}"></h3>
                     <p id="smallResultContent" class="text-lg font-medium"> <!-- Contenu caché ici --> </p>
