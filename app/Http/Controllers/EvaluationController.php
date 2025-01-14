@@ -8,25 +8,41 @@ use App\Models\Criteria;
 use App\Models\DefaultCriteria;
 
 use App\Models\EvaluationSetting;
+use App\Models\EvaluationStateMachine;
+use App\Models\EvaluationLevel;
+
 
 use App\Http\Requests\StoreEvaluationRequest;
 
 use App\Constants\RoleName;
-use App\Exports\EvaluationSheet;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
-
 class EvaluationController extends Controller
 {
-
-   protected $visibleCursors;
+   private EvaluationStateMachine $stateMachine;
+   private $visibleCursors;
 
    public function __construct()
    {
       $this->visibleCursors = EvaluationSetting::getVisibleCursors();
+      $this->stateMachine = new EvaluationStateMachine();
    }
 
+   public function processEvaluation(string $role, int $evaluationLevel)
+   {
+      $level = EvaluationLevel::from($evaluationLevel);
+      $transitionSuccess = $this->stateMachine->transition($role, $level);
+
+      if ($transitionSuccess) {
+         // Gérer la nouvelle état
+         $currentState = $this->stateMachine->getState();
+         // Mettez à jour l'état dans votre modèle ou retournez le nouvel état à la vue.
+      } else {
+         // Logique en cas de transition invalide.
+         return response()->json(['error' => 'Transition invalide'], 400);
+      }
+   }
 
    /**
     * Enregistre une nouvelle évaluation pour un étudiant,
@@ -373,6 +389,7 @@ class EvaluationController extends Controller
 
       Log::info('Traitement des appréciations terminé pour l\'évaluation', ['evaluation_id' => $evaluation->id]);
    }
+
    /**
     * Charge les évaluations associées à un contrat spécifique.
     *
@@ -451,36 +468,6 @@ class EvaluationController extends Controller
     * @param array $contractIds
     * @return \Illuminate\Support\Collection
     */
-   // private static function getStudentEvaluationDetailsByContractIds(array $contractIds): \Illuminate\Support\Collection
-   // {
-   //    return DB::table('contracts as contract')
-   //       ->join('contract_worker as cw', 'contract.id', '=', 'cw.contract_id')
-   //       ->join('group_members as gm', 'gm.id', '=', 'cw.group_member_id')
-   //       ->join('users as u', 'u.id', '=', 'gm.user_id')
-   //       ->join('groups as g', 'g.id', '=', 'gm.group_id')
-   //       ->join('group_names as gn', 'gn.id', '=', 'g.group_name_id')
-   //       ->join('job_definitions as jd', 'contract.job_definition_id', '=', 'jd.id')
-   //       ->leftJoin('contract_client as cc', 'contract.id', '=', 'cc.contract_id') // Table associant les contrats aux clients
-   //       ->leftJoin('users as client', 'cc.user_id', '=', 'client.id') // Lier à la table des utilisateurs pour les clients
-   //       ->whereIn('contract.id', $contractIds)
-   //       ->select(
-   //          'contract.id as contract_id',
-   //          'contract.start as contract_start',
-   //          'contract.end as contract_end',
-   //          'jd.title as project_name',
-   //          'jd.id as job_id',
-   //          'u.id as student_id',
-   //          'u.firstname as student_firstname',
-   //          'u.lastname as student_lastname',
-   //          'gn.id as class_id',
-   //          'gn.name as class_name',
-   //          'client.id as evaluator_id',
-   //          'client.firstname as evaluator_firstname',
-   //          'client.lastname as evaluator_lastname'
-   //       )
-   //       ->get();
-   // }
-
    private static function getStudentEvaluationDetailsByContractIds(array $contractIds): \Illuminate\Database\Eloquent\Builder
    {
       return \App\Models\Contract::join('contract_worker as cw', 'contracts.id', '=', 'cw.contract_id')
@@ -508,45 +495,6 @@ class EvaluationController extends Controller
             'client.lastname as evaluator_lastname'
          );
    }
-
-
-
-   /**
-    * Gère l'affichage de l'évaluation complète pour plusieurs contrats.
-    *
-    * Cette méthode récupère les détails des contrats liés aux identifiants fournis,
-    * détermine si l'utilisateur est enseignant, et prépare les données nécessaires
-    * pour afficher la vue Blade d'évaluation complète.
-    *
-    * @param string $ids Une chaîne contenant les identifiants des contrats, séparés par des virgules.
-    * @return \Illuminate\View\View La vue de l'évaluation complète avec les données nécessaires.
-    *
-    * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException Si aucun contrat n'est trouvé.
-    */
-
-   // public function fullEvaluation(string $ids)
-   // {
-   //    // Convertir la chaîne des IDs en un tableau
-   //    $idsArray = explode(',', $ids);
-
-   //    // Étape 1 : Récupération des détails des étudiants liés aux contrats
-   //    $studentsDetails = $this->getStudentsDetails($idsArray);
-
-   //    // Si aucun détail n'est trouvé, déclencher une erreur 404
-   //    if ($studentsDetails->isEmpty()) {
-   //       abort(404, 'Contrats non trouvés.');
-   //    }
-
-   //    // Étape 2 : Déterminer si l'utilisateur connecté est un enseignant
-   //    $user = auth()->user();
-   //    $isTeacher = $this->checkIfUserIsTeacher($user);
-
-   //    // Étape 3 : Construire un tableau JSON contenant les informations à passer à la vue
-   //    $allJsonSave = $this->buildJsonSave($studentsDetails);
-
-   //    // Étape 4 : Renvoyer la vue Blade avec les données
-   //    return $this->renderEvaluationPage($studentsDetails, $isTeacher, $allJsonSave);
-   // }
 
    public function fullEvaluation(string $ids)
    {
@@ -680,23 +628,6 @@ class EvaluationController extends Controller
       return is_int($index) ? $index : null;
    }
 
-
-   // private function renderEvaluationPage($studentsDetails, bool $isTeacher, array $allJsonSave)
-   // {
-   //    // Récupérer les labels d'appréciation
-   //    $appreciationLabels = EvaluationSetting::where('key', 'appreciationLabels')->first()->value;
-
-   //    return view('contracts-fullEvaluation', [
-   //       'studentsDatas' => $studentsDetails->toArray(),
-   //       'visibleCategories' => $this->getInitialVisibleCategories($this->getCriteriaGrouped($isTeacher ? auth()->user()->id : 0)),
-   //       'visibleSliders' => $this->visibleCursors,
-   //       'evaluationLevels' => array_keys($this->visibleCursors),
-   //       'appreciationLabels' => $appreciationLabels,
-   //       'criteriaGrouped' => $this->getCriteriaGrouped($isTeacher ? auth()->user()->id : 0),
-   //       'isTeacher' => $isTeacher,
-   //       'jsonSave' => $allJsonSave,
-   //    ]);
-   // }
    private function renderEvaluationPage($studentsDetails, bool $isTeacher, array $allJsonSave)
    {
       // Récupérer les labels d'appréciation

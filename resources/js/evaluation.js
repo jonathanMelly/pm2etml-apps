@@ -655,7 +655,7 @@ function calculateFinalResults(student_id, levelName) {
    // Assigner un titre en fonction du levelName
    switch (levelName) {
       case state.evaluationLevels[0]:
-         finalResultTitle = 'Auto-évaluation';
+         finalResultTitle = 'A-Formative';
          smallFinalResultTitle = 'A: ';
          spanResult = '80%';
          break;
@@ -671,7 +671,7 @@ function calculateFinalResults(student_id, levelName) {
          spanResult = '100%';
          break;
       case state.evaluationLevels[1]:
-         finalResultTitle = 'Auto-évaluation';
+         finalResultTitle = 'A-Sommative';
          smallFinalResultTitle = 'A+: ';
          spanResult = '100%';
          break;
