@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Constants\RemediationStatus;
 use App\Enums\CustomPivotTableNames;
 use App\Enums\RequiredTimeUnit;
 use Illuminate\Database\Eloquent\Builder;
@@ -11,6 +12,7 @@ use Kirschbaum\PowerJoins\PowerJoins;
 
 class WorkerContract extends Pivot
 {
+
     protected $table = CustomPivotTableNames::CONTRACT_GROUP_MEMBER->value;
 
     use PowerJoins;
@@ -56,6 +58,11 @@ class WorkerContract extends Pivot
         $this->success_date = now();
         $this->success_comment = $comment;
 
+        if($this->remediation_status==RemediationStatus::CONFIRMED_BY_CLIENT)
+        {
+            $this->remediation_status = RemediationStatus::EVALUATED;
+        }
+
         if ($save) {
             return $this->save();
         }
@@ -65,7 +72,19 @@ class WorkerContract extends Pivot
 
     public function alreadyEvaluated(): bool
     {
-        return $this->success !== null;
+        return $this->success !== null && !$this->hasPendingRemediation();
+    }
+
+    public function canRemediate():bool
+    {
+        return $this->alreadyEvaluated()
+            && $this->success==false
+            && $this->remediation_status === RemediationStatus::NONE;
+    }
+
+    public function hasPendingRemediation(): bool
+    {
+        return $this->remediation_status===RemediationStatus::CONFIRMED_BY_CLIENT;
     }
 
     public function getSuccessAsBoolString(): string
