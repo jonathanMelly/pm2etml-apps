@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.52.2](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.52.1...v1.52.2) (2025-01-17)
+
+
+### Bug Fixes
+
+* **null image:** simple fail-safe ([988c9c3](https://github.com/jonathanMelly/pm2etml-apps/commit/988c9c3cf59f7411c2b2ba6ffb906897b46e4f9c))
+
 ## [1.52.1](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.52.0...v1.52.1) (2025-01-17)
 
 
