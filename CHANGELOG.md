@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.52.1](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.52.0...v1.52.1) (2025-01-17)
+
+
+### Bug Fixes
+
+* **git fetch:** disable cert check as missing on elara ([d1d0f63](https://github.com/jonathanMelly/pm2etml-apps/commit/d1d0f63951f19b2c96e507d7444329e18cfa6fa5))
+* **null image:** try to fix strange null images ??? ([fc72e64](https://github.com/jonathanMelly/pm2etml-apps/commit/fc72e6424ef57da4a527272d398a0078d6d05c30))
+
 ## [1.52.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.51.0...v1.52.0) (2025-01-12)
 
 
