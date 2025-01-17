@@ -23,6 +23,8 @@ $remainingDays = $progress['remainingDays'];
 
     $canRemediate = $wc->canRemediate();
 
+    //some nulls appearing in prod ???
+    $projectImagePath = $contract->jobDefinition?->image?->storage_path??null;
 
 @endphp
 <tr>
@@ -30,7 +32,7 @@ $remainingDays = $progress['remainingDays'];
         <a class="flex items-center space-x-3" href="{{route('jobDefinitions.show',['jobDefinition'=>$contract->jobDefinition->id])}}">
             <div class="avatar">
                 <div class="mask mask-squircle w-12 h-12">
-                    <img src="{{route('dmz-asset',['file'=>$contract->jobDefinition->image->storage_path])}}" alt="{{$contract->jobDefinition->title}}" />
+                    <img src="{{$projectImagePath==null?asset("img/file.svg"):route('dmz-asset',['file'=>$projectImagePath])}}" alt="{{$contract->jobDefinition->title}}" />
                 </div>
             </div>
             <div>
