@@ -23,18 +23,13 @@ $remainingDays = $progress['remainingDays'];
 
     $canRemediate = $wc->canRemediate();
 
-    //it seems that image is not always available for preload...
-    //this is a bit extra safe but should work for now...
-    // with ->with('jobDefinition.image') in dashboard controller, this should now work
-    $projectImagePath = $contract->jobDefinition?->image()?->storage_path??null;
-
 @endphp
 <tr>
     <td>
         <a class="flex items-center space-x-3" href="{{route('jobDefinitions.show',['jobDefinition'=>$contract->jobDefinition->id])}}">
             <div class="avatar">
                 <div class="mask mask-squircle w-12 h-12">
-                    <img src="{{$projectImagePath==null?asset("img/file.svg"):route('dmz-asset',['file'=>$projectImagePath])}}" alt="{{$contract->jobDefinition->title}}" />
+                    <img src="{{route('dmz-asset',['file'=>$contract->jobDefinition?->image?->storage_path])}}" alt="{{$contract->jobDefinition->title}}" />
                 </div>
             </div>
             <div>
