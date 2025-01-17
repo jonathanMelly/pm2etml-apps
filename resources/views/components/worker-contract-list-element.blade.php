@@ -23,8 +23,10 @@ $remainingDays = $progress['remainingDays'];
 
     $canRemediate = $wc->canRemediate();
 
-    //some nulls appearing in prod ???
-    $projectImagePath = $contract->jobDefinition?->image?->storage_path??null;
+    //it seems that image is not always available for preload...
+    //this is a bit extra safe but should work for now...
+    // with ->with('jobDefinition.image') in dashboard controller, this should now work
+    $projectImagePath = $contract->jobDefinition?->image()?->storage_path??null;
 
 @endphp
 <tr>
