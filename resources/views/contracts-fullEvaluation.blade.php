@@ -7,6 +7,11 @@
 
     <div id="eval" class="evaluation-form space-y-4 p-6 relative">
 
+        <button type="button"
+            class="btn btn-sm bg-teal-400 text-white px-6 py-2 rounded absolute right-6 top-2 border-collapse border-cyan-400"
+            onclick="toggleVisibility('all','true')">▲▲▲
+        </button>
+
         <!-- Injection du script d'état -->
         <x-script-state :state="[
             'visibleCategories' => $visibleCategories,
@@ -23,63 +28,22 @@
 
         <!-- Affichage du nom de l'étudiant avec fond coloré -->
         @foreach ($studentsDatas as $studentDetails)
-            {{--
-                Ce bloc de code PHP dans une vue Blade effectue les opérations suivantes :
-                1. Recherche les données d'évaluation pour l'étudiant actuel en comparant les identifiants.
-                2. Vérifie si des évaluations existent pour cet étudiant.
-                3. Si des évaluations existent, il extrait les niveaux d'évaluation.
-                4. Initialise des variables booléennes pour différents niveaux d'évaluation.
-                5. Met à jour ces variables en fonction des niveaux trouvés dans les évaluations.
-            --}}
             @php
-                // Trouve les données d'évaluation pour l'étudiant actuel
+                // Recherche les données d'évaluation pour l'étudiant actuel
                 $jsonStudent = collect($jsonSave)->first(
                     fn($student) => $student['student_Id'] === $studentDetails->student_id,
                 );
 
-                // Si des évaluations existent, récupère les niveaux existants
-                $isUpdate = isset($jsonStudent) && !empty($jsonStudent['evaluations']);
-
-                $levels = $isUpdate
-                    ? collect($jsonStudent['evaluations'])
-                        ->flatMap(
-                            fn($evaluation) => collect($evaluation['appreciations'])->map(
-                                fn($appreciation) => $appreciation['level'] ?? null,
-                            ),
-                        )
-                        ->filter()
-                        ->values()
-                    : [];
-
-                // Initialiser les variables à false
-                $hasEval80 = $hasAuto80 = true;
-                $hasEval100 = $hasAuto100 = false;
-
-                // Vérifier les niveaux et mettre à jour les variables correspondantes
-                foreach ($levels as $level) {
-                    // Comparer l'indice du niveau dans evaluationLevels
-                    switch ($level) {
-                        case 1: // Équivalent à eval80
-                            $hasEval80 = true;
-                            break;
-                        case 2: // Équivalent à eval100
-                            $hasEval100 = true;
-                            break;
-                        case 3: // Équivalent à auto80
-                            $hasAuto80 = true;
-                            break;
-                        case 4: // Équivalent à auto100
-                            $hasAuto100 = true;
-                            break;
-                    }
-                }
-
+                $isUpdate = isset($jsonStudent['evaluations']) && !empty($jsonStudent['evaluations']);
+                // Vérifie si des évaluations existent pour l'étudiant actuel
             @endphp
+
 
             <div id="idStudent-{{ $studentDetails->student_id }}"
                 class="student-info mb-6 p-4 bg-gray-200 rounded-lg shadow-sm relative">
 
                 <x-student-info :isTeacher="$isTeacher" :studentDetails="$studentDetails" />
+
                 <!-- Div pour le petit résultat caché (en haut à droite) -->
                 <div id="id-{{ $studentDetails->student_id }}-small_finalResult"
                     class=" text-white text-sm rounded-xl shadow-lg p-3 absolute top-10 right-24
@@ -97,8 +61,7 @@
                 <form method="post" action="{{ route('evaluation.storeEvaluation') }}" class="space-y-2">
                     @csrf
 
-                    <x-evaluation-tabs :studentId="$studentDetails->student_id" :hasEval80="$hasEval80" :hasEval100="$hasEval100" :hasAuto80="$hasAuto80"
-                        :hasAuto100="$hasAuto100" />
+                    <x-evaluation-tabs :studentId="$studentDetails->student_id" :hasEval="$studentDetails->stateMachine" />
 
                     <div id="id-{{ $studentDetails->student_id }}-criterias" class="space-y-3">
                         @foreach ($criteriaGrouped as $category => $criterions)
@@ -126,11 +89,12 @@
                         </button>
                     </div>
                 </form>
-
-                <!-- Liens de pagination -->
-                {{ $studentsDatas->links() }}
             </div>
         @endforeach
+        <!-- Liens de pagination -->
+        @if ($studentsDatas instanceof \Illuminate\Pagination\LengthAwarePaginator)
+            {{ $studentsDatas->links() }}
+        @endif
     </div>
 
 </x-app-layout>

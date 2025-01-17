@@ -6,13 +6,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
    // Gestion des boutons de soumission
    const submitBtns = document.querySelectorAll('[id^="id-"][id$="-buttonSubmit"]');
+
    // Sélectionner tous les boutons de soumission
    addSubmitButtonListeners(submitBtns);
 
    if (state.jsonSave && typeof loadFrom === 'function') {
       state.jsonSave.forEach(js => {
-         if (Array.isArray(js.evaluations) && js.evaluations.length > 0) {
-            // console.log(`Calling loadFrom for evaluations of length ${js.evaluations.length}`);
+         if (js.evaluations) {
             loadFrom(js); // Passe l'objet actuel à loadFrom
          } else {
             console.log(`Aucune évaluation trouvée pour l'étudiant ${js.id}`);
@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
    } else {
       console.error('jsonSave or loadFrom is not defined');
    }
+
    // Initialisation des sliders
    const sliders = document.querySelectorAll('.range');
    sliders.forEach(slider => { syncSliders(slider); });
@@ -40,12 +41,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Ajouter les classes Tailwind nécessaires pour Flexbox 
             todoListContainer.classList.add('flex', 'gap-5', 'flex-wrap');
-
          });
       });
    }
-
-
 });
 
 
@@ -210,37 +208,68 @@ window.validateEvaluation = function (prefix, indexCalByLoad = null) {
    changeTab(btn, indexCalByLoad);
 };
 
+
 // Fonction de mise à jour de la visibilité des catégories
 function updateVisibilityCategories(idElem, isVisible) {
    const updateVisibilityElement = idElem.replace("-container", "");
    state.visibleCategories[updateVisibilityElement] = isVisible;
 }
 
-// Fonction pour basculer la visibilité
+// Fonction utilitaire pour gérer la visibilité de chaque élément
+function toggleVisibilityElement(element, isVisible, toggleButton) {
+   // Si l'élément n'existe pas, on ne fait rien
+   if (!element) return;
+
+   // Changer la visibilité du contenu
+   element.style.display = isVisible ? 'none' : 'grid';
+   // Mettre à jour le texte du bouton (flèche)
+   toggleButton.textContent = isVisible ? '▼' : '▲';
+}
+
+// Fonction utilitaire pour gérer la visibilité de l'élément cible et du bouton de bascule
+function toggleContentVisibility(divContainer, student) {
+   const contentElementTag = student ? 'form' : 'div'; // Si c'est un étudiant, basculer un formulaire
+   const divContent = divContainer.querySelector(contentElementTag);
+   const toggleButton = divContainer.querySelector('button');
+   const isVisible = divContent.style.display !== 'none'; // Vérifier si l'élément est visible
+
+   // Utiliser la fonction partagée pour basculer la visibilité
+   toggleVisibilityElement(divContent, isVisible, toggleButton);
+
+   // Mettre à jour la visibilité dans l'état global
+   updateVisibilityCategories(divContainer.id, !isVisible);
+}
+
 window.toggleVisibility = function (divToggle, student = false) {
-   const divContenair = document.getElementById(divToggle);
+   // Si 'all' est passé, on effectue un toggle sur tous les éléments correspondant à idStudent
+   if (divToggle === 'all') {
+      const divStudents = document.querySelectorAll('[id^="idStudent-"]');
 
-   if (divContenair) {
-      const elementTag = student ? 'form' : 'div';
-      const divContent = divContenair.querySelector(elementTag);
-      const boutonCategories = divContenair.querySelector('button');
-      const isVisible = divContent.style.display !== 'none';
-      divContent.style.display = isVisible ? 'none' : 'grid';
-      boutonCategories.textContent = isVisible ? '▼' : '▲';
-      updateVisibilityCategories(divToggle, !isVisible);
+      divStudents.forEach(studentDiv => {
+         toggleContentVisibility(studentDiv, student);
+      });
+
+      return; // Sortie ici pour ne pas affecter la suite de la logique
    }
+   // Si nous avons un divToggle, basculer sa visibilité
+   const divContainer = document.getElementById(divToggle);
+   if (divContainer) {
+      toggleContentVisibility(divContainer, student);
+   }
+   // Cas spécifique à un étudiant
    if (student) {
-      const divSamllFinalResult = document.getElementById(`id-${divToggle.split('-')[1]}-small_finalResult`);
+      const studentId = divToggle.split('-')[1]; // On récupère l'id de l'étudiant
+      const divSmallFinalResult = document.getElementById(`id-${studentId}-small_finalResult`);
 
-      if (divSamllFinalResult.classList.contains('hidden')) {
-         divSamllFinalResult.classList.replace('hidden', 'flex');
+      // Alterner la visibilité de divSmallFinalResult (petit résultat final)
+      if (divSmallFinalResult) {
+         const isHidden = divSmallFinalResult.classList.contains('hidden');
+         divSmallFinalResult.classList.toggle('hidden', !isHidden);
+         divSmallFinalResult.classList.toggle('flex', isHidden);
       }
-      else {
-         divSamllFinalResult.classList.replace('flex', 'hidden');
-      }
+      return; // Sortie pour ne pas affecter le reste du code
    }
 };
-
 
 
 /**
@@ -277,7 +306,7 @@ window.toggleExclusion = function (btn) {
 function loadFrom(js) {
 
    // Vérifier les appréciations au sein de la première évaluation
-   const appreciations = js.evaluations[0].appreciations;
+   const appreciations = js.evaluations.appreciations;
    if (!Array.isArray(appreciations) || appreciations.length === 0) {
       console.error(`Aucune appréciation trouvée pour l'étudiant ${js.student_Id}.`);
       return;
@@ -288,12 +317,12 @@ function loadFrom(js) {
       try {
          loadFromJsonSave(js, indexLevel);
 
-         // Appeler validateEvaluation uniquement lors du dernier tour
-         if (indexLevel === appreciations.length - 1) {
-            // Appel de la fonction validateEvaluation afin de mettre à jour 
-            // l'état des boutons (préfixe = '33-btn-')
-            validateEvaluation(js.student_Id + '-btn-', js.evaluations[0].appreciations[indexLevel].level);
-         }
+         // // Appeler validateEvaluation uniquement lors du dernier tour
+         // if (indexLevel === appreciations.length - 1) {
+         //    // Appel de la fonction validateEvaluation afin de mettre à jour 
+         //    // l'état des boutons (préfixe = '33-btn-')
+         //    validateEvaluation(js.student_Id + '-btn-', js.evaluations.appreciations[indexLevel].level);
+         // }
       } catch (error) {
          console.error(`Erreur lors du chargement de l'appréciation niveau ${indexLevel} pour l'étudiant ${js.student_Id} :`, error);
       }
@@ -303,14 +332,16 @@ function loadFrom(js) {
 
 function loadFromJsonSave(js, indexLevel) {
 
+   console.log(js.student_Id, js.evaluations.appreciations[indexLevel].level);
+
    // Mettre à jour la remarque générale de l'étudiant
-   setGeneralRemark(js.student_Id, js.evaluations[0].student_remark);
+   setGeneralRemark(js.student_Id, js.evaluations.student_remark);
 
    // Sélectionner l'onglet en fonction du niveau
    const buttons = document.querySelectorAll(`#id-${js.student_Id}-btn > button`);
 
    buttons.forEach(button => {
-      if (button.dataset.level === state.evaluationLevels[js.evaluations[0].appreciations[indexLevel].level]) {
+      if (button.dataset.level === state.evaluationLevels[js.evaluations.appreciations[indexLevel].level]) {
          button.classList.remove('btn-outline');
          button.classList.add('selected');
 
@@ -328,7 +359,7 @@ function loadFromJsonSave(js, indexLevel) {
       criterionCards.forEach(card => {
          const criterionId = card.querySelector('[data-criterion-id]').dataset.criterionId;
 
-         const criterion = js.evaluations[0].appreciations[indexLevel].criteria.find(crit => {
+         const criterion = js.evaluations.appreciations[indexLevel].criteria.find(crit => {
 
             const critId = parseInt(crit.id, 10);
             const criterionIdInt = parseInt(criterionId, 10);
@@ -341,7 +372,7 @@ function loadFromJsonSave(js, indexLevel) {
 
          if (criterion) {
             const sliders = card.querySelectorAll('input[type="range"]');
-            const slider = Array.from(sliders).find(sl => sl.dataset.level === state.evaluationLevels[js.evaluations[0].appreciations[indexLevel].level]);
+            const slider = Array.from(sliders).find(sl => sl.dataset.level === state.evaluationLevels[js.evaluations.appreciations[indexLevel].level]);
 
             slider.parentElement.style.display = 'flex';
 
@@ -353,6 +384,7 @@ function loadFromJsonSave(js, indexLevel) {
                checkbox.checked = criterion.checked;
             }
             const textarea = card.querySelector('textarea');
+
             if (textarea) {
                textarea.value = criterion.remark;
             }
@@ -369,7 +401,6 @@ function setGeneralRemark(studentId, remark) {
 
    if (remarkElement) {
       remarkElement.value = remark;
-
    }
 }
 // #endregion

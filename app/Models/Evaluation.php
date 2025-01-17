@@ -119,4 +119,36 @@ class Evaluation extends Model
             ->where('project_name', $projectName)
             ->delete();
     }
+
+    public static function findOrCreateByCriteria(int $evaluatorId, int $studentId, int $classId, int $jobDefinitionsId)
+    {
+        // Recherche l'évaluation existante
+        $evaluation = self::where('evaluator_id', $evaluatorId)
+            ->where('student_id', $studentId)
+            ->where('class_id', $classId)
+            ->where('job_definitions_id', $jobDefinitionsId)
+            ->first();
+
+        // Si aucune évaluation n'est trouvée, la créer
+        if (!$evaluation) {
+            $evaluation = self::create([
+                'evaluator_id' => $evaluatorId,
+                'student_id' => $studentId,
+                'class_id' => $classId,
+                'job_definitions_id' => $jobDefinitionsId,
+                'created_at' => now(),
+            ]);
+        }
+
+        return $evaluation;
+    }
+
+    public static function findByCriteria(int $evaluatorId, int $studentId, int $classId, int $jobDefinitionsId)
+    {
+        return self::where('evaluator_id', $evaluatorId)
+            ->where('student_id', $studentId)
+            ->where('class_id', $classId)
+            ->where('job_definitions_id', $jobDefinitionsId)
+            ->first();
+    }
 }

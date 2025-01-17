@@ -20,28 +20,12 @@ use Illuminate\Support\Facades\DB;
 
 class EvaluationController extends Controller
 {
-   private EvaluationStateMachine $stateMachine;
    private $visibleCursors;
+
 
    public function __construct()
    {
       $this->visibleCursors = EvaluationSetting::getVisibleCursors();
-      $this->stateMachine = new EvaluationStateMachine();
-   }
-
-   public function processEvaluation(string $role, int $evaluationLevel)
-   {
-      $level = EvaluationLevel::from($evaluationLevel);
-      $transitionSuccess = $this->stateMachine->transition($role, $level);
-
-      if ($transitionSuccess) {
-         // Gérer la nouvelle état
-         $currentState = $this->stateMachine->getState();
-         // Mettez à jour l'état dans votre modèle ou retournez le nouvel état à la vue.
-      } else {
-         // Logique en cas de transition invalide.
-         return response()->json(['error' => 'Transition invalide'], 400);
-      }
    }
 
    /**
@@ -496,34 +480,111 @@ class EvaluationController extends Controller
          );
    }
 
-   public function fullEvaluation(string $ids)
+
+   /**
+    * Récupérer les détails des étudiants associés à un contrat avec leurs informations liées.
+    *
+    * @param int $contractId
+    * @return \Illuminate\Database\Eloquent\Builder
+    */
+   private static function getStudentEvaluationDetailsByContractId(int $contractId): \Illuminate\Database\Eloquent\Builder
    {
-      // Convertir la chaîne des IDs en un tableau
-      $idsArray = explode(',', $ids);
-
-      // Étape 1 : Récupération des détails des étudiants liés aux contrats
-      $studentsDetailsQuery = $this->getStudentsDetails($idsArray);
-
-      // Si aucun détail n'est trouvé, déclencher une erreur 404
-      if ($studentsDetailsQuery->count() === 0) {
-         abort(404, 'Contrats non trouvés.');
+      if (!is_numeric($contractId)) {
+         throw new \InvalidArgumentException("Contract ID must be a valid integer.");
       }
 
-      // Étape 2 : Déterminer si l'utilisateur connecté est un enseignant
-      $user = auth()->user();
-      $isTeacher = $this->checkIfUserIsTeacher($user);
-
-      // Étape 3 : Construire un tableau JSON contenant les informations à passer à la vue
-      $allJsonSave = $this->buildJsonSave($studentsDetailsQuery->get());
-
-      // Étape 4 : Paginer les résultats
-      $studentsDetails = $studentsDetailsQuery->paginate(20);
-
-      // Étape 5 : Renvoyer la vue Blade avec les données
-      return $this->renderEvaluationPage($studentsDetails, $isTeacher, $allJsonSave);
+      return \App\Models\Contract::join('contract_worker as cw', 'contracts.id', '=', 'cw.contract_id')
+         ->join('group_members as gm', 'gm.id', '=', 'cw.group_member_id')
+         ->join('users as u', 'u.id', '=', 'gm.user_id')
+         ->join('groups as g', 'g.id', '=', 'gm.group_id')
+         ->join('group_names as gn', 'gn.id', '=', 'g.group_name_id')
+         ->join('job_definitions as jd', 'contracts.job_definition_id', '=', 'jd.id')
+         ->leftJoin('contract_client as cc', 'contracts.id', '=', 'cc.contract_id')
+         ->leftJoin('users as client', 'cc.user_id', '=', 'client.id')
+         ->where('contracts.id', $contractId)
+         ->select(
+            'contracts.id as contract_id',
+            'contracts.start as contract_start',
+            'contracts.end as contract_end',
+            'jd.title as project_name',
+            'jd.id as job_id',
+            'u.id as student_id',
+            'u.firstname as student_firstname',
+            'u.lastname as student_lastname',
+            'gn.id as class_id',
+            'gn.name as class_name',
+            'client.id as evaluator_id',
+            'client.firstname as evaluator_firstname',
+            'client.lastname as evaluator_lastname'
+         );
    }
 
 
+
+   public function fullEvaluation(string $ids)
+   {
+      $user = auth()->user();
+      $isTeacher = $this->checkIfUserIsTeacher($user);
+      $studentsDetails = null;
+
+      if ($isTeacher) {
+         // Convertir la chaîne des IDs en un tableau
+         $idsArray = explode(',', $ids);
+
+         // Étape 1 : Récupération des détails des étudiants liés aux contrats
+         $studentsDetailsQuery = $this->getStudentsDetails($idsArray);
+
+         // Si aucun détail n'est trouvé, déclencher une erreur 404
+         if ($studentsDetailsQuery->count() === 0) {
+            abort(404, 'Contrats non trouvés.');
+         }
+         // Étape 3 : Ajouter la StateMachine à chaque étudiant
+         $studentsDetails = $studentsDetailsQuery->paginate(16);
+
+         // Étape 4 : Construire un tableau JSON contenant les informations à passer à la vue
+         $studentsDetails->getCollection()->transform(function ($student) use ($user) {
+
+            // Vérifie si une évaluation existe pour cet étudiant et cet enseignant
+            $evaluation = $this->getExistingEvaluations($student->student_id, $student->job_id);
+
+            if ($evaluation) {
+               // Si une évaluation existe, associer son ID et sa machine d'état à l'étudiant
+               $student->evaluation_id = $evaluation->id;
+               // On crée une machine d'état sans base de données en passant les appréciations
+               $student->stateMachine = new EvaluationStateMachine($evaluation->id, $evaluation->appreciations->toArray());
+            } else {
+               // Si aucune évaluation n'existe, gérer ce cas (ex. null)
+               $student->evaluation_id = null;
+               $student->stateMachine = null;
+            }
+
+            return $student;
+         });
+      } else {
+         $studentsDetails = collect([$this->getStudentEvaluationDetailsByContractId($ids)->first()]);
+
+         if ($studentsDetails->isNotEmpty()) {
+            $student = $studentsDetails[0];
+
+            $evaluation = $this->getExistingEvaluations($student->student_id, $student->job_id);
+            if ($evaluation) {
+               $student->stateMachine = new EvaluationStateMachine($evaluation->id, $evaluation->appreciations->toArray());
+            } else {
+               $student->stateMachine = new EvaluationStateMachine();
+            }
+         } else {
+            // Gérer le cas où les détails de l'étudiant ne sont pas trouvés
+            // Par exemple, vous pouvez initialiser une collection vide ou enregistrer une entrée de journal
+            Log::warning("Aucun détail d'étudiant trouvé pour les ID de contrat : " . json_encode($ids));
+            $studentsDetails = collect();
+         }
+      }
+
+      // Étape 5 : Construire le tableau JSON de sauvegarde
+      $allJsonSave = $this->buildJsonSave($studentsDetails);
+      // Étape 6 : Renvoyer la vue Blade avec les données, y compris la machine d'état
+      return $this->renderEvaluationPage($studentsDetails, $isTeacher, $allJsonSave);
+   }
 
    private function getStudentsDetails(array $idsArray)
    {
@@ -535,13 +596,23 @@ class EvaluationController extends Controller
       return $user->hasRole(RoleName::TEACHER);
    }
 
-   private function buildJsonSave($studentsDetails): array
-   {
-      return $studentsDetails->map(function ($student) {
 
+   /**
+    * Construire un tableau JSON pour un étudiant ou une liste d'étudiants.
+    *
+    * @param mixed $studentOrStudents
+    * @return array
+    * @throws \InvalidArgumentException
+    */
+   private function buildJsonSave($studentOrStudents): array
+   {
+      // Mapper la collection pour construire les données JSON
+      return $studentOrStudents->map(function ($student) {
+         // Récupérer les évaluations pour cet étudiant
          $existingEvaluations = $this->getExistingEvaluations($student->student_id, $student->job_id);
          $evaluationsData = $this->mapExistingEvaluations($existingEvaluations);
 
+         // Retourner les données formatées pour cet étudiant
          return [
             'student_Id' => $student->student_id,
             'student_lastname' => $student->student_lastname,
@@ -557,38 +628,46 @@ class EvaluationController extends Controller
       })->toArray();
    }
 
+
    private function getExistingEvaluations($studentId, $jobId)
    {
+      // Utilise first() pour obtenir le premier élément ou null si vide
       return Evaluation::with(['appreciations.criteria'])
          ->where('student_id', $studentId)
          ->where('job_definitions_id', $jobId)
-         ->get();
+         ->first();
    }
 
-   private function mapExistingEvaluations($existingEvaluations): array
+   private function mapExistingEvaluations($existingEvaluation)
    {
-      return $existingEvaluations->map(function ($evaluation) {
-         return [
-            'evaluator_id' => $evaluation->evaluator_id,
-            'student_remark' => $evaluation->student_remark,
-            'appreciations' => $evaluation->appreciations->map(function ($appreciation) {
-               return [
-                  'level' => $appreciation->level,
-                  'date' => $appreciation->date,
-                  'criteria' => $appreciation->criteria->map(function ($criteria) {
-                     return [
-                        'id' => $criteria->position,
-                        'name' => $criteria->name,
-                        'value' => $criteria->value,
-                        'checked' => $criteria->checked,
-                        'remark' => $criteria->remark,
-                     ];
-                  })->toArray(),
-               ];
-            })->toArray(),
-         ];
-      })->toArray();
+      // Vérifie si l'évaluation existe
+      if ($existingEvaluation === null) {
+         return []; // Retourne un tableau vide si aucune évaluation n'est trouvée
+      }
+
+      // Mappage des appréciations
+      return [
+         'evaluator_id' => $existingEvaluation->evaluator_id,
+         'student_remark' => $existingEvaluation->student_remark,
+         'appreciations' => $existingEvaluation->appreciations->map(function ($appreciation) {
+            return [
+               'level' => $appreciation->level,
+               'date' => $appreciation->date,
+               'criteria' => $appreciation->criteria->map(function ($criteria) {
+                  return [
+                     'id' => $criteria->position,
+                     'name' => $criteria->name,
+                     'value' => $criteria->value,
+                     'checked' => $criteria->checked,
+                     'remark' => $criteria->remark,
+                  ];
+               })->toArray(),
+            ];
+         })->toArray(),
+      ];
    }
+
+
 
    private function getInitialVisibleCategories($tabCriterias)
    {
@@ -630,18 +709,32 @@ class EvaluationController extends Controller
 
    private function renderEvaluationPage($studentsDetails, bool $isTeacher, array $allJsonSave)
    {
-      // Récupérer les labels d'appréciation
-      $appreciationLabels = EvaluationSetting::where('key', 'appreciationLabels')->first()->value;
+      // Récupérer les labels d'appréciation avec une gestion possible du cache pour des performances améliorées.
+      $appreciationLabels = $this->getAppreciationLabels();
 
-      return view('contracts-fullEvaluation', [
+      // Identifier l'ID de l'utilisateur pour obtenir les critères
+      $userId = $isTeacher ? auth()->user()->id : 0;
+
+      // Préparer les données à transmettre à la vue
+      $viewData = [
          'studentsDatas' => $studentsDetails,
-         'visibleCategories' => $this->getInitialVisibleCategories($this->getCriteriaGrouped($isTeacher ? auth()->user()->id : 0)),
+         'visibleCategories' => $this->getInitialVisibleCategories($this->getCriteriaGrouped($userId)),
          'visibleSliders' => $this->visibleCursors,
          'evaluationLevels' => array_keys($this->visibleCursors),
          'appreciationLabels' => $appreciationLabels,
-         'criteriaGrouped' => $this->getCriteriaGrouped($isTeacher ? auth()->user()->id : 0),
+         'criteriaGrouped' => $this->getCriteriaGrouped($userId),
          'isTeacher' => $isTeacher,
          'jsonSave' => $allJsonSave,
-      ]);
+      ];
+
+      return view('contracts-fullEvaluation', $viewData);
+   }
+
+   private function getAppreciationLabels()
+   {
+      // Récupérer les labels d'appréciation, gérer le cache si nécessaire.
+      return EvaluationSetting::where('key', 'appreciationLabels')
+         ->first()
+         ?->value ?? [];
    }
 }

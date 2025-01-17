@@ -15,13 +15,17 @@ class Appreciation extends Model
     // Désactive la gestion automatique des `timestamps`
     public $timestamps = false;
 
-    // Indique les colonnes qui peuvent être assignées massivement
     protected $fillable = [
         'evaluation_id',
         'date',
         'level',
+        'signatures',
     ];
 
+    // Transforme automatiquement JSON ↔ Tableau PHP
+    protected $casts = [
+        'signatures' => 'array',
+    ];
 
     /**
      * Relation avec l'évaluation (un à plusieurs)
@@ -61,13 +65,15 @@ class Appreciation extends Model
     }
 
     /**
-     * Mise à jour de la date d'une appréciation
+     * Mise à jour de la date et du niveau d'une appréciation
      */
-    public function updateAppreciationDate($newDate)
+    public function updateAppreciation($newDate, $newLevel)
     {
         $this->date = $newDate;
+        $this->level = $newLevel;
         $this->save();
     }
+
 
     /**
      * Supprimer une appréciation en fonction de son ID
@@ -78,22 +84,53 @@ class Appreciation extends Model
     }
 
     /**
-     * Récupère une appréciation par sa date pour une évaluation spécifique
+     * Récupère une appréciation par sa date et niveau pour une évaluation spécifique
      */
-    public static function getAppreciationByDateAndEvaluation($date, $evaluationId)
+    public static function getAppreciationByDateAndLevel($date, $level, $evaluationId)
     {
         return self::where('date', $date)
             ->where('evaluation_id', $evaluationId)
+            ->where('level', $level)
             ->first();
     }
 
     /**
-     * Vérifie s'il existe une appréciation pour une évaluation et une date spécifiques
+     * Vérifie s'il existe une appréciation pour une évaluation et une date spécifiques avec un niveau donné
      */
-    public static function hasAppreciation($evaluationId, $date)
+    public static function hasAppreciation($evaluationId, $date, $level)
     {
         return self::where('evaluation_id', $evaluationId)
             ->where('date', $date)
+            ->where('level', $level)
             ->exists();
+    }
+
+    public function isFullySigned(): bool
+    {
+        $signatures = $this->signatures ?? ['teacher' => false, 'student' => false];
+        return $signatures['teacher'] && $signatures['student']; // Vrai si les deux ont signé
+    }
+
+    public function addSignature(string $role): void
+    {
+        if (!in_array($role, ['teacher', 'student'])) {
+            throw new \InvalidArgumentException('Role must be either "teacher" ou "student".');
+        }
+
+        $signatures = $this->signatures ?? ['teacher' => false, 'student' => false];
+        $signatures[$role] = true; // Met le rôle à "true" pour indiquer qu'il a signé
+        $this->signatures = $signatures;
+        $this->save();
+    }
+
+
+    public function hasSigned(string $role): bool
+    {
+        if (!in_array($role, ['teacher', 'student'])) {
+            throw new \InvalidArgumentException('Role must be either "teacher" or "student".');
+        }
+
+        $signatures = $this->signatures ?? ['teacher' => false, 'student' => false];
+        return $signatures[$role]; // Retourne vrai ou faux
     }
 }

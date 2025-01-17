@@ -37,15 +37,39 @@
 
         <!-- Final Result Display -->
         <div id="id-{{ $studentDetails->student_id }}-finalResult" class="relative bg-success">
-            <div class="w-full rounded-lg shadow-sm p-6 flex flex-col items-center" style="min-height: 11rem;">
+
+            @if ($studentDetails->stateMachine)
+                @php
+                    $text = match ($studentDetails->stateMachine->getCurrentState()->value) {
+                        'not_evaluated' => 'Not done.',
+                        'auto80' => 'Student',
+                        'eval80' => 'Teacher',
+                        'auto100' => 'Student',
+                        'eval100' => 'Teacher',
+                        'pending_signature' => 'Pending sign.',
+                        'completed' => 'Done.',
+                        default => 'Unknown.',
+                    };
+                @endphp
+                <span id="currentState"
+                    class="absolute w-full text-center -top-5 
+                bg-white text-sm text-gray-500">
+                    {{ __($text) }}
+                </span>
+            @endif
+
+
+            <div class="w-full rounded-lg shadow-sm p-6 flex flex-col items-center">
+                <span id="id-{{ $studentDetails->student_id }}-status" class="text-center bottom-2">
+                    {{-- texte qui indique le status actuel de l'évaluation --}}
+                </span>
                 <h6 id="finalResultTitle-{{ $studentDetails->student_id }}" class="font-semibold text-xl text-gray-800">
-                    {{ $isTeacher ? __('Formative evaluation') : __('Auto evaluation') }}
+                    {{ __('Formative') }}
                 </h6>
                 <p id="finalResultContent" class="text-xl font-extrabold text-gray-700 align-middle mt-5 font-serif">
                     A
                 </p>
-                <span id="spanResult"
-                    class="absolute bottom-1 right-1 bg-indigo-300 text-white px-2 py-1 rounded-full text-sm">
+                <span id="spanResult" class="absolute bottom-1 right-1 bg-indigo-300 text-white px-2 py-1 text-sm">
                     80%
                 </span>
             </div>

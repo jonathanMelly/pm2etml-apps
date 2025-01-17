@@ -1,4 +1,8 @@
 <div>
+    <button type="button" class="btn btn-sm bg-gray-500 text-white p-2 rounded absolute top-3 right-2"
+        onclick="toggleVisibility('idStudent-{{ $studentDetails->student_id }}','true')">▲
+    </button>
+
     @if ($isTeacher)
         <!-- Informations de l'étudiant pour l'enseignant -->
         <h3 class="text-xl font-semibold text-blue-600">
