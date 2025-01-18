@@ -38,38 +38,52 @@
         <!-- Final Result Display -->
         <div id="id-{{ $studentDetails->student_id }}-finalResult" class="relative bg-success">
 
+            {{-- This is the evaluation stored in the database --}}
             @if ($studentDetails->stateMachine)
                 @php
-                    $text = match ($studentDetails->stateMachine->getCurrentState()->value) {
-                        'not_evaluated' => 'Not done.',
-                        'auto80' => 'Student',
-                        'eval80' => 'Teacher',
-                        'auto100' => 'Student',
-                        'eval100' => 'Teacher',
-                        'pending_signature' => 'Pending sign.',
-                        'completed' => 'Done.',
-                        default => 'Unknown.',
-                    };
+                    $states = [
+                        'not_evaluated' => 'Not eval',
+                        'auto80' => 'Student 80%',
+                        'eval80' => 'Teacher 80%',
+                        'auto100' => 'Student 100%',
+                        'eval100' => 'Teacher 100%',
+                        'pending_signature' => 'Pending sign',
+                        'completed' => 'Completed',
+                    ];
+
+                    $textCurrent = $states[$studentDetails->stateMachine->getCurrentState()->value] ?? 'Unknown';
+                    $textNext =
+                        $states[
+                            $studentDetails->stateMachine->getNextState($isTeacher ? 'teacher' : 'student')->value
+                        ] ?? 'Unknown';
                 @endphp
                 <span id="currentState"
                     class="absolute w-full text-center -top-5 
                 bg-white text-sm text-gray-500">
-                    {{ __($text) }}
+                    {{ __($textCurrent) }}
+                </span>
+                <span id="nextState"
+                    class="hidden absolute w-full text-center -top-5 
+                bg-white text-sm text-gray-500">
+                    {{ __($textNext) }}
                 </span>
             @endif
 
-
-            <div class="w-full rounded-lg shadow-sm p-6 flex flex-col items-center">
+            <div class="w-full rounded-lg p-6 flex flex-col items-center">
                 <span id="id-{{ $studentDetails->student_id }}-status" class="text-center bottom-2">
                     {{-- texte qui indique le status actuel de l'évaluation --}}
                 </span>
                 <h6 id="finalResultTitle-{{ $studentDetails->student_id }}" class="font-semibold text-xl text-gray-800">
                     {{ __('Formative') }}
                 </h6>
-                <p id="finalResultContent" class="text-xl font-extrabold text-gray-700 align-middle mt-5 font-serif">
+                <p id="finalResultContent"
+                    class="text-xl font-extrabold 
+                text-gray-700 align-middle mt-6 font-serif">
                     A
                 </p>
-                <span id="spanResult" class="absolute bottom-1 right-1 bg-indigo-300 text-white px-2 py-1 text-sm">
+                <span id="spanResult"
+                    class="absolute bottom-1 right-1 
+                   bg-indigo-300 text-white px-2 py-1 text-sm">
                     80%
                 </span>
             </div>

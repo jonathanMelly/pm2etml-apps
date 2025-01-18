@@ -43,14 +43,16 @@ class EvaluationStateMachine
    private ?int $evaluationId;
    private ?array $appreciations;
 
-   // Le constructeur pour initialiser l'état
+   // Le constructeur pour initialiser l'état 
    public function __construct(?int $evaluationId = null, ?array $appreciations = null)
    {
+      $this->evaluationId = $evaluationId;
+      $this->appreciations = $appreciations;
+
       if ($evaluationId !== null && $appreciations !== null) {
-         // Mise à jour de l'état en fonction des appréciations existantes
+         // Mise à jour de l'état en fonction des appréciations existantes 
          $this->updateStateFromEvaluations();
-      } else {
-         // Initialisation de l'état à "NOT_EVALUATED"
+      } else { // Initialisation de l'état à "NOT_EVALUATED" 
          $this->currentState = EvaluationState::NOT_EVALUATED;
       }
    }

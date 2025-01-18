@@ -519,8 +519,6 @@ class EvaluationController extends Controller
          );
    }
 
-
-
    public function fullEvaluation(string $ids)
    {
       $user = auth()->user();

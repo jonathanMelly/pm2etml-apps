@@ -82,7 +82,7 @@
 
                         <!-- Affichage dynamique des boutons -->
                         <button type="submit" id="id-{{ $studentDetails->student_id }}-buttonSubmit"
-                            class="p-2 rounded {{ $isUpdate ? 'bg-orange-500 hover:bg-orange-600' : 'bg-purple-500 hover:bg-purple-600' }} font-semibold text-gray-100"
+                            class="w-36 p-2 rounded {{ $isUpdate ? 'bg-orange-500 hover:bg-orange-600' : 'bg-purple-500 hover:bg-purple-600' }} font-semibold text-gray-100"
                             data-student-id="{{ $studentDetails->student_id }}"
                             data-update="{{ $isUpdate ? true : false }}">
                             {{ $isUpdate ? __('Update evaluation') : __('Submit evaluation') }}

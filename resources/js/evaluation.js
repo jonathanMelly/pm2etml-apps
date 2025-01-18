@@ -104,17 +104,66 @@ window.updateSliderValue = function (slider) {
    calculateFinalResults(id.split('-')[1], id.split('-')[3]);
 };
 
+
+function notifyChangeEval(studentId, domElement) {
+   const elemFinalResult = document.getElementById(`id-${studentId}-${domElement}`);
+   const elemToDoNext = document.getElementById(`id-${studentId}-nextState-${state.isTeacher ? 'teacher' : 'student'}`);
+
+   if (elemFinalResult) {
+      // span a afficher
+      const spanNextState = elemFinalResult.querySelector('#nextState');
+      // span a cacher
+      const spanCurrentState = elemFinalResult.querySelector('#currentState');
+
+      // si le span est trouvé
+      if (spanNextState && spanCurrentState) {
+         // on cache le span actuel
+         spanCurrentState.classList.add('hidden');
+         // on affiche le span suivant
+         spanNextState.classList.remove('hidden');
+      } else {
+         console.error(`Element with ID 'id-${studentId}-${domElement}' not found`);
+      }
+   }
+
+   if (elemToDoNext) {
+      // Ajouter des classes pour notifier le changement
+      elemToDoNext.classList.remove('top-5');
+      elemToDoNext.classList.add('bg-yellow-300', 'text-blue-600', 'text-2xl', 'font-bold', 'p-2', 'rounded', 'bottom-10');
+
+
+      elemToDoNext.textContent = elemToDoNext.textContent.replace('À faire :', 'Vous faites :');
+
+
+      // Utiliser requestAnimationFrame pour garantir que les classes sont ajoutées avant de les supprimer
+      requestAnimationFrame(() => {
+         setTimeout(() => {
+            elemToDoNext.classList.remove('bg-yellow-300', 'text-blue-600', 'text-2xl', 'font-bold', 'p-2', 'rounded', ' bottom-10');
+            elemToDoNext.classList.add('top-5');
+         }, 5000);
+      });
+
+   } else {
+      console.error(`Element with ID 'id-${studentId}-nextState' not found`);
+   }
+}
+
 // Fonction qui permet de changer l'onglet (eval80 vs eval100)
 window.changeTab = function (onClickBtn, indexCalByLoad = null) {
+
    const TAB_80 = '80';
    const TAB_100 = '100';
    const tabName = onClickBtn.id.replace('btn', 'range');
    const studentId = onClickBtn.id.split('-')[1];
    const buttonClass = state.isTeacher ? 'btn-secondary' : 'btn-primary';
-   console.log(indexCalByLoad, !state.isTeacher);
+   // console.log(indexCalByLoad, !state.isTeacher);
 
+
+   notifyChangeEval(studentId, 'finalResult');
+
+   // a travailler, le but etant de faire un popup pour dire que l'evaluation a été modifié...
    if (indexCalByLoad !== null && !state.isTeacher) {
-      console.log('dans changeTab : ', indexCalByLoad);
+      // console.log('dans changeTab : ', indexCalByLoad);
 
       // Calcule les résultats finaux
       calculateFinalResults(studentId, state.evaluationLevels[indexCalByLoad]);
@@ -742,7 +791,7 @@ function calculateFinalResults(student_id, levelName) {
             return match;
          });
 
-         console.log('slide: ', slider);
+         // console.log('slide: ', slider);
          if (slider) {
             // console.log('valeur du slider selon le critère : ', slider.value);
             const value = parseInt(slider.value, 10); // Convertir en entier
