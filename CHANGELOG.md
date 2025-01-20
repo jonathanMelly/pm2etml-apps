@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.53.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.52.3...v1.53.0) (2025-01-20)
+
+
+### Features
+
+* **create job mask:** grouped particularities ([030dcde](https://github.com/jonathanMelly/pm2etml-apps/commit/030dcde8781059c1d2d109514ce44481e96260d8))
+
 ## [1.52.3](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.52.2...v1.52.3) (2025-01-20)
 
 
