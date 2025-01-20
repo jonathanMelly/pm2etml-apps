@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.52.3](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.52.2...v1.52.3) (2025-01-20)
+
+
+### Bug Fixes
+
+* **jobApplication:** added missing js in build ([154afd4](https://github.com/jonathanMelly/pm2etml-apps/commit/154afd41041e22450771169458acb6f03b42c122))
+
 ## [1.52.2](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.52.1...v1.52.2) (2025-01-17)
 
 
