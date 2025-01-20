@@ -357,5 +357,6 @@
     "Infos": "Infos",
     "Actions": "Actions",
     "No jobs": "Pas d'emplois",
-    "Validate remediation request for :name and project :project": "Valider la demande de remédiation pour :name et le projet :project"
+    "Validate remediation request for :name and project :project": "Valider la demande de remédiation pour :name et le projet :project",
+    "Particularities": "Particularités"
 }
