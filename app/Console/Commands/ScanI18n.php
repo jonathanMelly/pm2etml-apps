@@ -373,7 +373,7 @@ class ScanI18n extends Command
 
             File::put(
                 $frFile,
-                json_encode($merged, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+                json_encode($merged, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
             );
 
             $this->info('Translations saved to fr.json');
@@ -384,7 +384,7 @@ class ScanI18n extends Command
 
             File::put(
                 $filename,
-                json_encode($translations, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+                json_encode($translations, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
             );
 
             $this->info("Auto-translated strings exported to: $filename");
