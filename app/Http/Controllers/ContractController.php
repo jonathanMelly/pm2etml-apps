@@ -217,23 +217,22 @@ class ContractController extends Controller
     public function pendingContractApplications()
     {
         // row header
-        $applicants = WorkerContract::query()
-            ->where('application_status', '>', 0)
-            ->join('group_members', 'contract_worker.group_member_id', '=', 'group_members.id')
-            ->join('users', 'group_members.user_id', '=', 'users.id')
-            ->selectRaw('CONCAT(users.firstname, " ", users.lastname) as full_name')
-            ->distinct()
+        $applicants = User::query()
+            ->whereHas('groupMembers.workerContracts', function ($query) {
+                $query->where('application_status', '>', 0);
+            })
             ->get()
-            ->pluck('full_name')
+            ->transform(function (User $user) {
+                return $user->firstname .' '. $user->lastname;
+            })
             ->toArray();
         // column headers
-        $jobTitles = WorkerContract::query()
-            ->where('application_status', '>', 0)
-            ->join('group_members', 'contract_worker.group_member_id', '=', 'group_members.id')
-            ->join('contracts', 'contract_worker.contract_id', '=', 'contracts.id')
-            ->join('job_definitions', 'contracts.job_definition_id', '=', 'job_definitions.id')
-            ->distinct()
-            ->pluck('job_definitions.title')
+        $jobTitles = JobDefinition::query()
+            ->whereHas('contracts.workersContracts', function ($query) {
+                $query->where('application_status', '>', 0);
+            })
+            ->select('title')
+            ->pluck('title')
             ->toArray();
 
         // table content, indexed by applicant names and job titles
