@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             PermissionResetSeeder::class,
             PermissionV1Seeder::class,
             PermissionV2Seeder::class,
+            PermissionV3Seeder::class,
             AcademicPeriodSeeder::class,
             // GroupSeeder::class => started by UserV1Seeder as it depends on it
             UserV1Seeder::class,

@@ -1,5 +1,4 @@
-<div class="evaluation-tabs flex space-x-6 relative" id="id-{{ $studentId }}-btn">
-
+<div class="evaluation-tabs flex space-x-6 relative justify-end" id="id-{{ $studentId }}-btn">
     @php
         if (!function_exists('isCurrentState')) {
             function isCurrentState($desiredState, $currentState)
@@ -8,21 +7,22 @@
             }
         }
 
-        function getNextStateMessage($nextState)
-        {
-            $nextStates = [
-                'not_evaluated' => __('Start Evaluation'),
-                'auto80' => __('Evaluate 3/4'),
-                'eval80' => __('Evaluate 3/4'),
-                'auto100' => __('Evaluate 100%'),
-                'eval100' => __('Pending Signature'),
-                'pending_signature' => __('Complete Evaluation'),
-            ];
-            $nextStateMessage = $nextStates[$nextState] ?? $nextState;
+        if (!function_exists('getNextStateMessage')) {
+            function getNextStateMessage($nextState)
+            {
+                $nextStates = [
+                    'not_evaluated' => __('Start Evaluation'),
+                    'auto80' => __('Evaluate 3/4'),
+                    'eval80' => __('Evaluate 3/4'),
+                    'auto100' => __('Evaluate 100%'),
+                    'eval100' => __('Pending Signature'),
+                    'pending_signature' => __('Complete Evaluation'),
+                ];
+                $nextStateMessage = $nextStates[$nextState] ?? $nextState;
 
-            return __('What you need to do: :message', ['message' => $nextStateMessage]);
+                return __('What you need to do: :message', ['message' => $nextStateMessage]);
+            }
         }
-
     @endphp
 
     @hasanyrole(\App\Constants\RoleName::TEACHER . '|' . \App\Constants\RoleName::STUDENT)
@@ -76,6 +76,4 @@
     <button type="button" class="eval-tab-btn btn btn-outline btn-success" id="id-{{ $studentId }}-validation-btn"
         onclick="validateEvaluation('{{ $studentId }}-btn-')">{{ __('Validate') }}
     </button>
-
-
 </div>

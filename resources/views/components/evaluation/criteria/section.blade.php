@@ -17,7 +17,7 @@
                     id="description-{{ $criterion['id'] }}">
                     {{ $criterion['description'] }}
                 </span>
-                <x-criterion-card :criterion="$criterion" :visible-sliders="$visibleSliders" :appreciation-labels="$appreciationLabels" :is-teacher="$isTeacher"
+                <x-evaluation.criteria.card :criterion="$criterion" :visible-sliders="$visibleSliders" :appreciation-labels="$appreciationLabels" :is-teacher="$isTeacher"
                     :evaluation-levels="$evaluationLevels" :id-student="$idStudent" />
             </div>
         @endforeach

@@ -24,35 +24,35 @@ enum EvaluationLevel: int
 
 enum EvaluationState: string
 {
-   case NOT_EVALUATED = 'not_evaluated';
-   case AUTO80 = 'auto80';
-   case EVAL80 = 'eval80';
-   case AUTO100 = 'auto100';
-   case EVAL100 = 'eval100';
-   case PENDING_SIGNATURE = 'pending_signature';
-   case COMPLETED = 'completed';
+   case NOT_EVALUATED = 'not_evaluated';       // Évaluation non réalisée
+   case AUTO80 = 'auto80';                     // Évaluation automatique à 80%
+   case EVAL80 = 'eval80';                     // Évaluation manuelle à 80%
+   case AUTO100 = 'auto100';                   // Évaluation automatique à 100%
+   case EVAL100 = 'eval100';                   // Évaluation manuelle à 100%
+   case PENDING_SIGNATURE = 'pending_signature'; // En attente de signature
+   case COMPLETED = 'completed';               // Évaluation complétée
 
-   public function label(): string
+   public function getLabel(): string
    {
       return ucfirst(str_replace('_', ' ', $this->value));
    }
 }
+
 class EvaluationStateMachine
 {
    private EvaluationState $currentState;
    private ?int $evaluationId;
-   private ?array $appreciations;
+   private array $appreciations;
+   private array $acknowledgments = []; // Stocke les quittances des étapes
 
-   // Le constructeur pour initialiser l'état 
-   public function __construct(?int $evaluationId = null, ?array $appreciations = null)
+   public function __construct(?int $evaluationId = null, ?array $appreciations = [])
    {
       $this->evaluationId = $evaluationId;
-      $this->appreciations = $appreciations;
+      $this->appreciations = $appreciations ?? [];
 
-      if ($evaluationId !== null && $appreciations !== null) {
-         // Mise à jour de l'état en fonction des appréciations existantes 
+      if ($evaluationId !== null && !empty($appreciations)) {
          $this->updateStateFromEvaluations();
-      } else { // Initialisation de l'état à "NOT_EVALUATED" 
+      } else {
          $this->currentState = EvaluationState::NOT_EVALUATED;
       }
    }
@@ -75,85 +75,99 @@ class EvaluationStateMachine
       ],
    ];
 
-   // Méthode pour mettre à jour l'état de la machine d'évaluation en fonction des évaluations existantes
    private function updateStateFromEvaluations(): void
    {
-      // Récupération des niveaux des appréciations
+      if (!is_array($this->appreciations)) {
+         $this->currentState = EvaluationState::NOT_EVALUATED;
+         return;
+      }
+
       $levels = collect($this->appreciations)->pluck('level')->filter()->values();
 
       if ($levels->isNotEmpty()) {
-         // Si des niveaux d'évaluation existent, on prend le dernier niveau comme état courant
          $lastLevel = EvaluationLevel::from($levels->last())->label();
-
-         $this->currentState = EvaluationState::from($lastLevel);
+         $this->currentState = EvaluationState::tryFrom($lastLevel) ?? EvaluationState::NOT_EVALUATED;
       } else {
-         // Sinon, l'état est initialisé à "NOT_EVALUATED"
          $this->currentState = EvaluationState::NOT_EVALUATED;
       }
    }
 
-   // Retourne l'état courant de l'évaluation
    public function getCurrentState(): EvaluationState
    {
       return $this->currentState;
    }
 
-   // Vérifie si une transition est possible en fonction du rôle (enseignant ou élève)
    public function canTransition(string $role): bool
    {
-      $currentState = $this->getCurrentState()->value;
-      return isset(self::TRANSITIONS[$role][$currentState]);
+      return isset(self::TRANSITIONS[$role][$this->currentState->value]);
    }
 
-   // Retourne le prochain état possible pour un rôle donné
+
    public function getNextState(string $role): ?EvaluationState
    {
-      $currentState = $this->getCurrentState()->value;
-      return self::TRANSITIONS[$role][$currentState] ?? null;
+      // Obtenir le prochain état à partir des transitions définies
+      $nextStateValue = self::TRANSITIONS[$role][$this->currentState->value] ?? null;
+
+      // Vérifier que $nextStateValue est bien du type EvaluationState avant de l'utiliser
+      if ($nextStateValue instanceof EvaluationState) {
+         return $nextStateValue;
+      }
+
+      // Si $nextStateValue n'est pas du type EvaluationState, retourner null
+      return null;
    }
 
-   // Applique une transition d'état si elle est valide
+
    public function transition(string $role): bool
    {
-      $currentState = $this->getCurrentState();
-
       if ($this->canTransition($role)) {
-         $nextState = self::TRANSITIONS[$role][$currentState];
-         $this->currentState = $nextState;
+         $this->currentState = EvaluationState::from(self::TRANSITIONS[$role][$this->currentState->value]);
          return true;
       }
 
-      // Vérification des signatures si dans l'état "PENDING_SIGNATURE"
-      if ($currentState === EvaluationState::PENDING_SIGNATURE) {
+      if ($this->currentState === EvaluationState::PENDING_SIGNATURE) {
          return $this->checkSignaturesAndComplete();
       }
 
       return false;
    }
 
-   // Ajoute une signature à l'évaluation (enseignant ou étudiant)
+   /// v2 ?
    public function addSignature(string $role): bool
    {
       if (!in_array($role, ['teacher', 'student'])) {
          throw new InvalidArgumentException('Invalid role');
       }
 
-      // On suppose que la signature est ajoutée localement dans la collection/appreciation
       $this->appreciations[$role] = true;
-
-      // Vérification des signatures et mise à jour de l'état si elles sont toutes présentes
       return $this->checkSignaturesAndComplete();
    }
 
-   // Vérifie si les signatures sont complètes et marque l'évaluation comme "COMPLETED"
    private function checkSignaturesAndComplete(): bool
    {
-      // Si les signatures des deux parties sont présentes, mettre l'état à "COMPLETED"
-      if ($this->appreciations['teacher'] && $this->appreciations['student']) {
+      if (!empty($this->appreciations['teacher']) && !empty($this->appreciations['student'])) {
          $this->currentState = EvaluationState::COMPLETED;
          return true;
       }
 
-      return false; // Toujours en attente de la signature de l'autre partie
+      return false;
+   }
+
+   // Confirme que l'élève ou l'enseignant valide une étape
+   public function acknowledgeState(string $role): bool
+   {
+      if (!in_array($role, ['teacher', 'student'])) {
+         throw new InvalidArgumentException('Invalid role');
+      }
+
+      // Enregistre la quittance pour l'état actuel
+      $this->acknowledgments[$this->currentState->value] = true;
+      return true;
+   }
+
+   // Vérifie si l'état actuel a été quittancé
+   public function isAcknowledged(EvaluationState $state): bool
+   {
+      return !empty($this->acknowledgments[$state->value]);
    }
 }

@@ -4,6 +4,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
    console.log(state);
 
+
+   handleTabSwitch();
+
    // Gestion des boutons de soumission
    const submitBtns = document.querySelectorAll('[id^="id-"][id$="-buttonSubmit"]');
 
@@ -45,6 +48,48 @@ document.addEventListener('DOMContentLoaded', function () {
       });
    }
 });
+
+
+
+function handleTabSwitch() {
+   const tabs = document.querySelectorAll('[role="tab"]');
+
+   tabs.forEach((tab, index) => {
+      tab.addEventListener('click', function () {
+         // Désactiver tous les onglets
+         tabs.forEach(t => {
+            t.setAttribute('aria-selected', 'false');
+            t.classList.remove('bg-gray-200', 'text-black', 'border-gray-800', 'shadow-md');
+            t.classList.add('bg-gray-300', 'text-gray-700', 'hover:bg-gray-400');
+         });
+
+         // Activer l'onglet cliqué
+         tab.setAttribute('aria-selected', 'true');
+         tab.classList.remove('bg-gray-300', 'text-gray-700', 'hover:bg-gray-400');
+         tab.classList.add('bg-gray-200', 'text-black', 'border-gray-800', 'shadow-md');
+
+         // Ici, vous pouvez utiliser les indices pour gérer la visibilité du contenu des onglets
+         toggleVisibilityStudentContainer(`#idStudent-${tab.id.split('-')[1]}-visible`);
+      });
+   });
+}
+
+function toggleVisibilityStudentContainer(student_id_visibility) {
+   const allContainers = document.querySelector('#ContainerStudentsVisible');
+   const newVisibleContainer = document.querySelector(student_id_visibility);
+
+   // Masquer tous les conteneurs
+   Array.from(allContainers.children).forEach(child => {
+      if (child.style.display !== 'none') {
+         child.style.display = 'none';
+      }
+   });
+
+   // Afficher le conteneur sélectionné
+   if (newVisibleContainer) {
+      newVisibleContainer.style.display = 'block';
+   }
+}
 
 
 /**

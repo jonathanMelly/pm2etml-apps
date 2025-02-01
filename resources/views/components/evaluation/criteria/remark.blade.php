@@ -38,8 +38,9 @@
         <!-- Final Result Display -->
         <div id="id-{{ $studentDetails->student_id }}-finalResult" class="relative bg-success">
 
-            {{-- This is the evaluation stored in the database --}}
+            {{-- Vérifiez si c'est la première évaluation ou si une évaluation existe déjà --}}
             @if ($studentDetails->stateMachine)
+                {{-- L'évaluation existe déjà dans la base de données --}}
                 @php
                     $states = [
                         'not_evaluated' => 'Not eval',
@@ -51,23 +52,32 @@
                         'completed' => 'Completed',
                     ];
 
-                    $textCurrent = $states[$studentDetails->stateMachine->getCurrentState()->value] ?? 'Unknown';
-                    $textNext =
-                        $states[
-                            $studentDetails->stateMachine->getNextState($isTeacher ? 'teacher' : 'student')->value
-                        ] ?? 'Unknown';
+                    $currentState = $studentDetails->stateMachine->getCurrentState()->value;
+                    $nextState = $studentDetails->stateMachine->getNextState($isTeacher ? 'teacher' : 'student')->value;
+
+                    $textCurrent = $states[$currentState] ?? 'Unknown';
+                    $textNext = $states[$nextState] ?? 'Unknown';
                 @endphp
                 <span id="currentState"
                     class="absolute w-full text-center -top-5 
-                bg-white text-sm text-gray-500">
+        bg-white text-sm text-gray-500">
                     {{ __($textCurrent) }}
                 </span>
+
                 <span id="nextState"
-                    class="hidden absolute w-full text-center -top-5 
-                bg-white text-sm text-gray-500">
+                    class="hidden absolute w-full text-center -top-5
+        bg-white text-sm text-gray-500">
                     {{ __($textNext) }}
                 </span>
+            @else
+                {{-- Cas où le candidat n'a jamais été évalué --}}
+                <span id="currentState"
+                    class="absolute w-full text-center -top-5 
+        bg-white text-sm text-gray-500">
+                    {{ __('No previous evaluation found') }}
+                </span>
             @endif
+
 
             <div class="w-full rounded-lg p-6 flex flex-col items-center">
                 <span id="id-{{ $studentDetails->student_id }}-status" class="text-center bottom-2">
