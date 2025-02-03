@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
    console.log(state);
 
-
    handleTabSwitch();
 
    // Gestion des boutons de soumission
@@ -48,8 +47,6 @@ document.addEventListener('DOMContentLoaded', function () {
       });
    }
 });
-
-
 
 function handleTabSwitch() {
    const tabs = document.querySelectorAll('[role="tab"]');

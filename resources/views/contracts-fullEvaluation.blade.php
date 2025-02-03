@@ -6,6 +6,7 @@
     @endpush
 
     <div id="eval" class="evaluation-form p-6 relative">
+        {{-- Transfert des variables PHP vers JavaScript --}}
         <x-evaluation.state :state="[
             'visibleCategories' => $visibleCategories,
             'visibleSliders' => $visibleSliders,
@@ -17,10 +18,13 @@
             'jsonSave' => $jsonSave,
         ]" />
 
+        {{-- Bouton de personnalisation des critères (visible uniquement pour les enseignants) --}}
         <x-evaluation.criteria.button :route="route('criterias.create')" :label="__('Edit criteria')" :is-teacher="$isTeacher" />
 
+        {{-- Onglets des étudiants --}}
         <x-evaluation.students.tabs :studentsDatas="$studentsDatas" />
 
+        {{-- Conteneur principal pour les évaluations des étudiants --}}
         <div id="ContainerStudentsVisible" class="p-4 mb-6 bg-gray-100 relative">
             @foreach ($studentsDatas as $studentDetails)
                 <x-evaluation.students.evaluation :studentDetails="$studentDetails" :criteriaGrouped="$criteriaGrouped" :visibleSliders="$visibleSliders"
@@ -29,8 +33,11 @@
             @endforeach
         </div>
 
+        {{-- Pagination des étudiants (si la collection est paginée) --}}
         @if ($studentsDatas instanceof \Illuminate\Pagination\LengthAwarePaginator)
-            {{ $studentsDatas->links() }}
+            <div class="mt-6">
+                {{ $studentsDatas->links() }}
+            </div>
         @endif
     </div>
 </x-app-layout>

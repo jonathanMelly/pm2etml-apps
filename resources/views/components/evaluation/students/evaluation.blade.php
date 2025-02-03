@@ -1,20 +1,30 @@
 @php
-    $jsonStudent = collect($jsonSave)->first(fn($student) => $student['student_Id'] === $studentDetails->student_id);
-    $isUpdate = isset($jsonStudent['evaluations']) && !empty($jsonStudent['evaluations']);
+    // Récupération des données JSON pour l'étudiant courant
+$jsonStudent = collect($jsonSave)->first(fn($student) => $student['student_Id'] === $studentDetails->student_id);
+$isUpdate = isset($jsonStudent['evaluations']) && !empty($jsonStudent['evaluations']);
 @endphp
 
 <div id="idStudent-{{ $studentDetails->student_id }}-visible"
     style="{{ !$isFirst ? 'display:none;' : 'display:block;' }}">
+    <!-- Conteneur principal en grille -->
+    <div class="grid grid-cols-2 gap-4">
+        <!-- Colonne gauche : Informations et feedback -->
+        <div class="col-span-1">
+            <x-evaluation.students.info :isTeacher="$isTeacher" :studentDetails="$studentDetails" />
+            <x-evaluation.students.feedback :studentId="$studentDetails->student_id" />
+        </div>
 
-    <x-evaluation.students.info :isTeacher="$isTeacher" :studentDetails="$studentDetails" />
+        <!-- Colonne droite : Boutons d'action -->
+        <div class="col-span-1 text-right">
+            <x-evaluation.tabs :studentId="$studentDetails->student_id" :hasEval="$studentDetails->stateMachine" />
+        </div>
+    </div>
 
-
-    <x-evaluation.students.feedback :studentId="$studentDetails->student_id" />
-
+    <!-- Formulaire d'évaluation -->
     <form method="post" action="{{ route('evaluation.storeEvaluation') }}" class="space-y-2">
         @csrf
-        <x-evaluation.tabs :studentId="$studentDetails->student_id" :hasEval="$studentDetails->stateMachine" />
 
+        <!-- Sections de critères d'évaluation -->
         <div id="id-{{ $studentDetails->student_id }}-criterias" class="space-y-3">
             @foreach ($criteriaGrouped as $category => $criterions)
                 <x-evaluation.criteria.section :container-id="'id-' . $studentDetails->student_id . '-' . strtolower($category) . '-container'" :category-name="$category" :criterions="$criterions" :visible-sliders="$visibleSliders"
@@ -22,11 +32,14 @@
             @endforeach
         </div>
 
+        <!-- Remarques sur l'évaluation -->
         <x-evaluation.criteria.remark :studentDetails="$studentDetails" :isTeacher="$isTeacher" />
 
+        <!-- Données cachées pour le formulaire -->
         <input type="hidden" name="evaluation_data" id="evaluation-data-{{ $studentDetails->student_id }}">
         <input type="hidden" name="isUpdate" value="{{ $isUpdate ? 'true' : 'false' }}">
 
+        <!-- Bouton de soumission -->
         <div class="flex justify-end">
             <button type="submit" id="id-{{ $studentDetails->student_id }}-buttonSubmit"
                 class="w-36 p-2 rounded {{ $isUpdate ? 'bg-orange-500 hover:bg-orange-600' : 'bg-purple-500 hover:bg-purple-600' }} font-semibold text-gray-100"
