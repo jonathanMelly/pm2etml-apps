@@ -1,4 +1,8 @@
-<div class="evaluation-tabs flex space-x-6 relative justify-end" id="id-{{ $studentId }}-btn">
+<div class="evaluation-tabs flex space-x-6 relative justify-end" id="id-{{ $studentId }}-btn"
+    data-current-state="{{ optional(optional($hasEval)->getCurrentState())->value ?? 'not_evaluated' }}"
+    data-next-state-teacher="{{ $hasEval ? $hasEval->getNextState('teacher')->value : null }}"
+    data-next-state-student="{{ $hasEval ? $hasEval->getNextState('student')->value : null }}">
+
     @php
         if (!function_exists('isCurrentState')) {
             function isCurrentState($desiredState, $currentState)
@@ -7,84 +11,86 @@
             }
         }
 
-        if (!function_exists('getNextStateMessage')) {
-            function getNextStateMessage($nextState)
-            {
-                $msg = [
-                    'not_evaluated' => __('Start Evaluation'),
-                    'auto80' => __('Auto Eval 3/4'),
-                    'eval80' => __('Eval 3/4'),
-                    'auto100' => __('Auto Eval 100%'),
-                    'eval100' => __('Eval 100%'),
-                    'pending_signature' => __('Complete Evaluation'),
-                ];
-                $nextStateMessage = $msg[$nextState] ?? $nextState;
+        // État actuel avec fallback
+        $currentState = optional(optional($hasEval)->getCurrentState())->value ?? 'not_evaluated';
 
-                return __('What you need to do: :message', ['message' => $nextStateMessage]);
-            }
-        }
+        // Variables pour simplifier les conditions
+        $isEvaluated = in_array($currentState, ['eval80', 'eval100']);
+        $isAutoEvaluated = in_array($currentState, ['auto80', 'auto100']);
+        $canValidate = !in_array($currentState, ['pending_signature', 'completed']);
 
+        $nextStateMessages = [
+            'eval80' => __('Validate formative eval to proceed.'),
+            'auto80' => __('Student awaits your validation.'),
+            'auto100' => __('Awaiting teacher eval.'),
+            'eval100' => __('Awaiting student validation.'),
+        ];
     @endphp
 
     @hasanyrole(\App\Constants\RoleName::TEACHER . '|' . \App\Constants\RoleName::STUDENT)
-        @php
-            $currentState = optional(optional($hasEval)->getCurrentState())->value;
-            $nextStateTeacher = $hasEval ? $hasEval->getNextState('teacher')->value : null;
-            $nextStateStudent = $hasEval ? $hasEval->getNextState('student')->value : null;
-        @endphp
+        <!-- Boutons 80% et 100% -->
+        @if (in_array($currentState, ['not_evaluated', 'auto80', 'eval80', 'auto100', 'eval100']))
+            @role(\App\Constants\RoleName::TEACHER)
+                <button type="button" class="eval-tab-btn btn {{ $isEvaluated ? 'btn-secondary' : 'btn-outline' }}"
+                    data-level="eval80" onclick="changeTab(this)" id="id-{{ $studentId }}-btn-eval80"
+                    @if ($isEvaluated) disabled @endif>
+                    {{ __('Eval 3/4') }}
+                </button>
+                <button type="button"
+                    class="eval-tab-btn btn {{ isCurrentState('eval100', $currentState) ? 'btn-secondary' : 'btn-outline' }}"
+                    data-level="eval100" onclick="changeTab(this)" id="id-{{ $studentId }}-btn-eval100"
+                    @if ($isEvaluated) disabled @endif>
+                    {{ __('Eval 100%') }}
+                </button>
+            @endrole
 
-        @role(\App\Constants\RoleName::TEACHER)
-            <!-- Évaluation 80 -->
-            <button type="button"
-                class="eval-tab-btn btn {{ isCurrentState('eval80', $currentState) ? 'btn-secondary' : 'btn-outline' }}"
-                data-level="eval80" onclick="changeTab(this)" id="id-{{ $studentId }}-btn-eval80">
-                {{ __('Eval 3/4') }}
-            </button>
+            @role(\App\Constants\RoleName::STUDENT)
+                <button type="button" class="eval-tab-btn btn {{ $isAutoEvaluated ? 'btn-primary' : 'btn-outline' }}"
+                    data-level="auto80" onclick="changeTab(this)" id="id-{{ $studentId }}-btn-auto80"
+                    @if ($isAutoEvaluated) disabled @endif>
+                    {{ __('Auto eval 3/4') }}
+                </button>
+                <button type="button"
+                    class="eval-tab-btn btn {{ isCurrentState('auto100', $currentState) ? 'btn-primary' : 'btn-outline' }}"
+                    data-level="auto100" onclick="changeTab(this)" id="id-{{ $studentId }}-btn-auto100"
+                    @if ($isAutoEvaluated) disabled @endif>
+                    {{ __('Auto eval 100%') }}
+                </button>
+            @endrole
 
-            <!-- Évaluation 100 -->
-            <button type="button"
-                class="eval-tab-btn btn {{ isCurrentState('eval100', $currentState) ? 'btn-secondary' : 'btn-outline' }}"
-                data-level="eval100" onclick="changeTab(this)" id="id-{{ $studentId }}-btn-eval100"
-                @if (isCurrentState('eval80', $currentState)) disabled @endif>
-                {{ __('Eval 100%') }}
-            </button>
-
-            <!-- Message d'état suivant pour le professeur -->
-            @if ($nextStateTeacher)
-                <span class="next-state absolute right-0 top-16" id="id-{{ $studentId }}-nextState-teacher">
-                    {{ getNextStateMessage($nextStateTeacher) }}
-                </span>
+            <!-- Bouton Valider -->
+            @if ($canValidate)
+                <button type="button" class="eval-tab-btn btn btn-success" id="id-{{ $studentId }}-finish-btn"
+                    onclick="finishEvaluation('{{ $studentId }}-btn-')"
+                    @if ($currentState === 'not_evaluated') disabled @endif>
+                    {{ __('Validate') }}
+                </button>
             @endif
-        @endrole
+        @endif
 
-        @role(\App\Constants\RoleName::STUDENT)
-            <!-- Auto-évaluation 80 -->
-            <button type="button"
-                class="eval-tab-btn btn {{ isCurrentState('auto80', $currentState) ? 'btn-primary' : 'btn-outline' }}"
-                data-level="auto80" onclick="changeTab(this)" id="id-{{ $studentId }}-btn-auto80">
-                {{ __('Auto eval 3/4') }}
+        <!-- Bouton Terminer ou Modifier -->
+        @if ($currentState === 'pending_signature')
+            <button type="button" class="eval-tab-btn btn btn-success" id="id-{{ $studentId }}-finish-btn"
+                onclick="finishEvaluation('{{ $studentId }}-btn-')">
+                {{ __('Finish') }}
             </button>
-
-            <!-- Auto-évaluation 100 -->
-            <button type="button"
-                class="eval-tab-btn btn {{ isCurrentState('auto100', $currentState) ? 'btn-primary' : 'btn-outline' }}"
-                data-level="auto100" onclick="changeTab(this)" id="id-{{ $studentId }}-btn-auto100"
-                @if (!isCurrentState('auto80', $currentState)) disabled @endif>
-                {{ __('Auto eval 100%') }}
+        @elseif ($currentState === 'completed')
+            <button type="button" class="eval-tab-btn btn btn-success" id="id-{{ $studentId }}-validation-btn"
+                onclick="validateEvaluation('{{ $studentId }}-btn-')" @if ($currentState === 'not_evaluated') disabled @endif>
+                {{ __('Edit') }}
             </button>
+        @endif
 
-            <!-- Message d'état suivant pour l'étudiant -->
-            @if ($nextStateStudent)
-                <span class="next-state absolute right-0 top-16" id="id-{{ $studentId }}-nextState-student">
-                    {{ __('What you need to do:') . ' ' . getNextStateMessage($nextStateStudent) }}
-                </span>
-            @endif
-        @endrole
+        <!-- Message pour l'état "completed" -->
+        @if ($currentState === 'completed')
+            <span class="message">{{ __('Evaluation closed') }}</span>
+        @endif
+
+        <!-- Messages d'état suivant -->
+        @if (isset($nextStateMessages[$currentState]))
+            <span class="next-state-message absolute top-14">
+                {{ $nextStateMessages[$currentState] }}
+            </span>
+        @endif
     @endhasanyrole
-
-    <!-- Bouton de validation -->
-    <button type="button" class="eval-tab-btn btn btn-outline btn-success" id="id-{{ $studentId }}-validation-btn"
-        onclick="validateEvaluation('{{ $studentId }}-btn-')">
-        {{ __('Validate') }}
-    </button>
 </div>
