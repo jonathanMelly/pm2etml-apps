@@ -42,7 +42,7 @@ $isUpdate = isset($jsonStudent['evaluations']) && !empty($jsonStudent['evaluatio
         <!-- Bouton de soumission -->
         <div class="flex justify-end">
             <button type="submit" id="id-{{ $studentDetails->student_id }}-buttonSubmit"
-                class="w-36 p-2 rounded {{ $isUpdate ? 'bg-orange-500 hover:bg-orange-600' : 'bg-purple-500 hover:bg-purple-600' }} font-semibold text-gray-100"
+                class=" p-2 rounded {{ $isUpdate ? 'bg-orange-500 hover:bg-orange-600' : 'bg-purple-500 hover:bg-purple-600' }} font-semibold text-gray-100"
                 data-student-id="{{ $studentDetails->student_id }}" data-update="{{ $isUpdate ? true : false }}">
                 {{ $isUpdate ? __('Update evaluation') : __('Submit evaluation') }}
             </button>

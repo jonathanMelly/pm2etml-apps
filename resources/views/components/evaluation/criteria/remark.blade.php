@@ -1,33 +1,46 @@
 <div class="remark mt-4 relative w-full">
+    <!-- Titre de la section -->
     <label for="generalRemark" class="w-full block font-medium text-gray-900 dark:text-gray-200 mb-2">
         {{ __('General remark') }}
     </label>
 
-    <div class="flex h-44 relative">
-        <div class="flex w-full  mx-3 space-y-2 rounded-md border border-gray-300 dark:border-gray-600
-            bg-gray-50 dark:bg-gray-800 dark:text-gray-200"
-            id="generalRemark-area">
-
-            <!-- Zone de texte pour la remarque -->
-            <textarea id="id-{{ $studentDetails->student_id }}-generalRemark" name="generalRemark"
-                class="textarea textarea-bordered w-full dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 px-4 resize-none"
-                oninput="updateTextareaGeneralRemark(this, document.getElementById('charCounter'))"
-                onfocus="updateTextareaGeneralRemark(this, document.getElementById('charCounter'))">
-            </textarea>
-
-            <span id="charCounter" class="absolute right-56 -bottom-[1.75rem] textarea-info">
-                10000/10000
-            </span>
+    <!-- Conteneur principal -->
+    <div class="flex h-full bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+        <!-- Première colonne : Zone de texte pour la remarque + ToDo List -->
+        <div class="flex flex-col w-full p-4 space-y-4 border-r border-gray-300 dark:border-gray-600">
+            <!-- Zone de texte avec compteur de caractères -->
+            <div class="relative">
+                <textarea id="id-{{ $studentDetails->student_id }}-generalRemark" name="generalRemark" maxlength="10000"
+                    placeholder="{{ __('Add your general remark here...') }}"
+                    class="textarea textarea-bordered w-full dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 px-4 py-2 resize-none rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-40">
+                </textarea>
+                <!-- Compteur de caractères (positionné en bas à droite) -->
+                <span id="charCounter" class="absolute bottom-2 right-2 text-sm text-gray-500 dark:text-gray-400">
+                    10000/10000
+                </span>
+            </div>
 
             <!-- ToDo List for Teacher -->
             @if ($isTeacher)
-                <div id="todo-list-container" class="hidden p-3 my-2 scroll-m-2 overflow-y-auto h-[10rem]">
-                    <h6 id='msgTodo'>{{ __('Please fill all sections') }}</h6>
-                    <div class="todo-item my-1 space-x-2">
+                <div id="todo-list-container" class=" hidden p-4 mt-4 bg-gray-50 dark:bg-gray-700 rounded-md space-y-4">
+                    <!-- Titre de la ToDo List -->
+                    <h6 id="msgTodo" class="font-semibold text-gray-800 dark:text-gray-200">
+                        {{ __('Please fill all sections') }}
+                    </h6>
+                    <!-- Liste des tâches -->
+                    <div class="todo-item space-y-2 max-h-[10rem] overflow-y-auto ">
                         <!-- Template for to-do item here -->
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Task Example</span>
+                            <button type="button"
+                                class="btn btn-danger rounded-full p-1 text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
+                                X
+                            </button>
+                        </div>
                     </div>
                     <!-- Bouton Ajouter -->
-                    <button type="button" class="btn btn-primary rounded absolute right-56 -bottom-[3rem]"
+                    <button type="button"
+                        class="btn btn-primary rounded-full px-4 py-2 text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 w-full"
                         onclick="addTodoItem(this)">
                         {{ __('Add task') }}
                     </button>
@@ -35,68 +48,19 @@
             @endif
         </div>
 
-        <!-- Final Result Display -->
-        <div id="id-{{ $studentDetails->student_id }}-finalResult" class="relative bg-success">
-
-            {{-- Vérifiez si c'est la première évaluation ou si une évaluation existe déjà --}}
-            @if ($studentDetails->stateMachine)
-                {{-- L'évaluation existe déjà dans la base de données --}}
-                @php
-                    $states = [
-                        'not_evaluated' => 'Not eval',
-                        'auto80' => 'Student 80%',
-                        'eval80' => 'Teacher 80%',
-                        'auto100' => 'Student 100%',
-                        'eval100' => 'Teacher 100%',
-                        'pending_signature' => 'Pending sign',
-                        'completed' => 'Completed',
-                    ];
-
-                    $currentState = $studentDetails->stateMachine->getCurrentState()->value;
-                    $nextState = $studentDetails->stateMachine->getNextState($isTeacher ? 'teacher' : 'student')->value;
-
-                    $textCurrent = $states[$currentState] ?? 'Unknown';
-                    $textNext = $states[$nextState] ?? 'Unknown';
-                @endphp
-                <span id="currentState"
-                    class="absolute w-full text-center -top-5 
-        bg-white text-sm text-gray-500">
-                    {{ __($textCurrent) }}
-                </span>
-
-                <span id="nextState"
-                    class="hidden absolute w-full text-center -top-5
-        bg-white text-sm text-gray-500">
-                    {{ __($textNext) }}
-                </span>
-            @else
-                {{-- Cas où le candidat n'a jamais été évalué --}}
-                <span id="currentState"
-                    class="absolute w-full text-center -top-5 
-        bg-white text-sm text-gray-500">
-                    {{ __('No previous evaluation found') }}
-                </span>
+        <!-- Deuxième colonne : Résultats (enregistré + en temps réel) -->
+        <div class="flex flex-row p-4 gap-4">
+            <!-- Affichage du résultat enregistré (si l'étudiant a déjà été évalué) -->
+            @if ($studentDetails->stateMachine && $studentDetails->stateMachine->getCurrentState()->value !== 'not_evaluated')
+                <x-evaluation.criteria.finalResult :studentId="$studentDetails->student_id" :stateMachine="$studentDetails->stateMachine" :isTeacher="$isTeacher"
+                    :grade="'A'" :score="80" :evaluationType="'Formative'" :resultType="'saved'"
+                    class="bg-green-100 dark:bg-green-900 rounded-lg p-4 shadow-sm" />
             @endif
 
-
-            <div class="w-full rounded-lg p-6 flex flex-col items-center">
-                <span id="id-{{ $studentDetails->student_id }}-status" class="text-center bottom-2">
-                    {{-- texte qui indique le status actuel de l'évaluation --}}
-                </span>
-                <h6 id="finalResultTitle-{{ $studentDetails->student_id }}" class="font-semibold text-xl text-gray-800">
-                    {{ __('Formative') }}
-                </h6>
-                <p id="finalResultContent"
-                    class="text-xl font-extrabold 
-                text-gray-700 align-middle mt-6 font-serif">
-                    A
-                </p>
-                <span id="spanResult"
-                    class="absolute bottom-1 right-1 
-                   bg-indigo-300 text-white px-2 py-1 text-sm">
-                    80%
-                </span>
-            </div>
+            <!-- Affichage du résultat en temps réel (toujours visible) -->
+            <x-evaluation.criteria.finalResult :studentId="$studentDetails->student_id" :stateMachine="$studentDetails->stateMachine" :isTeacher="$isTeacher" :grade="'A'"
+                :score="90" :evaluationType="'Formative'" :resultType="'live'"
+                class="bg-blue-100 dark:bg-blue-900 rounded-lg p-4 shadow-sm" />
         </div>
     </div>
 </div>

@@ -482,6 +482,7 @@ function loadFromJsonSave(js, indexLevel) {
          }
       });
    });
+   calculateFinalResults(js.student_Id, state.evaluationLevels[js.evaluations.appreciations[indexLevel].level], 'saved')
 }
 
 // Fonction de mise à jour de la remarque générale (à définir selon votre logique)
@@ -740,8 +741,10 @@ function handleMissingForm(studentId, buttonId) {
  * 
  * @returns {void} Aucun retour ; les résultats sont directement affichés dans les divs correspondantes.
  */
-function calculateFinalResults(student_id, levelName) {
+function calculateFinalResults(student_id, levelName, resultType = 'live') {
 
+
+   console.log(student_id, levelName, resultType);
 
    // Variables pour calculer les scores et statistiques
    let count = 8;
@@ -762,7 +765,7 @@ function calculateFinalResults(student_id, levelName) {
 
    // Les divs à traiter
    const divSamllFinalResult = document.getElementById(`id-${student_id}-small_finalResult`);
-   const divFinalResult = document.getElementById(`id-${student_id}-finalResult`);
+   const divFinalResult = document.getElementById(`id-${student_id}-finalResult-${resultType}`);
 
    // Sélectionner les sliders avec les attributs spécifiques
    const sliders = document.querySelectorAll(
@@ -775,6 +778,7 @@ function calculateFinalResults(student_id, levelName) {
    );
 
    // Assigner un titre en fonction du levelName
+   console.log(state.evaluationLevels[2])
    switch (levelName) {
       case state.evaluationLevels[0]:
          finalResultTitle = 'A-Formative';
@@ -805,9 +809,10 @@ function calculateFinalResults(student_id, levelName) {
    }
 
    // Afficher les titres dans les divs correspondantes
-   divFinalResult.querySelector(`#finalResultTitle-${student_id}`).innerHTML = finalResultTitle;
+   divFinalResult.querySelector(`#finalResultTitle-${student_id}-${resultType}`).innerHTML = finalResultTitle;
    divSamllFinalResult.querySelector(`#smallResultTitle-${student_id}`).innerHTML = smallFinalResultTitle;
-   divFinalResult.querySelector('#spanResult').innerHTML = spanResult;
+   divFinalResult.querySelector(`#spanResult-${student_id}-${resultType}`).innerHTML = spanResult;
+
 
    // Parcours des catégories dans criteriaGrouped
    Object.entries(state.criteriaGrouped).forEach(([categoryName, crits]) => {
@@ -883,8 +888,11 @@ function calculateFinalResults(student_id, levelName) {
    divFinalResult.classList.add(bgClass);
    divSamllFinalResult.classList.add(bgClass);
 
+
+   console.log(`#finalResultContent-${student_id}-${resultType}`);
+
    // Afficher le résultat dans les divs
-   divFinalResult.querySelector('#finalResultContent').innerHTML = result;
+   divFinalResult.querySelector(`#finalResultContent-${student_id}-${resultType}`).innerHTML = result;
    divFinalResult.classList.replace('hidden', 'flex');
    divSamllFinalResult.querySelector('#smallResultContent').innerHTML = result;
 }
