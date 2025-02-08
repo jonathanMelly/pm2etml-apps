@@ -1,6 +1,7 @@
 <div
     class="criterion-card shadow-sm dark:shadow-sm bg-white flex-row justify-around items-center space-y-6
-    dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-lg transition-shadow duration-300">
+    dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3
+     hover:shadow-lg transition-shadow duration-300">
 
     <!-- Nom du critère -->
     <div data-criterion-name="Name"
@@ -75,27 +76,49 @@
     <!-- Options et remarques -->
     <div class="options-and-remarks mt-3 space-y-2">
         <!-- Case d'exclusion -->
-        <div class="exclude-checkbox flex items-center space-x-3 my-3 cursor-pointer">
-            <input type="checkbox" class="checkbox checkbox-error" data-exclude-id="{{ $criterion['position'] }}"
-                id="id-{{ $idStudent }}-exclude-{{ $criterion['position'] }}"
-                data-student-id="{{ $idStudent }}" onclick="toggleExclusion(this)"
-                {{ $criterion['position'] === 8 ? 'checked' : '' }}>
-            <label for="id-{{ $idStudent }}-exclude-{{ $criterion['position'] }}"
+        <div class=" absolute top-1 left-6 exclude-checkbox flex items-center space-x-3 my-3 cursor-pointer">
+            <!-- Checkbox personnalisée -->
+            <label class="swap swap-rotate" onclick="toggleExclusion(this)">
+                <!-- Icône "vu" (coche) -->
+                <input type="checkbox" class="swap-input hidden" data-exclude-id="{{ $criterion['position'] }}"
+                    id="id-{{ $idStudent }}-exclude-{{ $criterion['position'] }}"
+                    data-student-id="{{ $idStudent }}" {{ $criterion['position'] === 8 ? 'checked' : '' }} />
+
+                <!-- État "non coché" (vu/coche) -->
+                <svg class="swap-off fill-current text-green-500 w-6 h-6" xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24">
+                    <path
+                        d="M10,17L5,12L6.41,10.59L10,14.17L17.59,6.58L19,8M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3Z" />
+                </svg>
+
+                <!-- État "coché" (croix) -->
+                <svg class="swap-on fill-current text-red-500 w-6 h-6" xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24">
+                    <path
+                        d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                </svg>
+            </label>
+
+            <!-- Label associé
+             <label for="id-{{ $idStudent }}-exclude-{{ $criterion['position'] }}"
                 class="label-text text-gray-900 dark:text-gray-200 font-medium">{{ __('Exclude from evaluation') }}</label>
+                -->
+
         </div>
 
         <!-- Zone de remarque -->
-        <div class="remark space-y-3">
+        <div class="remark space-y-1">
             <label for="{{ $idStudent }}-remark-{{ $criterion['position'] }}"
                 class="block mt-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                {{ __('General remark') }}
+                {{ __('Remark') }}
             </label>
             <textarea data-student-id="{{ $idStudent }}" data-textarea-id="{{ $criterion['position'] }}"
                 id="id-{{ $idStudent }}-remark-{{ $criterion['position'] }}"
                 name="remark[{{ $idStudent }}-{{ $criterion['position'] }}]"
-                class="textarea textarea-bordered w-full focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none
-                text-gray-900 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600
-                hover:border-gray-400 dark:hover:border-gray-500 p-2"></textarea>
+                class="w-full rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none
+           text-gray-900 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600
+           hover:border-gray-400 dark:hover:border-gray-500 p-2">
+           </textarea>
         </div>
     </div>
 </div>
