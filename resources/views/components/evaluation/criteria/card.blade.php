@@ -1,7 +1,7 @@
 <div
-    class="criterion-card shadow-sm dark:shadow-sm bg-white flex-row justify-around items-center space-y-6
+    class="criterion-card shadow-sm dark:shadow-sm bg-white space-y-4
     dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3
-     hover:shadow-lg transition-shadow duration-300">
+     hover:shadow-lg transition-shadow duration-300 max-w-sm">
 
     <!-- Nom du critère -->
     <div data-criterion-name="Name"
@@ -10,7 +10,7 @@
     </div>
 
     <!-- Conteneur des curseurs -->
-    <div class="slider-container space-y-4 border-t border-gray-300 dark:border-gray-600 pt-4">
+    <div class="slider-container space-y-2 border-t border-gray-300 dark:border-gray-600 pt-4">
         <!-- Curseur Auto 80% -->
         <div class="flex space-x-2 items-center" id="id-{{ $idStudent }}-auto80-{{ $criterion['position'] }}">
             <label for="{{ $idStudent }}-range-auto80-{{ $criterion['position'] }}"
