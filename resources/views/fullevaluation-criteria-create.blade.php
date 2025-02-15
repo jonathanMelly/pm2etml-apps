@@ -11,11 +11,13 @@
 
             <form method="POST" action="{{ route('criterias.update') }}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 @csrf
+
                 @for ($i = 0; $i < 8; $i++)
-                    <div class="bg-gray-50 p-3 rounded-md shadow-sm space-y-3">
+                    <div class="bg-gray-50 p-3 rounded-md shadow-sm space-x-6">
                         <x-criteria-form :criteria="$criteria[$i] ?? null" :index="$i" />
                     </div>
                 @endfor
+
                 <div class="col-span-1 md:col-span-2">
                     <button type="submit" class="btn btn-primary w-full flex items-center justify-center mt-3">
                         <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"

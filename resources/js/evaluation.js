@@ -4,13 +4,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
    console.log(state);
 
-   handleTabSwitch();
-
    // Gestion des boutons de soumission
    const submitBtns = document.querySelectorAll('[id^="id-"][id$="-buttonSubmit"]');
-
    // Sélectionner tous les boutons de soumission
    addSubmitButtonListeners(submitBtns);
+
+   handleTabSwitch();
 
    if (state.jsonSave && typeof loadFrom === 'function') {
       state.jsonSave.forEach(js => {
@@ -48,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
    }
 });
 
-function handleTabSwitch() {
+window.handleTabSwitch = function () {
    const tabs = document.querySelectorAll('[role="tab"]');
 
    tabs.forEach((tab, index) => {
@@ -88,6 +87,30 @@ function toggleVisibilityStudentContainer(student_id_visibility) {
    }
 }
 
+
+// Fonction globale pour gérer l'affichage/masquage du textarea
+window.toggleRemark = function (label) {
+   // Récupérer l'input checkbox associé à ce label
+   const checkbox = label.querySelector('input.swap-input');
+   if (!checkbox) return; // Vérifie si le checkbox existe
+
+   // Récupérer l'ID du criterion depuis les données du checkbox
+   const remarkId = checkbox.getAttribute('data-remark-id');
+   if (!remarkId) return; // Vérifie si l'ID est valide
+
+   // Trouver le textarea correspondant
+   const textarea = document.querySelector(`textarea[data-textarea-id="${remarkId}"]`);
+   if (!textarea) return; // Vérifie si le textarea existe
+
+   // Vérifier si le checkbox est coché
+   if (checkbox.checked) {
+      // Si coché, afficher le textarea
+      textarea.classList.remove('hidden');
+   } else {
+      // Sinon, masquer le textarea
+      textarea.classList.add('hidden');
+   }
+};
 
 /**
  * Met à jour le label associé au range (slider).
@@ -331,36 +354,36 @@ function toggleContentVisibility(divContainer, student) {
    updateVisibilityCategories(divContainer.id, !isVisible);
 }
 
-window.toggleVisibility = function (divToggle, student = false) {
-   // Si 'all' est passé, on effectue un toggle sur tous les éléments correspondant à idStudent
-   if (divToggle === 'all') {
-      const divStudents = document.querySelectorAll('[id^="idStudent-"]');
+// window.toggleVisibility = function (divToggle, student = false) {
+//    // Si 'all' est passé, on effectue un toggle sur tous les éléments correspondant à idStudent
+//    if (divToggle === 'all') {
+//       const divStudents = document.querySelectorAll('[id^="idStudent-"]');
 
-      divStudents.forEach(studentDiv => {
-         toggleContentVisibility(studentDiv, student);
-      });
+//       divStudents.forEach(studentDiv => {
+//          toggleContentVisibility(studentDiv, student);
+//       });
 
-      return; // Sortie ici pour ne pas affecter la suite de la logique
-   }
-   // Si nous avons un divToggle, basculer sa visibilité
-   const divContainer = document.getElementById(divToggle);
-   if (divContainer) {
-      toggleContentVisibility(divContainer, student);
-   }
-   // Cas spécifique à un étudiant
-   if (student) {
-      const studentId = divToggle.split('-')[1]; // On récupère l'id de l'étudiant
-      const divSmallFinalResult = document.getElementById(`id-${studentId}-small_finalResult`);
+//       return; // Sortie ici pour ne pas affecter la suite de la logique
+//    }
+//    // Si nous avons un divToggle, basculer sa visibilité
+//    const divContainer = document.getElementById(divToggle);
+//    if (divContainer) {
+//       toggleContentVisibility(divContainer, student);
+//    }
+//    // Cas spécifique à un étudiant
+//    if (student) {
+//       const studentId = divToggle.split('-')[1]; // On récupère l'id de l'étudiant
+//       const divSmallFinalResult = document.getElementById(`id-${studentId}-small_finalResult`);
 
-      // Alterner la visibilité de divSmallFinalResult (petit résultat final)
-      if (divSmallFinalResult) {
-         const isHidden = divSmallFinalResult.classList.contains('hidden');
-         divSmallFinalResult.classList.toggle('hidden', !isHidden);
-         divSmallFinalResult.classList.toggle('flex', isHidden);
-      }
-      return; // Sortie pour ne pas affecter le reste du code
-   }
-};
+//       // Alterner la visibilité de divSmallFinalResult (petit résultat final)
+//       if (divSmallFinalResult) {
+//          const isHidden = divSmallFinalResult.classList.contains('hidden');
+//          divSmallFinalResult.classList.toggle('hidden', !isHidden);
+//          divSmallFinalResult.classList.toggle('flex', isHidden);
+//       }
+//       return; // Sortie pour ne pas affecter le reste du code
+//    }
+// };
 
 
 /**

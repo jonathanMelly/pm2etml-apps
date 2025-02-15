@@ -1,4 +1,4 @@
-<div class="remark mt-4 relative w-full">
+<div class="remark mt-2 mb-2 relative w-full">
     <!-- Titre de la section -->
     <label for="generalRemark" class="w-full block font-medium text-gray-900 dark:text-gray-200 mb-2">
         {{ __('General remark') }}

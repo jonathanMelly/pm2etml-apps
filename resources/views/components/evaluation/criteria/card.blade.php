@@ -10,7 +10,7 @@
     </div>
 
     <!-- Conteneur des curseurs -->
-    <div class="slider-container space-y-2 border-t border-gray-300 dark:border-gray-600 pt-4">
+    <div class="slider-container space-y-2 border-t border-gray-300 dark:border-gray-600 pt-4 text-left">
         <!-- Curseur Auto 80% -->
         <div class="flex space-x-2 items-center" id="id-{{ $idStudent }}-auto80-{{ $criterion['position'] }}">
             <label for="{{ $idStudent }}-range-auto80-{{ $criterion['position'] }}"
@@ -75,10 +75,12 @@
 
     <!-- Options et remarques -->
     <div class="options-and-remarks mt-3 space-y-2">
+
         <!-- Case d'exclusion -->
         <div class=" absolute top-1 left-6 exclude-checkbox flex items-center space-x-3 my-3 cursor-pointer">
+
             <!-- Checkbox personnalisée -->
-            <label class="swap swap-rotate" onclick="toggleExclusion(this)">
+            <label class="swap swap-rotate" onclick="toggleRemark(this)">
                 <!-- Icône "vu" (coche) -->
                 <input type="checkbox" class="swap-input hidden" data-exclude-id="{{ $criterion['position'] }}"
                     id="id-{{ $idStudent }}-exclude-{{ $criterion['position'] }}"
@@ -103,22 +105,45 @@
              <label for="id-{{ $idStudent }}-exclude-{{ $criterion['position'] }}"
                 class="label-text text-gray-900 dark:text-gray-200 font-medium">{{ __('Exclude from evaluation') }}</label>
                 -->
-
         </div>
 
         <!-- Zone de remarque -->
-        <div class="remark space-y-1">
+        <div class="remark text-left">
             <label for="{{ $idStudent }}-remark-{{ $criterion['position'] }}"
                 class="block mt-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                 {{ __('Remark') }}
             </label>
+
+            <!-- Label contenant le checkbox -->
+            <label class="swap swap-rotate absolute top-[10.5rem] left-16" onclick="toggleRemark(this)">
+                <input type="checkbox" class="swap-input hidden" data-remark-id="{{ $criterion['position'] }}"
+                    id="id-{{ $idStudent }}-exclude-{{ $criterion['position'] }}"
+                    data-student-id="{{ $idStudent }}" />
+
+                <!-- État "non coché" (flèche vers le bas : ouvrir) -->
+                <svg class="swap-off fill-current text-green-500 w-10 h-10" xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24">
+                    <path d="M7 10l5 5 5-5z" />
+                    <path d="M0 0h24v24H0z" fill="none" />
+                </svg>
+
+                <!-- État "coché" (flèche vers le haut : fermer) -->
+                <svg class="swap-on fill-current text-red-500 w-10 h-10" xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24">
+                    <path d="M7 14l5-5 5 5z" />
+                    <path d="M0 0h24v24H0z" fill="none" />
+                </svg>
+            </label>
+
+            <!-- Zone de texte -->
             <textarea data-student-id="{{ $idStudent }}" data-textarea-id="{{ $criterion['position'] }}"
                 id="id-{{ $idStudent }}-remark-{{ $criterion['position'] }}"
                 name="remark[{{ $idStudent }}-{{ $criterion['position'] }}]"
                 class="w-full rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none
-           text-gray-900 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600
-           hover:border-gray-400 dark:hover:border-gray-500 p-2">
-           </textarea>
+               text-gray-900 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600
+               hover:border-gray-400 dark:hover:border-gray-500 p-2 hidden"></textarea>
         </div>
+
+
     </div>
 </div>

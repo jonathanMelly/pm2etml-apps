@@ -25,7 +25,7 @@
         <x-evaluation.students.tabs :studentsDatas="$studentsDatas" />
 
         {{-- Conteneur principal pour les évaluations des étudiants --}}
-        <div id="ContainerStudentsVisible" class="p-4 mb-6 bg-gray-100 relative">
+        <div id="ContainerStudentsVisible" class="p-5 mb-4 bg-gray-50 rounded-xl  m-1">
             @foreach ($studentsDatas as $studentDetails)
                 <x-evaluation.students.evaluation :studentDetails="$studentDetails" :criteriaGrouped="$criteriaGrouped" :visibleSliders="$visibleSliders"
                     :appreciationLabels="$appreciationLabels" :isTeacher="$isTeacher" :evaluationLevels="$evaluationLevels" :visibleCategories="$visibleCategories" :jsonSave="$jsonSave"
