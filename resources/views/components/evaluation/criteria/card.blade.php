@@ -108,14 +108,15 @@
         </div>
 
         <!-- Zone de remarque -->
-        <div class="remark text-left">
+        <div class="remark text-left relative">
+
             <label for="{{ $idStudent }}-remark-{{ $criterion['position'] }}"
                 class="block mt-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                 {{ __('Remark') }}
             </label>
 
             <!-- Label contenant le checkbox -->
-            <label class="swap swap-rotate absolute top-[10.5rem] left-16" onclick="toggleRemark(this)">
+            <label class="swap swap-rotate absolute -top-3 left-12" onclick='toggleRemark(this)'>
                 <input type="checkbox" class="swap-input hidden" data-remark-id="{{ $criterion['position'] }}"
                     id="id-{{ $idStudent }}-exclude-{{ $criterion['position'] }}"
                     data-student-id="{{ $idStudent }}" />
