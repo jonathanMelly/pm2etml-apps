@@ -64,7 +64,7 @@
                     data-criterion-id="{{ $criterion['position'] }}" data-level="{{ $type }}"
                     id="id-{{ $idStudent }}-range-{{ $type }}-{{ $criterion['position'] }}"
                     value="{{ $sliderValues[$type][$criterion['position']] ?? 0 }}" oninput="updateSliderValue(this)"
-                    {{ $type === 'auto100' || (!$isTeacher && $type === 'eval100') ? 'disabled' : '' }}>
+                    {{ $type === 'eval100' || (!$isTeacher && $type === 'eval100') ? 'disabled' : '' }}>
                 <div id="id-{{ $idStudent }}-result-{{ $type }}-{{ $criterion['position'] }}"
                     class="w-12 text-sm text-gray-500 dark:text-gray-300 ml-2">
                     {{ $appreciationLabels[$sliderValues[$type][$criterion['position']] ?? 0] }}

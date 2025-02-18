@@ -18,7 +18,7 @@
         $placed = false;
 
         foreach ($newOrder as &$group) {
-            if (array_sum($group) + $value <= 4) {
+            if (array_sum($group) + $value <= 4 || array_sum($group) === 4) {
                 $group[] = $value;
                 $placed = true;
                 break;
