@@ -11,7 +11,7 @@
             <div class="relative group  px-2 pb-2">
                 <!-- Tooltip pour la description -->
                 <span
-                    class="hidden absolute bg-gray-700 text-xs text-white px-2 py-1 rounded shadow-lg top-[-40px] group-hover:inline-block"
+                    class="hidden min-w-80 z-10 absolute bg-gray-700 text-sm text-white px-2 py-1 rounded shadow-lg -top-14 left-3 group-hover:inline-block"
                     id="description-{{ $criterion['id'] }}">
                     {{ $criterion['description'] }}
                 </span>

@@ -71,6 +71,8 @@ Route::middleware(['auth', 'app'])->group(function () {
             ->name('criterias.update');
     });
 
+    Route::post('api/evaluations/update-status', [EvaluationController::class, 'updateStatus'])->name('evaluations.update-status');
+
     // End HCS
 
     //Add basic CRUD actions for contracts

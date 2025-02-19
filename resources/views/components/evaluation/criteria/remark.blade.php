@@ -51,6 +51,7 @@
         <!-- Deuxième colonne : Résultats (enregistré + en temps réel) -->
         <div class="flex flex-row p-4 gap-4">
             <!-- Affichage du résultat enregistré (si l'étudiant a déjà été évalué) -->
+
             @if ($studentDetails->stateMachine && $studentDetails->stateMachine->getCurrentState()->value !== 'not_evaluated')
                 <x-evaluation.criteria.finalResult :studentId="$studentDetails->student_id" :stateMachine="$studentDetails->stateMachine" :isTeacher="$isTeacher"
                     :grade="'A'" :score="80" :evaluationType="'Formative'" :resultType="'saved'"

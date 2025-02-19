@@ -6,6 +6,8 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
 
+use app\Models\Evaluation;
+
 class StoreEvaluationRequest extends FormRequest
 {
     /**
@@ -271,4 +273,7 @@ class StoreEvaluationRequest extends FormRequest
         // Indique la réussite de la validation
         Log::info('StoreEvaluationRequest Validation Passed');
     }
+
+
+    
 }

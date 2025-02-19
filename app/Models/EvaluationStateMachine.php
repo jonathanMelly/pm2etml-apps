@@ -7,8 +7,8 @@ use InvalidArgumentException;
 enum EvaluationLevel: int
 {
    case AUTO80 = 0;
-   case AUTO100 = 1;
-   case EVAL80 = 2;
+   case EVAL80 = 1;
+   case AUTO100 = 2;
    case EVAL100 = 3;
 
    public function label(): string
@@ -25,10 +25,10 @@ enum EvaluationLevel: int
 enum EvaluationState: string
 {
    case NOT_EVALUATED = 'not_evaluated';       // Évaluation non réalisée
-   case AUTO80 = 'auto80';                     // Évaluation automatique à 80%
-   case EVAL80 = 'eval80';                     // Évaluation manuelle à 80%
-   case AUTO100 = 'auto100';                   // Évaluation automatique à 100%
-   case EVAL100 = 'eval100';                   // Évaluation manuelle à 100%
+   case AUTO80 = 'auto80';                     // Évaluation élève à 80%
+   case EVAL80 = 'eval80';                     // Évaluation enseignant à 80%
+   case AUTO100 = 'auto100';                   // Évaluation élève à 100%
+   case EVAL100 = 'eval100';                   // Évaluation enseignant à 100%
    case PENDING_SIGNATURE = 'pending_signature'; // En attente de signature
    case COMPLETED = 'completed';               // Évaluation complétée
 
@@ -77,20 +77,29 @@ class EvaluationStateMachine
 
    private function updateStateFromEvaluations(): void
    {
-      if (!is_array($this->appreciations)) {
+      if (!is_array($this->appreciations) || empty($this->appreciations)) {
          $this->currentState = EvaluationState::NOT_EVALUATED;
          return;
       }
 
-      $levels = collect($this->appreciations)->pluck('level')->filter()->values();
+      // Extraire les niveaux valides
+      $levels = collect($this->appreciations)
+         ->pluck('level')
+         ->filter(fn($level) => is_int($level) && EvaluationLevel::tryFrom($level) !== null)
+         ->values();
 
-      if ($levels->isNotEmpty()) {
-         $lastLevel = EvaluationLevel::from($levels->last())->label();
-         $this->currentState = EvaluationState::tryFrom($lastLevel) ?? EvaluationState::NOT_EVALUATED;
-      } else {
+      if ($levels->isEmpty()) {
          $this->currentState = EvaluationState::NOT_EVALUATED;
+         return;
       }
+
+      // Récupérer le dernier niveau d’évaluation
+      $lastLevel = EvaluationLevel::from($levels->last())->label();
+
+      // Vérifier si ce label correspond à un état valide
+      $this->currentState = EvaluationState::tryFrom($lastLevel) ?? EvaluationState::NOT_EVALUATED;
    }
+
 
    public function getCurrentState(): EvaluationState
    {

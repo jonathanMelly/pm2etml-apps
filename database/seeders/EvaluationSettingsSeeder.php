@@ -26,8 +26,8 @@ class EvaluationSettingsSeeder extends Seeder
                 'key' => 'initialVisibleCursors',
                 'value' => json_encode([
                     'auto80' => true,
-                    'auto100' => false,
                     'eval80' => true,
+                    'auto100' => false,
                     'eval100' => false
                 ])
             ]

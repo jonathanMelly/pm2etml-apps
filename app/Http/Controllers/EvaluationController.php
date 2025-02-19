@@ -2,21 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Evaluation;
+// Namespaces Laravel
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+
+// Modèles
 use App\Models\Appreciation;
 use App\Models\Criteria;
 use App\Models\DefaultCriteria;
-
+use App\Models\Evaluation;
+use App\Models\EvaluationLevel;
 use App\Models\EvaluationSetting;
 use App\Models\EvaluationStateMachine;
-use App\Models\EvaluationLevel;
 
-
+// Requêtes personnalisées
 use App\Http\Requests\StoreEvaluationRequest;
 
+// Constantes ou enums
 use App\Constants\RoleName;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
+
 
 class EvaluationController extends Controller
 {
@@ -151,7 +156,7 @@ class EvaluationController extends Controller
          $evaluation->student_id = $data['student_Id'];
          $evaluation->job_definitions_id = $data['job_id'];
          $evaluation->class_id = $data['student_classId'];
-         $evaluation->student_remark = $data['student_remark'] ?? null; // Gère les remarques optionnelles
+         $evaluation->student_remark = $data['student_remark'] ?? null;
          $evaluation->save();
 
          Log::info('Nouvelle évaluation créée avec succès', [
@@ -191,17 +196,9 @@ class EvaluationController extends Controller
       }
    }
 
-
-   /**
-    * Met à jour une évaluation existante dans la base de données.
-    *
-    * @param array $data Les nouvelles données d'évaluation.
-    * @return \Illuminate\Http\JsonResponse
-    */
    private function updateEvaluation(array $data)
    {
       Log::info('Début de la mise à jour de l\'évaluation', ['data' => $data]);
-
       try {
          // Vérification de l'existence de l'évaluation par la combinaison des champs uniques
          $evaluatorId = $data['evaluator_id'];
@@ -225,6 +222,7 @@ class EvaluationController extends Controller
          $oldRemark = $evaluation->student_remark;
          $evaluation->student_remark = $data['student_remark'] ?? $evaluation->student_remark;
          $evaluation->save();
+
          Log::info('Données de l\'évaluation mises à jour', [
             'old_remark' => $oldRemark,
             'new_remark' => $evaluation->student_remark,
@@ -232,33 +230,38 @@ class EvaluationController extends Controller
 
          // Mise à jour des appréciations
          foreach ($data['appreciations'] as $appreciationData) {
-            // Vérifiez si une appréciation existe pour le niveau spécifié (ex: eval80, eval100, etc.)
+            // Vérifiez si une appréciation existe pour le niveau spécifié
+            $levelIndex = $this->getLevelIndex($appreciationData['level']);
+            Log::info('Niveau récupéré via getLevelIndex', [
+               'level' => $appreciationData['level'],
+               'level_index' => $levelIndex,
+            ]);
+
             $existingAppreciation = Appreciation::where('evaluation_id', $evaluation->id)
-               // Vérification de l'existence de l'appréciation pour le niveau spécifique
-               ->where('level', $this->getLevelIndex($appreciationData['level']))
+               ->where('level', $levelIndex)
                ->first();
 
             if (!$existingAppreciation) {
                // Si l'appréciation pour ce niveau n'existe pas, créez une nouvelle appréciation
-               $levelIndex = $this->getLevelIndex($appreciationData['level']);
+               Log::info('Création d\'une nouvelle appréciation', [
+                  'evaluation_id' => $evaluation->id,
+                  'level' => $levelIndex,
+               ]);
 
-               // Log des informations sur le niveau récupéré
-               Log::info('Retour getLevelIndex:', ['level' => $appreciationData['level'], 'level_index' => $levelIndex]);
-
-               // Création de l'appréciation
                $existingAppreciation = Appreciation::create([
                   'evaluation_id' => $evaluation->id,
                   'date' => now(),
-                  'level' => $levelIndex, // Le niveau (eval80, eval100, etc.)
+                  'level' => $levelIndex,
                ]);
             }
 
-            // Vérification après création
-            Log::info('Appréciation insérée avec le niveau', [
+            Log::info('Appréciation insérée/mise à jour avec succès', [
                'evaluation_id' => $evaluation->id,
-               'level' => $existingAppreciation->level
+               'level' => $existingAppreciation->level,
+               'criterias' => $appreciationData['criteria'],
             ]);
 
+            // Mise à jour des critères associés à l'appréciation
             foreach ($appreciationData['criteria'] as $criteriaData) {
                // Vérification si le critère existe pour cette appréciation
                $existingCriteria = Criteria::where('appreciation_id', $existingAppreciation->id)
@@ -267,34 +270,53 @@ class EvaluationController extends Controller
 
                if ($existingCriteria) {
                   // Si le critère existe déjà, on le met à jour
+                  Log::info('Mise à jour d’un critère existant', [
+                     'criteria_id' => $criteriaData['id'],
+                     'old_value' => $existingCriteria->value,
+                     'new_value' => $criteriaData['value'],
+                     'old_position' => $existingCriteria->position,
+                     'new_position' => isset($criteriaData['position']) ? $criteriaData['position'] : null,
+                  ]);
+
                   $existingCriteria->value = $criteriaData['value'];
                   $existingCriteria->remark = $criteriaData['remark'];
                   $existingCriteria->checked = $criteriaData['checked'];
+
                   // Mettre à jour la position uniquement si nécessaire
                   if (isset($criteriaData['position']) && $criteriaData['position'] !== $existingCriteria->position) {
-                     $existingCriteria->position = $criteriaData['position'];  // Mettre à jour si position change
+                     Log::info('Position mise à jour pour le critère', [
+                        'criteria_id' => $criteriaData['id'],
+                        'old_position' => $existingCriteria->position,
+                        'new_position' => $criteriaData['id'],
+                     ]);
+                     $existingCriteria->position = $criteriaData['id'];
+                  } else {
+                     Log::info('Position inchangée pour le critère', [
+                        'criteria_id' => $criteriaData['id'],
+                        'current_position' => $existingCriteria->position,
+                     ]);
                   }
-                  $existingCriteria->save();
 
-                  Log::info('Critère mis à jour', [
-                     'appreciation_id' => $existingAppreciation->id,
-                     'criteria_id' => $criteriaData['id'],
-                     'updated_fields' => ['value', 'remark', 'checked', 'position']
-                  ]);
+                  $existingCriteria->save();
+                  
                } else {
                   // Si le critère n'existe pas pour cet ID, créer un nouveau critère
+                  Log::info('Ajout d’un nouveau critère', [
+                     'criteria_data' => $criteriaData,
+                     'position' => $criteriaData['id'],
+                  ]);
+
                   Criteria::create([
                      'appreciation_id' => $existingAppreciation->id,
                      'name' => $criteriaData['name'],
                      'value' => $criteriaData['value'],
                      'checked' => $criteriaData['checked'],
                      'remark' => $criteriaData['remark'],
-                     'position' => isset($criteriaData['position']) ? $criteriaData['position'] : null,  // Assurer qu'il y a bien une position
+                     'position' => isset($criteriaData['id']) ? $criteriaData['id'] : null,
                   ]);
-                  Log::info('Nouveau critère ajouté', [
-                     'appreciation_id' => $existingAppreciation->id,
+
+                  Log::info('Nouveau critère ajouté avec succès', [
                      'criteria_id' => $criteriaData['id'],
-                     'new_criteria_data' => $criteriaData
                   ]);
                }
             }
@@ -305,17 +327,17 @@ class EvaluationController extends Controller
          return response()->json([
             'success' => true,
             'message' => 'Évaluation mise à jour avec succès.',
-            'data' => $evaluation
+            'data' => $evaluation,
          ], 200);
       } catch (\Exception $e) {
          Log::error('Erreur lors de la mise à jour de l\'évaluation', [
             'message' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
+            'trace' => $e->getTraceAsString(),
          ]);
-
          throw $e; // Propager l'exception pour être gérée plus haut
       }
    }
+
 
    /**
     * Charge les évaluations associées à un contrat spécifique.
@@ -647,6 +669,8 @@ class EvaluationController extends Controller
       return [
          'evaluator_id' => $existingEvaluation->evaluator_id,
          'student_remark' => $existingEvaluation->student_remark,
+         'status_eval' => $existingEvaluation->status,
+         'id_eval' => $existingEvaluation->id,
          'appreciations' => $existingEvaluation->appreciations->map(function ($appreciation) {
             return [
                'level' => $appreciation->level,
@@ -664,8 +688,6 @@ class EvaluationController extends Controller
          })->toArray(),
       ];
    }
-
-
 
    private function getInitialVisibleCategories($tabCriterias)
    {
@@ -734,5 +756,80 @@ class EvaluationController extends Controller
       return EvaluationSetting::where('key', 'appreciationLabels')
          ->first()
          ?->value ?? [];
+   }
+
+   public function updateStatus(FormRequest $request)
+   {
+      // Journaliser les données entrantes
+      Log::info('Mise à jour de l’état d’évaluation initiée', [
+         'evaluation_id' => $request->input('evaluation_id'),
+         'new_state' => $request->input('new_state'),
+         'user_id' => auth()->user()->id ?? 'guest',
+      ]);
+
+      // Valider les données entrantes
+      $validated = $request->validate([
+         'evaluation_id' => 'required|integer|exists:evaluations,id',
+         'new_state' => 'required|string|in:not_evaluated,eval80,auto80,eval100,auto100,pending_signature,completed'
+      ]);
+
+      Log::info('Données validées avec succès', [
+         'validated_data' => $validated,
+      ]);
+
+      // Récupérer l'évaluation correspondante
+      $evaluation = Evaluation::find($validated['evaluation_id']);
+
+      if (!$evaluation) {
+         Log::error('Évaluation introuvable', [
+            'evaluation_id' => $validated['evaluation_id'],
+            'user_id' => auth()->user()->id ?? 'guest',
+         ]);
+         return response()->json([
+            'success' => false,
+            'message' => 'Évaluation introuvable.'
+         ], 404);
+      }
+
+      Log::info('Évaluation trouvée', [
+         'evaluation_id' => $evaluation->id,
+         'current_status' => $evaluation->status,
+      ]);
+
+      // Mettre à jour l'état dans la base de données
+      try {
+         Log::info('Tentative de mise à jour de l’état de l’évaluation', [
+            'evaluation_id' => $evaluation->id,
+            'new_status' => $validated['new_state'],
+         ]);
+
+         $evaluation->status = $validated['new_state'];
+         $evaluation->save();
+
+         Log::info('État de l’évaluation mis à jour avec succès', [
+            'evaluation_id' => $evaluation->id,
+            'updated_status' => $evaluation->status,
+         ]);
+
+         return response()->json([
+            'success' => true,
+            'message' => 'État de l’évaluation mis à jour avec succès.',
+            'data' => [
+               'evaluation_id' => $evaluation->id,
+               'new_status' => $evaluation->status,
+            ],
+         ]);
+      } catch (\Exception $e) {
+         Log::error('Erreur lors de la mise à jour de l’état de l’évaluation', [
+            'evaluation_id' => $evaluation->id,
+            'new_status' => $validated['new_state'],
+            'error_message' => $e->getMessage(),
+         ]);
+
+         return response()->json([
+            'success' => false,
+            'message' => 'Une erreur s’est produite lors de la mise à jour de l’état : ' . $e->getMessage(),
+         ], 500);
+      }
    }
 }

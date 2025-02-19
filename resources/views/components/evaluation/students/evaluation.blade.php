@@ -52,17 +52,18 @@
             <x-evaluation.students.info :isTeacher="$isTeacher" :studentDetails="$studentDetails" />
             <x-evaluation.students.feedback :studentId="$studentDetails->student_id" />
         </div>
+
         <!-- Colonne droite : Boutons d'action -->
         <div class="col-span-1 text-right">
-            <x-evaluation.tabs :studentId="$studentDetails->student_id" :hasEval="$studentDetails->stateMachine" />
+            <x-evaluation.tabs :status_eval="$jsonStudent['evaluations']['status_eval'] ?? null" :studentId="$studentDetails->student_id" :hasEval="$studentDetails->stateMachine" />
         </div>
     </div>
 
     <!-- Formulaire d'évaluation -->
     <form method="post" action="{{ route('evaluation.storeEvaluation') }}" class="flex flex-col ">
         @csrf
-
-        <div class="categories-container text-center p-2 space-x-1 space-y-2">
+        <div class="categories-container text-center p-2 space-x-1 space-y-2"
+            id="{{ isset($jsonStudent['evaluations']['id_eval']) ? 'id_eval-' . $jsonStudent['evaluations']['id_eval'] : 'id_evla-undefined' }}">
             @foreach ($sortedCategories as $category => $criterions)
                 <!-- Afficher le nombre de critères pour vérification -->
                 <x-evaluation.criteria.section :container-id="'id-' . $studentDetails->student_id . '-' . strtolower($category) . '-container'" :category-name="$category" :criterions="$criterions" :visible-sliders="$visibleSliders"

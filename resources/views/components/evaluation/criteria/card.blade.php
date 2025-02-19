@@ -4,9 +4,10 @@
      hover:shadow-lg transition-shadow duration-300 max-w-sm">
 
     <!-- Nom du critère -->
-    <div data-criterion-name="Name"
-        class="criterion-name text-xl font-bold flex-1 text-gray-800 dark:text-white mb-4 text-center overflow-hidden whitespace-nowrap overflow-ellipsis max-w-lg">
+    <div class="criterion-name text-xl font-bold flex-1 text-gray-800 dark:text-white mb-4 text-center overflow-hidden whitespace-nowrap overflow-ellipsis max-w-lg"
+        data-criterion-name="{{ $criterion['name'] }}">
         {{ $criterion['name'] }}
+
     </div>
 
     <!-- Conteneur des curseurs -->
@@ -54,21 +55,26 @@
             <div class="flex space-x-2 items-center"
                 id="id-{{ $idStudent }}-{{ $type }}-{{ $criterion['position'] }}"
                 style="{{ $type === 'auto100' || (!$isTeacher && $type === 'eval100') ? 'display:none' : '' }}">
+
+
                 <label for="{{ $idStudent }}-range-{{ $type }}-{{ $criterion['position'] }}"
                     class="w-[80px] text-sm text-gray-600 dark:text-gray-300 font-medium mb-1 whitespace-nowrap">
                     {{ ucfirst(__($type === 'auto100' ? 'A-eval 100%' : 'Eval 100%')) }}
                 </label>
+
                 <input type="range" min="0" max="3"
                     class="range range-sm {{ $type === 'auto100' ? 'range-primary' : 'range-secondary' }} w-full disabled:cursor-not-allowed"
                     aria-label="{{ ucfirst($type) }}" data-student-id="{{ $idStudent }}"
                     data-criterion-id="{{ $criterion['position'] }}" data-level="{{ $type }}"
                     id="id-{{ $idStudent }}-range-{{ $type }}-{{ $criterion['position'] }}"
                     value="{{ $sliderValues[$type][$criterion['position']] ?? 0 }}" oninput="updateSliderValue(this)"
-                    {{ $type === 'eval100' || (!$isTeacher && $type === 'eval100') ? 'disabled' : '' }}>
+                    disabled>
+
                 <div id="id-{{ $idStudent }}-result-{{ $type }}-{{ $criterion['position'] }}"
                     class="w-12 text-sm text-gray-500 dark:text-gray-300 ml-2">
                     {{ $appreciationLabels[$sliderValues[$type][$criterion['position']] ?? 0] }}
                 </div>
+
             </div>
         @endforeach
     </div>
@@ -80,7 +86,7 @@
         <div class=" absolute top-1 left-6 exclude-checkbox flex items-center space-x-3 my-3 cursor-pointer">
 
             <!-- Checkbox personnalisée -->
-            <label class="swap swap-rotate" onclick="toggleRemark(this)">
+            <label class="swap swap-rotate" onclick="toggleCheckbox(this)">
                 <!-- Icône "vu" (coche) -->
                 <input type="checkbox" class="swap-input hidden" data-exclude-id="{{ $criterion['position'] }}"
                     id="id-{{ $idStudent }}-exclude-{{ $criterion['position'] }}"

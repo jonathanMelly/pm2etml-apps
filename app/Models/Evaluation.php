@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use InvalidArgumentException;
+use App\Models\EvaluationStateMachine;
+use App\Models\EvaluationState;
 
 class Evaluation extends Model
 {
@@ -21,7 +24,8 @@ class Evaluation extends Model
         'student_id',
         'project_name',
         'student_remark',
-        'created_at'
+        'created_at',
+        'status'
     ];
 
     // Relations avec les utilisateurs
@@ -40,7 +44,6 @@ class Evaluation extends Model
         return $this->hasMany(Appreciation::class);
     }
 
-
     /**
      * Retourne toutes les évaluations faites par un professeur pour un étudiant donné
      */
@@ -50,45 +53,7 @@ class Evaluation extends Model
     }
 
     /**
-     * Retourne toutes les évaluations faites par un professeur pour un projet spécifique
-     */
-    public static function getEvaluationsByProject($projectName)
-    {
-        return self::where('project_name', $projectName)->get();
-    }
-
-    /**
-     * Vérifie si un étudiant a été évalué par un professeur donné
-     */
-    public static function isEvaluatedBy($studentId, $professorId)
-    {
-        return self::where('student_id', $studentId)
-            ->where('evaluator_id', $professorId)
-            ->exists();
-    }
-
-    /**
-     * Récupère les évaluations d'un professeur pour une année scolaire spécifique
-     * Supposons que tu ajoutes une année scolaire à la table, 
-     * sinon tu pourrais remplacer ce champ par un attribut ou en rajouter un dans la table.
-     */
-    public static function getEvaluationsByYear($year)
-    {
-        return self::whereYear('created_at', $year)->get();
-    }
-
-    /**
-     * Retourne les remarques d'un étudiant pour un projet particulier
-     */
-    public function getRemarkByProject($projectName)
-    {
-        return $this->where('student_id', $this->student_id)
-            ->where('project_name', $projectName)
-            ->value('student_remark');
-    }
-
-    /**
-     * Crée une évaluation pour un étudiant
+     * Crée une évaluation pour un étudiant avec un statut initial "not_evaluated"
      */
     public static function createEvaluation($evaluatorId, $studentId, $projectName, $remark = null)
     {
@@ -97,58 +62,91 @@ class Evaluation extends Model
             'student_id' => $studentId,
             'project_name' => $projectName,
             'student_remark' => $remark,
-            'created_at' => now()
+            'created_at' => now(),
+            'status' => EvaluationState::NOT_EVALUATED->value // Statut initial
         ]);
     }
 
     /**
-     * Mise à jour d'une évaluation existante avec une nouvelle remarque
+     * Récupère tous les états traversés sous forme de tableau
      */
-    public function updateRemark($remark)
+    public function getStatusHistory(): array
     {
-        $this->student_remark = $remark;
-        $this->save();
+        return explode(',', $this->status ?? '');
     }
 
     /**
-     * Supprimer une évaluation par l'étudiant et le projet
+     * Récupère l'état actuel sous forme d'énumération
      */
-    public function deleteEvaluationByStudentAndProject($studentId, $projectName)
+    public function getCurrentStatus(): EvaluationState
     {
-        return self::where('student_id', $studentId)
-            ->where('project_name', $projectName)
-            ->delete();
-    }
+        $statusHistory = $this->getStatusHistory();
+        $lastStatus = end($statusHistory);
 
-    public static function findOrCreateByCriteria(int $evaluatorId, int $studentId, int $classId, int $jobDefinitionsId)
-    {
-        // Recherche l'évaluation existante
-        $evaluation = self::where('evaluator_id', $evaluatorId)
-            ->where('student_id', $studentId)
-            ->where('class_id', $classId)
-            ->where('job_definitions_id', $jobDefinitionsId)
-            ->first();
-
-        // Si aucune évaluation n'est trouvée, la créer
-        if (!$evaluation) {
-            $evaluation = self::create([
-                'evaluator_id' => $evaluatorId,
-                'student_id' => $studentId,
-                'class_id' => $classId,
-                'job_definitions_id' => $jobDefinitionsId,
-                'created_at' => now(),
-            ]);
+        if ($lastStatus) {
+            return EvaluationState::from($lastStatus);
         }
 
-        return $evaluation;
+        throw new InvalidArgumentException('Aucun état trouvé pour cette évaluation.');
     }
 
-    public static function findByCriteria(int $evaluatorId, int $studentId, int $classId, int $jobDefinitionsId)
+    /**
+     * Ajoute un nouvel état à l'historique des états
+     */
+    public function appendStatus(EvaluationState $newStatus): void
     {
-        return self::where('evaluator_id', $evaluatorId)
-            ->where('student_id', $studentId)
-            ->where('class_id', $classId)
-            ->where('job_definitions_id', $jobDefinitionsId)
-            ->first();
+        $currentStatus = $this->status ?? '';
+        $newStatusValue = $newStatus->value;
+
+        // Vérifie si le nouvel état n'est pas déjà présent dans l'historique
+        if (!str_contains($currentStatus, $newStatusValue)) {
+            $this->status = $currentStatus === '' ? $newStatusValue : $currentStatus . ',' . $newStatusValue;
+            $this->save();
+        }
     }
+
+    /**
+     * Vérifie si une transition d'état est possible pour un rôle donné
+     */
+    public function canTransition(string $role): bool
+    {
+        $stateMachine = new EvaluationStateMachine($this->id, $this->appreciations()->pluck('level')->toArray());
+        return $stateMachine->canTransition($role);
+    }
+
+    /**
+     * Effectue une transition vers un nouvel état
+     */
+    public function transition(string $role): bool
+    {
+        if (!$this->canTransition($role)) {
+            return false;
+        }
+
+        $stateMachine = new EvaluationStateMachine($this->id, $this->appreciations()->pluck('level')->toArray());
+        $nextState = $stateMachine->getNextState($role);
+
+        if ($nextState) {
+            $this->appendStatus($nextState); // Ajoute le nouvel état à l'historique
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Vérifie si l'évaluation peut être complétée via les signatures
+     */
+    public function completeWithSignatures(): bool
+    {
+        $stateMachine = new EvaluationStateMachine($this->id, $this->appreciations()->pluck('level')->toArray());
+
+        if ($stateMachine->checkSignaturesAndComplete()) {
+            $this->appendStatus(EvaluationState::COMPLETED); // Ajoute l'état COMPLETED à l'historique
+            return true;
+        }
+
+        return false;
+    }
+
 }

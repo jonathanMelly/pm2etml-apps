@@ -6,10 +6,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
    // Gestion des boutons de soumission
    const submitBtns = document.querySelectorAll('[id^="id-"][id$="-buttonSubmit"]');
+
    // Sélectionner tous les boutons de soumission
    addSubmitButtonListeners(submitBtns);
 
    handleTabSwitch();
+   finishEvaluation();
+   editEvaluation();
 
    if (state.jsonSave && typeof loadFrom === 'function') {
       state.jsonSave.forEach(js => {
@@ -26,26 +29,79 @@ document.addEventListener('DOMContentLoaded', function () {
    // Initialisation des sliders
    const sliders = document.querySelectorAll('.range');
    sliders.forEach(slider => { syncSliders(slider); });
+   // Active le ranger selon le btn 
+   enableRanges();
 
-   if (state.isTeacher) {
-      // Cibler les zones de texte avec un clic droit
-      document.querySelectorAll('.remark textarea').forEach((textarea) => {
-         textarea.addEventListener('contextmenu', (event) => {
-            event.preventDefault(); // Empêche le menu contextuel par défaut
 
-            // Basculer en mode "to-do"
-            const container = textarea.closest('.remark');
-            const todoListContainer = container.querySelector('#todo-list-container');
+   // En cours de dev. pour version 2
+   // if (state.isTeacher) {
+   //    // Cibler les zones de texte avec un clic droit
+   //    document.querySelectorAll('.remark textarea').forEach((textarea) => {
+   //       textarea.addEventListener('contextmenu', (event) => {
+   //          event.preventDefault(); // Empêche le menu contextuel par défaut
 
-            textarea.classList.add('hidden'); // Cache la zone de texte
-            todoListContainer.classList.remove('hidden'); // Affiche la liste de tâches
+   //          // Basculer en mode "to-do"
+   //          const container = textarea.closest('.remark');
+   //          const todoListContainer = container.querySelector('#todo-list-container');
 
-            // Ajouter les classes Tailwind nécessaires pour Flexbox 
-            todoListContainer.classList.add('flex', 'gap-5', 'flex-wrap');
-         });
-      });
-   }
+   //          textarea.classList.add('hidden'); // Cache la zone de texte
+   //          todoListContainer.classList.remove('hidden'); // Affiche la liste de tâches
+
+   //          // Ajouter les classes Tailwind nécessaires pour Flexbox 
+   //          todoListContainer.classList.add('flex', 'gap-5', 'flex-wrap');
+   //       });
+   //    });
+
 });
+
+
+
+window.enableRanges = function () {
+   // On récupère le conteneur des étudiants visibles
+   const containerStudentsVisible = document.querySelector('#ContainerStudentsVisible');
+
+   if (!containerStudentsVisible) return;
+
+   // On cherche l'élément visible (style != "none")
+   const visibleStudent = [...containerStudentsVisible.children].find(sv => sv.style.display !== "none");
+
+   if (!visibleStudent) return;
+
+   // On récupère l'ID de l'étudiant visible
+   const idStudentVisible = visibleStudent.id.split('-')[1];
+
+   // On récupère la zone des boutons
+   const zoneBtns = document.querySelector(`#id-${idStudentVisible}-btn`);
+
+   if (!zoneBtns) return;
+
+   // Récupération des valeurs des boutons sous forme d'un objet clé-valeur
+   const whichBtns = {
+      [`#id-${idStudentVisible}-btn-auto80`]: parseInt(zoneBtns.dataset.btnauto80ison, 10),
+      [`#id-${idStudentVisible}-btn-eval80`]: parseInt(zoneBtns.dataset.btneval80ison, 10),
+      [`#id-${idStudentVisible}-btn-auto100`]: parseInt(zoneBtns.dataset.btnauto100ison, 10),
+      [`#id-${idStudentVisible}-btn-eval100`]: parseInt(zoneBtns.dataset.btneval100ison, 10)
+   };
+   // Trouver la première clé où la valeur est 1
+   const thisBtn = Object.keys(whichBtns).find(key => whichBtns[key] === 1);
+
+   if (!thisBtn) return; // Aucun bouton activé
+
+   const btn = document.querySelector(thisBtn);
+
+   // Appeler la fonction changeTab avec la bonne valeur
+   changeTab(btn);
+};
+
+
+
+window.finishEvaluation = function () {
+
+}
+
+window.editEvaluation = function () {
+
+}
 
 window.handleTabSwitch = function () {
    const tabs = document.querySelectorAll('[role="tab"]');
@@ -87,7 +143,6 @@ function toggleVisibilityStudentContainer(student_id_visibility) {
    }
 }
 
-
 // Fonction globale pour gérer l'affichage/masquage du textarea
 window.toggleRemark = function (label) {
    // Récupérer l'input checkbox associé à ce label
@@ -110,6 +165,44 @@ window.toggleRemark = function (label) {
       // Sinon, masquer le textarea
       textarea.classList.add('hidden');
    }
+};
+
+
+window.toggleCheckbox = function (label) {
+   // Récupérer l'input checkbox associé à ce label
+   const checkbox = label.querySelector('input.swap-input');
+   if (!checkbox) return; // Vérifie si le checkbox existe
+
+   const studentId = checkbox.getAttribute('data-student-id');
+   if (!studentId) {
+      console.warn("Aucun attribut 'data-student-id' trouvé sur le checkbox.");
+      return;
+   }
+
+   // Récupérer tous les boutons liés à cet étudiant
+   const btns = document.querySelectorAll(`#id-${studentId}-btn > button`);
+   if (btns.length === 0) {
+      console.warn(`Aucun bouton trouvé pour l'étudiant ${studentId}`);
+      return;
+   }
+
+   // Trouver le bouton actif (celui qui n'a pas la classe 'btn-outline')
+   const btnActif = Array.from(btns).find(btn => !btn.classList.contains('btn-outline'));
+
+   if (!btnActif) {
+      console.warn(`Aucun bouton actif trouvé pour l'étudiant ${studentId}`);
+      return;
+   }
+
+   // Récupérer le nom du niveau depuis l'attribut 'data-level' du bouton actif
+   const levelName = btnActif.getAttribute('data-level');
+   if (!levelName) {
+      console.warn(`L'attribut 'data-level' est manquant sur le bouton actif pour l'étudiant ${studentId}`);
+      return;
+   }
+
+   // Appeler la fonction pour recalculer les résultats finaux
+   calculateFinalResults(studentId, levelName);
 };
 
 /**
@@ -170,141 +263,152 @@ window.updateSliderValue = function (slider) {
 };
 
 
-function notifyChangeEval(studentId, domElement) {
-   const elemFinalResult = document.getElementById(`id-${studentId}-${domElement}`);
-   const elemToDoNext = document.getElementById(`id-${studentId}-nextState-${state.isTeacher ? 'teacher' : 'student'}`);
-
-   if (elemFinalResult) {
-      // span a afficher
-      const spanNextState = elemFinalResult.querySelector('#nextState');
-      // span a cacher
-      const spanCurrentState = elemFinalResult.querySelector('#currentState');
-
-      // si le span est trouvé
-      if (spanNextState && spanCurrentState) {
-         // on cache le span actuel
-         spanCurrentState.classList.add('hidden');
-         // on affiche le span suivant
-         spanNextState.classList.remove('hidden');
-      } else {
-         console.error(`Element with ID 'id-${studentId}-${domElement}' not found`);
-      }
-   }
-
-   if (elemToDoNext) {
-      // Ajouter des classes pour notifier le changement
-      elemToDoNext.classList.remove('top-5');
-      elemToDoNext.classList.add('bg-yellow-300', 'text-blue-600', 'text-2xl', 'font-bold', 'p-2', 'rounded', 'bottom-10');
-
-
-      elemToDoNext.textContent = elemToDoNext.textContent.replace('À faire :', 'Vous faites :');
-
-
-      // Utiliser requestAnimationFrame pour garantir que les classes sont ajoutées avant de les supprimer
-      requestAnimationFrame(() => {
-         setTimeout(() => {
-            elemToDoNext.classList.remove('bg-yellow-300', 'text-blue-600', 'text-2xl', 'font-bold', 'p-2', 'rounded', ' bottom-10');
-            elemToDoNext.classList.add('top-5');
-         }, 5000);
-      });
-
-   } else {
-      console.error(`Element with ID 'id-${studentId}-nextState' not found`);
-   }
-}
-
 // Fonction qui permet de changer l'onglet (eval80 vs eval100)
-window.changeTab = function (onClickBtn, indexCalByLoad = null) {
+window.changeTab = function (onClickBtn) {
 
    const TAB_80 = '80';
    const TAB_100 = '100';
    const tabName = onClickBtn.id.replace('btn', 'range');
    const studentId = onClickBtn.id.split('-')[1];
    const buttonClass = state.isTeacher ? 'btn-secondary' : 'btn-primary';
-   // console.log(indexCalByLoad, !state.isTeacher);
 
+   const idsRangesDisabled = `[id^="${tabName}-"]`;
 
-   notifyChangeEval(studentId, 'finalResult');
+   if (onClickBtn.classList.contains(buttonClass)) {
+      onClickBtn.classList.remove(buttonClass);
+   }
 
-   // a travailler, le but etant de faire un popup pour dire que l'evaluation a été modifié...
-   if (indexCalByLoad !== null && !state.isTeacher) {
-      // console.log('dans changeTab : ', indexCalByLoad);
+   // Détermine le nouvel onglet et met à jour les classes CSS
+   let idsRangesEnabled;
 
-      // Calcule les résultats finaux
-      calculateFinalResults(studentId, state.evaluationLevels[indexCalByLoad]);
+   console.log(idsRangesEnabled);
 
-      // Désactiver tous les éléments de type "range" (sliders) présents sur la page.
-      const ranges = document.querySelectorAll('[type=range]');
-      ranges.forEach(range => {
-         range.disabled = true;
+   if (idsRangesDisabled.includes(TAB_80)) {
+      idsRangesEnabled = idsRangesDisabled.replace(TAB_80, TAB_100);
+      // onClickBtn.classList.remove('btn-outline');
+      onClickBtn.classList.add(buttonClass);
+      // document.getElementById(onClickBtn.id.replace(TAB_80, TAB_100)).classList.add('btn-outline');
+   } else {
+      idsRangesEnabled = idsRangesDisabled.replace(TAB_100, TAB_80);
+      // onClickBtn.classList.remove('btn-outline');
+      onClickBtn.classList.add(buttonClass);
+      // document.getElementById(onClickBtn.id.replace(TAB_100, TAB_80)).classList.add('btn-outline');
+
+      const rangesAuto100 = document.querySelectorAll(`[id^="id-${studentId}-auto100-"]`);
+      rangesAuto100.forEach(rAuto100 => {
+         console.log(rAuto100);
+         rAuto100.style.display = 'flex';
       });
-
-      // Affiche les consignes à suivre
-      if (indexCalByLoad <= 2) {
-         alert(
-            'Votre enseignant a mis à jour votre évaluation formative.\n' +
-            'Merci de consulter la note. ' +
-            'Si demandé, vous pouvez créer une auto-évaluation supplémentaire en cliquant sur auto100.'
-         );
-      } else {
-         alert(
-            'Votre enseignant a mis à jour votre évaluation sommative.\n' +
-            'Merci de consulter la note finale.'
-         );
-      }
    }
-   else {
 
-      let idsRangesDisabled = `[id^="${tabName}-"]`;
+   // Active/Désactive les éléments des onglets
+   const divsDisabled = document.querySelectorAll(idsRangesDisabled);
+   const divsEnabled = document.querySelectorAll(idsRangesEnabled);
 
-      if (onClickBtn.classList.contains(buttonClass)) {
-         onClickBtn.classList.remove(buttonClass);
-      }
+   divsDisabled.forEach(div => { div.disabled = false; });
+   divsEnabled.forEach(div => { div.disabled = true; });
 
-      // Détermine le nouvel onglet et met à jour les classes CSS
-      let idsRangesEnabled;
-      if (idsRangesDisabled.includes(TAB_80)) {
-         idsRangesEnabled = idsRangesDisabled.replace(TAB_80, TAB_100);
-         onClickBtn.classList.remove('btn-outline');
-         onClickBtn.classList.add(buttonClass);
-         document.getElementById(onClickBtn.id.replace(TAB_80, TAB_100)).classList.add('btn-outline');
-      } else {
-         idsRangesEnabled = idsRangesDisabled.replace(TAB_100, TAB_80);
-         onClickBtn.classList.remove('btn-outline');
-         onClickBtn.classList.add(buttonClass);
-         document.getElementById(onClickBtn.id.replace(TAB_100, TAB_80)).classList.add('btn-outline');
-      }
-
-      // Active/Désactive les éléments des onglets
-      const divsDisabled = document.querySelectorAll(idsRangesDisabled);
-      const divsEnabled = document.querySelectorAll(idsRangesEnabled);
-
-      divsDisabled.forEach(div => { div.disabled = false; });
-      divsEnabled.forEach(div => { div.disabled = true; });
-
-      // Calcule les résultats finaux
-      calculateFinalResults(studentId, onClickBtn.dataset.level);
-   }
+   // Calcule les résultats finaux
+   calculateFinalResults(studentId, onClickBtn.dataset.level);
 
 };
 
 
-// Fonction de validation des évaluations et affichage des sliders. 
-// Active les boutons d'évaluation et affiche les sliders en fonction du rôle de l'utilisateur (enseignant ou
-window.validateEvaluation = function (prefix, indexCalByLoad = null) {
-   const idStudent = prefix.split('-')[0];
+window.validateEvaluation = function (idStudent, indexCalByLoad = null) {
+
+   const idStudentVisible = `#idStudent-${idStudent}-visible`;
+   const idEval = document.querySelector(idStudentVisible)?.querySelector(`[id^="id_eval-"]`);
+
+   const idStudentBtn = `#id-${idStudent}-btn`;
+   const btns = document.querySelector(idStudentBtn)
+
+   const btn = OnThisRangesFotIdStudent(idStudent);
+   OnThisBtn(btn);
+
+   setStatusEvalInBD(idEval, btns);
+   notifyStatusEval(btns);
+};
+
+
+function notifyStatusEval(btns) {
+   // Vérifier si l'ID d'évaluation est valide
+   if (!btns) {
+      console.error("ID d'évaluation non trouvé.");
+      return;
+   }
+
+   // Obtenir l'état actuel (exemple : simulé ici)
+   const currentState = btns.getAttribute('data-current-state') || 'not_evaluated';
+
+   // Messages selon l'état actuel
+   const stateMessages = {
+      'not_evaluated': "L'évaluation a été initiée.",
+      'eval80': "Votre évaluation formative (80%) a été validée.",
+      'auto80': "Votre auto-évaluation formative (80%) a été validée.",
+      'eval100': "Votre évaluation sommative (100%) a été validée.",
+      'auto100': "Votre auto-évaluation sommative (100%) a été validée.",
+      'pending_signature': "L'évaluation est en attente de signature finale.",
+      'completed': "L'évaluation est terminée."
+   };
+
+   // Message par défaut si l'état n'est pas reconnu
+   const message = stateMessages[currentState] || "État de l'évaluation mis à jour.";
+
+   // Créer un popup personnalisé
+   const popup = document.createElement('div');
+   popup.className = 'popup-notification';
+   popup.style.cssText = `
+       position: fixed;
+       bottom: 20px;
+       right: 20px;
+       background-color: #34c759;
+       color: white;
+       padding: 15px 20px;
+       border-radius: 5px;
+       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+       z-index: 1000;
+       display: flex;
+       align-items: center;
+       justify-content: space-between;
+   `;
+
+   // Contenu du popup
+   popup.innerHTML = `
+       <span>${message}</span>
+       <button class="popup-close" style="background: none; border: none; color: white; cursor: pointer;">×</button>
+   `;
+
+   // Ajouter le popup au DOM
+   document.body.appendChild(popup);
+
+   // Gérer la fermeture du popup
+   const closeBtn = popup.querySelector('.popup-close');
+   closeBtn.addEventListener('click', () => removePopup(popup));
+
+   // Supprimer automatiquement le popup après 5 secondes
+   setTimeout(() => removePopup(popup), 5000);
+}
+
+// Fonction pour supprimer le popup
+function removePopup(popup) {
+   if (popup && popup.parentNode) {
+      popup.parentNode.removeChild(popup);
+   }
+}
+
+function OnThisRangesFotIdStudent(idStudent) {
+
    let idBtn, sliders100Elem, sliders80Elem;
 
    if (state.isTeacher) {
-      idBtn = `id-${prefix}eval100`;
+      idBtn = `id-${idStudent}-btn-eval100`;
       sliders100Elem = `[id^="id-${idStudent}-eval100-"]`;
       sliders80Elem = `[id^="id-${idStudent}-eval80-"]`;
    } else {
-      idBtn = `id-${prefix}auto100`;
+      idBtn = `id-${idStudent}-btn-auto100`;
       sliders100Elem = `[id^="id-${idStudent}-auto100-"]`;
       sliders80Elem = `[id^="id-${idStudent}-auto80-"]`;
    }
-
    const btn = document.getElementById(idBtn);
    const divSliders = document.querySelectorAll(sliders100Elem);
 
@@ -318,9 +422,62 @@ window.validateEvaluation = function (prefix, indexCalByLoad = null) {
          }
       });
    }
+   return btn;
+}
 
-   changeTab(btn, indexCalByLoad);
-};
+
+function setStatusEvalInBD(idEval, btns) {
+   // Vérifier si l'élément d'évaluation existe
+   if (!idEval) {
+      console.error("Élément d'évaluation non trouvé.");
+      return;
+   }
+
+   // Récupérer l'ID de l'évaluation depuis l'attribut ID
+   const evalId = idEval.id.replace('id_eval-', '');
+
+   // Récupérer le nouvel état depuis l'attribut data-current-state
+   const newState = btns.getAttribute('data-current-state');
+
+   if (!evalId || !newState) {
+      console.error("Données manquantes pour mettre à jour l'état de l'évaluation.");
+      return;
+   }
+
+   // Envoyer une requête AJAX pour mettre à jour l'état dans la base de données
+   fetch('/api/evaluations/update-status', {
+      method: 'POST',
+      headers: {
+         'Content-Type': 'application/json',
+         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      },
+      body: JSON.stringify({
+         evaluation_id: evalId,
+         new_state: newState
+      })
+   })
+      .then(response => response.json())
+      .then(data => {
+         if (data.success) {
+            console.log("État de l'évaluation mis à jour avec succès.");
+            // Vous pouvez également mettre à jour l'interface utilisateur ici si nécessaire
+         } else {
+            console.error("Erreur lors de la mise à jour de l'état :", data.message);
+         }
+      })
+      .catch(error => {
+         console.error("Une erreur s'est produite lors de la mise à jour de l'état :", error);
+      });
+}
+
+function OnThisBtn(btn) {
+   console.log('btn', btn);
+   changeTab(btn);
+}
+
+
+
+
 
 
 // Fonction de mise à jour de la visibilité des catégories
@@ -416,10 +573,10 @@ window.toggleExclusion = function (btn) {
    }
 };
 
-// #region: Laod jsaonSave
-function loadFrom(js) {
+// #region: Load jsonSave
 
-   // Vérifier les appréciations au sein de la première évaluation
+function loadFrom(js) {
+   // Vérifier que des appréciations existent
    const appreciations = js.evaluations.appreciations;
    if (!Array.isArray(appreciations) || appreciations.length === 0) {
       console.error(`Aucune appréciation trouvée pour l'étudiant ${js.student_Id}.`);
@@ -430,67 +587,54 @@ function loadFrom(js) {
    appreciations.forEach((app, indexLevel) => {
       try {
          loadFromJsonSave(js, indexLevel);
-
-         // // Appeler validateEvaluation uniquement lors du dernier tour
-         // if (indexLevel === appreciations.length - 1) {
-         //    // Appel de la fonction validateEvaluation afin de mettre à jour 
-         //    // l'état des boutons (préfixe = '33-btn-')
-         //    validateEvaluation(js.student_Id + '-btn-', js.evaluations.appreciations[indexLevel].level);
-         // }
       } catch (error) {
          console.error(`Erreur lors du chargement de l'appréciation niveau ${indexLevel} pour l'étudiant ${js.student_Id} :`, error);
       }
    });
-
 }
 
 function loadFromJsonSave(js, indexLevel) {
+   const currentAppreciation = js.evaluations.appreciations[indexLevel];
+   const levelIndex = currentAppreciation.level;
 
-   console.log(js.student_Id, js.evaluations.appreciations[indexLevel].level);
+   // Obtenir le niveau en texte via le mapping
+   const evaluationLevel = state.evaluationLevels[levelIndex];
+   if (!evaluationLevel) {
+      console.error(`Niveau d'appréciation invalide (${levelIndex}) pour l'étudiant ${js.student_Id}`);
+      return;
+   }
 
    // Mettre à jour la remarque générale de l'étudiant
    setGeneralRemark(js.student_Id, js.evaluations.student_remark);
 
-   // Sélectionner l'onglet en fonction du niveau
+   // Sélectionner l'onglet correspondant au niveau et mettre à jour les boutons
+   // onglet teacher disponible si teacher sinon student ... 
    const buttons = document.querySelectorAll(`#id-${js.student_Id}-btn > button`);
-
    buttons.forEach(button => {
-      if (button.dataset.level === state.evaluationLevels[js.evaluations.appreciations[indexLevel].level]) {
-         button.classList.remove('btn-outline');
+      if (button.dataset.level === evaluationLevel) {
          button.classList.add('selected');
-
       } else {
          button.classList.remove('selected');
-         button.classList.add('btn-outline');
       }
    });
 
-   // Mettre à jour les critères
-   const categoryDivs = document.querySelectorAll(`#id-${js.student_Id}-criterias > .category-container`);
+   // Mettre à jour les critères pour chaque catégorie
+   const categoryDivs = document.querySelectorAll(`#idStudent-${js.student_Id}-visible > form > .categories-container`);
+
    categoryDivs.forEach(categoryDiv => {
       const criterionCards = categoryDiv.querySelectorAll('.criterion-card');
 
       criterionCards.forEach(card => {
          const criterionId = card.querySelector('[data-criterion-id]').dataset.criterionId;
-
-         const criterion = js.evaluations.appreciations[indexLevel].criteria.find(crit => {
-
-            const critId = parseInt(crit.id, 10);
-            const criterionIdInt = parseInt(criterionId, 10);
-
-            console.log(`Comparing crit.id: ${critId} with criterionId: ${criterionIdInt}`);
-            return critId === criterionIdInt;
+         const criterion = currentAppreciation.criteria.find(crit => {
+            return parseInt(crit.id, 10) === parseInt(criterionId, 10);
          });
-
-         console.log('Criterion found:', criterion);
 
          if (criterion) {
             const sliders = card.querySelectorAll('input[type="range"]');
-            const slider = Array.from(sliders).find(sl => sl.dataset.level === state.evaluationLevels[js.evaluations.appreciations[indexLevel].level]);
-
-            slider.parentElement.style.display = 'flex';
-
+            const slider = Array.from(sliders).find(sl => sl.dataset.level === evaluationLevel);
             if (slider) {
+               slider.parentElement.style.display = 'flex';
                slider.value = criterion.value;
             }
             const checkbox = card.querySelector('input[type="checkbox"]');
@@ -498,27 +642,27 @@ function loadFromJsonSave(js, indexLevel) {
                checkbox.checked = criterion.checked;
             }
             const textarea = card.querySelector('textarea');
-
             if (textarea) {
                textarea.value = criterion.remark;
             }
          }
       });
    });
-   calculateFinalResults(js.student_Id, state.evaluationLevels[js.evaluations.appreciations[indexLevel].level], 'saved')
+
+   // Mettre à jour le résultat final
+   calculateFinalResults(js.student_Id, evaluationLevel, 'saved');
 }
 
-// Fonction de mise à jour de la remarque générale (à définir selon votre logique)
+// Fonction de mise à jour de la remarque générale de l'étudiant
 function setGeneralRemark(studentId, remark) {
    const remarkElement = document.querySelector(`#id-${studentId}-generalRemark`);
-
    console.log(`#id-${studentId}-generalRemark`);
-
    if (remarkElement) {
       remarkElement.value = remark;
    }
 }
 // #endregion
+
 
 
 // #region: Submitbutton
@@ -549,9 +693,11 @@ function makeToJsonSave(js) {
    let criterias = [];
 
    // Récupérer toutes les catégories associées à l'étudiant
-   const categoryDivs = document.querySelectorAll(`#id-${js.student_Id}-criterias > .category-container`);
+   const elemCats = `#idStudent-${js.student_Id}-visible > form > .categories-container`;
+   const categoryDivs = document.querySelectorAll(elemCats);
 
-   //console.log(`Nombre de catégories trouvées pour l'étudiant ${js.student_Id} :`, categoryDivs.length);
+   console.log(`Nombre de catégories trouvées pour l'étudiant ${js.student_Id} :`, categoryDivs.length);
+
 
    categoryDivs.forEach((categoryDiv) => {
       const criterionCards = categoryDiv.querySelectorAll('.criterion-card');
@@ -599,7 +745,6 @@ function makeToJsonSave(js) {
       criterias = criterias.concat(categoryCriterias);
    });
 
-
    // Vérification si les critères sont vides
    if (criterias.length === 0) {
       displayError(js.student_Id, "Aucun critère valide trouvé pour l'évaluation.");
@@ -618,7 +763,9 @@ function makeToJsonSave(js) {
 
    // Assurez-vous que les données sont correctes avant d'envoyer
    displayError(js.student_Id, 'Données envoyées pour l\'étudiant');
+
    return true;
+
 }
 
 // Fonction principale pour ajouter les écouteurs d'événements aux boutons de soumission
@@ -642,7 +789,10 @@ function handleSubmitButtonClick(event) {
       return;
    }
 
-   // console.log(`Données de l'élève récupérées :`, studentData);
+   console.log(`Données de l'élève récupérées :`, studentData);
+
+   makeToJsonSave(studentData)
+
    if (!makeToJsonSave(studentData)) {
       displayError(studentId, 'Veuillez sélectionner un type d\'évaluation.');
       return;
@@ -665,11 +815,11 @@ function handleSubmitButtonClick(event) {
       return;
    }
 
-   //   console.log("Contenu de evaluation_data juste avant l'envoi : ", document.getElementById('evaluation-data-' + studentId).value);
+   console.log("Contenu de evaluation_data juste avant l'envoi : ", document.getElementById('evaluation-data-' + studentId).value);
 
    form.submit();
    displayError(studentId, 'Formulaire soumis pour l\'élève ID:', studentId);
-   // console.log("Formulaire prêt à être soumis avec les données : ", document.getElementById('evaluation-data-' + studentId).value);
+   console.log("Formulaire prêt à être soumis avec les données : ", document.getElementById('evaluation-data-' + studentId).value);
 }
 
 function getIsUpdateFromButton(btn) {
@@ -765,9 +915,6 @@ function handleMissingForm(studentId, buttonId) {
  * @returns {void} Aucun retour ; les résultats sont directement affichés dans les divs correspondantes.
  */
 function calculateFinalResults(student_id, levelName, resultType = 'live') {
-
-
-   console.log(student_id, levelName, resultType);
 
    // Variables pour calculer les scores et statistiques
    let count = 8;
