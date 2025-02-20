@@ -11,8 +11,6 @@ document.addEventListener('DOMContentLoaded', function () {
    addSubmitButtonListeners(submitBtns);
 
    handleTabSwitch();
-   finishEvaluation();
-   editEvaluation();
 
    if (state.jsonSave && typeof loadFrom === 'function') {
       state.jsonSave.forEach(js => {
@@ -53,8 +51,6 @@ document.addEventListener('DOMContentLoaded', function () {
    //    });
 
 });
-
-
 
 window.enableRanges = function () {
    // On récupère le conteneur des étudiants visibles
@@ -242,15 +238,64 @@ function getGeneralRemark(studentId) {
    return generalRemark;
 }
 
-// Fonction pour afficher les erreurs dans le formulaire
+/**
+ * Affiche un message d'erreur dans le formulaire pour un étudiant donné.
+ *
+ * @param {number|string} studentId - L'ID de l'étudiant associé à l'élément d'erreur.
+ * @param {string} message - Le message d'erreur à afficher.
+ */
 function displayError(studentId, message) {
-   const errorDiv = document.getElementById(`errors-${studentId}`);
-   if (errorDiv) {
-      errorDiv.textContent = message;
-      errorDiv.classList.remove('hidden');  // Affiche le message d'erreur
-   } else {
-      console.warn(`Aucun conteneur d'erreur trouvé pour l'élève ID: ${studentId}`);
+   // Vérifications initiales
+   if (!studentId || typeof studentId !== 'number' && typeof studentId !== 'string') {
+      console.error('❌ Erreur : L\'ID de l\'étudiant doit être un nombre ou une chaîne de caractères.');
+      return;
    }
+
+   if (typeof message !== 'string' || message.trim() === '') {
+      console.error('❌ Erreur : Le message d\'erreur ne peut pas être vide ou invalide.');
+      return;
+   }
+
+   // Sélectionner le conteneur d'erreur correspondant
+   const errorDiv = document.getElementById(`errors-${studentId}`);
+
+   if (!errorDiv) {
+      console.warn(`⚠️ Avertissement : Aucun conteneur d'erreur trouvé pour l'étudiant ID: ${studentId}`);
+      return;
+   }
+
+   // Mettre à jour le contenu du conteneur d'erreur
+   errorDiv.textContent = message;
+
+   // Ajouter une animation fluide pour afficher le message
+   errorDiv.style.transition = 'opacity 0.3s ease-in-out, max-height 0.3s ease-in-out';
+   errorDiv.style.opacity = '1';
+   errorDiv.style.maxHeight = `${errorDiv.scrollHeight + 25}px`; // Ajuster la hauteur pour éviter les saccades
+
+   // Retirer la classe "hidden" pour rendre le conteneur visible
+   errorDiv.classList.remove('hidden');
+
+   // Optionnel : Masquer automatiquement le message après 5 secondes
+   setTimeout(() => hideError(errorDiv), 5000);
+}
+
+/**
+ * Masque un message d'erreur avec une animation fluide.
+ *
+ * @param {HTMLElement} errorDiv - Le conteneur d'erreur à masquer.
+ */
+function hideError(errorDiv) {
+   if (!errorDiv) return;
+
+   errorDiv.style.transition = 'opacity 0.3s ease-in-out, max-height 0.3s ease-in-out';
+   errorDiv.style.opacity = '0';
+   errorDiv.style.maxHeight = '0';
+
+   // Après l'animation, réappliquer la classe "hidden"
+   setTimeout(() => {
+      errorDiv.classList.add('hidden');
+      errorDiv.style.maxHeight = null; // Réinitialiser la hauteur
+   }, 300); // Durée de l'animation (0.3s)
 }
 
 // Mise à jour des résultats des curseurs
@@ -313,22 +358,47 @@ window.changeTab = function (onClickBtn) {
 
 };
 
+// Fonction pour afficher un message popup
+function showReloadPopup(message, delay = 2000) {
+   // Création d'une boîte de dialogue personnalisée
+   const popup = document.createElement("div");
+   popup.style.position = "fixed";
+   popup.style.top = "50%";
+   popup.style.left = "50%";
+   popup.style.transform = "translate(-50%, -50%)";
+   popup.style.backgroundColor = "#333";
+   popup.style.color = "#fff";
+   popup.style.padding = "15px 25px";
+   popup.style.borderRadius = "5px";
+   popup.style.zIndex = "9999";
+   popup.style.fontSize = "16px";
+   popup.textContent = message;
 
-window.validateEvaluation = function (idStudent, indexCalByLoad = null) {
+   // Ajout du popup au DOM
+   document.body.appendChild(popup);
 
+   // Suppression du popup après un certain délai
+   setTimeout(() => {
+      document.body.removeChild(popup);
+      location.reload(); // Rechargement de la page après suppression du popup
+   }, delay);
+}
+
+window.validateEvaluation = async function (idStudent, indexCalByLoad = null) {
    const idStudentVisible = `#idStudent-${idStudent}-visible`;
    const idEval = document.querySelector(idStudentVisible)?.querySelector(`[id^="id_eval-"]`);
-
    const idStudentBtn = `#id-${idStudent}-btn`;
-   const btns = document.querySelector(idStudentBtn)
-
+   const btns = document.querySelector(idStudentBtn);
    const btn = OnThisRangesFotIdStudent(idStudent);
+
+   // Appel des fonctions nécessaires
    OnThisBtn(btn);
+   await setStatusEvalInBD(idEval, btns); // Attendre la fin de l'appel asynchrone
+   await notifyStatusEval(btns);         // Attendre la fin de l'appel asynchrone
 
-   setStatusEvalInBD(idEval, btns);
-   notifyStatusEval(btns);
+   // Affichage du popup avant le rechargement
+   showReloadPopup("La page va se recharger dans quelques secondes...", 2000);
 };
-
 
 function notifyStatusEval(btns) {
    // Vérifier si l'ID d'évaluation est valide
@@ -586,6 +656,9 @@ function loadFrom(js) {
    // Charger les données pour chaque niveau d'appréciation
    appreciations.forEach((app, indexLevel) => {
       try {
+
+         console.log("dans la boucle loadFrom: ", app, indexLevel);
+
          loadFromJsonSave(js, indexLevel);
       } catch (error) {
          console.error(`Erreur lors du chargement de l'appréciation niveau ${indexLevel} pour l'étudiant ${js.student_Id} :`, error);
@@ -594,8 +667,13 @@ function loadFrom(js) {
 }
 
 function loadFromJsonSave(js, indexLevel) {
+
+
    const currentAppreciation = js.evaluations.appreciations[indexLevel];
+
    const levelIndex = currentAppreciation.level;
+
+   console.log("dans lfJsave: ", currentAppreciation, levelIndex);
 
    // Obtenir le niveau en texte via le mapping
    const evaluationLevel = state.evaluationLevels[levelIndex];
@@ -648,6 +726,8 @@ function loadFromJsonSave(js, indexLevel) {
          }
       });
    });
+
+   console.log('evaluationLevel:', evaluationLevel);
 
    // Mettre à jour le résultat final
    calculateFinalResults(js.student_Id, evaluationLevel, 'saved');
@@ -794,7 +874,9 @@ function handleSubmitButtonClick(event) {
    makeToJsonSave(studentData)
 
    if (!makeToJsonSave(studentData)) {
-      displayError(studentId, 'Veuillez sélectionner un type d\'évaluation.');
+      const errorMessage = '⚠️ Veuillez sélectionner un type d’évaluation ou valider l’évaluation reçue.';
+      console.error(`Erreur pour l'étudiant ${studentId} : ${errorMessage}`);
+      displayError(studentId, errorMessage);
       return;
    }
 
@@ -948,29 +1030,32 @@ function calculateFinalResults(student_id, levelName, resultType = 'live') {
    );
 
    // Assigner un titre en fonction du levelName
-   console.log(state.evaluationLevels[2])
+   console.log('valeur de evaluationLeves : ', state.evaluationLevels, 'levelName: ', levelName);
+
    switch (levelName) {
-      case state.evaluationLevels[0]:
-         finalResultTitle = 'A-Formative';
+      case state.evaluationLevels[0]: // auto80
+         finalResultTitle = 'AFormative';
          smallFinalResultTitle = 'A: ';
          spanResult = '80%';
          break;
-      case state.evaluationLevels[2]:
+      case state.evaluationLevels[1]:
          finalResultTitle = 'Formative';
          smallFinalResultTitle = 'F: ';
          spanResult = '80%';
 
          break;
+      case state.evaluationLevels[2]:
+         finalResultTitle = 'ASommative';
+         smallFinalResultTitle = 'A+: ';
+         spanResult = '100%';
+         break;
+
       case state.evaluationLevels[3]:
          finalResultTitle = 'Sommative';
          smallFinalResultTitle = 'S: ';
          spanResult = '100%';
          break;
-      case state.evaluationLevels[1]:
-         finalResultTitle = 'A-Sommative';
-         smallFinalResultTitle = 'A+: ';
-         spanResult = '100%';
-         break;
+
       default:
          finalResultTitle = 'Erreur';
          smallFinalResultTitle = 'X: ';
@@ -1107,7 +1192,6 @@ window.addTodoItem = function (btn) {
    container.insertBefore(newItem, btn);
 };
 
-
 // Supprimer une tâche
 window.removeTodoItem = function (btn) {
    const item = btn.closest('.todo-item');
@@ -1115,8 +1199,6 @@ window.removeTodoItem = function (btn) {
    todo_listRemove.push(id);
    item.remove();
 };
-
-
 
 window.updateTextareaGeneralRemark = function (textarea, counter) {
    const maxLength = 10000;

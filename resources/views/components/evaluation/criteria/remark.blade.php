@@ -60,7 +60,7 @@
 
             <!-- Affichage du résultat en temps réel (toujours visible) -->
             <x-evaluation.criteria.finalResult :studentId="$studentDetails->student_id" :stateMachine="$studentDetails->stateMachine" :isTeacher="$isTeacher" :grade="'A'"
-                :score="90" :evaluationType="'Formative'" :resultType="'live'"
+                :score="100" :evaluationType="'Formative'" :resultType="'live'"
                 class="bg-blue-100 dark:bg-blue-900 rounded-lg p-4 shadow-sm" />
         </div>
     </div>

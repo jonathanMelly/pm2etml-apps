@@ -70,6 +70,7 @@ class EvaluationStateMachine
          EvaluationState::NOT_EVALUATED->value => EvaluationState::AUTO80,
          EvaluationState::AUTO80->value => EvaluationState::AUTO100,
          EvaluationState::EVAL80->value => EvaluationState::AUTO100,
+         EvaluationState::AUTO100->value => EvaluationState::PENDING_SIGNATURE,
          EvaluationState::EVAL100->value => EvaluationState::PENDING_SIGNATURE,
          EvaluationState::PENDING_SIGNATURE->value => EvaluationState::COMPLETED,
       ],

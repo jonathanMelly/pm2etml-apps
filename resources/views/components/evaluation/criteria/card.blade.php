@@ -4,10 +4,9 @@
      hover:shadow-lg transition-shadow duration-300 max-w-sm">
 
     <!-- Nom du critère -->
-    <div class="criterion-name text-xl font-bold flex-1 text-gray-800 dark:text-white mb-4 text-center overflow-hidden whitespace-nowrap overflow-ellipsis max-w-lg"
+    <div class="criterion-name text-xl font-bold text-gray-800 dark:text-white mb-4 text-center overflow-hidden whitespace-nowrap max-w-lg"
         data-criterion-name="{{ $criterion['name'] }}">
-        {{ $criterion['name'] }}
-
+        {{ Str::limit($criterion['name'], 20, '...') }}
     </div>
 
     <!-- Conteneur des curseurs -->

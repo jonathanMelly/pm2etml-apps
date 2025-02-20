@@ -4,4 +4,7 @@
     <p id="smallResultContent" class="text-lg font-medium"></p>
 </div>
 
-<div id="errors-{{ $studentId }}" class="error-messages text-red-600 font-semibold hidden"></div>
+<div id="errors-{{ $studentId }}"
+    class="error-messages text-sm text-red-600 bg-red-50 border border-red-100 rounded-md m-2 p-4 hidden" role="alert">
+    <!-- Le message d'erreur sera inséré dynamiquement ici -->
+</div>
