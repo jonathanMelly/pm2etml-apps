@@ -1,0 +1,77 @@
+/* Mode impression */
+@media print {
+
+   /* Masquer tout sauf les éléments spécifiés */
+   body * {
+      visibility: hidden;
+   }
+
+   /* Afficher uniquement les sections marquées pour impression */
+   [data-print="true"],
+   [data-print-target] {
+      visibility: visible;
+      display: block !important;
+      position: relative;
+   }
+
+   /* Cacher les boutons et éléments non pertinents */
+   [data-print="false"] {
+      display: none !important;
+   }
+
+   /* Styliser l'affichage pour l'impression */
+   body {
+      font-size: 12pt;
+      color: #000;
+      background: #fff;
+   }
+
+   /* Espacement et marges */
+   .categories-container {
+      page-break-before: always;
+      margin-bottom: 20px;
+   }
+
+   .grid {
+      display: block !important;
+   }
+
+   .col-span-1 {
+      width: 100%;
+      display: block !important;
+   }
+
+   /* Ajustement des titres */
+   h1,
+   h2,
+   h3 {
+      font-weight: bold;
+      text-align: center;
+   }
+
+   /* Masquer les éléments interactifs */
+   input,
+   button,
+   select,
+   textarea {
+      display: none !important;
+   }
+
+   /* Ajuster les tableaux */
+   table {
+      width: 100%;
+      border-collapse: collapse;
+   }
+
+   th,
+   td {
+      border: 1px solid #000;
+      padding: 5px;
+      text-align: left;
+   }
+
+   /* Séparation des pages */
+   .page-break {
+      page-break-before: always;
+   }
+}

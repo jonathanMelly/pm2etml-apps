@@ -91,10 +91,6 @@ window.enableRanges = function () {
 
 
 
-window.finishEvaluation = function () {
-
-}
-
 window.editEvaluation = function () {
 
 }
@@ -384,7 +380,7 @@ function showReloadPopup(message, delay = 2000) {
    }, delay);
 }
 
-window.validateEvaluation = async function (idStudent, indexCalByLoad = null) {
+window.validateEvaluation = async function (idStudent) {
    const idStudentVisible = `#idStudent-${idStudent}-visible`;
    const idEval = document.querySelector(idStudentVisible)?.querySelector(`[id^="id_eval-"]`);
    const idStudentBtn = `#id-${idStudent}-btn`;
@@ -546,9 +542,51 @@ function OnThisBtn(btn) {
 }
 
 
+window.finishEvaluation = function (studentId, status) {
+   // Trouver l'élément correspondant à l'évaluation
+   const evalElement = document.querySelector(`#idStudent-${studentId}-visible [id^="id_eval-"]`);
 
+   // Gérer le cas où l'évaluation est introuvable
+   if (!evalElement) {
+      handleError(`Évaluation introuvable pour l'étudiant ID: ${studentId}`);
+      return;
+   }
 
+   const id_eval = evalElement.id.split('-').pop();
+   const data = {
+      evaluationId: id_eval,
+      isTeacher: state.isTeacher,
+      status: status
+   };
 
+   console.log(`Envoi de la requête pour la transition de l'évaluation (${status})...`, data);
+
+   // Envoi de la requête à l'API
+   fetch('/api/evaluation/transition', {
+      method: 'POST',
+      headers: {
+         'Content-Type': 'application/json',
+         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      },
+      body: JSON.stringify(data),
+   })
+      .then(handleResponse)
+      .catch(handleError);
+};
+
+// Fonction pour gérer la réponse de l'API
+function handleResponse(response) {
+   if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status}`);
+   }
+   return response.json();
+}
+
+// Fonction pour gérer les erreurs
+function handleError(error) {
+   console.error('Erreur lors de la transition :', error);
+   alert(`Une erreur est survenue : ${error.message}`);
+}
 
 // Fonction de mise à jour de la visibilité des catégories
 function updateVisibilityCategories(idElem, isVisible) {
@@ -600,7 +638,7 @@ function toggleContentVisibility(divContainer, student) {
 //    // Cas spécifique à un étudiant
 //    if (student) {
 //       const studentId = divToggle.split('-')[1]; // On récupère l'id de l'étudiant
-//       const divSmallFinalResult = document.getElementById(`id-${studentId}-small_finalResult`);
+//       const divSmallFinalResult = document.getElementById(`id - ${ studentId } - small_finalResult`);
 
 //       // Alterner la visibilité de divSmallFinalResult (petit résultat final)
 //       if (divSmallFinalResult) {
@@ -626,7 +664,7 @@ window.toggleExclusion = function (btn) {
    const btnId = btn.id.split('-')[1];
 
    // Sélectionne la div spécifique contenant les boutons
-   const divbtn = document.querySelector(`#id-${btnId}-btn`);
+   const divbtn = document.querySelector(`#id - ${btnId} - btn`);
    if (divbtn) {
       // Sélectionne tous les boutons à l'intérieur de la div
       const btns = divbtn.querySelectorAll('[type=button]');
@@ -1206,3 +1244,51 @@ window.updateTextareaGeneralRemark = function (textarea, counter) {
    const remainingCharacters = maxLength - currentLength;
    counter.textContent = remainingCharacters + '/' + maxLength;
 }
+
+window.printSection = function (button) {
+   console.log('printSectin');
+   let printTarget = document.querySelector(`[data-print-target="${button.dataset.printId}"]`);
+
+   if (printTarget) {
+      let printWindow = window.open("", "_blank");
+      let printContent = printTarget.innerHTML;
+
+      // Récupération des styles de toutes les feuilles de style
+      let styles = Array.from(document.styleSheets)
+         .map(styleSheet => {
+            try {
+               return Array.from(styleSheet.cssRules)
+                  .map(rule => rule.cssText)
+                  .join("\n");
+            } catch (e) {
+               return ""; // Évite les erreurs CORS
+            }
+         })
+         .join("\n");
+
+      // Vérifier si l'élément "printStylesheet" existe
+      let printStylesheetEl = document.getElementById("printStylesheet");
+      let printStylesheetLink = printStylesheetEl
+         ? `<link rel="stylesheet" href="${printStylesheetEl.href}" media="all">`
+         : "";
+
+      printWindow.document.write(`
+           <html>
+               <head>
+                   <title>Impression</title>
+                   <style>${styles}</style>
+                   ${printStylesheetLink}
+               </head>
+               <body>${printContent}</body>
+           </html>
+       `);
+
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+   } else {
+      console.error("Élément à imprimer introuvable !");
+   }
+};
+

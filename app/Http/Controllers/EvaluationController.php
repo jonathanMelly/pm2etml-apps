@@ -12,9 +12,9 @@ use App\Models\Appreciation;
 use App\Models\Criteria;
 use App\Models\DefaultCriteria;
 use App\Models\Evaluation;
-use App\Models\EvaluationLevel;
 use App\Models\EvaluationSetting;
 use App\Models\EvaluationStateMachine;
+
 
 // Requêtes personnalisées
 use App\Http\Requests\StoreEvaluationRequest;
@@ -298,7 +298,6 @@ class EvaluationController extends Controller
                   }
 
                   $existingCriteria->save();
-                  
                } else {
                   // Si le critère n'existe pas pour cet ID, créer un nouveau critère
                   Log::info('Ajout d’un nouveau critère', [
@@ -337,7 +336,6 @@ class EvaluationController extends Controller
          throw $e; // Propager l'exception pour être gérée plus haut
       }
    }
-
 
    /**
     * Charge les évaluations associées à un contrat spécifique.
@@ -829,6 +827,141 @@ class EvaluationController extends Controller
          return response()->json([
             'success' => false,
             'message' => 'Une erreur s’est produite lors de la mise à jour de l’état : ' . $e->getMessage(),
+         ], 500);
+      }
+   }
+
+   public function handleTransition(FormRequest $request)
+   {
+      $evaluationId = $request->input('evaluationId');
+      $userRole = auth()->user()->hasRole(\App\Constants\RoleName::TEACHER) ? 'teacher' : 'student';
+
+      // Log initial pour l'évaluation et le rôle
+      Log::info('Début du traitement de la transition', [
+         'evaluation_id' => $evaluationId,
+         'role' => $userRole
+      ]);
+
+      try {
+         // Récupération de l'évaluation
+         $evaluation = Evaluation::with('appreciations')->find($evaluationId);
+
+         // Si l'évaluation n'existe pas, retour avec message d'erreur
+         if (!$evaluation) {
+            Log::warning('Évaluation introuvable', ['evaluation_id' => $evaluationId]);
+            return response()->json(['error' => 'Évaluation non trouvée.'], 404);
+         }
+
+         // Validation supplémentaire de l'état de l'évaluation
+         if ($evaluation->status === 'completed') {
+            Log::warning('Transition impossible: évaluation déjà terminée', ['evaluation_id' => $evaluationId]);
+            return response()->json(['error' => 'L\'évaluation est déjà dans un état final.'], 400);
+         }
+
+         // Log de l'évaluation trouvée
+         Log::info('Évaluation trouvée', [
+            'evaluation_id' => $evaluationId,
+            'appreciations_count' => $evaluation->appreciations->count()
+         ]);
+
+         if ($evaluation->status === 'pending_signature') {
+            $evaluation->status = 'completed';
+            $evaluation->save();
+
+            Log::info('Évaluation terminée', [
+               'evaluation_id' => $evaluationId,
+               'appreciations_count' => $evaluation->appreciations->count()
+            ]);
+
+            return;
+         }
+
+         // Instanciation de la machine d'état
+         $evaluationMachine = new EvaluationStateMachine($evaluationId, $evaluation->appreciations->toArray());
+
+         // Vérification de la possibilité de transition
+         if (!$evaluationMachine->canTransition($userRole)) {
+            Log::warning('Transition non autorisée', [
+               'evaluation_id' => $evaluationId,
+               'role' => $userRole
+            ]);
+            return response()->json(['error' => 'La transition n\'est pas autorisée.'], 403);
+         }
+
+         // Log si la transition est autorisée
+         Log::info('Transition autorisée', [
+            'evaluation_id' => $evaluationId,
+            'role' => $userRole,
+            'current_state' => $evaluationMachine->getCurrentState()->value,
+         ]);
+
+         // Effectuer la transition de l'évaluation
+         $passed = $evaluationMachine->transition($userRole);
+
+         // Log de la transition effectuée
+         Log::info('Transition effectuée', [
+            'evaluation_id' => $evaluationId,
+            'transition_result' => $passed ? 'succès' : 'échec'
+         ]);
+
+         // Mise à jour de l'état de l'évaluation dans la base de données
+         $newState = $evaluationMachine->getCurrentState()->value;
+
+         // Mettre à jour la colonne 'status' dans la base de données
+         $evaluation->status = $newState;
+         $evaluation->save();
+
+         // Log de la mise à jour de l'évaluation
+         Log::info('Évaluation mise à jour', [
+            'evaluation_id' => $evaluationId,
+            'new_state' => $newState
+         ]);
+
+         // Réponse de succès
+         return response()->json([
+            'success' => true,
+            'message' => 'Transition réussie.',
+            'newState' => $newState,
+         ]);
+      } catch (\TypeError $e) {
+         // Log des erreurs de type spécifiques
+         Log::error('Erreur de type lors de la transition de l\'évaluation', [
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'evaluation_id' => $evaluationId ?? 'non spécifié',
+            'role' => $userRole,
+            'error_type' => 'TypeError'
+         ]);
+
+         // Retour d'erreur avec message spécifique de type
+         return response()->json([
+            'error' => 'Erreur de type dans la transition d\'évaluation.',
+            'details' => $e->getMessage()
+         ], 400);
+      } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+         // Erreur d'élément non trouvé
+         Log::error('Erreur lors de la récupération de l\'évaluation', [
+            'message' => $e->getMessage(),
+            'evaluation_id' => $evaluationId ?? 'non spécifié'
+         ]);
+
+         return response()->json([
+            'error' => 'Évaluation non trouvée.',
+            'details' => $e->getMessage()
+         ], 404);
+      } catch (\Exception $e) {
+         // Log des erreurs génériques
+         Log::error('Erreur générique lors de la transition', [
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'evaluation_id' => $evaluationId ?? 'non spécifié',
+            'role' => $userRole
+         ]);
+
+         // Retour d'erreur générique
+         return response()->json([
+            'error' => 'Une erreur est survenue lors de la transition.',
+            'details' => $e->getMessage()
          ], 500);
       }
    }

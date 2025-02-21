@@ -1,3 +1,5 @@
+@props(['status_eval', 'studentDetails', 'isTeacher'])
+
 <div class="remark mt-2 mb-2 relative w-full">
     <!-- Titre de la section -->
     <label for="generalRemark" class="w-full block font-medium text-gray-900 dark:text-gray-200 mb-2">
@@ -22,7 +24,7 @@
 
             <!-- ToDo List for Teacher -->
             @if ($isTeacher)
-                <div id="todo-list-container" class=" hidden p-4 mt-4 bg-gray-50 dark:bg-gray-700 rounded-md space-y-4">
+                <div id="todo-list-container" class="hidden p-4 mt-4 bg-gray-50 dark:bg-gray-700 rounded-md space-y-4">
                     <!-- Titre de la ToDo List -->
                     <h6 id="msgTodo" class="font-semibold text-gray-800 dark:text-gray-200">
                         {{ __('Please fill all sections') }}
@@ -51,17 +53,18 @@
         <!-- Deuxième colonne : Résultats (enregistré + en temps réel) -->
         <div class="flex flex-row p-4 gap-4">
             <!-- Affichage du résultat enregistré (si l'étudiant a déjà été évalué) -->
-
             @if ($studentDetails->stateMachine && $studentDetails->stateMachine->getCurrentState()->value !== 'not_evaluated')
                 <x-evaluation.criteria.finalResult :studentId="$studentDetails->student_id" :stateMachine="$studentDetails->stateMachine" :isTeacher="$isTeacher"
                     :grade="'A'" :score="80" :evaluationType="'Formative'" :resultType="'saved'"
-                    class="bg-green-100 dark:bg-green-900 rounded-lg p-4 shadow-sm" />
+                    class="bg-green-100 dark:bg-green-900 rounded-lg p-4 shadow-sm" :remark="__('Evaluated Result')" />
             @endif
 
             <!-- Affichage du résultat en temps réel (toujours visible) -->
-            <x-evaluation.criteria.finalResult :studentId="$studentDetails->student_id" :stateMachine="$studentDetails->stateMachine" :isTeacher="$isTeacher" :grade="'A'"
-                :score="100" :evaluationType="'Formative'" :resultType="'live'"
-                class="bg-blue-100 dark:bg-blue-900 rounded-lg p-4 shadow-sm" />
+            @if ($status_eval !== 'completed')
+                <x-evaluation.criteria.finalResult :studentId="$studentDetails->student_id" :stateMachine="$studentDetails->stateMachine" :isTeacher="$isTeacher"
+                    :grade="'A'" :score="100" :evaluationType="'Formative'" :resultType="'live'"
+                    class="bg-blue-100 dark:bg-blue-900 rounded-lg p-4 shadow-sm" :remark="__('Live Evaluation')" />
+            @endif
         </div>
     </div>
 </div>

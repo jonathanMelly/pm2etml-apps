@@ -72,6 +72,7 @@ Route::middleware(['auth', 'app'])->group(function () {
     });
 
     Route::post('api/evaluations/update-status', [EvaluationController::class, 'updateStatus'])->name('evaluations.update-status');
+    Route::post('api/evaluation/transition', [EvaluationController::class, 'handleTransition'])->name('evaluation.transition');
 
     // End HCS
 

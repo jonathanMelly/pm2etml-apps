@@ -12,16 +12,16 @@
     // État actuel avec fallback
     $currentState = optional(optional($hasEval)->getCurrentState())->value ?? 'not_evaluated';
 
-    $btnEval80IsOn = in_array($currentState, ['not_evaluated', 'auto80']);
-    $btnEval100IsOn = in_array($currentState, ['eval80', 'auto100', 'eval100']);
+    $btnEval80IsOn = in_array($currentState, ['not_evaluated', 'auto80']) && $status_eval != 'eval100';
+    $btnEval100IsOn = in_array($currentState, ['eval80', 'auto100', 'eval100']) && $status_eval != 'eval100';
 
-    $btnAuto80IsOn = in_array($currentState, ['not_evaluated']);
-    $btnAuto100IsOn = in_array($currentState, ['auto80', 'eval80', 'auto100']);
+    $btnAuto80IsOn = in_array($currentState, ['not_evaluated']) && $status_eval != 'eval100';
+    $btnAuto100IsOn = in_array($currentState, ['auto80', 'eval80', 'auto100']) && $status_eval != 'eval100';
 
     $canTeacherValidate = in_array($currentState, ['auto80', 'auto100']) && $status_eval !== $currentState;
     $canStudentValidate = in_array($currentState, ['eval80', 'eval100']) && $status_eval !== $currentState;
 
-    $canEdit = null;
+    $canEdit = $status_eval === 'completed';
 
     $stateMessages = [
         'not_evaluated' => __("Pas encore d'évaluation"),
@@ -37,10 +37,9 @@
     dump($currentState, $status_eval, $btnEval80IsOn, $btnEval100IsOn, $canTeacherValidate, $canEdit);
 @endphp
 
-
 @hasanyrole(\App\Constants\RoleName::TEACHER . '|' . \App\Constants\RoleName::STUDENT)
     <div class="evaluation-tabs flex space-x-6 relative justify-end" id="id-{{ $studentId }}-btn"
-        data-current-state="{{ $currentState }}"
+        data-status={{ $status_eval }} data-current-state="{{ $currentState }}"
         data-next-state-teacher="{{ $hasEval ? $hasEval->getNextState('teacher')->value : null }}"
         @role(\App\Constants\RoleName::TEACHER)
             data-btnEval80IsOn="{{ $btnEval80IsOn }}" data-btnEval100IsOn="{{ $btnEval100IsOn }}"
@@ -49,7 +48,7 @@
             data-next-state-student="{{ $hasEval ? $hasEval->getNextState('student')->value : null }}"
         @endrole>
 
-        @if (!in_array($currentState, ['completed']))
+        @if (!in_array($status_eval, ['completed']))
             @role(\App\Constants\RoleName::TEACHER)
                 <button type="button" class="eval-tab-btn btn {{ $btnEval80IsOn ? 'btn-secondary' : 'btn-outline' }}"
                     data-level="eval80" onclick="changeTab(this)" id="id-{{ $studentId }}-btn-eval80">
@@ -62,7 +61,7 @@
                 </button>
                 @if ($canTeacherValidate)
                     <button type="button" class="eval-tab-btn btn btn-success" id="id-{{ $studentId }}-finish-btn"
-                        onclick="validateEvaluation('{{ $studentId }}', {{ $jsonSave->evaluation->id_eval ?? 'null' }})">
+                        onclick="validateEvaluation('{{ $studentId }}')">
                         {{ __('Valider') }}
                     </button>
                 @endif
@@ -81,17 +80,24 @@
 
                 @if ($canStudentValidate)
                     <button type="button" class="eval-tab-btn btn btn-success" id="id-{{ $studentId }}-finish-btn"
-                        onclick="validateEvaluation('{{ $studentId }}', {{ $jsonSave->evaluation->id_eval ?? 'null' }})">
+                        onclick="validateEvaluation('{{ $studentId }}')">
                         {{ __('Valider') }}
                     </button>
                 @endif
             @endrole
         @endif
 
-        @if ($currentState === 'pending_signature')
+        @if ($status_eval === 'eval100')
             <button type="button" class="eval-tab-btn btn btn-success" id="id-{{ $studentId }}-finish-btn"
-                onclick="finishEvaluation('{{ $studentId }}-btn-')">
+                onclick="finishEvaluation('{{ $studentId }}', 'eval100')">
                 {{ __('Terminer') }}
+            </button>
+        @endif
+
+        @if ($status_eval === 'pending_signature')
+            <button type="button" class="eval-tab-btn btn btn-success" id="id-{{ $studentId }}-finish-btn"
+                onclick="finishEvaluation('{{ $studentId }}', 'pending_signature')">
+                {{ __('Confirmer') }}
             </button>
         @endif
 

@@ -5,6 +5,11 @@
         @endonce
     @endpush
 
+    @push('custom-styles')
+        <link id="printStylesheet" rel="stylesheet" href="{{ asset('css/printed_fullevaluation.css') }}" media="print">
+    @endpush
+
+
     <div id="eval" class="evaluation-form p-6 relative">
         {{-- Transfert des variables PHP vers JavaScript --}}
         <x-evaluation.state :state="[
@@ -19,7 +24,8 @@
         ]" />
 
         {{-- Bouton de personnalisation des critères (visible uniquement pour les enseignants) --}}
-        <x-evaluation.criteria.button :route="route('criterias.create')" :label="__('Edit criteria')" :is-teacher="$isTeacher" />
+        <x-evaluation.criteria.button :route="route('criterias.create')"
+         :label="__('Edit criteria')" :is-teacher="$isTeacher" />
 
         {{-- Onglets des étudiants --}}
         <x-evaluation.students.tabs :studentsDatas="$studentsDatas" />

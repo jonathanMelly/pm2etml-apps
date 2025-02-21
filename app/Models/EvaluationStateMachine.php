@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use InvalidArgumentException;
+use Illuminate\Support\Facades\Log;
 
 enum EvaluationLevel: int
 {
@@ -130,17 +131,69 @@ class EvaluationStateMachine
 
    public function transition(string $role): bool
    {
+      // Log du rôle et de l'état actuel
+      Log::info('Tentative de transition', [
+         'role' => $role,
+         'current_state' => $this->currentState->value,
+         'current_state_type' => gettype($this->currentState->value)
+      ]);
+
+      // Vérifie si une transition est possible avec le rôle et l'état actuel
       if ($this->canTransition($role)) {
-         $this->currentState = EvaluationState::from(self::TRANSITIONS[$role][$this->currentState->value]);
-         return true;
+         // Récupère la valeur de la transition pour l'état actuel
+         $nextStateValue = self::TRANSITIONS[$role][$this->currentState->value] ?? null;
+
+         // Log de la valeur de la prochaine transition
+         Log::info('Valeur de la prochaine transition', [
+            'next_state_value' => $nextStateValue,
+            'next_state_value_type' => gettype($nextStateValue)
+         ]);
+
+         // Vérifie que la valeur de l'état suivant est valide
+         if ($nextStateValue) {
+            // Vérifie si la valeur de l'état suivant est valide
+            if (EvaluationState::tryFrom($nextStateValue->value)) {
+               // Effectue la transition
+               $this->currentState = EvaluationState::from($nextStateValue->value);
+               // Utilisation de la valeur de la transition
+               Log::info('Transition réussie', [
+                  'new_state' => $this->currentState->value,
+                  'new_state_type' => gettype($this->currentState->value)
+               ]);
+               return true;
+            } else {
+               // Log d'erreur si la valeur n'est pas un état valide
+               Log::error('Échec de la transition : état suivant invalide', [
+                  'next_state_value' => $nextStateValue,
+                  'next_state_value_type' => gettype($nextStateValue)
+               ]);
+            }
+         } else {
+            // Log d'erreur si la valeur de transition est nulle
+            Log::error('Échec de la transition : valeur de transition manquante', [
+               'role' => $role,
+               'current_state' => $this->currentState->value
+            ]);
+         }
       }
 
+      // Si l'état actuel est PENDING_SIGNATURE, vérifie les signatures
       if ($this->currentState === EvaluationState::PENDING_SIGNATURE) {
          return $this->checkSignaturesAndComplete();
       }
 
+      // Log d'erreur si la transition échoue pour une autre raison
+      Log::error('Échec de la transition', [
+         'role' => $role,
+         'current_state' => $this->currentState->value,
+         'current_state_type' => gettype($this->currentState->value)
+      ]);
+
+      // Si aucune condition n'est remplie, retourne false pour indiquer que la transition a échoué
       return false;
    }
+
+
 
    /// v2 ?
    public function addSignature(string $role): bool
