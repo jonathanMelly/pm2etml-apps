@@ -30,6 +30,29 @@ document.addEventListener('DOMContentLoaded', function () {
    // Active le ranger selon le btn 
    enableRanges();
 
+   // Intégration de la fonction updateTextareaGeneralRemark
+   window.updateTextareaGeneralRemark = function (textarea, counter) {
+      const maxLength = 10000;
+      const currentLength = textarea.value.length;
+      const remainingCharacters = maxLength - currentLength;
+      counter.textContent = remainingCharacters + '/' + maxLength;
+   };
+
+   // Ajouter l'écouteur d'événement à chaque textarea
+   const textareas = document.querySelectorAll('.remark textarea');
+   textareas.forEach(textarea => {
+      const counter = textarea.closest('.remark').querySelector('#charCounter');  // Récupère le compteur associé
+      if (counter) {
+         // Met à jour le compteur initialement
+         window.updateTextareaGeneralRemark(textarea, counter);
+
+         // Met à jour le compteur chaque fois que l'utilisateur tape dans le textarea
+         textarea.addEventListener('input', function () {
+            window.updateTextareaGeneralRemark(textarea, counter);
+         });
+      }
+   });
+
 
    // En cours de dev. pour version 2
    // if (state.isTeacher) {
@@ -51,6 +74,7 @@ document.addEventListener('DOMContentLoaded', function () {
    //    });
 
 });
+
 
 window.enableRanges = function () {
    // On récupère le conteneur des étudiants visibles
@@ -88,8 +112,6 @@ window.enableRanges = function () {
    // Appeler la fonction changeTab avec la bonne valeur
    changeTab(btn);
 };
-
-
 
 window.editEvaluation = function () {
 
@@ -294,14 +316,74 @@ function hideError(errorDiv) {
    }, 300); // Durée de l'animation (0.3s)
 }
 
-// Mise à jour des résultats des curseurs
+// // Mise à jour des résultats des curseurs
+// window.updateSliderValue = function (slider) {
+//    const id = slider.id.replace('-range', '-result');
+//    syncSliders(slider);
+
+//    console.log('update: ', id.split('-')[1], id.split('-')[3]);
+//    calculateFinalResults(id.split('-')[1], id.split('-')[3]);
+// };
+
+
 window.updateSliderValue = function (slider) {
    const id = slider.id.replace('-range', '-result');
    syncSliders(slider);
 
-   console.log('update: ', id.split('-')[1], id.split('-')[3]);
-   calculateFinalResults(id.split('-')[1], id.split('-')[3]);
+   const match = slider.id.match(/^id-(\d+)-range-([^-]+)-(\d+)$/);
+
+   if (match) {
+      const studentId = match[1];
+      const level = match[2];
+      const criterionIndex = match[3];
+
+      calculateFinalResults(studentId, level);
+
+      const remarkId = `id-${studentId}-remark-${criterionIndex}`;
+      const remarkField = document.getElementById(remarkId);
+
+      if (remarkField) {
+         if (parseInt(slider.value) < 2) {
+            remarkField.classList.add('border-red-500');
+            remarkField.setAttribute('required', 'required');
+            window.openRemark(studentId, criterionIndex); // <<< ici
+         } else {
+            remarkField.classList.remove('border-red-500');
+            remarkField.removeAttribute('required');
+         }
+      } else {
+         console.warn('Champ de remarque non trouvé pour :', remarkId);
+      }
+   } else {
+      console.error("Format d'ID de slider invalide :", slider.id);
+   }
 };
+
+
+window.openRemark = function (studentId, criterionIndex) {
+   const textarea = document.querySelector(`textarea[data-student-id="${studentId}"][data-textarea-id="${criterionIndex}"]`);
+   if (textarea) {
+      textarea.classList.remove('hidden');
+
+      // Ajout d'une bordure explicite rouge
+      textarea.style.border = '1px solid red !important';
+      textarea.style.boxShadow = '0 0 3px 1px rgba(255, 0, 0, 0.6)'; // Ajoute un effet de halo pour renforcer la visibilité
+
+      // Fait défiler la page pour amener le champ dans la vue si besoin
+      textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      // Retirer l'effet après 1 seconde
+      setTimeout(() => {
+         textarea.style.border = ''; // Réinitialise la bordure
+         textarea.style.boxShadow = ''; // Réinitialise le halo
+      }, 600);
+   } else {
+      console.warn(`Textarea non trouvé pour studentId=${studentId}, criterionIndex=${criterionIndex}`);
+   }
+};
+
+
+
 
 
 // Fonction qui permet de changer l'onglet (eval80 vs eval100)
@@ -1237,13 +1319,6 @@ window.removeTodoItem = function (btn) {
    todo_listRemove.push(id);
    item.remove();
 };
-
-window.updateTextareaGeneralRemark = function (textarea, counter) {
-   const maxLength = 10000;
-   const currentLength = textarea.value.length;
-   const remainingCharacters = maxLength - currentLength;
-   counter.textContent = remainingCharacters + '/' + maxLength;
-}
 
 window.printSection = function (button) {
    console.log('printSectin');

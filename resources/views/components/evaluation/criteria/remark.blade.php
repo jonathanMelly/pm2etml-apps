@@ -13,16 +13,14 @@
             <!-- Zone de texte avec compteur de caractères -->
             <div class="relative">
                 <textarea id="id-{{ $studentDetails->student_id }}-generalRemark" name="generalRemark" maxlength="10000"
-                    placeholder="{{ __('Add your general remark here...') }}"
-                    class="textarea textarea-bordered w-full dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 px-4 py-2 resize-none rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-40">
-                </textarea>
+                    {{-- placeholder="{{ __('Add your general remark here...') }}" --}}
+                    class="textarea textarea-bordered w-full dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 px-4 py-2 resize-none rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-40"></textarea>
                 <!-- Compteur de caractères (positionné en bas à droite) -->
-                <span id="charCounter" class="absolute bottom-2 right-2 text-sm text-gray-500 dark:text-gray-400">
-                    10000/10000
-                </span>
+                <span id="charCounter"
+                    class="absolute bottom-2 right-2 text-sm text-gray-500 dark:text-gray-400">10000/10000</span>
             </div>
 
-            <!-- ToDo List for Teacher -->
+            {{-- <!-- ToDo List for Teacher -->
             @if ($isTeacher)
                 <div id="todo-list-container" class="hidden p-4 mt-4 bg-gray-50 dark:bg-gray-700 rounded-md space-y-4">
                     <!-- Titre de la ToDo List -->
@@ -47,7 +45,7 @@
                         {{ __('Add task') }}
                     </button>
                 </div>
-            @endif
+            @endif --}}
         </div>
 
         <!-- Deuxième colonne : Résultats (enregistré + en temps réel) -->
