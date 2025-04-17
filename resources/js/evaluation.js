@@ -346,7 +346,7 @@ window.updateSliderValue = function (slider) {
          if (parseInt(slider.value) < 2) {
             remarkField.classList.add('border-red-500');
             remarkField.setAttribute('required', 'required');
-            window.openRemark(studentId, criterionIndex); // <<< ici
+            window.openRemark(studentId, criterionIndex);
          } else {
             remarkField.classList.remove('border-red-500');
             remarkField.removeAttribute('required');
@@ -382,10 +382,6 @@ window.openRemark = function (studentId, criterionIndex) {
    }
 };
 
-
-
-
-
 // Fonction qui permet de changer l'onglet (eval80 vs eval100)
 window.changeTab = function (onClickBtn) {
 
@@ -403,8 +399,6 @@ window.changeTab = function (onClickBtn) {
 
    // Détermine le nouvel onglet et met à jour les classes CSS
    let idsRangesEnabled;
-
-   console.log(idsRangesEnabled);
 
    if (idsRangesDisabled.includes(TAB_80)) {
       idsRangesEnabled = idsRangesDisabled.replace(TAB_80, TAB_100);
@@ -623,7 +617,6 @@ function OnThisBtn(btn) {
    changeTab(btn);
 }
 
-
 window.finishEvaluation = function (studentId, status) {
    // Trouver l'élément correspondant à l'évaluation
    const evalElement = document.querySelector(`#idStudent-${studentId}-visible [id^="id_eval-"]`);
@@ -769,7 +762,7 @@ function loadFrom(js) {
    // Vérifier que des appréciations existent
    const appreciations = js.evaluations.appreciations;
    if (!Array.isArray(appreciations) || appreciations.length === 0) {
-      console.error(`Aucune appréciation trouvée pour l'étudiant ${js.student_Id}.`);
+      console.error(`Aucune appréciation trouvée pour l'étudiant ${js.student_id}.`);
       return;
    }
 
@@ -781,7 +774,7 @@ function loadFrom(js) {
 
          loadFromJsonSave(js, indexLevel);
       } catch (error) {
-         console.error(`Erreur lors du chargement de l'appréciation niveau ${indexLevel} pour l'étudiant ${js.student_Id} :`, error);
+         console.error(`Erreur lors du chargement de l'appréciation niveau ${indexLevel} pour l'étudiant ${js.student_id} :`, error);
       }
    });
 }
@@ -798,16 +791,16 @@ function loadFromJsonSave(js, indexLevel) {
    // Obtenir le niveau en texte via le mapping
    const evaluationLevel = state.evaluationLevels[levelIndex];
    if (!evaluationLevel) {
-      console.error(`Niveau d'appréciation invalide (${levelIndex}) pour l'étudiant ${js.student_Id}`);
+      console.error(`Niveau d'appréciation invalide (${levelIndex}) pour l'étudiant ${js.student_id}`);
       return;
    }
 
    // Mettre à jour la remarque générale de l'étudiant
-   setGeneralRemark(js.student_Id, js.evaluations.student_remark);
+   setGeneralRemark(js.student_id, js.evaluations.student_remark);
 
    // Sélectionner l'onglet correspondant au niveau et mettre à jour les boutons
    // onglet teacher disponible si teacher sinon student ... 
-   const buttons = document.querySelectorAll(`#id-${js.student_Id}-btn > button`);
+   const buttons = document.querySelectorAll(`#id-${js.student_id}-btn > button`);
    buttons.forEach(button => {
       if (button.dataset.level === evaluationLevel) {
          button.classList.add('selected');
@@ -817,7 +810,7 @@ function loadFromJsonSave(js, indexLevel) {
    });
 
    // Mettre à jour les critères pour chaque catégorie
-   const categoryDivs = document.querySelectorAll(`#idStudent-${js.student_Id}-visible > form > .categories-container`);
+   const categoryDivs = document.querySelectorAll(`#idStudent-${js.student_id}-visible > form > .categories-container`);
 
    categoryDivs.forEach(categoryDiv => {
       const criterionCards = categoryDiv.querySelectorAll('.criterion-card');
@@ -850,7 +843,7 @@ function loadFromJsonSave(js, indexLevel) {
    console.log('evaluationLevel:', evaluationLevel);
 
    // Mettre à jour le résultat final
-   calculateFinalResults(js.student_Id, evaluationLevel, 'saved');
+   calculateFinalResults(js.student_id, evaluationLevel, 'saved');
 }
 
 // Fonction de mise à jour de la remarque générale de l'étudiant
@@ -863,25 +856,23 @@ function setGeneralRemark(studentId, remark) {
 }
 // #endregion
 
-
-
 // #region: Submitbutton
 function makeToJsonSave(js) {
 
    // Ajouter la remarque générale de l'étudiant
-   js.student_remark = getGeneralRemark(js.student_Id);
+   js.student_remark = getGeneralRemark(js.student_id);
 
    // Sélection des boutons associés à l'étudiant
-   const selectedButtons = Array.from(document.querySelectorAll(`#id-${js.student_Id}-btn > button`))
+   const selectedButtons = Array.from(document.querySelectorAll(`#id-${js.student_id}-btn > button`))
       .filter(btn => !btn.classList.contains('btn-outline'));
 
    // Validation de la sélection d'onglet
    if (selectedButtons.length > 1) {
-      displayError(js.student_Id, "Plusieurs onglets sont sélectionnés. Veuillez corriger.");
+      displayError(js.student_id, "Plusieurs onglets sont sélectionnés. Veuillez corriger.");
       return false;
    }
    if (selectedButtons.length === 0) {
-      displayError(js.student_Id, "Veuillez sélectionner un onglet avant de soumettre.");
+      displayError(js.student_id, "Veuillez sélectionner un onglet avant de soumettre.");
       return false;
    }
 
@@ -893,10 +884,10 @@ function makeToJsonSave(js) {
    let criterias = [];
 
    // Récupérer toutes les catégories associées à l'étudiant
-   const elemCats = `#idStudent-${js.student_Id}-visible > form > .categories-container`;
+   const elemCats = `#idStudent-${js.student_id}-visible > form > .categories-container`;
    const categoryDivs = document.querySelectorAll(elemCats);
 
-   console.log(`Nombre de catégories trouvées pour l'étudiant ${js.student_Id} :`, categoryDivs.length);
+   console.log(`Nombre de catégories trouvées pour l'étudiant ${js.student_id} :`, categoryDivs.length);
 
 
    categoryDivs.forEach((categoryDiv) => {
@@ -947,13 +938,19 @@ function makeToJsonSave(js) {
 
    // Vérification si les critères sont vides
    if (criterias.length === 0) {
-      displayError(js.student_Id, "Aucun critère valide trouvé pour l'évaluation.");
+      displayError(js.student_id, "Aucun critère valide trouvé pour l'évaluation.");
       return false;
+   }
+
+   // Fonction pour convertir la date au format souhaité (Y-m-d H:i:s)
+   function formatDate(date) {
+      let formattedDate = new Date(date); // Crée un objet Date à partir de la date ISO 8601
+      return formattedDate.toISOString().slice(0, 19).replace("T", " "); // Format: Y-m-d H:i:s
    }
 
    // Ajouter les critères associés à l'appréciation
    appreciations.push({
-      date: new Date().toISOString(),
+      date: formatDate(new Date()), // Utilise la fonction pour formater la date
       level: selectedLevel,
       criteria: criterias
    });
@@ -962,7 +959,7 @@ function makeToJsonSave(js) {
    js.appreciations = appreciations;
 
    // Assurez-vous que les données sont correctes avant d'envoyer
-   displayError(js.student_Id, 'Données envoyées pour l\'étudiant');
+   displayError(js.student_id, 'Données envoyées pour l\'étudiant');
 
    return true;
 
@@ -1013,7 +1010,7 @@ function handleSubmitButtonClick(event) {
    }
 
    if (!form.checkValidity()) {
-      displayError(studentId, "Le formulaire ne passera pas la validation");
+      validateForm(form, studentId);
       return;
    }
 
@@ -1022,21 +1019,48 @@ function handleSubmitButtonClick(event) {
    form.submit();
    displayError(studentId, 'Formulaire soumis pour l\'élève ID:', studentId);
    console.log("Formulaire prêt à être soumis avec les données : ", document.getElementById('evaluation-data-' + studentId).value);
+
 }
 
+function validateForm(form, studentId) {
+   if (!form.checkValidity()) {
+      // Optionnellement, pour afficher les erreurs natives de validation du navigateur
+      form.reportValidity();
+
+      // Afficher un message d'erreur générique
+      displayError(studentId, "Le formulaire ne passera pas la validation");
+
+      return false;
+   }
+
+   return true;
+}
+
+
 function getIsUpdateFromButton(btn) {
-   return Boolean(btn.dataset.update);
+   return btn.dataset.update;
 }
 
 // Fonction pour extraire l'ID de l'élève depuis l'ID du bouton
-function getStudentIdFromButton(button) {
-   return button.id.split('-')[1];
+function getStudentIdFromButton(btn) {
+   return btn.id.split('-')[1];
 }
 
 // Fonction pour récupérer les données de l'étudiant correspondant
 function getStudentData(studentId) {
-   return state.jsonSave.find(attribut => attribut.student_Id == studentId);
+   if (!Array.isArray(state.jsonSave)) {
+      console.error("jsonSave n'est pas un tableau d'objets.");
+      return null;  // Retourne null si ce n'est pas un tableau
+   }
+
+   const student = state.jsonSave.find(attribut => attribut.student_id == studentId);
+   if (!student) {
+      console.error(`Aucune donnée trouvée pour l'étudiant avec ID: ${studentId}`);
+      return null;
+   }
+   return student;
 }
+
 
 // Fonction pour gérer les cas où les données de l'étudiant sont manquantes
 function handleMissingStudentData(studentId) {

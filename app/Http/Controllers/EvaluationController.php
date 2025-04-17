@@ -15,7 +15,6 @@ use App\Models\Evaluation;
 use App\Models\EvaluationSetting;
 use App\Models\EvaluationStateMachine;
 
-
 // Requêtes personnalisées
 use App\Http\Requests\StoreEvaluationRequest;
 
@@ -59,33 +58,74 @@ class EvaluationController extends Controller
       try {
          Log::info('storeEvaluation démarré', ['data' => $request->all()]);
 
-         // Vérification si c'est une mise à jour ou une création
-         $evaluationData = $request->input('evaluation_data');
-         if (is_string($evaluationData)) {
-            $evaluationData = json_decode($evaluationData, true);
+         // 1. Validation
+         $validated = $request->validated();
+         Log::info('Données validées', ['data' => $validated]);
+
+         // 2. Récupération propre des données
+         $evaluationData = $validated['evaluation_data'] ?? [];
+         Log::info('Données d\'évaluation extraites', ['evaluation_data' => $evaluationData]);
+
+         $isUpdate = filter_var($validated['isUpdate'] ?? false, FILTER_VALIDATE_BOOLEAN);
+         Log::info('Statut de mise à jour', ['isUpdate' => $isUpdate]);
+
+         // 3. Vérification de la structure d'évaluation
+         if (empty($evaluationData)) {
+            Log::error('Aucune donnée d\'évaluation reçue');
+            throw new \Exception("Aucune donnée d'évaluation reçue.");
+         } else {
+            Log::info('Données d\'évaluation validées', ['evaluation_data' => $evaluationData]);
          }
 
-         // Déterminer s'il s'agit d'une mise à jour (evaluation_id présent)
-         $isUpdate = !empty($evaluationData['isUpdate']);
+         // 4. Nettoyage des appréciations
+         if (!isset($evaluationData['appreciations']) || !is_array($evaluationData['appreciations'])) {
+            throw new \Exception("Aucune appréciation valide reçue.");
+         }
+
+         foreach ($evaluationData['appreciations'] as &$appreciation) {
+            if (!isset($appreciation['criteria']) || !is_array($appreciation['criteria'])) {
+               throw new \Exception("Appréciation invalide : critères manquants ou mal formés.");
+            }
+
+            foreach ($appreciation['criteria'] as &$criterion) {
+               $criterion['remark'] = $criterion['remark'] ?? '';
+            }
+         }
+
+         // 5. Log
+         Log::info('isUpdate flag détecté', ['isUpdate' => $isUpdate]);
 
          DB::beginTransaction();
 
+         // 6. Création ou mise à jour
          if ($isUpdate) {
+            Log::info('Mise à jour d\'évaluation en cours', ['evaluationData' => $evaluationData]);
             $response = $this->updateEvaluation($evaluationData);
          } else {
+            Log::info('Création d\'évaluation en cours', ['evaluationData' => $evaluationData]);
             $response = $this->createEvaluation($evaluationData);
          }
 
          DB::commit();
+
+         $ids = $request['ids'] ?? null;
+         Log::info('ids = ', ['ids' => $ids]);
+         if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Évaluation enregistrée avec succès']);
+         } else {
+            return redirect()->route('evaluation.fullEvaluation', ['ids' => $ids])
+               ->with('success', 'Évaluation enregistrée avec succès');
+         }
          return $response;
+      } catch (\Illuminate\Validation\ValidationException $e) {
+         Log::error('Erreur de validation dans storeEvaluation', ['errors' => $e->errors()]);
+         return response()->json(['errors' => $e->errors()], 422);
       } catch (\Exception $e) {
          DB::rollBack();
-
          Log::error('Erreur dans storeEvaluation', [
             'message' => $e->getMessage(),
             'trace' => $e->getTraceAsString()
          ]);
-
          return response()->json(['error' => 'Une erreur est survenue lors du traitement.'], 500);
       }
    }
@@ -118,11 +158,11 @@ class EvaluationController extends Controller
                throw new \InvalidArgumentException("Les étudiants ne peuvent soumettre que des auto-évaluations (auto80 ou auto100).");
             }
 
-            if ($user->id !== $data['student_Id']) {
+            if ($user->id !== $data['student_id']) {
                // Log de l'erreur si un étudiant essaie de soumettre une auto-évaluation pour un autre étudiant
                Log::error('Un étudiant tente de soumettre une auto-évaluation pour un autre étudiant.', [
                   'auth_user_id' => $user->id,
-                  'submitted_for_student_id' => $data['student_Id'],
+                  'submitted_for_student_id' => $data['student_id'],
                ]);
                throw new \InvalidArgumentException("Un étudiant ne peut soumettre une évaluation que pour lui-même.");
             }
@@ -150,21 +190,24 @@ class EvaluationController extends Controller
             }
          }
 
+         log::info('Niveau evaluation:', [$evaluationLevel]);
+
          // Création de l'évaluation dans la base de données
          $evaluation = new Evaluation();
          $evaluation->evaluator_id = $data['evaluator_id'];
-         $evaluation->student_id = $data['student_Id'];
+         $evaluation->student_id = $data['student_id'];
          $evaluation->job_definitions_id = $data['job_id'];
-         $evaluation->class_id = $data['student_classId'];
+         $evaluation->class_id = $data['student_class_id'];
          $evaluation->student_remark = $data['student_remark'] ?? null;
+         // $evaluation->status = 'not_evaluated'; // Par défaut, une évaluation commence avec "not_evaluated"
          $evaluation->save();
 
          Log::info('Nouvelle évaluation créée avec succès', [
             'evaluation_id' => $evaluation->id,
             'evaluator_id' => $data['evaluator_id'],
-            'student_id' => $data['student_Id'],
+            'student_id' => $data['student_id'],
             'job_id' => $data['job_id'],
-            'class_id' => $data['student_classId'],
+            'class_id' => $data['student_class_id'],
             'timestamp' => now(),
          ]);
 
@@ -202,8 +245,8 @@ class EvaluationController extends Controller
       try {
          // Vérification de l'existence de l'évaluation par la combinaison des champs uniques
          $evaluatorId = $data['evaluator_id'];
-         $studentId = $data['student_Id'];
-         $classId = $data['student_classId'];
+         $studentId = $data['student_id'];
+         $classId = $data['student_class_id'];
          $jobDefinitionId = $data['job_id'];
 
          $evaluation = Evaluation::where('evaluator_id', $evaluatorId)
@@ -472,7 +515,7 @@ class EvaluationController extends Controller
     * @param array $contractIds
     * @return \Illuminate\Support\Collection
     */
-   private static function getStudentEvaluationDetailsByContractIds(array $contractIds): \Illuminate\Database\Eloquent\Builder
+   private static function getStudentEvaluationDetailsByContractIds(array $contractIds)
    {
       return \App\Models\Contract::join('contract_worker as cw', 'contracts.id', '=', 'cw.contract_id')
          ->join('group_members as gm', 'gm.id', '=', 'cw.group_member_id')
@@ -480,8 +523,8 @@ class EvaluationController extends Controller
          ->join('groups as g', 'g.id', '=', 'gm.group_id')
          ->join('group_names as gn', 'gn.id', '=', 'g.group_name_id')
          ->join('job_definitions as jd', 'contracts.job_definition_id', '=', 'jd.id')
-         ->leftJoin('contract_client as cc', 'contracts.id', '=', 'cc.contract_id') // Table associant les contrats aux clients
-         ->leftJoin('users as client', 'cc.user_id', '=', 'client.id') // Lier à la table des utilisateurs pour les clients
+         ->leftJoin('contract_client as cc', 'contracts.id', '=', 'cc.contract_id')
+         ->leftJoin('users as client', 'cc.user_id', '=', 'client.id')
          ->whereIn('contracts.id', $contractIds)
          ->select(
             'contracts.id as contract_id',
@@ -497,8 +540,37 @@ class EvaluationController extends Controller
             'client.id as evaluator_id',
             'client.firstname as evaluator_firstname',
             'client.lastname as evaluator_lastname'
-         );
+         )
+         // Exécuter la requête et retourner une collection d'objets
+         ->get();
    }
+
+   /*
+    SELECT 
+    contracts.id AS contract_id,
+    contracts.start AS contract_start,
+    contracts.end AS contract_end,
+    jd.title AS project_name,
+    jd.id AS job_id,
+    u.id AS student_id,
+    u.firstname AS student_firstname,
+    u.lastname AS student_lastname,
+    gn.id AS class_id,
+    gn.name AS class_name,
+    client.id AS evaluator_id,
+    client.firstname AS evaluator_firstname,
+    client.lastname AS evaluator_lastname
+      FROM contracts
+      JOIN contract_worker AS cw ON contracts.id = cw.contract_id
+      JOIN group_members AS gm ON gm.id = cw.group_member_id
+      JOIN users AS u ON u.id = gm.user_id
+      JOIN groups AS g ON g.id = gm.group_id
+      JOIN group_names AS gn ON gn.id = g.group_name_id
+      JOIN job_definitions AS jd ON contracts.job_definition_id = jd.id
+      LEFT JOIN contract_client AS cc ON contracts.id = cc.contract_id
+      LEFT JOIN users AS client ON cc.user_id = client.id
+      WHERE contracts.id IN (:contractIds);
+   */
 
 
    /**
@@ -549,50 +621,41 @@ class EvaluationController extends Controller
          // Convertir la chaîne des IDs en un tableau
          $idsArray = explode(',', $ids);
 
-         // Étape 1 : Récupération des détails des étudiants liés aux contrats
+         // Récupérer les détails des étudiants liés aux contrats
          $studentsDetailsQuery = $this->getStudentsDetails($idsArray);
 
          // Si aucun détail n'est trouvé, déclencher une erreur 404
          if ($studentsDetailsQuery->count() === 0) {
             abort(404, 'Contrats non trouvés.');
          }
-         // Étape 3 : Ajouter la StateMachine à chaque étudiant
-         $studentsDetails = $studentsDetailsQuery->paginate(16);
 
-         // Étape 4 : Construire un tableau JSON contenant les informations à passer à la vue
-         $studentsDetails->getCollection()->transform(function ($student) use ($user) {
+         // Ajouter la StateMachine à chaque étudiant
+         $studentsDetailsQuery->transform(function ($details) {
+            // ajouter peut-etre l'évaluateur ?
+            $eval = $this->getExistingEvaluations($details->student_id, $details->job_id);
 
-            // Vérifie si une évaluation existe pour cet étudiant et cet enseignant
-            $evaluation = $this->getExistingEvaluations($student->student_id, $student->job_id);
-
-            if ($evaluation) {
-               // Si une évaluation existe, associer son ID et sa machine d'état à l'étudiant
-               $student->evaluation_id = $evaluation->id;
-               // On crée une machine d'état sans base de données en passant les appréciations
-               $student->stateMachine = new EvaluationStateMachine($evaluation->id, $evaluation->appreciations->toArray());
+            if ($eval) {
+               $details->evaluation_id = $eval->id;
+               $details->stateMachine = new EvaluationStateMachine($eval->id, $eval->appreciations->toArray());
             } else {
-               // Si aucune évaluation n'existe, gérer ce cas (ex. null)
-               $student->evaluation_id = null;
-               $student->stateMachine = null;
+               $details->evaluation_id = null;
+               $details->stateMachine = null;
             }
 
-            return $student;
+            return $details;
          });
-      } else {
-         $studentsDetails = collect([$this->getStudentEvaluationDetailsByContractId($ids)->first()]);
+
+         $studentsDetails = $studentsDetailsQuery;
+      } else { // Is student ?
+         $studentsDetails = $this->getStudentEvaluationDetailsByContractId($ids)->get();
 
          if ($studentsDetails->isNotEmpty()) {
-            $student = $studentsDetails[0];
-
-            $evaluation = $this->getExistingEvaluations($student->student_id, $student->job_id);
-            if ($evaluation) {
-               $student->stateMachine = new EvaluationStateMachine($evaluation->id, $evaluation->appreciations->toArray());
-            } else {
-               $student->stateMachine = new EvaluationStateMachine();
-            }
+            $studentDetails = $studentsDetails->first();
+            $eval = $this->getExistingEvaluations($studentDetails->student_id, $studentDetails->job_id);
+            $studentDetails->stateMachine = $eval
+               ? new EvaluationStateMachine($eval->id, $eval->appreciations->toArray())
+               : new EvaluationStateMachine();
          } else {
-            // Gérer le cas où les détails de l'étudiant ne sont pas trouvés
-            // Par exemple, vous pouvez initialiser une collection vide ou enregistrer une entrée de journal
             Log::warning("Aucun détail d'étudiant trouvé pour les ID de contrat : " . json_encode($ids));
             $studentsDetails = collect();
          }
@@ -600,14 +663,17 @@ class EvaluationController extends Controller
 
       // Étape 5 : Construire le tableau JSON de sauvegarde
       $allJsonSave = $this->buildJsonSave($studentsDetails);
+
       // Étape 6 : Renvoyer la vue Blade avec les données, y compris la machine d'état
       return $this->renderEvaluationPage($studentsDetails, $isTeacher, $allJsonSave);
    }
+
 
    private function getStudentsDetails(array $idsArray)
    {
       return self::getStudentEvaluationDetailsByContractIds($idsArray);
    }
+
 
    private function checkIfUserIsTeacher($user): bool
    {
@@ -622,39 +688,89 @@ class EvaluationController extends Controller
     * @return array
     * @throws \InvalidArgumentException
     */
+   // private function buildJsonSave($studentOrStudents): array
+   // {
+   //    // Mapper la collection pour construire les données JSON
+   //    return $studentOrStudents->map(function ($student) {
+   //       // Récupérer les évaluations pour cet étudiant
+   //       $existingEvaluations = $this->getExistingEvaluations($student->student_id, $student->job_id);
+   //       $evaluationsData = $this->mapExistingEvaluations($existingEvaluations);
+
+   //       // Retourner les données formatées pour cet étudiant
+   //       return [
+   //          'student_id' => $student->student_id,
+   //          'student_lastname' => $student->student_lastname,
+   //          'student_firstname' => $student->student_firstname,
+   //          'student_class_id' => $student->class_id,
+   //          'student_className' => $student->class_name,
+   //          'evaluator_id' => $student->evaluator_id,
+   //          'evaluator_name' => "{$student->evaluator_firstname}-{$student->evaluator_lastname}",
+   //          'job_id' => $student->job_id,
+   //          'job_title' => $student->project_name,
+   //          'evaluations' => $evaluationsData,
+   //       ];
+   //    })->toArray();
+   // }
+
    private function buildJsonSave($studentOrStudents): array
    {
-      // Mapper la collection pour construire les données JSON
-      return $studentOrStudents->map(function ($student) {
+      // Assure-toi que $studentOrStudents est une Collection, même si un seul étudiant est passé
+      $students = collect($studentOrStudents);
+
+      return $students->map(function ($student) {
          // Récupérer les évaluations pour cet étudiant
          $existingEvaluations = $this->getExistingEvaluations($student->student_id, $student->job_id);
          $evaluationsData = $this->mapExistingEvaluations($existingEvaluations);
 
          // Retourner les données formatées pour cet étudiant
          return [
-            'student_Id' => $student->student_id,
-            'student_lastname' => $student->student_lastname,
+            'student_id'        => $student->student_id,
+            'student_lastname'  => $student->student_lastname,
             'student_firstname' => $student->student_firstname,
-            'student_classId' => $student->class_id,
-            'student_className' => $student->class_name,
-            'evaluator_id' => $student->evaluator_id,
-            'evaluator_name' => "{$student->evaluator_firstname}-{$student->evaluator_lastname}",
-            'job_id' => $student->job_id,
-            'job_title' => $student->project_name,
-            'evaluations' => $evaluationsData,
+            'student_class_id'  => $student->class_id,
+            'student_class_name' => $student->class_name,
+            'evaluator_id'      => $student->evaluator_id,
+            'evaluator_name'    => "{$student->evaluator_firstname}-{$student->evaluator_lastname}",
+            'job_id'            => $student->job_id,
+            'job_title'         => $student->project_name,
+            'evaluations'       => $evaluationsData,
          ];
       })->toArray();
    }
 
 
+
    private function getExistingEvaluations($studentId, $jobId)
    {
-      // Utilise first() pour obtenir le premier élément ou null si vide
       return Evaluation::with(['appreciations.criteria'])
          ->where('student_id', $studentId)
          ->where('job_definitions_id', $jobId)
+         ->orderBy('created_at', 'desc')
          ->first();
    }
+
+
+   /*
+    SELECT
+    e.id AS evaluation_id,
+    e.student_id,
+    e.job_definitions_id,
+    a.id AS appreciation_id,
+    a.criteria_id,
+    c.id AS criteria_id,
+    c.name AS criteria_name
+FROM
+    evaluations AS e
+LEFT JOIN
+    appreciations AS a ON e.id = a.evaluation_id
+LEFT JOIN
+    criteria AS c ON a.criteria_id = c.id
+WHERE
+    e.student_id = ? AND
+    e.job_definitions_id = ?
+LIMIT 1;
+
+    */
 
    private function mapExistingEvaluations($existingEvaluation)
    {
@@ -730,8 +846,13 @@ class EvaluationController extends Controller
       // Récupérer les labels d'appréciation avec une gestion possible du cache pour des performances améliorées.
       $appreciationLabels = $this->getAppreciationLabels();
 
-      // Identifier l'ID de l'utilisateur pour obtenir les critères
-      $userId = $isTeacher ? auth()->user()->id : 0;
+
+      // Personnalisation des critères pour la version 2.
+      // ⚠️ Le fonctionnement doit être repensé : l'affichage a été optimisé
+      // et est désormais généré une seule fois pour tous les étudiants.
+      // Cela impacte la logique de personnalisation par utilisateur.
+      $userId = $isTeacher ? auth()->id() : 0;
+
 
       // Préparer les données à transmettre à la vue
       $viewData = [

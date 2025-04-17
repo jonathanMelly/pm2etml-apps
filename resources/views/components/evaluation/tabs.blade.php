@@ -9,8 +9,13 @@
 ])
 
 @php
+    use Illuminate\Support\Facades\Auth;
+
     // État actuel avec fallback
     $currentState = optional(optional($hasEval)->getCurrentState())->value ?? 'not_evaluated';
+
+    $isTeacher = Auth::user()?->hasRole(\App\Constants\RoleName::TEACHER);
+    $isStudent = Auth::user()?->hasRole(\App\Constants\RoleName::STUDENT);
 
     $btnEval80IsOn = in_array($currentState, ['not_evaluated', 'auto80']) && $status_eval != 'eval100';
     $btnEval100IsOn = in_array($currentState, ['eval80', 'auto100', 'eval100']) && $status_eval != 'eval100';
@@ -23,19 +28,71 @@
 
     $canEdit = $status_eval === 'completed';
 
-    $stateMessages = [
-        'not_evaluated' => __("Pas encore d'évaluation"),
-        'eval80' => __('Validation de l’évaluation formative requise pour continuer.'),
-        'auto80' => __('L’étudiant attend votre validation.'),
-        'auto100' => __('En attente de l’évaluation par l’enseignant.'),
-        'eval100' => __('En attente de validation par l’étudiant.'),
-        'pending_signature' => __('En attente de signature finale.'),
-        'completed' => __('Évaluation terminée.'),
-    ];
+    $stateMessages = match ($currentState) {
+        'not_evaluated' => $isTeacher ? __('Auto-éval formative en attente.') : __('Commencez votre auto-éval.'),
 
-    // Debugging (à enlever en production)
-    dump($currentState, $status_eval, $btnEval80IsOn, $btnEval100IsOn, $canTeacherValidate, $canEdit);
+        'auto80' => match (true) {
+            $isTeacher && $canTeacherValidate => __('Validez l’auto-éval 80%.'),
+            $isTeacher => __('Éval formative à faire.'),
+            $isStudent && $status_eval === 'auto80' => __('Auto-éval validée.'),
+            $isStudent => __('Auto-éval envoyée. En attente.'),
+            default => __('Auto-éval formative.'),
+        },
+
+        'eval80' => match (true) {
+            $isStudent && $canStudentValidate => __('Validez l’éval formative.'),
+            $isStudent => __('Auto-éval finale à faire.'),
+            $isTeacher && $status_eval === 'eval80' => __('Auto-eval finale / Eval sommative ?'),
+            $isTeacher => __('éval formative envoyée.'),
+            default => __('Éval formative.'),
+        },
+
+        'auto100' => match (true) {
+            $isTeacher && $canTeacherValidate => __('Validez l’auto-éval finale.'),
+            $isTeacher => __('Auto-éval finale validée / faite l eval sommative.'),
+            $isStudent && $status_eval === 'auto100' => __('Auto-éval finale validée.'),
+            $isStudent => __('Auto-éval finale envoyée. En attente.'),
+            default => __('Auto-éval finale.'),
+        },
+
+        'eval100' => match (true) {
+            $isStudent && $canStudentValidate => __('Validez l’éval finale.'),
+            $isStudent => __('Éval finale en attente.'),
+            $isTeacher && $status_eval === 'eval100' => __('Éval finale validée.'),
+            $isTeacher => __('Éval finale complétée.'),
+            default => __('Éval finale.'),
+        },
+
+        'pending_signature' => $isTeacher ? __('Signature finale en attente.') : __('À signer pour terminer.'),
+
+        'completed' => __('Évaluation terminée ✅'),
+
+        default => __('État inconnu.'),
+    };
+
+    // Debug (désactiver en prod)
+    dump([
+        '👤Rôle' => $isTeacher ? '👨 Enseignant' : ($isStudent ? '🎓 Étudiant' : '❓ Inconnu'),
+        '🔄État actuel de l\'éval' => $currentState,
+        '🧭Message associé à l\'état' => $stateMessages ?? '—',
+        '📌Statut actuel enregistré' => $status_eval,
+
+        '🎯 Actions disponibles' => [
+            '🎓: Auto 3/4 dispo ?' => $btnAuto80IsOn ? '✅ Oui' : '❌ Non',
+            '🎓: Auto 100% dispo ?' => $btnAuto100IsOn ? '✅ Oui' : '❌ Non',
+            '👨: Eval 3/4 dispo ?' => $btnEval80IsOn ? '✅ Oui' : '❌ Non',
+            '👨: Eval 100% dispo ?' => $btnEval100IsOn ? '✅ Oui' : '❌ Non',
+        ],
+
+        '🔐 Permissions' => [
+            '👨 Validation prof possible ?' => $canTeacherValidate ? '✅ Oui' : '❌ Non',
+            '🎓 Validation élève possible ?' => $canStudentValidate ? '✅ Oui' : '❌ Non',
+            '✏️ Édition autorisée ?' => $canEdit ? '✅ Oui' : '❌ Non',
+        ],
+    ]);
+
 @endphp
+
 
 @hasanyrole(\App\Constants\RoleName::TEACHER . '|' . \App\Constants\RoleName::STUDENT)
     <div class="evaluation-tabs flex space-x-6 relative justify-end" id="id-{{ $studentId }}-btn"
@@ -112,9 +169,9 @@
             <span class="message text-green-500 font-bold">{{ __('Évaluation cloturée.') }}</span>
         @endif
 
-        @if (isset($stateMessages[$currentState]))
+        @if ($stateMessages)
             <span class="next-state-message absolute top-14 text-gray-600 text-sm">
-                {{ $stateMessages[$currentState] }}
+                {{ $stateMessages }}
             </span>
         @endif
     @endhasanyrole

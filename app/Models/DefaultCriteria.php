@@ -37,7 +37,6 @@ class DefaultCriteria extends Model
             ->get();
     }
 
-
     public static function saveUserCriteria($criteriasData, $userId)
     {
         // Supprimer uniquement les critères personnalisés pour l'utilisateur connecté
@@ -77,8 +76,6 @@ class DefaultCriteria extends Model
     {
         // Supprimer uniquement les critères personnalisés pour l'utilisateur connecté
         self::where('user_id', $userId)->delete();
-
         return 'Critères personnalisés réinitialisés avec succès !';
     }
-
 }

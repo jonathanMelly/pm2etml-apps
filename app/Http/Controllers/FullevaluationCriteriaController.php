@@ -15,7 +15,6 @@ class FullevaluationCriteriaController extends Controller
       if ($criteria->isEmpty()) {
          $criteria = DefaultCriteria::getDefaultCriteria();
       }
-
       return view('fullevaluation-criteria-create', compact('criteria'));
    }
 

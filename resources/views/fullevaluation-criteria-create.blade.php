@@ -14,7 +14,7 @@
 
                 @for ($i = 0; $i < 8; $i++)
                     <div class="bg-gray-50 p-3 rounded-md shadow-sm space-x-6">
-                        <x-criteria-form :criteria="$criteria[$i] ?? null" :index="$i" />
+                        <x-evaluation.criteria.form :criteria="$criteria[$i] ?? null" :index="$i" />
                     </div>
                 @endfor
 

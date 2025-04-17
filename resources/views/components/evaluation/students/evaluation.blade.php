@@ -1,5 +1,5 @@
 @php
-    $jsonStudent = collect($jsonSave)->first(fn($student) => $student['student_Id'] === $studentDetails->student_id);
+    $jsonStudent = collect($jsonSave)->first(fn($student) => $student['student_id'] === $studentDetails->student_id);
     $isUpdate = !empty($jsonStudent['evaluations'] ?? []);
 
     // Associer chaque catégorie à sa taille et initialiser $order
@@ -42,7 +42,6 @@
     }
 
     $status_eval = $jsonStudent['evaluations']['status_eval'] ?? null;
-
 @endphp
 
 <div id="idStudent-{{ $studentDetails->student_id }}-visible"
@@ -78,9 +77,12 @@
 
         <!-- Remarques sur l'évaluation -->
         <x-evaluation.criteria.remark data-print="true" :status_eval="$status_eval" :studentDetails="$studentDetails" :isTeacher="$isTeacher" />
+
         <!-- Données cachées pour le formulaire -->
         <input type="hidden" name="evaluation_data" id="evaluation-data-{{ $studentDetails->student_id }}">
         <input type="hidden" name="isUpdate" value="{{ $isUpdate ? 'true' : 'false' }}">
+        <input type="hidden" name="ids" value="{{ request()->route('ids') }}">
+
 
         <!-- Bouton de soumission -->
         <div class="flex justify-end" data-print="false">
