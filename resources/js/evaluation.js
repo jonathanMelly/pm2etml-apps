@@ -1487,7 +1487,6 @@ async function fillAndSavePdf(data, type = 'formative', filename = 'evaluation.p
          }
       }
 
-
       form.flatten();
 
       const pdfBytes = await pdfDoc.save();
@@ -1598,16 +1597,16 @@ window.printSection = function (button) {
          Object.entries(values).forEach(([level, val]) => {
             const intVal = parseInt(val);
             if (!isNaN(intVal) && intVal >= 0 && intVal < labels.length) {
-               const fieldName = `${level}_${idx}`; // ex: auto80_1
-               fillData[fieldName] = labels[intVal]; // ex: "A"
+               const suffix = labels[intVal];
+               const fieldName = `${level}_${idx}_${suffix}`; // ex: auto80_1_A
+               fillData[fieldName] = 'Yes'; // coche le bouton radio correspondant
             }
          });
 
          fillData[`criterion_${idx}`] = criterion.remark || '';
       });
 
-
-      fillAndSavePdf(fillData, 'formative', `${studentData.student_lastname}_${studentData.student_firstname}_formative.pdf`);
+      fillAndSavePdf(fillData, 'summative', `${studentData.student_lastname}_${studentData.student_firstname}_formative.pdf`);
    }
 }
 
