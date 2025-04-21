@@ -63,9 +63,9 @@
     </div>
 
     <!-- Formulaire d'évaluation -->
-    <form method="post" action="{{ route('evaluation.storeEvaluation') }}" class="flex flex-col ">
+    <form method="post" action="{{ route('evaluation.storeEvaluation') }}">
         @csrf
-        <div class="categories-container text-center p-2 space-x-1 space-y-2"
+        <div class="categories-container text-center space-x-1 space-y-2 w-full"
             id="{{ isset($jsonStudent['evaluations']['id_eval']) ? 'id_eval-' . $jsonStudent['evaluations']['id_eval'] : 'id_evla-undefined' }}">
             @foreach ($sortedCategories as $category => $criterions)
                 <x-evaluation.criteria.section :container-id="'id-' . $studentDetails->student_id . '-' . strtolower($category) . '-container'" :category-name="$category" :criterions="$criterions" :visible-sliders="$visibleSliders"

@@ -71,7 +71,7 @@ class EvaluationStateMachine
          EvaluationState::NOT_EVALUATED->value => EvaluationState::AUTO80,
          EvaluationState::AUTO80->value => EvaluationState::AUTO100,
          EvaluationState::EVAL80->value => EvaluationState::AUTO100,
-         EvaluationState::AUTO100->value => EvaluationState::PENDING_SIGNATURE,
+         EvaluationState::AUTO100->value => EvaluationState::EVAL100,
          EvaluationState::EVAL100->value => EvaluationState::PENDING_SIGNATURE,
          EvaluationState::PENDING_SIGNATURE->value => EvaluationState::COMPLETED,
       ],
@@ -113,7 +113,6 @@ class EvaluationStateMachine
       return isset(self::TRANSITIONS[$role][$this->currentState->value]);
    }
 
-
    public function getNextState(string $role): ?EvaluationState
    {
       // Obtenir le prochain état à partir des transitions définies
@@ -127,7 +126,6 @@ class EvaluationStateMachine
       // Si $nextStateValue n'est pas du type EvaluationState, retourner null
       return null;
    }
-
 
    public function transition(string $role): bool
    {
@@ -192,7 +190,6 @@ class EvaluationStateMachine
       // Si aucune condition n'est remplie, retourne false pour indiquer que la transition a échoué
       return false;
    }
-
 
 
    /// v2 ?

@@ -17,6 +17,10 @@ use App\Http\Controllers\JobDefinitionDocAttachmentController;
 use App\Http\Controllers\JobDefinitionMainImageAttachmentController;
 use Illuminate\Support\Facades\Route;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Storage;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -73,6 +77,41 @@ Route::middleware(['auth', 'app'])->group(function () {
 
     Route::post('api/evaluations/update-status', [EvaluationController::class, 'updateStatus'])->name('evaluations.update-status');
     Route::post('api/evaluation/transition', [EvaluationController::class, 'handleTransition'])->name('evaluation.transition');
+
+    // Générateur de pdf 
+    Route::get('/pdf-template/{type}', function ($type) {
+        $filename = match (strtolower($type)) {
+            'formative' => 'tmpFormative.pdf',
+            'summative' => 'tmpSommative.pdf',
+            default => abort(404)
+        };
+
+        $path = resource_path("templates/$filename");
+
+        if (!file_exists($path)) {
+            abort(404, "Fichier PDF introuvable");
+        }
+
+        return Response::file($path);
+    });
+
+
+    Route::post('/save-filled-pdf', function (Request $request) {
+        $request->headers->set('Accept', 'application/json');
+
+        $pdfBase64 = $request->input('pdf');
+        $filename = $request->input('filename', 'evaluation.pdf');
+
+        if (!$pdfBase64) {
+            return response()->json(['error' => 'PDF manquant'], 400);
+        }
+
+        $pdfData = base64_decode(preg_replace('/^data:application\/pdf;base64,/', '', $pdfBase64));
+
+        Storage::disk('public')->put("evaluations/$filename", $pdfData);
+
+        return response()->json(['success' => true, 'path' => "storage/evaluations/$filename"]);
+    });
 
     // End HCS
 

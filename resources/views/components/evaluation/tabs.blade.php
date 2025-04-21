@@ -12,7 +12,11 @@
     use Illuminate\Support\Facades\Auth;
 
     // État actuel avec fallback
-    $currentState = optional(optional($hasEval)->getCurrentState())->value ?? 'not_evaluated';
+    if ($status_eval !== 'completed') {
+        $currentState = optional(optional($hasEval)->getCurrentState())->value ?? 'not_evaluated';
+    } else {
+        $currentState = 'completed';
+    }
 
     $isTeacher = Auth::user()?->hasRole(\App\Constants\RoleName::TEACHER);
     $isStudent = Auth::user()?->hasRole(\App\Constants\RoleName::STUDENT);
@@ -26,7 +30,7 @@
     $canTeacherValidate = in_array($currentState, ['auto80', 'auto100']) && $status_eval !== $currentState;
     $canStudentValidate = in_array($currentState, ['eval80', 'eval100']) && $status_eval !== $currentState;
 
-    $canEdit = $status_eval === 'completed';
+    $canEdit = $status_eval === 'completed' && $currentState == 'completed';
 
     $stateMessages = match ($currentState) {
         'not_evaluated' => $isTeacher ? __('Auto-éval formative en attente.') : __('Commencez votre auto-éval.'),
@@ -62,8 +66,7 @@
             $isTeacher => __('Éval finale complétée.'),
             default => __('Éval finale.'),
         },
-
-        'pending_signature' => $isTeacher ? __('Signature finale en attente.') : __('À signer pour terminer.'),
+        'pending_signature' => __('Confirmer la validation de l\'evaluation'),
 
         'completed' => __('Évaluation terminée ✅'),
 
@@ -71,7 +74,7 @@
     };
 
     // Debug (désactiver en prod)
-    dump([
+    /*dump([
         '👤Rôle' => $isTeacher ? '👨 Enseignant' : ($isStudent ? '🎓 Étudiant' : '❓ Inconnu'),
         '🔄État actuel de l\'éval' => $currentState,
         '🧭Message associé à l\'état' => $stateMessages ?? '—',
@@ -89,10 +92,9 @@
             '🎓 Validation élève possible ?' => $canStudentValidate ? '✅ Oui' : '❌ Non',
             '✏️ Édition autorisée ?' => $canEdit ? '✅ Oui' : '❌ Non',
         ],
-    ]);
+    ]);*/
 
 @endphp
-
 
 @hasanyrole(\App\Constants\RoleName::TEACHER . '|' . \App\Constants\RoleName::STUDENT)
     <div class="evaluation-tabs flex space-x-6 relative justify-end" id="id-{{ $studentId }}-btn"
@@ -118,7 +120,7 @@
                 </button>
                 @if ($canTeacherValidate)
                     <button type="button" class="eval-tab-btn btn btn-success" id="id-{{ $studentId }}-finish-btn"
-                        onclick="validateEvaluation('{{ $studentId }}')">
+                        onclick="validateEvaluation('{{ $studentId }}','{{ $currentState }}',this)">
                         {{ __('Valider') }}
                     </button>
                 @endif
@@ -134,25 +136,24 @@
                     {{ __('Auto éval 100%') }}
                 </button>
 
-
                 @if ($canStudentValidate)
                     <button type="button" class="eval-tab-btn btn btn-success" id="id-{{ $studentId }}-finish-btn"
-                        onclick="validateEvaluation('{{ $studentId }}')">
+                        onclick="validateEvaluation('{{ $studentId }}','{{ $currentState }}',this)">
                         {{ __('Valider') }}
                     </button>
                 @endif
             @endrole
         @endif
 
-        @if ($status_eval === 'eval100')
+        @if ($status_eval === 'pending_signature')
             <button type="button" class="eval-tab-btn btn btn-success" id="id-{{ $studentId }}-finish-btn"
                 onclick="finishEvaluation('{{ $studentId }}', 'eval100')">
                 {{ __('Terminer') }}
             </button>
         @endif
 
-        @if ($status_eval === 'pending_signature')
-            <button type="button" class="eval-tab-btn btn btn-success" id="id-{{ $studentId }}-finish-btn"
+        @if ($status_eval === 'eval100')
+            <button type="button" class="eval-tab-btn btn btn-warning" id="id-{{ $studentId }}-finish-btn"
                 onclick="finishEvaluation('{{ $studentId }}', 'pending_signature')">
                 {{ __('Confirmer') }}
             </button>
@@ -163,15 +164,15 @@
                 onclick="editEvaluation('{{ $studentId }}-btn-')">
                 {{ __('Modifier') }}
             </button>
-        @endif
-
-        @if ($currentState === 'completed')
-            <span class="message text-green-500 font-bold">{{ __('Évaluation cloturée.') }}</span>
+            <button type="button" class="btn btn-secondary" onclick="printSection(this)"
+                data-print-id="student_id-{{ $studentId }}">
+                {{ __('Imprimer') }}
+            </button>
         @endif
 
         @if ($stateMessages)
-            <span class="next-state-message absolute top-14 text-gray-600 text-sm">
-                {{ $stateMessages }}
+            <span class="next-state-message absolute top-14 text-cyan-700 font-medium bg-cyan-50 px-2 py-0.5 rounded">
+                Statut : {{ $stateMessages }}
             </span>
         @endif
     @endhasanyrole

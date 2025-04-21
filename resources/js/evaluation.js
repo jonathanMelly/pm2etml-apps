@@ -1,3 +1,5 @@
+import { PDFDocument, rgb } from 'pdf-lib';
+
 const state = window.evaluationState;
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -75,7 +77,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
-
 window.enableRanges = function () {
    // On récupère le conteneur des étudiants visibles
    const containerStudentsVisible = document.querySelector('#ContainerStudentsVisible');
@@ -113,8 +114,9 @@ window.enableRanges = function () {
    changeTab(btn);
 };
 
-window.editEvaluation = function () {
 
+window.editEvaluation = function (studentId) {
+   notify("✋ Cette option n’est pas encore disponible.", "info");
 }
 
 window.handleTabSwitch = function () {
@@ -244,7 +246,6 @@ function syncSliders(slider) {
       console.error('Erreur : Label résultat non trouvé', id);
    }
 }
-
 
 function getEvaluationLevelIndex(levelName) {
    return state.evaluationLevels.indexOf(levelName);
@@ -472,17 +473,99 @@ window.validateEvaluation = async function (idStudent) {
    showReloadPopup("La page va se recharger dans quelques secondes...", 2000);
 };
 
+
+/**
+ * Affiche une notification flottante à l'écran.
+ *
+ * @param {string} message - Le message à afficher.
+ * @param {string} [type='success'] - Le type de notification ('success', 'error', 'info', 'warning').
+ */
+function notify(message, type = 'success') {
+   if (!message || typeof message !== 'string') {
+      console.error('Message de notification invalide.');
+      return;
+   }
+
+   // Vérifie si un popup identique existe déjà
+   const existingPopup = document.querySelector('.popup-notification');
+   if (existingPopup) {
+      existingPopup.remove();
+   }
+
+   // Couleurs selon le type
+   const typeColors = {
+      success: '#34c759',
+      error: '#ff3b30',
+      info: '#007aff',
+      warning: '#ffcc00'
+   };
+
+   const backgroundColor = typeColors[type] || typeColors.success;
+
+   // Créer le popup
+   const popup = document.createElement('div');
+   popup.className = 'popup-notification';
+   popup.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: ${backgroundColor};
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-width: 250px;
+      max-width: 350px;
+      font-family: sans-serif;
+      animation: fadeIn 0.3s ease-out;
+   `;
+
+   // Contenu
+   popup.innerHTML = `
+      <span style="flex: 1;">${message}</span>
+      <button class="popup-close" style="background: none; border: none; color: white; font-size: 20px; margin-left: 15px; cursor: pointer;">×</button>
+   `;
+
+   // Ajout au DOM
+   document.body.appendChild(popup);
+
+   // Fermeture manuelle
+   popup.querySelector('.popup-close').addEventListener('click', () => removePopup(popup));
+
+   // Fermeture automatique
+   setTimeout(() => removePopup(popup), 5000);
+}
+
+// Optionnel : animation CSS (tu peux l'ajouter dans ton CSS global)
+const style = document.createElement('style');
+style.textContent = `
+@keyframes fadeIn {
+   from { opacity: 0; transform: translateY(10px); }
+   to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeOut {
+   from { opacity: 1; transform: translateY(0); }
+   to { opacity: 0; transform: translateY(10px); }
+}
+`;
+document.head.appendChild(style);
+
+
 function notifyStatusEval(btns) {
-   // Vérifier si l'ID d'évaluation est valide
+   // Vérifier si le bouton est défini
    if (!btns) {
       console.error("ID d'évaluation non trouvé.");
       return;
    }
 
-   // Obtenir l'état actuel (exemple : simulé ici)
+   // Obtenir l'état actuel à partir du data-attribute
    const currentState = btns.getAttribute('data-current-state') || 'not_evaluated';
 
-   // Messages selon l'état actuel
+   // Dictionnaire des messages liés aux états
    const stateMessages = {
       'not_evaluated': "L'évaluation a été initiée.",
       'eval80': "Votre évaluation formative (80%) a été validée.",
@@ -493,43 +576,13 @@ function notifyStatusEval(btns) {
       'completed': "L'évaluation est terminée."
    };
 
-   // Message par défaut si l'état n'est pas reconnu
+   // Message à afficher
    const message = stateMessages[currentState] || "État de l'évaluation mis à jour.";
 
-   // Créer un popup personnalisé
-   const popup = document.createElement('div');
-   popup.className = 'popup-notification';
-   popup.style.cssText = `
-       position: fixed;
-       bottom: 20px;
-       right: 20px;
-       background-color: #34c759;
-       color: white;
-       padding: 15px 20px;
-       border-radius: 5px;
-       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-       z-index: 1000;
-       display: flex;
-       align-items: center;
-       justify-content: space-between;
-   `;
-
-   // Contenu du popup
-   popup.innerHTML = `
-       <span>${message}</span>
-       <button class="popup-close" style="background: none; border: none; color: white; cursor: pointer;">×</button>
-   `;
-
-   // Ajouter le popup au DOM
-   document.body.appendChild(popup);
-
-   // Gérer la fermeture du popup
-   const closeBtn = popup.querySelector('.popup-close');
-   closeBtn.addEventListener('click', () => removePopup(popup));
-
-   // Supprimer automatiquement le popup après 5 secondes
-   setTimeout(() => removePopup(popup), 5000);
+   // Appel à la fonction de notification générique
+   notify(message, 'success');
 }
+
 
 // Fonction pour supprimer le popup
 function removePopup(popup) {
@@ -617,26 +670,27 @@ function OnThisBtn(btn) {
    changeTab(btn);
 }
 
-window.finishEvaluation = function (studentId, status) {
+window.finishEvaluation = function (studentId, status, button = null) {
    // Trouver l'élément correspondant à l'évaluation
    const evalElement = document.querySelector(`#idStudent-${studentId}-visible [id^="id_eval-"]`);
 
-   // Gérer le cas où l'évaluation est introuvable
    if (!evalElement) {
       handleError(`Évaluation introuvable pour l'étudiant ID: ${studentId}`);
       return;
    }
 
    const id_eval = evalElement.id.split('-').pop();
+   const isTeacher = typeof state !== 'undefined' ? state.isTeacher : false;
+
    const data = {
       evaluationId: id_eval,
-      isTeacher: state.isTeacher,
+      isTeacher: isTeacher,
       status: status
    };
 
    console.log(`Envoi de la requête pour la transition de l'évaluation (${status})...`, data);
+   if (button) button.disabled = true;
 
-   // Envoi de la requête à l'API
    fetch('/api/evaluation/transition', {
       method: 'POST',
       headers: {
@@ -645,9 +699,33 @@ window.finishEvaluation = function (studentId, status) {
       },
       body: JSON.stringify(data),
    })
-      .then(handleResponse)
-      .catch(handleError);
+      .then(async response => {
+         const result = await response.json();
+         if (!response.ok) throw result;
+
+         console.log(`✅ Évaluation ${id_eval} marquée comme ${status}`);
+         // Optionnel : afficher un indicateur de succès
+         evalElement.insertAdjacentHTML('beforeend', '<div class="text-green-600 mt-2">✔ Évaluation complétée</div>');
+
+         setTimeout(() => {
+            evalElement.style.transition = "opacity 0.5s";
+            evalElement.style.opacity = 0;
+            setTimeout(() => evalElement.remove(), 300);
+         }, 700);
+
+         if (button) button.disabled = false;
+      })
+      .catch(error => {
+         handleError(error);
+         if (button) button.disabled = false;
+
+         // Optionnel : retour visuel d’erreur
+         evalElement.insertAdjacentHTML('beforeend', '<div class="text-red-600 mt-2">❌ Erreur lors de la finalisation</div>');
+      });
+
+   console.log(`[Transition] Étudiant ${studentId}, Évaluation ${id_eval}, Rôle ${isTeacher ? 'Enseignant' : 'Élève'}, Action : ${status}`);
 };
+
 
 // Fonction pour gérer la réponse de l'API
 function handleResponse(response) {
@@ -1344,50 +1422,251 @@ window.removeTodoItem = function (btn) {
    item.remove();
 };
 
-window.printSection = function (button) {
-   console.log('printSectin');
-   let printTarget = document.querySelector(`[data-print-target="${button.dataset.printId}"]`);
 
-   if (printTarget) {
-      let printWindow = window.open("", "_blank");
-      let printContent = printTarget.innerHTML;
 
-      // Récupération des styles de toutes les feuilles de style
-      let styles = Array.from(document.styleSheets)
-         .map(styleSheet => {
+//#region pdf and print 
+
+async function fillAndSavePdf(data, type = 'formative', filename = 'evaluation.pdf') {
+   try {
+      const existingPdfUrl = `/pdf-template/${type}`;
+      const existingPdfBytes = await fetch(existingPdfUrl).then(res => res.arrayBuffer());
+      const pdfDoc = await PDFDocument.load(existingPdfBytes);
+      const form = pdfDoc.getForm();
+
+      const allFields = form.getFields().map(field => field.getName());
+      console.log('Champs trouvés dans le PDF :', allFields);
+
+      const fieldMapping = {
+         student_name: data.student_name,
+         teacher_name: data.teacher_name,
+         class_name: data.class_name,
+         project_name: data.project_name,
+         weeks: data.weeks,
+         dates: data.dates,
+         generalRemark: data.generalRemark,
+         resultFinal: data.resultFinal,
+         ...Object.fromEntries(Array.from({ length: 8 }, (_, i) => [
+            `criterion_${i + 1}_name`, data[`criterion_${i + 1}_name`] || ''
+         ])),
+
+      };
+
+      // Ajout dynamique des champs d’évaluation
+      const levels = ['auto80', 'auto100', 'eval80', 'eval100'];
+      const suffixes = ['NA', 'PA', 'A', 'LA'];
+
+      levels.forEach(level => {
+         for (let i = 1; i <= 8; i++) {
+            suffixes.forEach(suffix => {
+               const fieldName = `${level}_${i}_${suffix}`;
+               fieldMapping[fieldName] = data[fieldName] || '';
+            });
+         }
+      });
+
+      // Remplissage sécurisé
+      for (const [name, value] of Object.entries(fieldMapping)) {
+         if (allFields.includes(name)) {
             try {
-               return Array.from(styleSheet.cssRules)
-                  .map(rule => rule.cssText)
-                  .join("\n");
-            } catch (e) {
-               return ""; // Évite les erreurs CORS
+               const field = form.getField(name);
+               const fieldType = field.constructor.name;
+
+               if (fieldType === 'PDFTextField' || fieldType === 'PDFTextField2') {
+                  field.setText((value ?? '').toString());
+               } else if (fieldType === 'PDFRadioGroup' || fieldType === 'PDFRadioGroup2') {
+                  field.select((value ?? '').toString());
+               } else {
+                  console.warn(`Champ "${name}" : type non géré (${fieldType})`);
+               }
+
+            } catch (err) {
+               console.warn(`Erreur lors du remplissage du champ "${name}":`, err.message);
             }
+         } else {
+            console.warn(`Champ "${name}" non présent dans le formulaire PDF`);
+         }
+      }
+
+
+      form.flatten();
+
+      const pdfBytes = await pdfDoc.save();
+      const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+
+      const reader = new FileReader();
+      reader.onloadend = function () {
+         const base64data = reader.result;
+
+         fetch('/save-filled-pdf', {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+               'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+               pdf: base64data,
+               filename: filename
+            })
          })
-         .join("\n");
+            .then(response => response.json())
+            .then(result => {
+               if (result.success) {
+                  alert("PDF enregistré : " + result.path);
+                  window.open(`/${result.path}`, '_blank');
+               } else {
+                  alert("Erreur lors de l'enregistrement du PDF");
+               }
+            });
+      };
 
-      // Vérifier si l'élément "printStylesheet" existe
-      let printStylesheetEl = document.getElementById("printStylesheet");
-      let printStylesheetLink = printStylesheetEl
-         ? `<link rel="stylesheet" href="${printStylesheetEl.href}" media="all">`
-         : "";
+      reader.readAsDataURL(pdfBlob);
 
-      printWindow.document.write(`
-           <html>
-               <head>
-                   <title>Impression</title>
-                   <style>${styles}</style>
-                   ${printStylesheetLink}
-               </head>
-               <body>${printContent}</body>
-           </html>
-       `);
-
-      printWindow.document.close();
-      printWindow.focus();
-      printWindow.print();
-      printWindow.close();
-   } else {
-      console.error("Élément à imprimer introuvable !");
+   } catch (error) {
+      console.error("Erreur globale dans fillAndSavePdf :", error);
+      alert("Une erreur est survenue lors du traitement du PDF.");
    }
-};
+}
+
+
+/**
+ * On construit un objet critère 
+ *  - nom du critère 
+ *  - Radio Auto 80 / 100 (na, pa, a, la)
+ *  - Radio Eval 80 / 100 (na, pa, a, la)
+ * @returns critère
+ */
+function getCriteriaValues() {
+   const criteria = [];
+
+   document.querySelectorAll('[data-criterion-name]').forEach((element, index) => {
+      const criterionName = element.dataset.criterionName;
+
+      const containerRanges = element.nextElementSibling;
+      const containerRemark = containerRanges.nextElementSibling;
+
+      const criterionRemark = containerRemark.querySelector('textarea')?.value || '';
+
+      const evals = {
+         auto80: containerRanges.children[0]?.querySelector('input')?.value || '',
+         eval80: containerRanges.children[1]?.querySelector('input')?.value || '',
+         auto100: containerRanges.children[2]?.querySelector('input')?.value || '',
+         eval100: containerRanges.children[3]?.querySelector('input')?.value || ''
+      };
+
+      criteria.push({
+         id: index + 1,
+         name: criterionName,
+         values: evals,
+         remark: criterionRemark
+      });
+   });
+
+   return criteria;
+}
+
+const truncate = (str, max = 25) => str.length > max ? str.slice(0, max - 3) + '...' : str;
+
+window.printSection = function (button) {
+
+   let student_id = button.dataset.printId.match(/(\d+)$/)[0];
+   const studentData = getStudentData(student_id);
+
+   const criteriaValues = getCriteriaValues();
+
+   if (studentData) {
+      console.log('studentData: ', studentData);
+      const fillData = {
+         student_name: truncate(`${studentData.student_firstname} ${studentData.student_lastname}`),
+         class_name: studentData.student_class_name,
+         teacher_name: truncate(studentData.evaluator_name),
+         project_name: truncate(studentData.job_title),
+         weeks: "Semaines 1 à 8",
+         dates: `${studentData.project_start.split(' ')[0]} - ${studentData.project_end.split(' ')[0]}`,
+         generalRemark: studentData.evaluations.student_remark,
+         resultFinal: document.getElementById(`finalResultContent-${studentData.student_id}-saved`).textContent,
+
+      };
+
+      criteriaValues.forEach((criterion, index) => {
+         const idx = index + 1;
+         const criterionKey = `criterion_${idx}_name`;
+         fillData[criterionKey] = criterion.name;
+
+         const values = criterion.values;
+         const labels = ['NA', 'PA', 'A', 'LA'];
+
+         Object.entries(values).forEach(([level, val]) => {
+            const intVal = parseInt(val);
+            if (!isNaN(intVal) && intVal >= 0 && intVal < labels.length) {
+               const fieldName = `${level}_${idx}`; // ex: auto80_1
+               fillData[fieldName] = labels[intVal]; // ex: "A"
+            }
+         });
+
+         fillData[`criterion_${idx}`] = criterion.remark || '';
+      });
+
+
+      fillAndSavePdf(fillData, 'formative', `${studentData.student_lastname}_${studentData.student_firstname}_formative.pdf`);
+   }
+}
+
+/* fonction pour impression depuis css... */
+function print(btn) {
+   // Récupérer l'ID du bouton (par exemple "student_id-4")
+   const printTargetId = button.dataset.printId;
+   const printTarget = document.querySelector(`[data-print-target="${printTargetId}"]`);
+
+   // Vérifier si l'élément à imprimer est trouvé
+   if (!printTarget) {
+      console.error(`❌ Élément à imprimer introuvable pour printTargetId: ${printTargetId}`);
+      return;
+   }
+
+   // Ouvrir une nouvelle fenêtre pour l'impression
+   const printWindow = window.open("", "_blank");
+   // const printContent = printTarget.innerHTML;
+   const printContent = printTarget.outerHTML;
+
+
+   // Ajouter le fichier CSS spécifique à l'impression (vérifiez le chemin d'accès au fichier CSS)
+   const printStylesheetLink = `<link rel="stylesheet" href="${window.location.origin}/css/printed_fullevaluation.css" media="print">`;
+
+   // Vous pouvez également inclure des règles CSS spécifiques pour l'impression ici, au cas où le fichier CSS externe ne serait pas disponible
+   const printStyles = `
+      <style>
+         @media print {
+            body {
+               font-family: Arial, sans-serif;
+               font-size: 12pt;
+               color: #000;
+               background: #fff;
+            }
+            /* Ajoutez ici vos styles d'impression supplémentaires */
+         }
+         </style >
+   `;
+
+   // Écrire le contenu à imprimer dans la nouvelle fenêtre
+   printWindow.document.write(`
+   < !DOCTYPE html >
+      <html>
+         <head>
+            <title>Impression</title>
+            ${printStylesheetLink} <!-- Lien vers le fichier CSS d'impression -->
+            ${printStyles} <!-- Styles supplémentaires pour l'impression -->
+         </head>
+         <body>${printContent}</body>
+      </html>
+`);
+
+   printWindow.document.close(); // Fermer le document pour s'assurer que le contenu est chargé
+
+   // Attendre un peu avant d'imprimer pour être sûr que tout est chargé
+   printWindow.focus();  // Se concentrer sur la fenêtre d'impression
+   setTimeout(() => {
+      printWindow.print();  // Imprimer
+      printWindow.close();  // Fermer la fenêtre après l'impression
+   }, 300);
+}
 

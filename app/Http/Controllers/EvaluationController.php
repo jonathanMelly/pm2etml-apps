@@ -734,6 +734,8 @@ class EvaluationController extends Controller
             'job_id'            => $student->job_id,
             'job_title'         => $student->project_name,
             'evaluations'       => $evaluationsData,
+            'project_start'              => $student->contract_start,
+            'project_end'             => $student->contract_end,
          ];
       })->toArray();
    }

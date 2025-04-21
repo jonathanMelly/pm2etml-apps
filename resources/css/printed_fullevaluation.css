@@ -1,22 +1,27 @@
 /* Mode impression */
 @media print {
 
-   /* Masquer tout sauf les éléments spécifiés */
+   /* Masquer tous les éléments par défaut */
    body * {
       visibility: hidden;
    }
 
-   /* Afficher uniquement les sections marquées pour impression */
-   [data-print="true"],
-   [data-print-target] {
+   /* Afficher uniquement les éléments spécifiés */
+   h2,
+   h3,
+   h4,
+   [id^="description-"],
+   /* Sélectionner tous les éléments dont l'id commence par "description-" */
+   [data-criterion-name],
+   .slider-container,
+   textarea,
+   [id$="-finalResult-saved"] {
+      /* Sélectionner tous les éléments dont l'id finit par "-finalResult-saved" */
       visibility: visible;
       display: block !important;
+      /* Forcer l'affichage */
       position: relative;
-   }
-
-   /* Cacher les boutons et éléments non pertinents */
-   [data-print="false"] {
-      display: none !important;
+      /* Garder les éléments dans le flux du document */
    }
 
    /* Styliser l'affichage pour l'impression */
@@ -26,51 +31,42 @@
       background: #fff;
    }
 
-   /* Espacement et marges */
-   .categories-container {
-      page-break-before: always;
-      margin-bottom: 20px;
-   }
-
-   .grid {
-      display: block !important;
-   }
-
-   .col-span-1 {
-      width: 100%;
-      display: block !important;
-   }
-
-   /* Ajustement des titres */
-   h1,
+   /* Ajuster les titres */
    h2,
-   h3 {
+   h3,
+   h4 {
       font-weight: bold;
-      text-align: center;
-   }
-
-   /* Masquer les éléments interactifs */
-   input,
-   button,
-   select,
-   textarea {
-      display: none !important;
-   }
-
-   /* Ajuster les tableaux */
-   table {
-      width: 100%;
-      border-collapse: collapse;
-   }
-
-   th,
-   td {
-      border: 1px solid #000;
-      padding: 5px;
       text-align: left;
    }
 
-   /* Séparation des pages */
+   /* Ajouter un espacement entre les sections pour les titres */
+   h2,
+   h3,
+   h4 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+   }
+
+   /* Ajuster les textes et zones de saisie (textarea) */
+   textarea {
+      font-size: 12pt;
+      border: 1px solid #000;
+      width: 100%;
+      padding: 5px;
+   }
+
+   /* Ajustement des sliders */
+   .slider-container {
+      margin-top: 10px;
+   }
+
+   /* Ajuster les résultats finaux */
+   [id$="-finalResult-saved"] {
+      font-weight: bold;
+      margin-top: 20px;
+   }
+
+   /* Espacement entre les sections */
    .page-break {
       page-break-before: always;
    }

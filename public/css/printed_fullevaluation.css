@@ -1,0 +1,117 @@
+@media print {
+
+   /* Masquer tout sauf ce qui nous intéresse */
+   [id^="smallResultTitle-"],
+   #smallResultContent,
+   body * {
+      visibility: hidden !important;
+   }
+
+   /* Éléments visibles à l’impression */
+   h2,
+   h3,
+   h4,
+   [id^="description-"],
+   [data-criterion-name],
+   .slider-container,
+   .slider-container *,
+   textarea[data-textarea-id],
+   [id$="-finalResult-saved"],
+   [id$="-generalRemark"] {
+      visibility: visible !important;
+      display: block !important;
+   }
+
+   /* Format paysage A4 */
+   @page {
+      size: A4 landscape;
+      margin: 1.5cm;
+   }
+
+   body {
+      font-family: "Arial", sans-serif;
+      font-size: 11pt;
+      background: white;
+      color: black;
+      line-height: 1.2;
+   }
+
+   /* Titres */
+   h2 {
+      font-size: 18pt;
+      margin: 10px 0 5px;
+      border-bottom: 1px solid #333;
+      padding-bottom: 3px;
+   }
+
+   h3 {
+      font-size: 14pt;
+      margin-top: 15px;
+      color: #222;
+   }
+
+   h4 {
+      font-size: 12pt;
+      margin-top: 5px;
+      color: #444;
+   }
+
+   /* Descriptions */
+   [id^="description-"] {
+      font-style: italic;
+      margin: 5px 0 10px;
+   }
+
+   /* Nom du critère */
+   [data-criterion-name] {
+      font-weight: bold;
+      margin-top: 10px;
+   }
+
+   /* Résultat final */
+   [id$="-finalResult-saved"] {
+      font-size: 13pt;
+      margin: 10px 0;
+      font-weight: bold;
+      color: #000;
+      border-top: 1px solid #000;
+      padding-top: 5px;
+   }
+
+   /* Remarque finale */
+   [id$="-generalRemark"] {
+      margin-top: 15px;
+      font-size: 11pt;
+      padding: 5px;
+      background: #f3f3f3;
+      border-left: 4px solid #999;
+   }
+
+   /* Textareas */
+   textarea[data-textarea-id] {
+      width: 100%;
+      height: auto;
+      border: 1px solid #ccc;
+      padding: 5px;
+      resize: none;
+      background: #fff;
+   }
+
+   /* Grille slider-container */
+   .slider-container {
+      display: inline-block !important;
+      width: 200px;
+      margin: 1%;
+      border: 1px solid #ddd;
+      padding: 8px;
+      vertical-align: top;
+      box-sizing: border-box;
+      border-radius: 5px;
+      background: #fafafa;
+   }
+
+   .slider-container * {
+      font-size: 10pt;
+      margin: 2px 0;
+   }
+}é
