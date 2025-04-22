@@ -102,6 +102,18 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     }
     
 
+    /**
+     * Returns true if there are contracts for which users have expressed a wish (and not a firm commitment)
+     */
+    public function hasPendingContractApplications(): bool
+    {
+        return WorkerContract::whereHas('contract', function ($query) {
+            $query->whereHas('clients', function ($query) {
+                $query->where('user_id', $this->id);
+            });
+        })->where('application_status', '>', 0)->exists();
+    }
+
     public function involvedGroupNames(int $periodId): Collection
     {
         return Cache::rememberForever(

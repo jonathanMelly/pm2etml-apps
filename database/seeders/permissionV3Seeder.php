@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Constants\RoleName; // Import des constantes de rôles
+use App\Constants\RoleName;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;

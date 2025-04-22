@@ -189,6 +189,10 @@ class JobDefinitionController extends Controller
                 if (! $request->exists('one_shot')) {
                     $data['one_shot'] = false;
                 }
+                // ... so is by_application
+                if (! $request->exists('by_application')) {
+                    $data['by_application'] = false;
+                }
                 $jobDefinition->update($data);
             }
 

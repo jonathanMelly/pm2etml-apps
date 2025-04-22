@@ -34,11 +34,11 @@
                 </div>
                 @env('staging','production')
                     <div>|</div>
-                    <a target="_blank" href="https://github.com/jonathanMelly/pm2etml-intranet#readme"><i class="fa-brands fa-github"></i> </a>
+                    <a target="_blank" href="https://github.com/jonathanMelly/pm2etml-apps#readme"><i class="fa-brands fa-github"></i> </a>
 
-                    <a href="https://github.com/jonathanMelly/pm2etml-intranet/issues" target="_blank">
+                    <a href="https://github.com/jonathanMelly/pm2etml-apps/issues" target="_blank">
                         <img class="h-4"
-                             src="https://img.shields.io/github/issues-raw/jonathanMelly/pm2etml-intranet?style=plastic?cacheSeconds=54000">{{--15minutes cache--}}
+                             src="https://img.shields.io/github/issues-raw/jonathanMelly/pm2etml-apps?style=plastic?cacheSeconds=54000">{{--15minutes cache--}}
                     </a>
 
                     <a href="https://wakatime.com/@bf7fcc14-d7d0-41c4-99cb-bbe8ecef41bf/projects/ctusfaxkkd" target="_blank">

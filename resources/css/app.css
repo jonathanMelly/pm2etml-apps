@@ -1,3 +1,37 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+
+
+
+/* Brouillon HCS */
+.tabs-lifted {
+   white-space: nowrap;
+   /* Empêche le passage à la ligne */
+}
+
+/* Personnalisation de la barre de défilement */
+.custom-scrollbar::-webkit-scrollbar {
+   height: 6px;
+   /* Hauteur de la barre */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+   background-color: rgba(0, 0, 0, 0.2);
+   /* Couleur subtile du pouce */
+   border-radius: 3px;
+   /* Coins arrondis */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+   background-color: transparent;
+   /* Fond transparent pour la piste */
+}
+
+/* Pour les navigateurs non WebKit (Firefox) */
+.custom-scrollbar {
+   scrollbar-width: thin;
+   /* Largeur fine */
+   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+   /* Couleur du pouce et de la piste */
+}

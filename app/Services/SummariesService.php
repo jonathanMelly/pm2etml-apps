@@ -42,6 +42,8 @@ class SummariesService
 
     const PI_SUCCESS_COMMENT = 10;
 
+    const PI_REMEDIATION_STATUS = 11;
+
     /**
      * @return string | Collection data for chart OR raw collection
      */
@@ -226,7 +228,9 @@ class SummariesService
             /* @var $contract Contract */
             $contract = $wContract->contract;
 
-            if ($wContract->alreadyEvaluated() && $wContract->getAllocatedTime() > 0) {
+            //Do not use $wContract->alreadyEvaluated because it handles remediation
+            //But even with remediation, we keep the old result...
+            if ($wContract->success !== null && $wContract->getAllocatedTime() > 0) {
 
                 $groupMember = $wContract->groupMember;
                 $worker = $groupMember->user;
@@ -284,6 +288,7 @@ class SummariesService
                     self::PI_PROJECT_SPECIFIC => $projectSpecific,
                     self::PI_DATE_SWISS => $formattedSwissDate,
                     self::PI_SUCCESS_COMMENT => $successComment,
+                    self::PI_REMEDIATION_STATUS => $wContract->remediation_status,
                 ];
 
                 //Idea of evolution for easier data post-processing:

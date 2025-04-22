@@ -63,6 +63,7 @@ class JobDefinitionPolicy
         if ($user->can('jobDefinitions.trash')) {
             return $user->can('jobDefinitions') || $jobDefinition->providers()->find($user->id) !== null;
         }
+        return false;
     }
 
     /**

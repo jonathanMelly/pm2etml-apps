@@ -57,7 +57,7 @@
                         <div class="grid h-20 card rounded-box place-items-center">
                             <a class="btn btn-accent btn-outline" href="{{route('sso-login-redirect')}}">
                                 <img src="https://www.microsoft.com/favicon.ico" alt="" width="24" height="24">
-                                {{__('Se loguer via le portail eduvaud')}}
+                                {{__('Log through eduvaud portal')}}
                             </a>
                         </div>
                     @endif

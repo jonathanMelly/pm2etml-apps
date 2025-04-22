@@ -1,9 +1,11 @@
-# PM2ETML-INTRANET [![staging](https://github.com/jonathanMelly/pm2etml-intranet/actions/workflows/main.yml/badge.svg)](https://github.com/jonathanMelly/pm2etml-intranet/actions/workflows/main.yml) ![coverage](http://intranet.pm2etml.ch/coverage_badge.svg) [![wakatime](https://wakatime.com/badge/user/bf7fcc14-d7d0-41c4-99cb-bbe8ecef41bf/project/4fb00346-5e05-4e6b-a906-57e91c256d09.svg)](https://wakatime.com/@bf7fcc14-d7d0-41c4-99cb-bbe8ecef41bf/projects/ctusfaxkkd)
+# PM2ETML-APPS [![staging](https://github.com/jonathanMelly/pm2etml-apps/actions/workflows/main.yml/badge.svg)](https://github.com/jonathanMelly/pm2etml-apps/actions/workflows/main.yml) ![coverage](http://apps.pm2etml.ch/coverage_badge.svg) [![wakatime](https://wakatime.com/badge/user/bf7fcc14-d7d0-41c4-99cb-bbe8ecef41bf/project/4fb00346-5e05-4e6b-a906-57e91c256d09.svg)](https://wakatime.com/@bf7fcc14-d7d0-41c4-99cb-bbe8ecef41bf/projects/ctusfaxkkd)
 
 Plateforme de mise en relation entre le monde du travail et les apprentis...
 
 ## Bridge SSO
-Voir [SSO](doc/sso-bridge/)
+Voir [SSO](doc/sso-bridge/README.md)
+
+## [Code of conduct](CODE_OF_CONDUCT.md)
 
 ## Environnement de développement
 Si vous voulez contribuer au projet, voici comment monter l’environnement de développement.
@@ -16,7 +18,7 @@ git clone git@github.com:jonathanMelly/pm2etml-intranet.git
 ### Prérequis
 - PHP 8.1
 - Composer
-- NPM
+- PNPM
 
 OU
 
@@ -31,7 +33,7 @@ composer install
 ### Dépendances Javascript
 Si nécessaire, installer NPM
 ```shell
-npm install
+pnpm install
 ```
 
 ### Fichier de configuration
@@ -83,6 +85,14 @@ php artisan migrate:fresh --seed
 
 ## Démarrage de l’application
 ```shell
-npm run dev
+pnpm dev
 ```
+
+## Tests
+```shell
+php artisan test -p
+```
+> `-p` => parallèle
+
+> En cas de problème "bizarre", faire un `npm build` avant
 

@@ -6,9 +6,7 @@ use App\Constants\RoleName;
 use App\Enums\CustomPivotTableNames;
 use App\Enums\JobPriority;
 use App\Enums\RequiredTimeUnit;
-
 use Carbon\Carbon;
-
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,7 +18,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-
 use JetBrains\PhpStorm\Pure;
 
 class JobDefinition extends Model
@@ -28,8 +25,15 @@ class JobDefinition extends Model
     use HasFactory, SoftDeletes;
 
     public const MIN_PERIODS = 24;
+
     public const MAX_PERIODS = 150;
+
+    public const MIN_WISH_PRIORITY = 1;
+
+    public const MAX_WISH_PRIORITY = 3;
+
     const SIZE_MEDIUM_MIN = 90;
+
     const SIZE_LARGE_MIN = 120;
 
     /**
@@ -47,6 +51,7 @@ class JobDefinition extends Model
         'image_attachment_id',
         'allocated_time',
         'one_shot',
+        'by_application',
     ];
 
     protected function casts(): array
@@ -137,6 +142,22 @@ class JobDefinition extends Model
         return $this->hasMany(Contract::class);
         //->with('workers.group.groupName',fn($q)=>$q->orderBy('name'))
         //->with('workers.user',fn($q)=>$q->orderBy('lastname')->orderBy('firstname'));
+    }
+
+    /**
+     * Returns the pending application (i.e: application_status > 0) of the user for this job ...
+     * ... or null if he has not applied or is confirmed
+     */
+    public function pendingApplicationFrom(User $user): ?WorkerContract
+    {
+        return WorkerContract::whereHas('groupMember', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })
+            ->whereHas('contract', function ($q) {
+                $q->where('job_definition_id', $this->id);
+            })
+            ->where('application_status', '>', 0)
+            ->first();
     }
 
     public function providers(): BelongsToMany

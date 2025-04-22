@@ -11,4 +11,4 @@ Artisan::command('inspire', function () {
 
 // Schedule::command('inspire')->hourly();
 Schedule::command(EvaluationReportCommand::class)->dailyAt('07:45')->weekdays()
-    ->sentryMonitor('pm2etml-intranet-cron-evaluation-report');
+    ->sentryMonitor('pm2etml-apps-cron-evaluation-report');

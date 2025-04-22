@@ -31,33 +31,18 @@
     </svg>
 </x-flash-messages-item>
 
-{{-- @if ($errors->any())
-
-    <x-flash-messages-item flash-type="error" :custom="__('Invalid data, please check')">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-    </x-flash-messages-item>
-
-@endif --}}
-
 @if ($errors->any())
-    <x-flash-messages-item flash-type="error" :custom="__('Invalid data, please check the form fields below.')">
-        <div class="flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6 mr-3" fill="none"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div>
-                <h4 class="text-lg font-bold">{{ __('There are some validation errors:') }}</h4>
-                <ul class="mt-2 list-disc pl-6">
-                    @foreach ($errors->all() as $error)
-                        <li class="text-red-600">{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        </div>
-    </x-flash-messages-item>
+    <div class="bg-red-500 text-white p-4 rounded-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6 mr-3" fill="none"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span><strong>{{ __('Invalid data, please check the following errors:') }}</strong></span>
+        <ul class="mt-2">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
 @endif

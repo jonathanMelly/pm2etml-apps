@@ -5,10 +5,10 @@ import typography from "@tailwindcss/typography"
 export default {
     content: [
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
-        './storage/framework/views/*.php',
-        './resources/views/**/*.blade.php',
+        './storage/framework/views/*.php', //cached views
+        './resources/views/**/*.blade.php', //source files
     ],
-    safelist:[
+    safelist: [
         'progress-error',
         'progress-info',
         'progress-warning',
@@ -23,18 +23,24 @@ export default {
         'bg-warning',
         'loading',
         'loading-spinner',
-        'btn-disabled'
+        'btn-disabled',
+        'tab-active',
+        'tabs',
+        'tabs-lifted',
     ],
+
 
     theme: {
         extend: {
             fontFamily: {
                 sans: ['Nunito', ...defaultTheme.fontFamily.sans],
             },
+
+
         },
     },
 
-    plugins: [daisyui,typography],
+    plugins: [daisyui, typography],
 
     daisyui: {
         styled: true,
