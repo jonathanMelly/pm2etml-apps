@@ -6,9 +6,7 @@ use App\Constants\RoleName;
 use App\Enums\CustomPivotTableNames;
 use App\Enums\JobPriority;
 use App\Enums\RequiredTimeUnit;
-
 use Carbon\Carbon;
-
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,7 +18,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-
 use JetBrains\PhpStorm\Pure;
 
 class JobDefinition extends Model
@@ -28,8 +25,11 @@ class JobDefinition extends Model
     use HasFactory, SoftDeletes;
 
     public const MIN_PERIODS = 24;
+
     public const MAX_PERIODS = 150;
+
     const SIZE_MEDIUM_MIN = 90;
+
     const SIZE_LARGE_MIN = 120;
 
     /**
@@ -84,16 +84,16 @@ class JobDefinition extends Model
         }
 
         if (($input = existsAndNotEmpty($request, 'provider')) != null) {
-            $query->whereHas('providers', fn($q) => $q->where(tbl(User::class) . '.id', '=', $input));
+            $query->whereHas('providers', fn ($q) => $q->where(tbl(User::class).'.id', '=', $input));
         }
 
         if (($input = existsAndNotEmpty($request, 'fulltext')) != null) {
             $query->where(function (Builder $q) use ($input) {
-                $q->where('title', 'LIKE', '%' . $input . '%');
-                $q->orWhere('description', 'LIKE', '%' . $input . '%');
+                $q->where('title', 'LIKE', '%'.$input.'%');
+                $q->orWhere('description', 'LIKE', '%'.$input.'%');
                 $q->orWhereHas('providers', function ($q) use ($input) {
-                    $q->where(tbl(User::class) . '.firstname', 'LIKE', '%' . $input . '%');
-                    $q->orWhere(tbl(User::class) . '.lastname', 'LIKE', '%' . $input . '%');
+                    $q->where(tbl(User::class).'.firstname', 'LIKE', '%'.$input.'%');
+                    $q->orWhere(tbl(User::class).'.lastname', 'LIKE', '%'.$input.'%');
                 });
             });
         }
@@ -115,7 +115,7 @@ class JobDefinition extends Model
             }
         }
         if ($onlyPublished) {
-            $query->where(fn($q) => $q->published());
+            $query->where(fn ($q) => $q->published());
         }
 
         return $query;
@@ -159,10 +159,8 @@ class JobDefinition extends Model
     public function image(): MorphOne
     {
 
-        $relation = $this->morphOne(
-            related: JobDefinitionMainImageAttachment::class,
-            name: 'attachable'
-        );
+        $relation = $this->morphOne(related: JobDefinitionMainImageAttachment::class,
+            name: 'attachable');
 
         if ($this->trashed()) {
             return $relation->withTrashed();
@@ -198,7 +196,7 @@ class JobDefinition extends Model
             $size = 'Large';
         }
 
-        return __($size) . ', ~' . $this->getAllocatedTime(RequiredTimeUnit::PERIOD) . 'p';
+        return __($size).', ~'.$this->getAllocatedTime(RequiredTimeUnit::PERIOD).'p';
     }
 
     public function isPublished(): bool
@@ -211,10 +209,10 @@ class JobDefinition extends Model
         $orders = [];
 
         if ($byLoad) {
-            $orders[] = fn($a, $b) => $a->getClientLoad(\App\Models\AcademicPeriod::current())['percentage'] <=>
+            $orders[] = fn ($a, $b) => $a->getClientLoad(\App\Models\AcademicPeriod::current())['percentage'] <=>
                 $b->getClientLoad(\App\Models\AcademicPeriod::current())['percentage'];
         }
-        $orders[] = fn($a, $b) => $a['lastname'] <=> $b['lastname'];
+        $orders[] = fn ($a, $b) => $a['lastname'] <=> $b['lastname'];
 
         return $users->sortBy($orders)->values();
     }
@@ -226,7 +224,7 @@ class JobDefinition extends Model
 
     public function getClients(Collection $exclude, bool $sortedByLoad = true): Collection
     {
-        $clients = User::role(RoleName::TEACHER)->get()->filter(fn($el) => $exclude->doesntContain('id', '=', $el->id));
+        $clients = User::role(RoleName::TEACHER)->get()->filter(fn ($el) => $exclude->doesntContain('id', '=', $el->id));
 
         return $this->sortUsers($clients, $sortedByLoad);
     }
@@ -236,7 +234,7 @@ class JobDefinition extends Model
         return DB::transaction(function () {
             //Mark attachments as deleted (do not use mass delete to keep EVENT processing)
             Attachment::where('attachable_id', '=', $this->id)
-                ->each(fn($a) => $a->delete());
+                ->each(fn ($a) => $a->delete());
 
             return parent::delete();
         });

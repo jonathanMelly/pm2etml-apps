@@ -25,14 +25,7 @@ class DashboardController extends Controller
         $view = view('dashboard');
         $user = auth()->user();
 
-        if ($user->hasAnyRole(
-            RoleName::TEACHER,
-            RoleName::STUDENT,
-            RoleName::PRINCIPAL,
-            RoleName::DEAN,
-            RoleName::ADMIN
-        )) {
-
+        if ($user->hasAnyRole(RoleName::TEACHER, RoleName::STUDENT, RoleName::PRINCIPAL, RoleName::DEAN, RoleName::ADMIN)) {
             $contracts = null;
             $jobs = null;
             $past_contracts = collect();
@@ -44,7 +37,7 @@ class DashboardController extends Controller
                 $jobs = $user->getJobDefinitionsWithActiveContracts($periodId);
 
                 $candidatesForWork = User::role(RoleName::STUDENT)
-                    ->whereHas('groupMembers.group.academicPeriod', fn($q) => $q->whereId($periodId))
+                    ->whereHas('groupMembers.group.academicPeriod', fn ($q) => $q->whereId($periodId))
                     ->get();
 
                 $result = $view->with(compact('jobs', 'candidatesForWork'));
@@ -60,7 +53,8 @@ class DashboardController extends Controller
 
                 $contracts = $query->get();
                 $result = $view->with(compact('contracts'));
-                $past_contracts = Cache::rememberForever($user->id . $periodId, fn() => $user->pastContractsAsAWorker($periodId)->get());
+                $past_contracts = Cache::rememberForever($user->id.$periodId,fn() => $user->pastContractsAsAWorker($periodId)->get());
+
             }
 
             //Append evaluations summary
@@ -70,9 +64,11 @@ class DashboardController extends Controller
                 $request->get('timeUnit')
             );
 
-            return $result->with(compact('evaluationsSummaryJsObject', 'periodId', 'past_contracts'));
+            return $result->with(compact('evaluationsSummaryJsObject', 'periodId','past_contracts'));
+
         } else {
             abort(403, 'Missing required role');
         }
+
     }
 }

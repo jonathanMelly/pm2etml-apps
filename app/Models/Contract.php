@@ -26,11 +26,13 @@ class Contract extends Model
         'end',
     ];
 
-    protected $casts = [
-        'start' => 'datetime',
-        'end' => 'datetime',
-    ];
-
+    protected function casts(): array
+    {
+        return [
+            'start' => 'datetime',
+            'end' => 'datetime',
+        ];
+    }
 
     public function clients(): BelongsToMany
     {
@@ -38,7 +40,6 @@ class Contract extends Model
             ->withTimestamps();
     }
 
-   
     //Many workers = group project
     public function workers(): BelongsToMany
     {
