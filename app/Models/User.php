@@ -62,7 +62,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
     public function getInitials(): string
     {
-        return $this->firstname[0].$this->lastname[0];
+        return $this->firstname[0] . $this->lastname[0];
     }
 
     public function getFirstnameL(bool $withId = false): string
@@ -70,15 +70,15 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         return $this->getFirstnameLX(2,$withId);
     }
 
-    public function getFirstnameLX($x=0,bool $withId = false): string
+    public function getFirstnameLX($x = 0, bool $withId = false): string
     {
-        return $this->firstname.' '. mb_substr($this->lastname, 0,$x).'.'.($withId ? "<{$this->id}>" : '');
+        return $this->firstname . ' ' . mb_substr($this->lastname, 0, $x) . '.' . ($withId ? "<{$this->id}>" : '');
     }
 
     //Not perfect (do not handle clashes but avoids adding this data for now)
     public function getAcronym(): string
     {
-        return mb_strtoupper(mb_substr($this->firstname,0,1).mb_substr($this->lastname,0,1).mb_substr($this->lastname,-1,1));
+        return mb_strtoupper(mb_substr($this->firstname, 0, 1) . mb_substr($this->lastname, 0, 1) . mb_substr($this->lastname, -1, 1));
     }
 
     /**
@@ -101,24 +101,41 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
             ->withTimestamps();
     }
 
+    /**
+     * Returns true if there are contracts for which users have expressed a wish (and not a firm commitment)
+     */
+    public function hasPendingContractApplications(): bool
+    {
+        return WorkerContract::whereHas('contract', function ($query) {
+            $query->whereHas('clients', function ($query) {
+                $query->where('user_id', $this->id);
+            });
+        })->where('application_status', '>', 0)->exists();
+    }
+
     public function involvedGroupNames(int $periodId): Collection
     {
-        return Cache::rememberForever("involvedGroupNames-$this->id",
+        return Cache::rememberForever(
+            "involvedGroupNames-$this->id",
             function () use ($periodId) {
                 return GroupName::query()
                     ->distinct()
                     ->select('name')
-                    ->whereHas('groups.groupMembers',
-                        fn ($q) => $q->whereIn('id',
+                    ->whereHas(
+                        'groups.groupMembers',
+                        fn($q) => $q->whereIn(
+                            'id',
 
                             WorkerContract::query()
-                                ->whereHas('groupMember.group.academicPeriod', fn ($q) => $q->where(tbl(AcademicPeriod::class).'.id', '=', $periodId))
-                                ->whereHas('contract.clients', fn ($q) => $q->where(tbl(User::class).'.id', '=', $this->id))
-                                ->pluck('group_member_id'))
+                                ->whereHas('groupMember.group.academicPeriod', fn($q) => $q->where(tbl(AcademicPeriod::class) . '.id', '=', $periodId))
+                                ->whereHas('contract.clients', fn($q) => $q->where(tbl(User::class) . '.id', '=', $this->id))
+                                ->pluck('group_member_id')
+                        )
 
                     )
                     ->pluck('name');
-            });
+            }
+        );
     }
 
     //Filter and order contracts for the current client for a given job
@@ -128,19 +145,19 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
         return Contract::
             //No power join as using the pivot table as a shortcut than the entire relation
-            join($contract_client, tbl(Contract::class).'.id', '=', $contract_client.'.contract_id')
-                ->where('job_definition_id', '=', $job->id)
-                ->where($contract_client.'.user_id', '=', $this->id)
-                ->whereHas('workers.group.academicPeriod', fn ($q) => $q->where(tbl(AcademicPeriod::class).'.id', '=', $periodId))
-                ->with('workers.user')
-                ->with('workers.group.groupName')
-                ->with('workersContracts')
+            join($contract_client, tbl(Contract::class) . '.id', '=', $contract_client . '.contract_id')
+            ->where('job_definition_id', '=', $job->id)
+            ->where($contract_client . '.user_id', '=', $this->id)
+            ->whereHas('workers.group.academicPeriod', fn($q) => $q->where(tbl(AcademicPeriod::class) . '.id', '=', $periodId))
+            ->with('workers.user')
+            ->with('workers.group.groupName')
+            ->with('workersContracts')
 
             //Contract workers
-                ->orderByPowerJoins('workers.group.groupName.year')
-                ->orderByPowerJoins('workers.group.groupName.name')
-                ->orderByPowerJoins('workers.user.lastname')
-                ->orderByPowerJoins('workers.user.firstname');
+            ->orderByPowerJoins('workers.group.groupName.year')
+            ->orderByPowerJoins('workers.group.groupName.name')
+            ->orderByPowerJoins('workers.user.lastname')
+            ->orderByPowerJoins('workers.user.firstname');
     }
 
     public function pastContractsAsAWorker(?int $currentPeriodId = null): Contract|Builder
@@ -159,8 +176,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         $groupMember = $this->groupMember($periodId);
         if ($groupMember === null) {
             //This should never happen !(any student must have a groupMember for the platform to work...)
-            if($this->hasRole(RoleName::STUDENT))
-            {
+            if ($this->hasRole(RoleName::STUDENT)) {
                 Log::warning("Missing groupmember for user with id: $this->id and periodId $periodId");
             }
             //WARNING, this tricks makes the jobdef scan (jobdefcontroller->marketplace) work in any state...
@@ -169,7 +185,6 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         } else {
             return $groupMember->workerContracts();
         }
-
     }
 
     public function joinGroup(?int $periodId, string $groupName, ?int $year = null): GroupMember
@@ -181,14 +196,14 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         /* @var $trashedJoin GroupMember */
         $trashedJoin = GroupMember::withTrashed()
             ->where('user_id', '=', $this->id)
-            ->whereHas('group.academicPeriod', fn ($q) => $q->whereId($periodId))
-            ->whereHas('group.groupName', fn ($q) => $q->where('name', '=', $groupName))->first();
+            ->whereHas('group.academicPeriod', fn($q) => $q->whereId($periodId))
+            ->whereHas('group.groupName', fn($q) => $q->where('name', '=', $groupName))->first();
 
         if ($trashedJoin !== null) {
             if ($trashedJoin->restore()) {
                 return $trashedJoin;
             } else {
-                throw new DataIntegrityException('Cannot restore GroupMember for '.$this->email.' / '.$groupName.' for period '.$periodId);
+                throw new DataIntegrityException('Cannot restore GroupMember for ' . $this->email . ' / ' . $groupName . ' for period ' . $periodId);
             }
         }
 
@@ -199,7 +214,8 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
                     'academic_period_id' => $periodId,
                     'group_name_id' => \App\Models\GroupName::firstOrCreate(['name' => $groupName, 'year' => $year ?? GroupName::guessGroupNameYear($groupName)])->id,
                 ])->id,
-            ]);
+            ]
+        );
     }
 
     public function groupMembersForPeriod(?int $periodId = null): HasMany
@@ -211,11 +227,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
         $hasMany = $this->groupMembers();
         if ($periodId !== null) {
-            $hasMany->whereHas('group.academicPeriod', fn ($q) => $q->whereId($periodId));
+            $hasMany->whereHas('group.academicPeriod', fn($q) => $q->whereId($periodId));
         }
 
         return $hasMany;
-
     }
 
     public function groupMember($periodId = null, $withGroupName = false): ?GroupMember
@@ -235,7 +250,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     //So we don’t use belongsToMany or hasManyThrough...
     public function groups(int|AcademicPeriod|null $periodId = null): Builder
     {
-        $query = Group::query()->whereHas('groupMembers', fn ($q) => $q->where('user_id', '=', $this->id));
+        $query = Group::query()->whereHas('groupMembers', fn($q) => $q->where('user_id', '=', $this->id));
         if ($periodId !== null) {
             if ($periodId instanceof AcademicPeriod) {
                 $periodId = $periodId->id;
@@ -258,7 +273,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     {
         $names = $this->groupNames($periodId)->pluck('name');
         if ($printable) {
-            return $names->transform(fn ($el) => strtoupper($el))->implode(',');
+            return $names->transform(fn($el) => strtoupper($el))->implode(',');
         }
 
         return $names;
@@ -306,9 +321,9 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      */
     public function getClientLoad(int $academicPeriodId): array
     {
-        return Cache::rememberForever('client-'.$this->id.'-percentage', function () use ($academicPeriodId) {
+        return Cache::rememberForever('client-' . $this->id . '-percentage', function () use ($academicPeriodId) {
             $contractsForPeriodQuery = Contract::query()
-                ->whereHas('workers.group.academicPeriod', fn ($q) => $q->where(tbl(AcademicPeriod::class).'.id', '=', $academicPeriodId));
+                ->whereHas('workers.group.academicPeriod', fn($q) => $q->where(tbl(AcademicPeriod::class) . '.id', '=', $academicPeriodId));
             $totalContractsForPeriod = $contractsForPeriodQuery->count('id');
 
             if ($totalContractsForPeriod === 0) {
@@ -316,7 +331,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
                 $currentUserContracts = 0;
             } else {
                 $currentUserContracts = $contractsForPeriodQuery
-                    ->whereHas('clients', fn ($q) => $q->where(tbl(User::class).'.id', '=', $this->id))
+                    ->whereHas('clients', fn($q) => $q->where(tbl(User::class) . '.id', '=', $this->id))
                     ->count('id');
                 $percentage = round($currentUserContracts / $totalContractsForPeriod * 100, 0);
             }
@@ -327,6 +342,5 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
                 'total' => $totalContractsForPeriod,
             ];
         });
-
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\RemediationStatus;
 use App\Constants\RoleName;
 use App\DateFormat;
 use App\Enums\RequiredTimeUnit;
@@ -17,12 +18,16 @@ use App\Models\JobDefinition;
 use App\Models\JobDefinitionPart;
 use App\Models\User;
 use App\Models\WorkerContract;
+use App\Models\WorkerContractEvaluationLog;
 use App\SwissFrenchDateFormat;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -44,6 +49,7 @@ class ContractController extends Controller
     public function index()
     {
         //
+        abort(404);
     }
 
     /**
@@ -54,7 +60,7 @@ class ContractController extends Controller
     public function create(JobDefinition $jobDefinition)
     {
         //Not used...see createApply...
-        return view('contract-create')->with(compact('jobDefinition'));
+        abort(404);
     }
 
     /**
@@ -88,7 +94,7 @@ class ContractController extends Controller
 
                 //Allow a teacher manually add a job without showing parts options on the UI
                 //=>when doing this, the teacher will be the client for all parts (student can change that afterwards if needed...)
-                $clientIdKey = 'client-'.$part->id;
+                $clientIdKey = 'client-' . $part->id;
                 if ($request->has($clientIdKey)) {
                     $clientId = $request->input($clientIdKey);
                 } else {
@@ -127,7 +133,6 @@ class ContractController extends Controller
             } else {
                 return back()->withErrors(__('Only teachers can assign custom worker'))->withInput();
             }
-
         } //If not teacher with worker, only students can apply for contract
         else {
             if (! $loggedUser->hasRole(RoleName::STUDENT) /*double check role... but should be done with permissions*/) {
@@ -142,7 +147,8 @@ class ContractController extends Controller
         if ($targetWorker->contractsAsAWorker()
             ->where('job_definition_id', '=', $jobDefinitionId)
             ->whereIn('name', $partsDetails->pluck('name'))
-            ->exists()) {
+            ->exists()
+        ) {
             return back()->withErrors(__('There already is a contract for this job'))->withInput();
         }
 
@@ -153,9 +159,10 @@ class ContractController extends Controller
         if ($start->isBefore($period->start) || $end->isAfter($period->end)) {
             return back()->withErrors(__('Dates must be within current academic period'))->withInput();
         }
+        $wishPriority = $request->has('wish_priority') ? $request->input('wish_priority') : 0;
 
         $firstContract = null;
-        DB::transaction(function () use ($start, $end, &$firstContract, $jobDefinitionId, $partsDetails, $targetWorker) {
+        DB::transaction(function () use ($start, $end, &$firstContract, $jobDefinitionId, $partsDetails, $targetWorker, $wishPriority) {
             foreach ($partsDetails as $partsDetail) {
                 $contract = Contract::make();
                 $contract->start = $start;
@@ -168,7 +175,7 @@ class ContractController extends Controller
 
                 $contract->save();
                 $contract->clients()->attach($clientId);
-                Cache::forget('client-'.$clientId.'-percentage');
+                Cache::forget('client-' . $clientId . '-percentage');
                 Cache::forget("involvedGroupNames-$clientId");
                 $contract->workers()->attach($targetWorker->groupMember()->id); //set worker
 
@@ -176,6 +183,7 @@ class ContractController extends Controller
                 $workerContract = $contract->workerContract($targetWorker->groupMember())->firstOrFail();
                 $workerContract->name = $partsDetail['name'];
                 $workerContract->allocated_time = $partsDetail['time'];
+                $workerContract->application_status = $wishPriority;
                 $workerContract->save();
 
                 if ($firstContract == null) {
@@ -204,6 +212,83 @@ class ContractController extends Controller
     }
 
     /**
+     * Show the Applicant / Job matrix
+     */
+    public function pendingContractApplications()
+    {
+        // row header
+        $applicants = User::query()
+            ->whereHas('groupMembers.workerContracts', function ($query) {
+                $query->where('application_status', '>', 0);
+            })
+            ->get()
+            ->transform(function (User $user) {
+                return $user->firstname .' '. $user->lastname;
+            })
+            ->toArray();
+        // column headers
+        $jobTitles = JobDefinition::query()
+            ->whereHas('contracts.workersContracts', function ($query) {
+                $query->where('application_status', '>', 0);
+            })
+            ->select('title')
+            ->pluck('title')
+            ->toArray();
+
+        // table content, indexed by applicant names and job titles
+        $matrix = array(array());
+        foreach (WorkerContract::where('application_status', '>', 0)->get() as $app) {
+            $matrix[$app->groupMember->user->firstname . " " . $app->groupMember->user->lastname][$app->contract->jobDefinition->title] = $app;
+        }
+        return view('pendingApplications-view')->with(compact('matrix', 'applicants', 'jobTitles'));
+    }
+
+    /**
+     * Confirms a worker application for a job for which he had expressed a wish
+     * This will make the mandate permanent and remove all other demands for the job
+     * unless explicitely told not to
+     */
+    public function confirmApplication(Request $request)
+    {
+        //SECURITY CHECKS (as this area is opened to students who might want to play with ids...)
+        $this->authorize('contracts.edit');
+
+        $wc = WorkerContract::find($request->input('applicationid'));
+        $wc->application_status = 0;
+        $wc->save();
+
+        // Destroy other contracts, unless explicitely told otherwise
+        if (!$request->has('keep')) {
+            // Gather the affected contracts
+            $contracts = Contract::where('job_definition_id', $wc->contract->job_definition_id)
+                ->where('id', '!=', $wc->contract_id)
+                ->get()
+                ->pluck('id')
+                ->toArray();
+            // Must delete logs explicitely, because soft deletes won't cascade
+            WorkerContractEvaluationLog::whereIn('contract_id', $contracts)->forceDelete();
+            Contract::whereIn('id', $contracts)->forceDelete();
+        }
+        return redirect('/applications');
+    }
+
+    /**
+     * Cancel a pending application (i.e: application_status > 0)
+     * Only the subscriber is allowed to do it
+     */
+    public function cancelApplication(Request $request)
+    {
+        $app = WorkerContract::find($request->input('applicationid'));
+        if (!$app || $app->groupMember->user_id != Auth::user()->id || $app->application_status <= 0) {
+            return redirect('/dashboard')
+                ->with('error', __('Something unorthodox happened...'));
+        }
+        $app->delete();
+        return redirect('/dashboard')
+            ->with('success', __('Your resignation has been noted'));
+    }
+
+    /**
      * Display the specified resource.
      *
      * @return Response
@@ -211,6 +296,7 @@ class ContractController extends Controller
     public function show(Contract $contract)
     {
         //
+        abort(404);
     }
 
     /**
@@ -221,6 +307,7 @@ class ContractController extends Controller
     public function edit(Contract $contract)
     {
         //
+        abort(404);
     }
 
     /**
@@ -262,16 +349,14 @@ class ContractController extends Controller
             }
 
             //Only save if no errors...
-            $contracts->each(fn ($c) => $c->save());
+            $contracts->each(fn($c) => $c->save());
             DB::commit();
-
         } catch (\Throwable $t) {
             DB::rollBack();
             throw $t;
         }
 
         return $this->createUpdateResponse($updated);
-
     }
 
     //TODO refactor to have only use workercontract... ?
@@ -279,7 +364,7 @@ class ContractController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateContractRequest $request, Contract $contract, $index = -1, ?WorkerContract $workerContract = null): \Symfony\Component\HttpFoundation\Response|int
+    public function update(UpdateContractRequest $request, Contract $contract, $index = -1 /*used in case of bulk*/, ?WorkerContract $workerContract = null /*used in case of bulk*/): \Symfony\Component\HttpFoundation\Response|int
     {
         DB::beginTransaction();
         try {
@@ -291,69 +376,82 @@ class ContractController extends Controller
             $user = auth()->user();
             $isUpdated = false;
 
-            /* @var $start Carbon */
-            $start = $request->input('start');
-            $end = $request->input('end');
-            if ($start != null && $end != null) {
-                if ($start->isBefore($period->start) || $end->isAfter($period->end)) {
-                    $message = __('Dates must be included within current academic period');
-                    $errors = ['workersContract'.($bulk ? "s.$index" : '') => $message];
+            //Teachers reserved (except date that can be adjusted upon remediation too)
+            if($user->hasRole(RoleName::TEACHER)) {
 
-                    return back()->withErrors($errors)->withInput();
-                } elseif ($start->isAfter($end)) {
-                    $message = __('Start date :start must be before end date :end',
-                        ['start' => $start->format(SwissFrenchDateFormat::DATE),
-                            'end' => $end->format(SwissFrenchDateFormat::DATE)]);
-                    $errors = ['workersContract'.($bulk ? "s.$index" : '') => $message];
+                $dateResult = $this->handleDateAdjustment($request, $contract,$period,$user,$bulk,$index);
+                if($dateResult instanceof \Symfony\Component\HttpFoundation\RedirectResponse) {
+                    return $dateResult;
+                }
+                $isUpdated |= $dateResult;
 
-                    return back()->withErrors($errors)->withInput();
+                //Allocated time only allowed through bulk currently
+                if ($workerContract !== null) {
+                    $allocated_time = $request->input('allocated_time');
+                    if ($allocated_time !== null && $allocated_time != $workerContract->getAllocatedTime(RequiredTimeUnit::PERIOD)) {
+                        $workerContract->allocated_time = $allocated_time;
+                        $isUpdated |= $workerContract->save();
+                        Log::info('userid ' . $user->id . ' updated worker contract with id ' . $workerContract->id
+                            . ' => allocated_time : ' . $allocated_time);
+                    }
                 }
 
-                //Smart update
-                foreach (['start', 'end'] as $field) {
-                    /* @var $newDate \Carbon\Carbon */
-                    $newDate = $request->input($field);
-                    if (! $newDate->isSameDay($contract->$field)) {
-                        $contract->$field = $newDate;
-                        $isUpdated = $contract->save();
-                        if ($isUpdated) {
-                            Log::info('userid '.$user->id.' updated contract with id '.$contract->id.' => '.$field.' to '.$newDate);
+                $remediationAccept = $request->input('remediation-accept');
+                if ($remediationAccept !== null) {
+                    $workerContract = $contract->workersContracts()->firstOrFail();
+                    /** @noinspection PhpIntRangesMismatchInspection */
+                    $workerContract->remediation_status = $remediationAccept ?
+                        RemediationStatus::CONFIRMED_BY_CLIENT
+                        :RemediationStatus::REFUSED_BY_CLIENT;
+                    $isUpdated |= $workerContract->save();
+                }
+
+                if ($isUpdated) {
+                    Log::info('userid ' . $user->id . ' updated worker contract with id ' . $workerContract->id
+                        . ' => remediation status : '.$workerContract->remediation_status);
+                }
+
+            }
+
+            else if ($user->hasRole(RoleName::STUDENT))
+            {
+                //Update clients (only or with remediation)
+                $clientId = $request->input('clientId');
+                if ($clientId !== null) {
+                    $periodIdFilter = $request->get(AcademicPeriodFilter::ACADEMIC_PERIOD_ID_REQUEST_PARAM);
+                    $gm = $user->groupMember($periodIdFilter);
+                    $workerContract = $contract->workerContract($gm)->firstOrFail();
+                    if ($workerContract->alreadyEvaluated() && !$workerContract->canRemediate()) {
+                        Log::warning('userid ' . $user->id . ' tried to update non remediable already evaluated contract with id ' . $contract->id . ' => clientId to ' . $clientId);
+                    } else {
+                        $oldClientId = $contract->clients->firstOrFail()->id;
+                        $changes = $contract->clients()->sync([$clientId]);
+                        if (collect($changes)->transform(fn($k) => count($k))->sum() > 0) {
+                            $isUpdated |= true;
+                            Cache::forget('client-' . $oldClientId . '-percentage');
+                            Cache::forget('client-' . $clientId . '-percentage');
+                            Cache::forget("involvedGroupNames-$clientId");
+                            Log::info('userid ' . $user->id . ' updated contract with id ' . $contract->id . ' : client moved from id ' . $oldClientId . ' => ' . $clientId);
+                        }
+
+                        //Remediation
+                        if($workerContract->canRemediate())
+                        {
+                            $start = Carbon::createFromFormat(DateFormat::HTML_FORMAT, $request->input('start_date'));
+                            $end = Carbon::createFromFormat(DateFormat::HTML_FORMAT, $request->input('end_date'));
+                            $request->merge(["start"=>$start,"end"=>$end]);
+                            $dateResult = $this->handleDateAdjustment($request, $contract,$period,$user,$bulk,$index);
+                            if($dateResult instanceof \Symfony\Component\HttpFoundation\RedirectResponse) {
+                                return $dateResult;
+                            }
+                            $isUpdated |= $dateResult;
+
+                            /** @noinspection PhpIntRangesMismatchInspection */
+                            $workerContract->remediation_status = RemediationStatus::ASKED_BY_WORKER;
+                            $isUpdated |= $workerContract->save();
                         }
                     }
                 }
-            }
-
-            //Allocated time
-            if ($workerContract !== null) {
-                $allocated_time = $request->input('allocated_time');
-                if ($allocated_time !== null && $allocated_time != $workerContract->getAllocatedTime(RequiredTimeUnit::PERIOD)) {
-                    $workerContract->allocated_time = $allocated_time;
-                    $isUpdated = $workerContract->save();
-                    if ($isUpdated) {
-                        Log::info('userid '.$user->id.' updated worker contract with id '.$workerContract->id.' => allocated_time to '.$allocated_time);
-                    }
-                }
-            }
-
-            //Clients
-            $clientId = $request->input('clientId');
-            if ($clientId !== null) {
-                $periodIdFilter = $request->get(AcademicPeriodFilter::ACADEMIC_PERIOD_ID_REQUEST_PARAM);
-                $gm = $user->groupMember($periodIdFilter);
-                if ($contract->workerContract($gm)->firstOrFail()->alreadyEvaluated()) {
-                    Log::warning('userid '.$user->id.' tried to update already evaluated contract with id '.$contract->id.' => clientId to '.$clientId);
-                } else {
-                    $oldClientId = $contract->clients->firstOrFail()->id;
-                    $changes = $contract->clients()->sync([$clientId]);
-                    if (collect($changes)->transform(fn ($k) => count($k))->sum() > 0) {
-                        $isUpdated = true;
-                        Cache::forget('client-'.$oldClientId.'-percentage');
-                        Cache::forget('client-'.$clientId.'-percentage');
-                        Cache::forget("involvedGroupNames-$clientId");
-                        Log::info('userid '.$user->id.' updated contract with id '.$contract->id.' : client moved from id '.$oldClientId.' => '.$clientId);
-                    }
-                }
-
             }
 
             //Smartly end transaction /!\WARNING: either force commit (even without changes), OR let this code because if transaction is not terminated
@@ -373,7 +471,6 @@ class ContractController extends Controller
             DB::rollBack();
             throw $t;
         }
-
     }
 
     /**
@@ -398,7 +495,7 @@ class ContractController extends Controller
         }
 
         $jobId = $request->get('job_id');
-        $contracts = $request->get('job-'.$jobId.'-contracts');
+        $contracts = $request->get('job-' . $jobId . '-contracts');
 
         $deleted = DB::transaction(function () use ($user, $contracts) {
             $deleted = 0;
@@ -408,24 +505,24 @@ class ContractController extends Controller
                         //Manual trash as WorkContract is a pivot and cannot softdelete
                         if ($workerContract->update(['deleted_at' => now()])) {
                             $deleted++;
-                            Log::info('userid'.$user->id.' deleted worker contract with id '.$workerContract->id);
+                            Log::info('userid' . $user->id . ' deleted worker contract with id ' . $workerContract->id);
                             $clientId = $workerContract->contract->clients->firstOrFail()->id;
-                            Cache::forget('client-'.$clientId.'-percentage');
+                            Cache::forget('client-' . $clientId . '-percentage');
                             Cache::forget("involvedGroupNames-$clientId");
 
                             //softdelete contract if not any workers on it...
-                            $contractDeleted = $workerContract->contract->whereDoesntHave('workersContracts',
+                            $contractDeleted = $workerContract->contract->whereDoesntHave(
+                                'workersContracts',
                                 function ($query) {
                                     return $query->whereNull('deleted_at');
-                                })->delete();
+                                }
+                            )->delete();
 
-                            Log::info('userid'.$user->id.' also deleted '.$contractDeleted.' related contract with id '.$workerContract->contract->id);
-
+                            Log::info('userid' . $user->id . ' also deleted ' . $contractDeleted . ' related contract with id ' . $workerContract->contract->id);
                         }
                     } else {
                         Log::warning('trying to delete contracts which do not belong');
                     }
-
                 }
             );
 
@@ -434,13 +531,14 @@ class ContractController extends Controller
 
         if ($deleted > 0) {
             return redirect('/dashboard')
-                ->with('success',
-                    trans_choice(':number contract deleted|:number contracts deleted', $deleted, ['number' => $deleted]));
+                ->with(
+                    'success',
+                    trans_choice(':number contract deleted|:number contracts deleted', $deleted, ['number' => $deleted])
+                );
         } else {
             return redirect('/dashboard')
                 ->with('error', __('No contract deleted, wrong request ?'));
         }
-
     }
 
     public function evaluate(string $ids)
@@ -455,7 +553,6 @@ class ContractController extends Controller
         $this->authorize('contracts.edit');
 
         return $this->getBulkView($ids, view('contracts-bulkEdit'));
-
     }
 
     public function evaluateApply(ContractEvaluationRequest $request)
@@ -467,10 +564,10 @@ class ContractController extends Controller
         foreach ($contracts as $contract) {
             foreach ($contract->workersContracts as $workerContract) {
 
-                $success = filter_var($request->input('success-'.$workerContract->id), FILTER_VALIDATE_BOOLEAN);
+                $success = filter_var($request->input('success-' . $workerContract->id), FILTER_VALIDATE_BOOLEAN);
                 $comment = null;
                 if (! $success) {
-                    $commentAttributeName = 'comment-'.$workerContract->id;
+                    $commentAttributeName = 'comment-' . $workerContract->id;
                     $comment = $request->input($commentAttributeName);
                     if (empty(trim($comment))) {
                         return back()
@@ -481,13 +578,14 @@ class ContractController extends Controller
                 if ($workerContract->evaluate($success, $comment)) {
                     $updated++;
                 }
-
             }
         }
 
         return redirect('/dashboard')
-            ->with('success',
-                trans_choice(':number contract updated|:number contracts updated', $updated, ['number' => $updated]));
+            ->with(
+                'success',
+                trans_choice(':number contract updated|:number contracts updated', $updated, ['number' => $updated])
+            );
     }
 
     /**
@@ -495,12 +593,12 @@ class ContractController extends Controller
      */
     protected function getContractsForModifications(string $ids, bool $workersContractsIds = false): \Illuminate\Support\Collection|array|\Illuminate\Database\Eloquent\Collection
     {
-        $queryIds = collect(explode(',', $ids))->filter(fn ($el) => is_numeric($el))->toArray();
+        $queryIds = collect(explode(',', $ids))->filter(fn($el) => is_numeric($el))->toArray();
 
         $query = Contract::query();
 
         if ($workersContractsIds) {
-            $query->whereHas('workersContracts', fn ($q) => $q->whereIn(tbl(WorkerContract::class).'.id', $queryIds));
+            $query->whereHas('workersContracts', fn($q) => $q->whereIn(tbl(WorkerContract::class) . '.id', $queryIds));
         } else {
             $query->whereIn('id', $queryIds);
         }
@@ -508,14 +606,13 @@ class ContractController extends Controller
         //Non admin users can only modify their contracts...
         $user = auth()->user();
         if ($user->cannot('contracts')) {
-            $query->whereHas('clients', fn ($q) => $q->where('user_id', '=', $user->id));
+            $query->whereHas('clients', fn($q) => $q->where('user_id', '=', $user->id));
         }
 
         return $query
             ->with('workers.user')
             ->with('workersContracts.groupMember')
             ->get();
-
     }
 
     public function createUpdateResponse(int $updated): \Illuminate\Contracts\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
@@ -535,5 +632,47 @@ class ContractController extends Controller
         $job = $contracts->firstOrFail()->jobDefinition;
 
         return $view->with(compact('contracts', 'job'));
+    }
+
+    private function handleDateAdjustment(UpdateContractRequest $request, Contract $contract,AcademicPeriod $period,
+                                          User $user,bool $bulk,int $index) : RedirectResponse|bool
+    {
+        /* @var $start Carbon */
+        $start = $request->input('start');
+        $end = $request->input('end');
+        if ($start != null && $end != null) {
+            if ($start->isBefore($period->start) || $end->isAfter($period->end)) {
+                $message = __('Dates must be included within current academic period');
+                $errors = ['workersContract' . ($bulk ? "s.$index" : '') => $message];
+
+                return back()->withErrors($errors)->withInput();
+            } elseif ($start->isAfter($end)) {
+                $message = __(
+                    'Start date :start must be before end date :end',
+                    [
+                        'start' => $start->format(SwissFrenchDateFormat::DATE),
+                        'end' => $end->format(SwissFrenchDateFormat::DATE)
+                    ]
+                );
+                $errors = ['workersContract' . ($bulk ? "s.$index" : '') => $message];
+
+                return back()->withErrors($errors)->withInput();
+            }
+
+            //Smart update
+            foreach (['start', 'end'] as $field) {
+                /* @var $newDate \Carbon\Carbon */
+                $newDate = $request->input($field);
+                if (!$newDate->isSameDay($contract->$field)) {
+                    $contract->$field = $newDate;
+                    $isUpdated = $contract->save();
+                    if ($isUpdated) {
+                        Log::info('userid ' . $user->id . ' updated contract with id ' . $contract->id . ' => ' . $field . ' to ' . $newDate);
+                    }
+                }
+            }
+            return $isUpdated??false;
+        }
+        return false;
     }
 }

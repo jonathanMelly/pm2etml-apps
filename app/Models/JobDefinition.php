@@ -28,6 +28,10 @@ class JobDefinition extends Model
 
     public const MAX_PERIODS = 150;
 
+    public const MIN_WISH_PRIORITY = 1;
+
+    public const MAX_WISH_PRIORITY = 3;
+
     const SIZE_MEDIUM_MIN = 90;
 
     const SIZE_LARGE_MIN = 120;
@@ -47,6 +51,7 @@ class JobDefinition extends Model
         'image_attachment_id',
         'allocated_time',
         'one_shot',
+        'by_application',
     ];
 
     protected function casts(): array
@@ -84,16 +89,16 @@ class JobDefinition extends Model
         }
 
         if (($input = existsAndNotEmpty($request, 'provider')) != null) {
-            $query->whereHas('providers', fn ($q) => $q->where(tbl(User::class).'.id', '=', $input));
+            $query->whereHas('providers', fn($q) => $q->where(tbl(User::class) . '.id', '=', $input));
         }
 
         if (($input = existsAndNotEmpty($request, 'fulltext')) != null) {
             $query->where(function (Builder $q) use ($input) {
-                $q->where('title', 'LIKE', '%'.$input.'%');
-                $q->orWhere('description', 'LIKE', '%'.$input.'%');
+                $q->where('title', 'LIKE', '%' . $input . '%');
+                $q->orWhere('description', 'LIKE', '%' . $input . '%');
                 $q->orWhereHas('providers', function ($q) use ($input) {
-                    $q->where(tbl(User::class).'.firstname', 'LIKE', '%'.$input.'%');
-                    $q->orWhere(tbl(User::class).'.lastname', 'LIKE', '%'.$input.'%');
+                    $q->where(tbl(User::class) . '.firstname', 'LIKE', '%' . $input . '%');
+                    $q->orWhere(tbl(User::class) . '.lastname', 'LIKE', '%' . $input . '%');
                 });
             });
         }
@@ -115,7 +120,7 @@ class JobDefinition extends Model
             }
         }
         if ($onlyPublished) {
-            $query->where(fn ($q) => $q->published());
+            $query->where(fn($q) => $q->published());
         }
 
         return $query;
@@ -139,6 +144,22 @@ class JobDefinition extends Model
         //->with('workers.user',fn($q)=>$q->orderBy('lastname')->orderBy('firstname'));
     }
 
+    /**
+     * Returns the pending application (i.e: application_status > 0) of the user for this job ...
+     * ... or null if he has not applied or is confirmed
+     */
+    public function pendingApplicationFrom(User $user): ?WorkerContract
+    {
+        return WorkerContract::whereHas('groupMember', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })
+            ->whereHas('contract', function ($q) {
+                $q->where('job_definition_id', $this->id);
+            })
+            ->where('application_status', '>', 0)
+            ->first();
+    }
+
     public function providers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, CustomPivotTableNames::USER_JOB_DEFINITION->value)
@@ -159,8 +180,10 @@ class JobDefinition extends Model
     public function image(): MorphOne
     {
 
-        $relation = $this->morphOne(related: JobDefinitionMainImageAttachment::class,
-            name: 'attachable');
+        $relation = $this->morphOne(
+            related: JobDefinitionMainImageAttachment::class,
+            name: 'attachable'
+        );
 
         if ($this->trashed()) {
             return $relation->withTrashed();
@@ -196,7 +219,7 @@ class JobDefinition extends Model
             $size = 'Large';
         }
 
-        return __($size).', ~'.$this->getAllocatedTime(RequiredTimeUnit::PERIOD).'p';
+        return __($size) . ', ~' . $this->getAllocatedTime(RequiredTimeUnit::PERIOD) . 'p';
     }
 
     public function isPublished(): bool
@@ -209,10 +232,10 @@ class JobDefinition extends Model
         $orders = [];
 
         if ($byLoad) {
-            $orders[] = fn ($a, $b) => $a->getClientLoad(\App\Models\AcademicPeriod::current())['percentage'] <=>
+            $orders[] = fn($a, $b) => $a->getClientLoad(\App\Models\AcademicPeriod::current())['percentage'] <=>
                 $b->getClientLoad(\App\Models\AcademicPeriod::current())['percentage'];
         }
-        $orders[] = fn ($a, $b) => $a['lastname'] <=> $b['lastname'];
+        $orders[] = fn($a, $b) => $a['lastname'] <=> $b['lastname'];
 
         return $users->sortBy($orders)->values();
     }
@@ -224,7 +247,7 @@ class JobDefinition extends Model
 
     public function getClients(Collection $exclude, bool $sortedByLoad = true): Collection
     {
-        $clients = User::role(RoleName::TEACHER)->get()->filter(fn ($el) => $exclude->doesntContain('id', '=', $el->id));
+        $clients = User::role(RoleName::TEACHER)->get()->filter(fn($el) => $exclude->doesntContain('id', '=', $el->id));
 
         return $this->sortUsers($clients, $sortedByLoad);
     }
@@ -234,7 +257,7 @@ class JobDefinition extends Model
         return DB::transaction(function () {
             //Mark attachments as deleted (do not use mass delete to keep EVENT processing)
             Attachment::where('attachable_id', '=', $this->id)
-                ->each(fn ($a) => $a->delete());
+                ->each(fn($a) => $a->delete());
 
             return parent::delete();
         });

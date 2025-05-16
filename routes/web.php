@@ -38,8 +38,10 @@ Route::middleware(['auth', 'app'])->group(function () {
         ->name('marketplace');
 
     //CONTRACTS
-    Route::get('jobs-apply/{jobDefinition}',
-        [ContractController::class, 'createApply'])
+    Route::get(
+        'jobs-apply/{jobDefinition}',
+        [ContractController::class, 'createApply']
+    )
         ->name('jobs-apply-for');
 
     Route::delete('contracts.destroyAll', [ContractController::class, 'destroyAll'])
@@ -58,7 +60,7 @@ Route::middleware(['auth', 'app'])->group(function () {
     Route::resource('contracts', ContractController::class);
 
     //Files (images) handling (avoid any injected script in image as returning the file as file !)
-    Route::get(FileFormat::DMZ_ASSET_URL.'/{file?}', [DmzAssetController::class, 'getFile'])
+    Route::get(FileFormat::DMZ_ASSET_URL . '/{file?}', [DmzAssetController::class, 'getFile'])
         ->where('file', '(.*)')
         ->name('dmz-asset');
 
@@ -79,13 +81,23 @@ Route::middleware(['auth', 'app'])->group(function () {
         ->name('logout');
 
     Route::get('evaluation-export', \App\Http\Controllers\EvaluationExportController::class)->name('evaluation-export');
+
+    // Manage pending wishes
+    Route::group(['middleware' => ['role:prof']], function () {
+        Route::get('applications', [ContractController::class, 'pendingContractApplications'])
+            ->name('applications');
+        Route::post('applications', [ContractController::class, 'confirmApplication'])
+            ->name('applications.confirm');
+        Route::delete('applications', [ContractController::class, 'cancelApplication'])
+            ->name('applications.resign');
+    });
+
 });
 
 //LOGIN
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
-
 });
 
 //SSO
@@ -105,5 +117,5 @@ Route::get('deploy/optimize', [DeployController::class, 'optimize']);
 Route::get('deploy/clearCache', [DeployController::class, 'clearCache']);
 
 //apps
-require __DIR__.'/apps-manager.php';
-require __DIR__.'/apps-smarties.php';
+require __DIR__ . '/apps-manager.php';
+require __DIR__ . '/apps-smarties.php';

@@ -44,7 +44,7 @@ class DashboardController extends Controller
             } else { //Students (auto filtered on student periodId as using groupmember...)
                 //Get jobs as Workers
                 $query = $user->contractsAsAWorker()
-                    ->with('jobDefinition') //eager load definitions as needed on UI
+                    ->with('jobDefinition.image') //eager load definitions as needed on UI
                     ->with('clients') //eager load clients as needed on UI
                     ->with('workersContracts')
 

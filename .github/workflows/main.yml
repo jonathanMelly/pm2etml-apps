@@ -24,11 +24,23 @@ jobs:
     runs-on: ubuntu-latest
     environment: staging
     steps:
+      - uses: actions/checkout@v4
+
+      # Setup PHP and composer with cache
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
           coverage: xdebug
-      - uses: actions/checkout@v4
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
 
       #SETUP LARAVEL
       - name: Copy .env
@@ -44,16 +56,21 @@ jobs:
           mkdir -p database
           touch database/database.sqlite
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
       - name: Setup node for dist build
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: generate dist
         run: |
-          npm install
-          npm run build:vite
+          pnpm install
+          pnpm build:vite
 
       #TESTS
       - name: Execute tests (Unit and Feature tests) via Pest
@@ -66,7 +83,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: public/build
-          key: vite-assets-${{ hashFiles('public/build/manifest.json') }}
+          key: vite-assets-${{ github.sha }}
 
       - name: Generate coverage badge
         # You may pin to the exact commit or the version.

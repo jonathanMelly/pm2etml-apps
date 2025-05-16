@@ -21,6 +21,8 @@ export default defineConfig({
             'resources/js/helper.js', //custom helpers
 
 
+            'resources/js/jobApplication.js',
+
             'resources/js/dropzone.js', //for draq/drop file upload
             'resources/js/dashboard-charts.js',
 

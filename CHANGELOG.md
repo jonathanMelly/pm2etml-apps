@@ -1,5 +1,69 @@
 # Changelog
 
+## [1.53.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.52.3...v1.53.0) (2025-01-20)
+
+
+### Features
+
+* **create job mask:** grouped particularities ([030dcde](https://github.com/jonathanMelly/pm2etml-apps/commit/030dcde8781059c1d2d109514ce44481e96260d8))
+
+## [1.52.3](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.52.2...v1.52.3) (2025-01-20)
+
+
+### Bug Fixes
+
+* **jobApplication:** added missing js in build ([154afd4](https://github.com/jonathanMelly/pm2etml-apps/commit/154afd41041e22450771169458acb6f03b42c122))
+
+## [1.52.2](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.52.1...v1.52.2) (2025-01-17)
+
+
+### Bug Fixes
+
+* **null image:** simple fail-safe ([988c9c3](https://github.com/jonathanMelly/pm2etml-apps/commit/988c9c3cf59f7411c2b2ba6ffb906897b46e4f9c))
+
+## [1.52.1](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.52.0...v1.52.1) (2025-01-17)
+
+
+### Bug Fixes
+
+* **git fetch:** disable cert check as missing on elara ([d1d0f63](https://github.com/jonathanMelly/pm2etml-apps/commit/d1d0f63951f19b2c96e507d7444329e18cfa6fa5))
+* **null image:** try to fix strange null images ??? ([fc72e64](https://github.com/jonathanMelly/pm2etml-apps/commit/fc72e6424ef57da4a527272d398a0078d6d05c30))
+
+## [1.52.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.51.0...v1.52.0) (2025-01-12)
+
+
+### Features
+
+* **remediation:** student can request a remediation that is validated (or refused) by the client... Evaluation can then be changed ([1066ba8](https://github.com/jonathanMelly/pm2etml-apps/commit/1066ba8b1b4ccd8f5730c432fa9b2891ac5efdac))
+
+
+### Bug Fixes
+
+* **app name:** remove traces of intranet ([67cd1b4](https://github.com/jonathanMelly/pm2etml-apps/commit/67cd1b49a6119dbb89d55be7e264d89492df7842))
+
+## [1.51.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.50.0...v1.51.0) (2025-01-06)
+
+
+### Features
+
+* **application:** Allow the worker to enter wish priority ([f8be28f](https://github.com/jonathanMelly/pm2etml-apps/commit/f8be28f9b77dda80d4b4e32d23af404b22a48ed9))
+* **application:** Perform project allocation ([9ece71b](https://github.com/jonathanMelly/pm2etml-apps/commit/9ece71bcc998e4b1aa18799375c0407e07108797))
+* **application:** Provide a button to teachers who have pending applications ([9be791d](https://github.com/jonathanMelly/pm2etml-apps/commit/9be791dc57f0e082585c31194b011c77ef86c181))
+* **application:** Resign from job ([f2c89d4](https://github.com/jonathanMelly/pm2etml-apps/commit/f2c89d49d61a486f00d24388c6ec0a8a5b1af243))
+* **application:** Show popup for project allocation ([fda5a34](https://github.com/jonathanMelly/pm2etml-apps/commit/fda5a34559789404b4c4b955d0dec3609d438a51))
+* **application:** Show the applicant/job matrix ([2ce512e](https://github.com/jonathanMelly/pm2etml-apps/commit/2ce512e21f024a121b28361e1ec200db8982e80f))
+* **hire handling:** only allow to teachers ([b570756](https://github.com/jonathanMelly/pm2etml-apps/commit/b570756a57d03051e79cc4a9c33701de938045c4))
+* **job def:** Add the 'by_application' field to job definition ([292848c](https://github.com/jonathanMelly/pm2etml-apps/commit/292848c69796d3c0936eb5fa007404cd40a6de99))
+
+
+### Bug Fixes
+
+* **applications:** Don't crash when all jobs have been allocated ([3e10fc4](https://github.com/jonathanMelly/pm2etml-apps/commit/3e10fc493ca8412cc4fffdcacb157af199e7b53e))
+* **axios:** use non affected by security issue version ([8792962](https://github.com/jonathanMelly/pm2etml-apps/commit/87929628f473d67228ba26f708d53413ef87bc89))
+* **hire:** fixed filename ([a668186](https://github.com/jonathanMelly/pm2etml-apps/commit/a668186010908d22e77bf3259672e9f0b838c596))
+* **npm:** added vue missing ts ([455c761](https://github.com/jonathanMelly/pm2etml-apps/commit/455c761997c0b5a1c0d69cc5341983e5077a7960))
+* **wish priority:** Save the value entered by the user ;) ([c376349](https://github.com/jonathanMelly/pm2etml-apps/commit/c376349c6db2c8a7d09ea8972913f04c09d07cb7))
+
 ## [1.50.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.49.0...v1.50.0) (2024-11-29)
 
 
