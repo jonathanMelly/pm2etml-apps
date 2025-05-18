@@ -19,5 +19,13 @@ class RoleName
         self::TEACHER,
         self::PRINCIPAL,
         self::DEAN,
-        self::ADMIN];
+        self::ADMIN
+    ];
+
+    public const TEACHER_AND_HIGHER_RANK = [
+        self::TEACHER,
+        self::PRINCIPAL,
+        self::DEAN,
+        self::ADMIN
+    ];
 }
