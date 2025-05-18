@@ -214,9 +214,9 @@ INSERT INTO `users` (`id`, `firstname`, `lastname`, `email`, `remember_token`, `
 
 /*
 Extension pour les évaluations
- -- nécessaire à fullEvaluation 
+ -- nécessaire à fullEvaluation
  -- HCS
- 
+
 evaluations:
   - Stocke les évaluations, chaque évaluation ayant :
   - Un professeur évaluateur (evaluator_id).
@@ -225,7 +225,7 @@ evaluations:
   - Une remarque générale (student_remark).
   - Les relations avec les utilisateurs sont définies par des clés étrangères.
 
-appreciations: 
+appreciations:
   - Représente une appréciation individuelle pour une évaluation donnée.
   - Chaque appréciation a une date et est liée à une évaluation via evaluation_id.
 
@@ -284,6 +284,6 @@ CREATE TABLE IF NOT EXISTS `criteria` (
   FOREIGN KEY (`appreciation_id`) REFERENCES `appreciations`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Garantir les valeurs {NA0, PA1, A2, LA3,} 
+-- Garantir les valeurs {NA0, PA1, A2, LA3,}
 ALTER TABLE criteria ADD CONSTRAINT chk_value CHECK (value >= 0 AND value <= 3);
 

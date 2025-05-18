@@ -78,7 +78,7 @@ Route::middleware(['auth', 'app'])->group(function () {
     Route::post('api/evaluations/update-status', [EvaluationController::class, 'updateStatus'])->name('evaluations.update-status');
     Route::post('api/evaluation/transition', [EvaluationController::class, 'handleTransition'])->name('evaluation.transition');
 
-    // Générateur de pdf 
+    // Générateur de pdf
     Route::get('/pdf-template/{type}', function ($type) {
         $filename = match (strtolower($type)) {
             'formative' => 'tmpFormative.pdf',

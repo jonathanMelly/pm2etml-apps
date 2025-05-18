@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.53.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.52.3...v1.53.0) (2025-01-20)
+
+
+### Features
+
+* **create job mask:** grouped particularities ([030dcde](https://github.com/jonathanMelly/pm2etml-apps/commit/030dcde8781059c1d2d109514ce44481e96260d8))
+
+## [1.52.3](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.52.2...v1.52.3) (2025-01-20)
+
+
+### Bug Fixes
+
+* **jobApplication:** added missing js in build ([154afd4](https://github.com/jonathanMelly/pm2etml-apps/commit/154afd41041e22450771169458acb6f03b42c122))
+
+## [1.52.2](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.52.1...v1.52.2) (2025-01-17)
+
+
+### Bug Fixes
+
+* **null image:** simple fail-safe ([988c9c3](https://github.com/jonathanMelly/pm2etml-apps/commit/988c9c3cf59f7411c2b2ba6ffb906897b46e4f9c))
+
+## [1.52.1](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.52.0...v1.52.1) (2025-01-17)
+
+
+### Bug Fixes
+
+* **git fetch:** disable cert check as missing on elara ([d1d0f63](https://github.com/jonathanMelly/pm2etml-apps/commit/d1d0f63951f19b2c96e507d7444329e18cfa6fa5))
+* **null image:** try to fix strange null images ??? ([fc72e64](https://github.com/jonathanMelly/pm2etml-apps/commit/fc72e6424ef57da4a527272d398a0078d6d05c30))
+
 ## [1.52.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.51.0...v1.52.0) (2025-01-12)
 
 

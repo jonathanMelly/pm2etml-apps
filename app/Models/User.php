@@ -67,7 +67,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
     public function getFirstnameL(bool $withId = false): string
     {
-        return $this->getFirstnameLX(2, $withId);
+        return $this->getFirstnameLX(2,$withId);
     }
 
     public function getFirstnameLX($x = 0, bool $withId = false): string
@@ -100,7 +100,6 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         return $this->belongsToMany(Contract::class, CustomPivotTableNames::CONTRACT_USER->value)
             ->withTimestamps();
     }
-    
 
     /**
      * Returns true if there are contracts for which users have expressed a wish (and not a firm commitment)
@@ -163,13 +162,13 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
     public function pastContractsAsAWorker(?int $currentPeriodId = null): Contract|Builder
     {
-        return Contract::whereRelation('workers.user', 'id', '=', $this->id)
-            ->whereRelation('workers.group.academicPeriod', 'id', '<', $currentPeriodId)
-            ->with('jobDefinition') //eager load definitions as needed on UI
-            ->with('clients') //eager load clients as needed on UI
-            ->with('workersContracts')
-            ->orderByDesc('end')
-            ->orderByDesc('start');
+       return Contract::whereRelation('workers.user','id','=',$this->id)
+            ->whereRelation('workers.group.academicPeriod','id','<',$currentPeriodId)
+           ->with('jobDefinition') //eager load definitions as needed on UI
+           ->with('clients') //eager load clients as needed on UI
+           ->with('workersContracts')
+           ->orderByDesc('end')
+           ->orderByDesc('start');
     }
 
     public function contractsAsAWorker(?int $periodId = null): BelongsToMany|Contract|Builder
@@ -344,64 +343,4 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
             ];
         });
     }
-
-    // HCS : Fonction utilitaire qui permet d'obtenir le nombre de contrats actifs d'un utilisateur
-    // pour une période académique spécifique. Elle ne prend en compte que les contrats non supprimés
-    // (soft deletes) et vérifie que l'utilisateur est bien associé à des clients.
-    public function getActiveContractCount(int $periodId): int
-    {
-        // La fonction va compter le nombre de contrats actifs pour l'utilisateur dans la période académique spécifiée.
-        // Elle s'assure que l'utilisateur est bien lié à un contrat où il est client,
-        // et que le contrat est valide (non supprimé).
-        return Contract::whereHas('workers.group.academicPeriod', function ($query) use ($periodId) {
-            $query->where('academic_period_id', $periodId); // Filtre par la période académique.
-        })
-            ->whereHas('clients', function ($query) {
-                $query->where('user_id', $this->id); // Filtre pour les contrats où l'utilisateur est un client.
-            })
-            ->whereNull('contracts.deleted_at') // Exclut les contrats qui ont été supprimés par soft delete.
-            ->count(); // Retourne le nombre de contrats actifs pour l'utilisateur.
-    }
-
-    #region :HCS
-
-    // Fonction utilitaire qui vérifie l'intégrité des groupes associés à un utilisateur dans une période donnée.
-    // Elle s'assure que l'utilisateur est bien assigné à un groupe dans la période académique spécifiée.
-    // Si l'utilisateur n'est pas membre d'un groupe, un avertissement est loggé.
-    public function ensureGroupIntegrity(int $periodId): bool
-    {
-        // Vérifie si l'utilisateur est bien assigné à un groupe dans la période académique donnée.
-        $groupMember = $this->groupMembersForPeriod($periodId)->first();
-
-        if ($groupMember === null) {
-            // Si l'utilisateur n'a pas de groupe pour la période donnée, on log un avertissement
-            // avec l'ID de l'utilisateur et la période concernée.
-            Log::warning("L'utilisateur avec l'ID {$this->id} n'a pas de groupe assigné pour la période {$periodId}");
-            return false; // Indique que l'intégrité du groupe n'est pas respectée.
-        }
-
-        // Si l'utilisateur est correctement assigné à un groupe, la fonction retourne true.
-        return true;
-    }
-
-    // Fonction pour mettre à jour le champ 'last_logged_at' de l'utilisateur avec la date et l'heure actuelle.
-    // Cette fonction est utile pour enregistrer la dernière connexion d'un utilisateur lors de son authentification.
-    public function updateLastLogin(): void
-    {
-        // Met à jour le champ 'last_logged_at' avec la date et l'heure actuelle (now()).
-        $this->last_logged_at = now();
-        $this->save(); // Enregistre les modifications dans la base de données.
-    }
-
-    // Fonction pour récupérer les rôles de l'utilisateur sous forme de chaîne de caractères,
-    // les rôles étant séparés par des virgules. Elle est utile pour afficher ou traiter les rôles d'un utilisateur.
-    public function getRoleNamesAsString(): string
-    {
-        // Récupère les rôles de l'utilisateur et les concatène sous forme d'une chaîne,
-        // séparée par des virgules (ex: 'admin, user, manager').
-        return $this->getRoleNames()->implode(', ');
-    }
-
-    #endregion
-
 }

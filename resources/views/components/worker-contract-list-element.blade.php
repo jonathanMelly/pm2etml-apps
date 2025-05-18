@@ -23,14 +23,13 @@ $remainingDays = $progress['remainingDays'];
 
     $canRemediate = $wc->canRemediate();
 
-
 @endphp
 <tr>
     <td>
         <a class="flex items-center space-x-3" href="{{route('jobDefinitions.show',['jobDefinition'=>$contract->jobDefinition->id])}}">
             <div class="avatar">
                 <div class="mask mask-squircle w-12 h-12">
-                    <img src="{{route('dmz-asset',['file'=>$contract->jobDefinition->image->storage_path])}}" alt="{{$contract->jobDefinition->title}}" />
+                    <img src="{{route('dmz-asset',['file'=>$contract->jobDefinition?->image?->storage_path])}}" alt="{{$contract->jobDefinition->title}}" />
                 </div>
             </div>
             <div>

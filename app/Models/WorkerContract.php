@@ -24,7 +24,7 @@ class WorkerContract extends Pivot
         parent::boot();
 
         static::addGlobalScope('withoutTrashed', function (Builder $builder) {
-            $builder->whereNull(tbl(WorkerContract::class) . '.deleted_at');
+            $builder->whereNull(tbl(WorkerContract::class).'.deleted_at');
         });
     }
 
@@ -92,6 +92,7 @@ class WorkerContract extends Pivot
         if (! $this->alreadyEvaluated()) {
             return 'n/a';
         }
+
         return $this->success ? 'true' : 'false';
     }
 
@@ -107,6 +108,7 @@ class WorkerContract extends Pivot
 
     public function getAllocationDetails(): string
     {
+
         $allocatedTimeInPeriods = $this->getAllocatedTime(RequiredTimeUnit::PERIOD);
         if ($allocatedTimeInPeriods < JobDefinition::SIZE_MEDIUM_MIN) {
             $size = 'Weak';
@@ -116,7 +118,7 @@ class WorkerContract extends Pivot
             $size = 'Large';
         }
 
-        return __($size) . ', ~' . $this->getAllocatedTime(RequiredTimeUnit::PERIOD) . 'p';
+        return __($size).', ~'.$this->getAllocatedTime(RequiredTimeUnit::PERIOD).'p';
     }
 
     public function softDelete(): bool
@@ -128,5 +130,6 @@ class WorkerContract extends Pivot
 
             return $this->save();
         }
+
     }
 }

@@ -1,5 +1,5 @@
 {
-    "A new verification link has been sent to the email address you provided during registration.": "Un nouveau lien de vérification a été envoyé à l’adresse e-mail que vous avez indiquée lors de votre inscription.",
+    "A new verification link has been sent to the email address you provided during registration.": "Un nouveau lien de vérification a été envoyé à l'adresse e-mail que vous avez indiquée lors de votre inscription.",
     "Accept Invitation": "Acceptez l'invitation",
     "Add": "Ajouter",
     "Add a new team member to your team, allowing them to collaborate with you.": "Ajouter un nouveau membre de l'équipe à votre équipe, permettant de collaborer avec vous.",
@@ -358,6 +358,7 @@
     "Actions": "Actions",
     "No jobs": "Pas d'emplois",
     "Validate remediation request for :name and project :project": "Valider la demande de remédiation pour :name et le projet :project",
+    "Particularities": "Particularités",
     "Category": "Catégorie",
     "Save changes": "Enregistrer",
     "Student": "Étudiant",
