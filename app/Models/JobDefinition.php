@@ -26,7 +26,7 @@ class JobDefinition extends Model
 
     public const MIN_PERIODS = 24;
 
-    public const MAX_PERIODS = 150;
+    public const MAX_PERIODS = 999;
 
     public const MIN_WISH_PRIORITY = 1;
 
