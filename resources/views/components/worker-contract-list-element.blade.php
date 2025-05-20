@@ -142,4 +142,17 @@ $remainingDays = $progress['remainingDays'];
     </td>
     @endif
     <x-contract-list-element-evaluation :contract="$contract" :past="$past" />
+    <!-- HCS Nouvelle colonne pour l'auto-évaluation -->
+    <td class="text-center">
+        @if (!$past && !$wc->alreadyEvaluated())
+            <button class="btn btn-outline btn-info btn-xs"
+                @click="window.location.href='{{ route('evaluation.fullEvaluation', ['ids' => $contract->id]) }}'">
+                <i class="fa-solid fa-list-check mr-1"></i> {{ __('Auto-évaluation') }}
+            </button>
+        @elseif($wc->alreadyEvaluated())
+            <span class="badge badge-success">{{ __('Déjà évalué') }}</span>
+        @else
+            <span class="text-gray-400">{{ __('Non disponible') }}</span>
+        @endif
+    </td>
 </tr>

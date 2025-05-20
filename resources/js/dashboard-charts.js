@@ -2,7 +2,7 @@ import * as echarts from 'echarts/core';
 window.echarts = echarts;
 
 // Import bar charts, all suffixed with Chart
-import { BarChart,PieChart,LineChart } from 'echarts/charts';
+import { BarChart, PieChart, LineChart } from 'echarts/charts';
 
 // Import the title, tooltip, rectangular coordinate system, dataset and transform components
 import {
@@ -239,7 +239,7 @@ function prepareSummariesChartData(allJsonData, successRequirement, labels) {
         },
 
     };
-    return {initialSummaryTop, summaryTop, summariesChartOption};
+    return { initialSummaryTop, summaryTop, summariesChartOption };
 }
 
 function prepareEvaluationChartsData(allJsonData, successRatio, labels) {
@@ -266,11 +266,11 @@ function prepareEvaluationChartsData(allJsonData, successRatio, labels) {
             disabled: true
         }, label: {
 
-                show: false,
+            show: false,
 
         }, lineStyle: {
 
-                color: "#53c048"
+            color: "#53c048"
 
         },
     };
@@ -317,8 +317,8 @@ function prepareEvaluationChartsData(allJsonData, successRatio, labels) {
                     value: '',
                     xAxis: pointData[PI_DATE],
                     yAxis: pointData[PI_CURRENT_PERCENTAGE],
-                    itemStyle: {color: color},
-                    emphasis: {disabled: true},
+                    itemStyle: { color: color },
+                    emphasis: { disabled: true },
                     symbol: 'pin',
                     symbolSize: 20,
                     symbolRotate: rotate,
@@ -369,11 +369,11 @@ function prepareEvaluationChartsData(allJsonData, successRatio, labels) {
             }
         });
 
-        legends.push((students.length <= 1) ? {show: false} : {
+        legends.push((students.length <= 1) ? { show: false } : {
             data: students.map((stud) => new Object({
                 name: stud,
                 icon: successes[stud] ? '' : 'triangle',
-                itemStyle: {borderColor: colors.red, borderWidth: successes[stud] ? 0 : 2}
+                itemStyle: { borderColor: colors.red, borderWidth: successes[stud] ? 0 : 2 }
             })), orient: 'horizontal', formatter: function (name) {
                 return name.limit(15);
             }
@@ -437,7 +437,7 @@ function prepareEvaluationChartsData(allJsonData, successRatio, labels) {
                     return `${params[0].seriesName}<br />` + globalInfo + `${labels.result}: ${pointData[PI_SUCCESS_TIME]}/${pointData[PI_TIME]}p<br />` + `${labels.summary}: ${pointData[PI_CURRENT_PERCENTAGE]}%`;
                 }
 
-                let compiledInfos = {success: [], failure: []};
+                let compiledInfos = { success: [], failure: [] };
 
                 params.forEach(function (data) {
                     const studentName = data.seriesName;
@@ -460,7 +460,7 @@ function prepareEvaluationChartsData(allJsonData, successRatio, labels) {
         },
 
     };
-    return {groupsForEvaluation, evolutionChartOption};
+    return { groupsForEvaluation, evolutionChartOption };
 }
 
 window.prepareSummariesChartData = prepareSummariesChartData;
