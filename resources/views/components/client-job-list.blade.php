@@ -121,6 +121,17 @@
                                                     .join();window.location.href='contracts/evaluate/'+cids">
                                             <i class="fa-solid fa-check mr-1"></i>{{__('Evaluate')}}
                                         </button>
+
+                                                <button x-bind:disabled="!massAction"
+                                                    class="btn btn-outline btn-info btn-xs multi-action-{{ $job->id }}"
+                                                    @click="cids = Array.from(document.getElementsByName('job-{{ $job->id }}-contracts[]'))
+                                                    .filter(el => el.checked)
+                                                    .map(el => el.getAttribute('value'))
+                                                    .join();window.location.href='evaluation/fullEvaluation/'+cids">
+                                                    <i class="fa-solid fa-list-check mr-1">
+                                                    </i>{{ __('Full Evaluation') }}
+                                                </button>
+
                                     </div>
                                     <div class="m-2">
                                         <button class="btn btn-outline btn-neutral btn-xs"
