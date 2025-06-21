@@ -41,3 +41,4 @@ resources/js/ziggy.d.ts
 #done by ci/cd
 /public/build
 /public/php_errors.log
+/tests/Feature/Console/Commands/php_errors.log

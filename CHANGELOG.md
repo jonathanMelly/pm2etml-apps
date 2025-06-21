@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.53.2](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.53.1...v1.53.2) (2025-06-21)
+
+
+### Bug Fixes
+
+* **evaluation report:** include students that have quited to purge data ([7789f6d](https://github.com/jonathanMelly/pm2etml-apps/commit/7789f6ddae1097daac6947ee20a9eeb7fa9b4c68))
+
+## [1.53.1](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.53.0...v1.53.1) (2025-05-26)
+
+
+### Bug Fixes
+
+* **filter:** correctly filter projects with more than 150p ([a4309c3](https://github.com/jonathanMelly/pm2etml-apps/commit/a4309c33d62e698e7b4e540a170df0943f44f91c))
+
 ## [1.53.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.52.3...v1.53.0) (2025-01-20)
 
 

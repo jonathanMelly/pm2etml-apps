@@ -46,10 +46,13 @@ class EvaluationReportCommand extends Command
         //find evaluation not yet reported
         $logs = WorkerContractEvaluationLog::query()
             ->whereNull('reported_at')
-            ->with('contract.workers.group.groupName')
-            ->with('contract.clients')
-            ->with('contract.jobDefinition')
-            ->with('contract.workersContracts.groupMember')
+            ->with([
+                'contract.workers.group.groupName',
+                'contract.clients',
+                'contract.jobDefinition',
+                'contract.workersContracts.groupMember' => function($query) {
+                    $query->withTrashed();//in case a student stops abruptly his formation and there is an eval...
+                }])
             ->get();
 
         //Group by client

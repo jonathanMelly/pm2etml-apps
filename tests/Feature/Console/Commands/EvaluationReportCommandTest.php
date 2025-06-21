@@ -27,11 +27,15 @@ test('A mail is sent for each client having updated evaluations', function () {
         ->transform(fn ($wcel) => $wcel->contract);
 
     //$logCount = \App\Models\WorkerContractEvaluationLog::count();
-    $workersContracts = WorkerContract::get()->take(10)->transform(fn ($wc) => $wc->contract)->merge($initialReports);
-    $this->assertGreaterThan(0, $workersContracts->count());
+    $contracts = WorkerContract::get()->take(10)->transform(fn ($wc) => $wc->contract)->merge($initialReports);
+    $this->assertGreaterThan(3, $contracts->count());
+
+    /* @var $c Contract */
+    $c = $contracts[0];
+    $c->workersContracts()->firstOrFail()->groupMember()->delete();//simulate a student that quits (caused issues in the past)
 
     $clients = [];
-    foreach ($workersContracts as $contract) {
+    foreach ($contracts as $contract) {
         /* @var $contract Contract */
         foreach ($contract->clients as $client) {
             if (! in_array($client->email, $clients)) {
