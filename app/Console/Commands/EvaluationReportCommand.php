@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Mail\EvaluationChanged;
 use App\Models\User;
+use App\Models\WorkerContract;
 use App\Models\WorkerContractEvaluationLog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -50,8 +51,12 @@ class EvaluationReportCommand extends Command
                 'contract.workers.group.groupName',
                 'contract.clients',
                 'contract.jobDefinition',
-                'contract.workersContracts.groupMember' => function($query) {
+                //Get also trashed if race condition upon student quitting... and evaluation (they are not  cleaned as auto trigger...)
+                'contract.workersContracts.groupMember' => function ($query) {
                     $query->withTrashed();//in case a student stops abruptly his formation and there is an eval...
+                },
+                'contract.workersContracts.groupMember.user' => function ($query) {
+                    $query->withTrashed();
                 }])
             ->get();
 
@@ -70,7 +75,7 @@ class EvaluationReportCommand extends Command
 
             /* @var $log WorkerContractEvaluationLog */
             foreach ($log->contract->clients->pluck('email') as $client) {
-                if (! array_key_exists($client, $contractsPerClient)) {
+                if (!array_key_exists($client, $contractsPerClient)) {
                     $contractsPerClient[$client] = [];
                 }
 
@@ -87,7 +92,7 @@ class EvaluationReportCommand extends Command
                 foreach ($log->contract->workersContracts as $workerContract) {
                     /* @var $log WorkerContractEvaluationLog */
                     /* @var $worker User */
-                    /* @var $workerContract \App\Models\WorkerContract */
+                    /* @var $workerContract WorkerContract */
 
                     $worker = $workerContract->groupMember->user;
                     $group = $workerContract->groupMember->group->groupName->name;
@@ -107,7 +112,7 @@ class EvaluationReportCommand extends Command
             Mail::to($clientEmail)
                 ->send(new EvaluationChanged($sortedInfo->toArray()));
 
-            Log::info('Evaluation report ['.count($informations).' update(s)] sent to '.$clientEmail.']');
+            Log::info('Evaluation report [' . count($informations) . ' update(s)] sent to ' . $clientEmail . ']');
 
             //Wait for mail to be sent before marked as reported...
             foreach ($logs as $log) {
@@ -116,7 +121,7 @@ class EvaluationReportCommand extends Command
             }
         }
 
-        Log::info('Evaluation report finished, handled '.count($logs).' evaluation logs entries');
+        Log::info('Evaluation report finished, handled ' . count($logs) . ' evaluation logs entries');
 
         return 0;
     }
