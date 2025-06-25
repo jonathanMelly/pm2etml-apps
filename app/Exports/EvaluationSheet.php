@@ -44,7 +44,7 @@ class EvaluationSheet implements FromCollection, ShouldAutoSize, WithEvents, Wit
         $TIME_NA = 3;
         $TIME_TOTAL = 4;
 
-        //Format is [bob][[1.1.2021,55%,...,projectName,clients]]
+        //Format is [bob][[1.1.2021,55%,...,projectName]]
         //create first columns headers before real projects
         $projects = collect([
             $SUMMARY => ['name' => 'bilan'],
@@ -127,12 +127,7 @@ class EvaluationSheet implements FromCollection, ShouldAutoSize, WithEvents, Wit
         //Build excel rows
         $rows = [];
         $header = array_merge(['prénom', 'nom'], $projects->map(function ($p) {
-            $clients = ')';
-            if (array_key_exists('clients', $p)) {
-                $clients = ', '.$p['clients'].')';
-            }
-
-            return $p['name'].$clients;
+            return $p['name'];
 
         })->all());
 
