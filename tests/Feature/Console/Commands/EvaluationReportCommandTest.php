@@ -30,11 +30,15 @@ test('A mail is sent for each client having updated evaluations', function () {
     $contracts = WorkerContract::get()->take(10)->transform(fn ($wc) => $wc->contract)->merge($initialReports);
     $this->assertGreaterThan(3, $contracts->count());
 
+    //Simulate a user quitting while still having evaluated contracts to report...
     /* @var $c Contract */
     $c = $contracts[0];
-    $c->workersContracts()->firstOrFail()->groupMember()->delete();//simulate a student that quits (caused issues in the past)
+    $gm = $c->workersContracts()->firstOrFail()->groupMember()->firstOrFail();
+    $gm->user->delete();
+    $gm->delete();//simulate a student that quits (caused issues in the past)
 
     $clients = [];
+    $i=0;
     foreach ($contracts as $contract) {
         /* @var $contract Contract */
         foreach ($contract->clients as $client) {
@@ -45,7 +49,8 @@ test('A mail is sent for each client having updated evaluations', function () {
 
         $success = random_int(1, 2) == 1;
         /* @var $wc WorkerContract */
-        $wc = $contract->workersContracts()->firstOrFail();
+        $wc = $contract->workersContracts[0];
+
         $wc->evaluate($success, $success ? 'congrats' : 'missed');
         $this->assertTrue($wc->alreadyEvaluated(), 'Contract should have been marked as evaluated');
     }

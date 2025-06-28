@@ -42,14 +42,16 @@ class EvaluationSheet implements FromCollection, ShouldAutoSize, WithEvents, Wit
         $PERCENTAGE = 1;
         $TIME_A = 2;
         $TIME_NA = 3;
+        $TIME_TOTAL = 4;
 
-        //Format is [bob][[1.1.2021,55%,...,projectName,clients]]
+        //Format is [bob][[1.1.2021,55%,...,projectName]]
         //create first columns headers before real projects
         $projects = collect([
             $SUMMARY => ['name' => 'bilan'],
             $PERCENTAGE => ['name' => '%'],
             $TIME_A => ['name' => 'nb pér. '.EvaluationResult::A->name],
             $TIME_NA => ['name' => 'nb pér. '.EvaluationResult::NA->name],
+            $TIME_TOTAL => ['name' => 'pér. tot.']
         ]);
 
         //list all projects
@@ -119,17 +121,13 @@ class EvaluationSheet implements FromCollection, ShouldAutoSize, WithEvents, Wit
             $studentsProjectsMap[$studentId][$projects[$TIME_A]['name']][self::MAIN_DATA] = $totalSuccessTime;
             $studentsProjectsMap[$studentId][$projects[$TIME_NA]['name']][self::MAIN_DATA] =
                 ($studentEval[SummariesService::PI_ACCUMULATED_TIME] - $totalSuccessTime).''; //force string for excel (0->'' wihout)
+            $studentsProjectsMap[$studentId][$projects[$TIME_TOTAL]['name']][self::MAIN_DATA] = $studentEval[SummariesService::PI_ACCUMULATED_TIME];
         }
 
         //Build excel rows
         $rows = [];
         $header = array_merge(['prénom', 'nom'], $projects->map(function ($p) {
-            $clients = ')';
-            if (array_key_exists('clients', $p)) {
-                $clients = ', '.$p['clients'].')';
-            }
-
-            return $p['name'].$clients;
+            return $p['name'];
 
         })->all());
 
@@ -178,7 +176,7 @@ class EvaluationSheet implements FromCollection, ShouldAutoSize, WithEvents, Wit
     {
         //Set style
         $sheet->getStyle('A1:CC1')->getFont()->setItalic(true)->setBold(true);
-        $sheet->getStyle('G1:CC1')->getAlignment()->setTextRotation(90);
+        $sheet->getStyle('H1:CC1')->getAlignment()->setTextRotation(90);
     }
 
     public static function afterSheet(AfterSheet $event)
