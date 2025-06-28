@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.54.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.53.2...v1.54.0) (2025-06-28)
+
+
+### Features
+
+* **export excel:** added total periods ([244ddf9](https://github.com/jonathanMelly/pm2etml-apps/commit/244ddf9ea192372aaf3cc6bcf32661d7d106b2d6))
+* **nightwatch:** added auditing module (for dev only now) ([e953182](https://github.com/jonathanMelly/pm2etml-apps/commit/e9531822bfb7930705a569187d82816144939232))
+* **test:** added test shortcut to remind of building assets first... ([e5e354b](https://github.com/jonathanMelly/pm2etml-apps/commit/e5e354b39b5d4a2ca5af2d9bc67a05fa7fdcb1b2))
+
+
+### Bug Fixes
+
+* **evaluation report:** also include student details from trash for report on students that have quited ([c118751](https://github.com/jonathanMelly/pm2etml-apps/commit/c118751e8b09571b55fd8eaa91ca1d14a96c3c31))
+* **export excel:** remove extra parentheses in headers ([e297118](https://github.com/jonathanMelly/pm2etml-apps/commit/e29711845359cf0c5badda84330c5594a0367eb8))
+* **psr-4:** ClientContractsEditFormTest.php has correct namespace ([d865bfe](https://github.com/jonathanMelly/pm2etml-apps/commit/d865bfedd51def47f3ef64cdd8dc504662c58cdc))
+
 ## [1.53.2](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.53.1...v1.53.2) (2025-06-21)
 
 
