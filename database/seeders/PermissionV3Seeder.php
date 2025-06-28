@@ -6,6 +6,7 @@ use App\Constants\RoleName;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+namespace Database\Seeders;
 
 class PermissionV3Seeder extends Seeder
 {
