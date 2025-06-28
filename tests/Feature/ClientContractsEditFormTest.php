@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Feature;
+
 use App\Constants\RoleName;
 use App\Models\User;
 use App\Models\WorkerContract;
