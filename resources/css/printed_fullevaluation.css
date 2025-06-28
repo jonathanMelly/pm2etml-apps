@@ -1,0 +1,73 @@
+/* Mode impression */
+@media print {
+
+   /* Masquer tous les éléments par défaut */
+   body * {
+      visibility: hidden;
+   }
+
+   /* Afficher uniquement les éléments spécifiés */
+   h2,
+   h3,
+   h4,
+   [id^="description-"],
+   /* Sélectionner tous les éléments dont l'id commence par "description-" */
+   [data-criterion-name],
+   .slider-container,
+   textarea,
+   [id$="-finalResult-saved"] {
+      /* Sélectionner tous les éléments dont l'id finit par "-finalResult-saved" */
+      visibility: visible;
+      display: block !important;
+      /* Forcer l'affichage */
+      position: relative;
+      /* Garder les éléments dans le flux du document */
+   }
+
+   /* Styliser l'affichage pour l'impression */
+   body {
+      font-size: 12pt;
+      color: #000;
+      background: #fff;
+   }
+
+   /* Ajuster les titres */
+   h2,
+   h3,
+   h4 {
+      font-weight: bold;
+      text-align: left;
+   }
+
+   /* Ajouter un espacement entre les sections pour les titres */
+   h2,
+   h3,
+   h4 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+   }
+
+   /* Ajuster les textes et zones de saisie (textarea) */
+   textarea {
+      font-size: 12pt;
+      border: 1px solid #000;
+      width: 100%;
+      padding: 5px;
+   }
+
+   /* Ajustement des sliders */
+   .slider-container {
+      margin-top: 10px;
+   }
+
+   /* Ajuster les résultats finaux */
+   [id$="-finalResult-saved"] {
+      font-weight: bold;
+      margin-top: 20px;
+   }
+
+   /* Espacement entre les sections */
+   .page-break {
+      page-break-before: always;
+   }
+}
