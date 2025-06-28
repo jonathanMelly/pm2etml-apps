@@ -13,7 +13,7 @@ export default defineConfig({
             //css
             'resources/css/app.css', //mainly tailwind
             'resources/sass/app.scss', //mainly fa
-            'resources/css/fullEvaluation.css',
+            // TODO HCS 'resources/css/fullEvaluation.css', (missing file !!!)
             //test
 
             //js
