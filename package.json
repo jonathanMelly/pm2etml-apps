@@ -12,7 +12,9 @@
         "build": "run-s -n build:*",
         "build:ziggy": "php artisan ziggy:generate --types-only",
         "build:tsc": "vue-tsc --noEmit",
-        "build:vite": "vite build"
+        "build:vite": "vite build",
+        "artisan:test": "php artisan test -p",
+        "test": "run-s -n build:* artisan:test"
     },
     "devDependencies": {
         "@alpinejs/collapse": "^3.14.8",
