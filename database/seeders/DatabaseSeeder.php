@@ -28,8 +28,8 @@ class DatabaseSeeder extends Seeder
             JobSeeder::class,
             ContractSeeder::class,
             PermissionV3Seeder::class,
-            EvaluationSettingsSeeder::class,
-            DefaultCriteriaSeeder::class,
+            AssesmentCriterionCategorySeeder::class,
+            AssessmentCriterionTemplateSeeder::class,
         ];
 
         // Exécution de chaque seeder

@@ -6,24 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
-class DefaultCriteria extends Model
+class AssessmentCriterionTemplate extends Model
 {
-    use HasFactory;
-
-    protected $fillable = [
-        'criteria_name',
-        'category',
-        'description',
-        'user_id',
-        'position'
-    ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public static function getUserCriterias($userId): Collection
+    public static function getUserCriteria($userId): Collection
     {
         return self::where('user_id', $userId)
             ->orderBy('position')

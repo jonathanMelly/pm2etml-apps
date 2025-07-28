@@ -2,38 +2,117 @@
 
 namespace App\Models;
 
+use App\Constants\AssessmentState;
+use App\Services\AssessmentStateMachine;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use InvalidArgumentException;
 
-class Appreciation extends Model
+class WorkerContractAssessment extends Model
 {
     use HasFactory;
 
-    // Indique que l'ID de la table `appreciations` est un BigInt
-    protected $primaryKey = 'id';
+    public function workerContract() : HasOne
+    {
+        return $this->hasOne(WorkerContract::class);
+    }
+    // Relations avec les utilisateurs
+    public function evaluator() : User
+    {
+        /* @var $wc WorkerContract */
+        $wc = $this->WorkerContract()->firstOrFail();
+        return $wc->contract->clients->first();
+    }
 
-    // Désactive la gestion automatique des `timestamps`
-    public $timestamps = false;
+    public function student()
+    {
+        /* @var $wc WorkerContract */
+        $wc = $this->WorkerContract()->firstOrFail();
+        return $wc->contract->workers->first();
+    }
 
-    protected $fillable = [
-        'evaluation_id',
-        'date',
-        'level',
-        'signatures',
-    ];
-
-    // Transforme automatiquement JSON ↔ Tableau PHP
-    protected $casts = [
-        'signatures' => 'array',
-    ];
+    public function assessments()
+    {
+        return $this->hasMany(AssessmentCriterion::class);
+    }
 
     /**
-     * Relation avec l'évaluation (un à plusieurs)
+     * Retourne toutes les évaluations faites par un professeur pour un étudiant donné
      */
-    public function evaluation()
+    public static function getAssessments($studentId)
     {
-        return $this->belongsTo(Evaluation::class, 'evaluation_id');
+
+        return WorkerContractAssessment::query()
+            ->whereRelation('contract.groupMember.user','id','=',$studentId);
     }
+
+    /**
+     * Crée une évaluation pour un étudiant avec un statut initial "not_evaluated"
+     */
+    public static function createAssessment($comment = null)
+    {
+        return self::create([
+            'comment' => $comment,
+            'status' => AssessmentState::NOT_EVALUATED->value // Statut initial
+        ]);
+    }
+
+    /**
+     * Récupère tous les états traversés sous forme de tableau
+     */
+    public function getStatusHistory(): array
+    {
+        return explode(',', $this->status ?? '');
+    }
+
+    /**
+     * Récupère l'état actuel sous forme d'énumération
+     */
+    public function getCurrentStatus(): AssessmentState
+    {
+        $statusHistory = $this->getStatusHistory();
+        $lastStatus = end($statusHistory);
+
+        if ($lastStatus) {
+            return AssessmentState::from($lastStatus);
+        }
+
+        throw new InvalidArgumentException('Aucun état trouvé pour cette évaluation.');
+    }
+
+    /**
+     * Ajoute un nouvel état à l'historique des états
+     */
+    public function appendStatus(AssessmentState $newStatus): void
+    {
+        $currentStatus = $this->status ?? '';
+        $newStatusValue = $newStatus->value;
+
+        // Vérifie si le nouvel état n'est pas déjà présent dans l'historique
+        if (!str_contains($currentStatus, $newStatusValue)) {
+            $this->status = $currentStatus === '' ? $newStatusValue : $currentStatus . ',' . $newStatusValue;
+            $this->save();
+        }
+    }
+
+    /**
+     * Effectue une transition vers un nouvel état
+     */
+    public function transition(string $role): bool
+    {
+
+        $stateMachine = new AssessmentStateMachine($this->assessments()->pluck('timing')->toArray());
+        $nextState = $stateMachine->getNextState($role);
+
+        if ($nextState) {
+            $this->appendStatus($nextState); // Ajoute le nouvel état à l'historique
+            return true;
+        }
+
+        return false;
+    }
+
 
     /**
      * Définir une relation un-à-plusieurs avec le modèle Criteria.
@@ -42,7 +121,7 @@ class Appreciation extends Model
      */
     public function criteria()
     {
-        return $this->hasMany(Criteria::class, 'appreciation_id');
+        return $this->hasMany(AssessmentCriterion::class, 'appreciation_id');
     }
 
     /**
@@ -133,4 +212,5 @@ class Appreciation extends Model
         $signatures = $this->signatures ?? ['teacher' => false, 'student' => false];
         return $signatures[$role]; // Retourne vrai ou faux
     }
+
 }

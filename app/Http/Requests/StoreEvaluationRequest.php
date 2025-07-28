@@ -11,7 +11,7 @@ class StoreEvaluationRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $isAuthorized = $this->user()->can('evaluation.storeEvaluation');
+        $isAuthorized = $this->user()->can('contract.assess');
 
         Log::info('Vérification des permissions utilisateur', [
             'user_id' => $this->user()->id ?? 'guest',

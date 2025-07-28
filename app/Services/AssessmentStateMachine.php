@@ -1,109 +1,68 @@
 <?php
 
-namespace App\Models;
+namespace App\Services;
 
-use InvalidArgumentException;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 
-enum EvaluationLevel: int
+class AssessmentStateMachine
 {
-   case AUTO80 = 0;
-   case EVAL80 = 1;
-   case AUTO100 = 2;
-   case EVAL100 = 3;
-
-   public function label(): string
-   {
-      return match ($this) {
-         self::AUTO80 => 'auto80',
-         self::AUTO100 => 'auto100',
-         self::EVAL80 => 'eval80',
-         self::EVAL100 => 'eval100',
-      };
-   }
-}
-
-enum EvaluationState: string
-{
-   case NOT_EVALUATED = 'not_evaluated';       // Évaluation non réalisée
-   case AUTO80 = 'auto80';                     // Évaluation élève à 80%
-   case EVAL80 = 'eval80';                     // Évaluation enseignant à 80%
-   case AUTO100 = 'auto100';                   // Évaluation élève à 100%
-   case EVAL100 = 'eval100';                   // Évaluation enseignant à 100%
-   case PENDING_SIGNATURE = 'pending_signature'; // En attente de signature
-   case COMPLETED = 'completed';               // Évaluation complétée
-
-   public function getLabel(): string
-   {
-      return ucfirst(str_replace('_', ' ', $this->value));
-   }
-}
-
-class EvaluationStateMachine
-{
-   private EvaluationState $currentState;
-   private ?int $evaluationId;
+   private \App\Constants\AssessmentState $currentState;
    private array $appreciations;
    private array $acknowledgments = []; // Stocke les quittances des étapes
 
-   public function __construct(?int $evaluationId = null, ?array $appreciations = [])
+   public function __construct(?array $appreciations = [])
    {
-      $this->evaluationId = $evaluationId;
-      $this->appreciations = $appreciations ?? [];
-
-      if ($evaluationId !== null && !empty($appreciations)) {
-         $this->updateStateFromEvaluations();
-      } else {
-         $this->currentState = EvaluationState::NOT_EVALUATED;
-      }
+      $this->appreciations =$appreciations??[];
+      $this->computeState();
    }
 
    private const TRANSITIONS = [
       'teacher' => [
-         EvaluationState::NOT_EVALUATED->value => EvaluationState::EVAL80,
-         EvaluationState::AUTO80->value => EvaluationState::EVAL80,
-         EvaluationState::EVAL80->value => EvaluationState::EVAL100,
-         EvaluationState::AUTO100->value => EvaluationState::EVAL100,
-         EvaluationState::EVAL100->value => EvaluationState::PENDING_SIGNATURE,
-         EvaluationState::PENDING_SIGNATURE->value => EvaluationState::COMPLETED,
+         \App\Constants\AssessmentState::NOT_EVALUATED->value => \App\Constants\AssessmentState::EVAL80,
+         \App\Constants\AssessmentState::AUTO80->value => \App\Constants\AssessmentState::EVAL80,
+         \App\Constants\AssessmentState::EVAL80->value => \App\Constants\AssessmentState::EVAL100,
+         \App\Constants\AssessmentState::AUTO100->value => \App\Constants\AssessmentState::EVAL100,
+         \App\Constants\AssessmentState::EVAL100->value => \App\Constants\AssessmentState::PENDING_SIGNATURE,
+         \App\Constants\AssessmentState::PENDING_SIGNATURE->value => \App\Constants\AssessmentState::COMPLETED,
       ],
       'student' => [
-         EvaluationState::NOT_EVALUATED->value => EvaluationState::AUTO80,
-         EvaluationState::AUTO80->value => EvaluationState::AUTO100,
-         EvaluationState::EVAL80->value => EvaluationState::AUTO100,
-         EvaluationState::AUTO100->value => EvaluationState::EVAL100,
-         EvaluationState::EVAL100->value => EvaluationState::PENDING_SIGNATURE,
-         EvaluationState::PENDING_SIGNATURE->value => EvaluationState::COMPLETED,
+         \App\Constants\AssessmentState::NOT_EVALUATED->value => \App\Constants\AssessmentState::AUTO80,
+         \App\Constants\AssessmentState::AUTO80->value => \App\Constants\AssessmentState::AUTO100,
+         \App\Constants\AssessmentState::EVAL80->value => \App\Constants\AssessmentState::AUTO100,
+         \App\Constants\AssessmentState::AUTO100->value => \App\Constants\AssessmentState::EVAL100,
+         \App\Constants\AssessmentState::EVAL100->value => \App\Constants\AssessmentState::PENDING_SIGNATURE,
+         \App\Constants\AssessmentState::PENDING_SIGNATURE->value => \App\Constants\AssessmentState::COMPLETED,
       ],
    ];
 
-   private function updateStateFromEvaluations(): void
+   private function computeState(): void
    {
       if (!is_array($this->appreciations) || empty($this->appreciations)) {
-         $this->currentState = EvaluationState::NOT_EVALUATED;
+         $this->currentState = \App\Constants\AssessmentState::NOT_EVALUATED;
          return;
       }
 
       // Extraire les niveaux valides
       $levels = collect($this->appreciations)
          ->pluck('level')
-         ->filter(fn($level) => is_int($level) && EvaluationLevel::tryFrom($level) !== null)
+         ->filter(fn($level) => is_int($level) && \App\Constants\AssessmentTiming::tryFrom($level) !== null)
          ->values();
 
       if ($levels->isEmpty()) {
-         $this->currentState = EvaluationState::NOT_EVALUATED;
+         $this->currentState = \App\Constants\AssessmentState::NOT_EVALUATED;
          return;
       }
 
       // Récupérer le dernier niveau d’évaluation
-      $lastLevel = EvaluationLevel::from($levels->last())->label();
+      $lastLevel = \App\Constants\AssessmentTiming::from($levels->last())->label();
 
       // Vérifier si ce label correspond à un état valide
-      $this->currentState = EvaluationState::tryFrom($lastLevel) ?? EvaluationState::NOT_EVALUATED;
+      $this->currentState = \App\Constants\AssessmentState::tryFrom($lastLevel) ?? \App\Constants\AssessmentState::NOT_EVALUATED;
    }
 
 
-   public function getCurrentState(): EvaluationState
+   public function getCurrentState(): \App\Constants\AssessmentState
    {
       return $this->currentState;
    }
@@ -113,13 +72,13 @@ class EvaluationStateMachine
       return isset(self::TRANSITIONS[$role][$this->currentState->value]);
    }
 
-   public function getNextState(string $role): ?EvaluationState
+   public function getNextState(string $role): ?\App\Constants\AssessmentState
    {
       // Obtenir le prochain état à partir des transitions définies
       $nextStateValue = self::TRANSITIONS[$role][$this->currentState->value] ?? null;
 
       // Vérifier que $nextStateValue est bien du type EvaluationState avant de l'utiliser
-      if ($nextStateValue instanceof EvaluationState) {
+      if ($nextStateValue instanceof \App\Constants\AssessmentState) {
          return $nextStateValue;
       }
 
@@ -150,9 +109,9 @@ class EvaluationStateMachine
          // Vérifie que la valeur de l'état suivant est valide
          if ($nextStateValue) {
             // Vérifie si la valeur de l'état suivant est valide
-            if (EvaluationState::tryFrom($nextStateValue->value)) {
+            if (\App\Constants\AssessmentState::tryFrom($nextStateValue->value)) {
                // Effectue la transition
-               $this->currentState = EvaluationState::from($nextStateValue->value);
+               $this->currentState = \App\Constants\AssessmentState::from($nextStateValue->value);
                // Utilisation de la valeur de la transition
                Log::info('Transition réussie', [
                   'new_state' => $this->currentState->value,
@@ -176,7 +135,7 @@ class EvaluationStateMachine
       }
 
       // Si l'état actuel est PENDING_SIGNATURE, vérifie les signatures
-      if ($this->currentState === EvaluationState::PENDING_SIGNATURE) {
+      if ($this->currentState === \App\Constants\AssessmentState::PENDING_SIGNATURE) {
          return $this->checkSignaturesAndComplete();
       }
 
@@ -206,7 +165,7 @@ class EvaluationStateMachine
    private function checkSignaturesAndComplete(): bool
    {
       if (!empty($this->appreciations['teacher']) && !empty($this->appreciations['student'])) {
-         $this->currentState = EvaluationState::COMPLETED;
+         $this->currentState = \App\Constants\AssessmentState::COMPLETED;
          return true;
       }
 
@@ -226,7 +185,7 @@ class EvaluationStateMachine
    }
 
    // Vérifie si l'état actuel a été quittancé
-   public function isAcknowledged(EvaluationState $state): bool
+   public function isAcknowledged(\App\Constants\AssessmentState $state): bool
    {
       return !empty($this->acknowledgments[$state->value]);
    }

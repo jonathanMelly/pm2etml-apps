@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Criteria extends Model
+class AssessmentCriterion extends Model
 {
     use HasFactory;
 
@@ -31,7 +31,7 @@ class Criteria extends Model
      */
     public function appreciation()
     {
-        return $this->belongsTo(Appreciation::class, 'appreciation_id');
+        return $this->belongsTo(Assessment::class, 'appreciation_id');
     }
 
     /**
@@ -60,7 +60,7 @@ class Criteria extends Model
 
     public function criteria()
     {
-        return $this->hasMany(Criteria::class);
+        return $this->hasMany(AssessmentCriterion::class);
     }
 
 

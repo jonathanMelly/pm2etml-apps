@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\DefaultCriteria;
+use App\Models\AssessmentCriterionTemplate;
 
 use Illuminate\Support\Facades\Log;
 
@@ -13,10 +13,10 @@ class CriteriaController extends Controller
    public function create()
    {
       $userId = auth()->id();
-      $criterias = DefaultCriteria::getUserCriterias($userId);
+      $criterias = AssessmentCriterionTemplate::getUserCriteria($userId);
 
       if ($criterias->isEmpty()) {
-         $criterias = DefaultCriteria::getDefaultCriterias();
+         $criterias = AssessmentCriterionTemplate::getDefaultCriterias();
       }
 
       return view('create-customCriterias', compact('criterias'));
@@ -36,7 +36,7 @@ class CriteriaController extends Controller
       $userId = auth()->id();
 
       // Enregistrer les critères de l'utilisateur
-      DefaultCriteria::saveUserCriterias($criteriasData, $userId);
+      AssessmentCriterionTemplate::saveUserCriterias($criteriasData, $userId);
 
       // Log après avoir sauvegardé les critères
       Log::info('Critères personnalisés sauvegardés avec succès pour l\'utilisateur', [

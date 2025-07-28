@@ -3,23 +3,23 @@
 namespace App\Http\Controllers;
 
 // Namespaces Laravel
+use App\Constants\RoleName;
+use App\Http\Requests\StoreEvaluationRequest;
+use App\Models\Assessment;
+use App\Models\AssessmentCriterion;
+use App\Models\AssessmentCriterionTemplate;
+use App\Models\EvaluationSetting;
+use App\Models\WorkerContractAssessment;
+use App\Services\AssessmentStateMachine;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 // Modèles
-use App\Models\Appreciation;
-use App\Models\Criteria;
-use App\Models\DefaultCriteria;
-use App\Models\Evaluation;
-use App\Models\EvaluationSetting;
-use App\Models\EvaluationStateMachine;
 
 // Requêtes personnalisées
-use App\Http\Requests\StoreEvaluationRequest;
 
 // Constantes ou enums
-use App\Constants\RoleName;
 
 
 class EvaluationController extends Controller
@@ -193,7 +193,7 @@ class EvaluationController extends Controller
          log::info('Niveau evaluation:', [$evaluationLevel]);
 
          // Création de l'évaluation dans la base de données
-         $evaluation = new Evaluation();
+         $evaluation = new WorkerContractAssessment();
          $evaluation->evaluator_id = $data['evaluator_id'];
          $evaluation->student_id = $data['student_id'];
          $evaluation->job_definitions_id = $data['job_id'];
@@ -249,7 +249,7 @@ class EvaluationController extends Controller
          $classId = $data['student_class_id'];
          $jobDefinitionId = $data['job_id'];
 
-         $evaluation = Evaluation::where('evaluator_id', $evaluatorId)
+         $evaluation = WorkerContractAssessment::where('evaluator_id', $evaluatorId)
             ->where('student_id', $studentId)
             ->where('class_id', $classId)
             ->where('job_definitions_id', $jobDefinitionId)
@@ -280,7 +280,7 @@ class EvaluationController extends Controller
                'level_index' => $levelIndex,
             ]);
 
-            $existingAppreciation = Appreciation::where('evaluation_id', $evaluation->id)
+            $existingAppreciation = Assessment::where('evaluation_id', $evaluation->id)
                ->where('level', $levelIndex)
                ->first();
 
@@ -291,7 +291,7 @@ class EvaluationController extends Controller
                   'level' => $levelIndex,
                ]);
 
-               $existingAppreciation = Appreciation::create([
+               $existingAppreciation = Assessment::create([
                   'evaluation_id' => $evaluation->id,
                   'date' => now(),
                   'level' => $levelIndex,
@@ -307,7 +307,7 @@ class EvaluationController extends Controller
             // Mise à jour des critères associés à l'appréciation
             foreach ($appreciationData['criteria'] as $criteriaData) {
                // Vérification si le critère existe pour cette appréciation
-               $existingCriteria = Criteria::where('appreciation_id', $existingAppreciation->id)
+               $existingCriteria = AssessmentCriterion::where('appreciation_id', $existingAppreciation->id)
                   ->where('id', $criteriaData['id'])
                   ->first();
 
@@ -348,7 +348,7 @@ class EvaluationController extends Controller
                      'position' => $criteriaData['id'],
                   ]);
 
-                  Criteria::create([
+                  AssessmentCriterion::create([
                      'appreciation_id' => $existingAppreciation->id,
                      'name' => $criteriaData['name'],
                      'value' => $criteriaData['value'],
@@ -386,7 +386,7 @@ class EvaluationController extends Controller
     * @param int $contractId L'ID du contrat dont on veut charger les évaluations.
     * @return \Illuminate\Http\JsonResponse
     */
-   private function processAppreciations(Evaluation $evaluation, array $appreciations)
+   private function processAppreciations(WorkerContractAssessment $evaluation, array $appreciations)
    {
       Log::info('Début du traitement des appréciations', ['evaluation_id' => $evaluation->id]);
 
@@ -398,7 +398,7 @@ class EvaluationController extends Controller
             'date' => $appreciationData['date'],
          ]);
 
-         $appreciation = new Appreciation();
+         $appreciation = new Assessment();
          $appreciation->evaluation_id = $evaluation->id;
          $appreciation->level = $this->getLevelIndex($appreciationData['level']);
          $appreciation->date = $appreciationData['date'];
@@ -416,7 +416,7 @@ class EvaluationController extends Controller
                'value' => $criteriaData['value'],
             ]);
 
-            $criteria = new Criteria();
+            $criteria = new AssessmentCriterion();
             $criteria->appreciation_id = $appreciation->id;
             $criteria->position = $criteriaData['id'];
             $criteria->name = $criteriaData['name'];
@@ -452,7 +452,7 @@ class EvaluationController extends Controller
          Log::info('Chargement des évaluations pour le contrat ID: ' . $contractId);
 
          // Récupérer le contrat avec ses évaluations, appréciations, et critères associés
-         $evaluations = Evaluation::with(['appreciations.criteria'])
+         $evaluations = WorkerContractAssessment::with(['appreciations.criteria'])
             ->where('contract_id', $contractId)
             ->get();
 
@@ -487,7 +487,7 @@ class EvaluationController extends Controller
    private function getCriteriaGrouped($userCustomId): \Illuminate\Support\Collection
    {
       // Vérifier si des préférences existent pour cet utilisateur
-      $userCriterias = DefaultCriteria::where('user_id', $userCustomId)->get();
+      $userCriterias = AssessmentCriterionTemplate::where('user_id', $userCustomId)->get();
 
       // Si des préférences existent, les utiliser
       if ($userCriterias->isNotEmpty()) {
@@ -495,7 +495,7 @@ class EvaluationController extends Controller
       }
 
       // Sinon, utiliser les critères par défaut
-      $defaultCriterias = DefaultCriteria::where('user_id', 0)->get();
+      $defaultCriterias = AssessmentCriterionTemplate::where('user_id', 0)->get();
 
       return $defaultCriterias->groupBy(fn($crit) => trim($crit['category']));
    }
@@ -503,7 +503,7 @@ class EvaluationController extends Controller
 
    public function getCriterias()
    {
-      $criterias = DefaultCriteria::where('user_id', 0)->get();
+      $criterias = AssessmentCriterionTemplate::where('user_id', 0)->get();
 
       return $criterias;
    }
@@ -546,7 +546,7 @@ class EvaluationController extends Controller
    }
 
    /*
-    SELECT 
+    SELECT
     contracts.id AS contract_id,
     contracts.start AS contract_start,
     contracts.end AS contract_end,
@@ -636,7 +636,7 @@ class EvaluationController extends Controller
 
             if ($eval) {
                $details->evaluation_id = $eval->id;
-               $details->stateMachine = new EvaluationStateMachine($eval->id, $eval->appreciations->toArray());
+               $details->stateMachine = new AssessmentStateMachine($eval->appreciations->toArray());
             } else {
                $details->evaluation_id = null;
                $details->stateMachine = null;
@@ -652,9 +652,8 @@ class EvaluationController extends Controller
          if ($studentsDetails->isNotEmpty()) {
             $studentDetails = $studentsDetails->first();
             $eval = $this->getExistingEvaluations($studentDetails->student_id, $studentDetails->job_id);
-            $studentDetails->stateMachine = $eval
-               ? new EvaluationStateMachine($eval->id, $eval->appreciations->toArray())
-               : new EvaluationStateMachine();
+
+            $studentDetails->stateMachine = new AssessmentStateMachine($eval->appreciations);
          } else {
             Log::warning("Aucun détail d'étudiant trouvé pour les ID de contrat : " . json_encode($ids));
             $studentsDetails = collect();
@@ -719,7 +718,7 @@ class EvaluationController extends Controller
 
       return $students->map(function ($student) {
          // Récupérer les évaluations pour cet étudiant
-         $existingEvaluations = $this->getExistingEvaluations($student->student_id, $student->job_id);
+         $existingEvaluations = $this->getExistingEvaluations($student->student_id);
          $evaluationsData = $this->mapExistingEvaluations($existingEvaluations);
 
          // Retourner les données formatées pour cet étudiant
@@ -742,39 +741,14 @@ class EvaluationController extends Controller
 
 
 
-   private function getExistingEvaluations($studentId, $jobId)
+   private function getExistingEvaluations($studentId)
    {
-      return Evaluation::with(['appreciations.criteria'])
-         ->where('student_id', $studentId)
-         ->where('job_definitions_id', $jobId)
-         ->orderBy('created_at', 'desc')
-         ->first();
+       return WorkerContractAssessment::query()->
+        whereRelation('workerContract.groupMember.user','id', '=', $studentId)
+           ->orderBy('created_at', 'desc')->get();
    }
 
-
-   /*
-    SELECT
-    e.id AS evaluation_id,
-    e.student_id,
-    e.job_definitions_id,
-    a.id AS appreciation_id,
-    a.criteria_id,
-    c.id AS criteria_id,
-    c.name AS criteria_name
-FROM
-    evaluations AS e
-LEFT JOIN
-    appreciations AS a ON e.id = a.evaluation_id
-LEFT JOIN
-    criteria AS c ON a.criteria_id = c.id
-WHERE
-    e.student_id = ? AND
-    e.job_definitions_id = ?
-LIMIT 1;
-
-    */
-
-   private function mapExistingEvaluations($existingEvaluation)
+   private function mapExistingEvaluations(WorkerContractAssessment $existingEvaluation)
    {
       // Vérifie si l'évaluation existe
       if ($existingEvaluation === null) {
@@ -783,11 +757,12 @@ LIMIT 1;
 
       // Mappage des appréciations
       return [
-         'evaluator_id' => $existingEvaluation->evaluator_id,
-         'student_remark' => $existingEvaluation->student_remark,
-         'status_eval' => $existingEvaluation->status,
+         'evaluator_id' => $existingEvaluation->evaluator()->id,
+         'student_remark' => "N/A plus disponible ??",
+         'status_eval' => $existingEvaluation->result,
          'id_eval' => $existingEvaluation->id,
-         'appreciations' => $existingEvaluation->appreciations->map(function ($appreciation) {
+         'appreciations' => $existingEvaluation->assessments()->get()->map(function (AssessmentCriterion $appreciation) {
+             /* @var $apprecition AssessmentCriterion */
             return [
                'level' => $appreciation->level,
                'date' => $appreciation->date,
@@ -899,7 +874,7 @@ LIMIT 1;
       ]);
 
       // Récupérer l'évaluation correspondante
-      $evaluation = Evaluation::find($validated['evaluation_id']);
+      $evaluation = WorkerContractAssessment::find($validated['evaluation_id']);
 
       if (!$evaluation) {
          Log::error('Évaluation introuvable', [
@@ -967,7 +942,7 @@ LIMIT 1;
 
       try {
          // Récupération de l'évaluation
-         $evaluation = Evaluation::with('appreciations')->find($evaluationId);
+         $evaluation = WorkerContractAssessment::with('appreciations')->find($evaluationId);
 
          // Si l'évaluation n'existe pas, retour avec message d'erreur
          if (!$evaluation) {
@@ -1000,7 +975,8 @@ LIMIT 1;
          }
 
          // Instanciation de la machine d'état
-         $evaluationMachine = new EvaluationStateMachine($evaluationId, $evaluation->appreciations->toArray());
+         $evaluationMachine = new AssessmentStateMachine($evaluation->appreciations);
+
 
          // Vérification de la possibilité de transition
          if (!$evaluationMachine->canTransition($userRole)) {

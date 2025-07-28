@@ -3,17 +3,17 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\DefaultCriteria;
+use App\Models\AssessmentCriterionTemplate;
 
 class FullevaluationCriteriaController extends Controller
 {
    public function create()
    {
       $userId = auth()->id();
-      $criteria = DefaultCriteria::getUserCriterias($userId);
+      $criteria = AssessmentCriterionTemplate::getUserCriteria($userId);
 
       if ($criteria->isEmpty()) {
-         $criteria = DefaultCriteria::getDefaultCriteria();
+         $criteria = AssessmentCriterionTemplate::getDefaultCriteria();
       }
       return view('fullevaluation-criteria-create', compact('criteria'));
    }
@@ -23,7 +23,7 @@ class FullevaluationCriteriaController extends Controller
       $criteriasData = $request->input('criteria');
       $userId = auth()->id();
 
-      DefaultCriteria::saveUserCriteria($criteriasData, $userId);
+      AssessmentCriterionTemplate::saveUserCriteria($criteriasData, $userId);
 
       return redirect()->route('dashboard')
          ->with('success', __("Custom criteria updated successfully"));
