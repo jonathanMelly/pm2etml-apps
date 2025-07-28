@@ -8,7 +8,6 @@ use App\Http\Requests\StoreEvaluationRequest;
 use App\Models\Assessment;
 use App\Models\AssessmentCriterion;
 use App\Models\AssessmentCriterionTemplate;
-use App\Models\EvaluationSetting;
 use App\Models\WorkerContractAssessment;
 use App\Services\AssessmentStateMachine;
 use Illuminate\Foundation\Http\FormRequest;
@@ -24,12 +23,17 @@ use Illuminate\Support\Facades\Log;
 
 class AssessmentController extends Controller
 {
-   private $visibleCursors;
-
+   private array $visibleCursors;
 
    public function __construct()
    {
-      $this->visibleCursors = EvaluationSetting::getVisibleCursors();
+       //TODO constantes ?
+      $this->visibleCursors = [
+          'auto80' => true,
+          'eval80' => true,
+          'auto100' => false,
+          'eval100' => false
+      ];
    }
 
    /**
@@ -632,7 +636,7 @@ class AssessmentController extends Controller
          // Ajouter la StateMachine à chaque étudiant
          $studentsDetailsQuery->transform(function ($details) {
             // ajouter peut-etre l'évaluateur ?
-            $eval = $this->getExistingEvaluations($details->student_id, $details->job_id);
+            $eval = $this->getExistingAssessment($details->student_id);
 
             if ($eval) {
                $details->evaluation_id = $eval->id;
@@ -651,7 +655,7 @@ class AssessmentController extends Controller
 
          if ($studentsDetails->isNotEmpty()) {
             $studentDetails = $studentsDetails->first();
-            $eval = $this->getExistingEvaluations($studentDetails->student_id, $studentDetails->job_id);
+            $eval = $this->getExistingAssessment($studentDetails->student_id);
 
             $studentDetails->stateMachine = new AssessmentStateMachine($eval->appreciations);
          } else {
@@ -718,7 +722,7 @@ class AssessmentController extends Controller
 
       return $students->map(function ($student) {
          // Récupérer les évaluations pour cet étudiant
-         $existingEvaluations = $this->getExistingEvaluations($student->student_id);
+         $existingEvaluations = $this->getExistingAssessment($student->student_id);
          $evaluationsData = $this->mapExistingEvaluations($existingEvaluations);
 
          // Retourner les données formatées pour cet étudiant
@@ -741,14 +745,13 @@ class AssessmentController extends Controller
 
 
 
-   private function getExistingEvaluations($studentId)
+   private function getExistingAssessment($studentId)
    {
        return WorkerContractAssessment::query()->
-        whereRelation('workerContract.groupMember.user','id', '=', $studentId)
-           ->orderBy('created_at', 'desc')->get();
+        whereRelation('workerContract.groupMember.user','id', '=', $studentId)->first();
    }
 
-   private function mapExistingEvaluations(WorkerContractAssessment $existingEvaluation)
+   private function mapExistingEvaluations(WorkerContractAssessment|null $existingEvaluation)
    {
       // Vérifie si l'évaluation existe
       if ($existingEvaluation === null) {
@@ -848,10 +851,8 @@ class AssessmentController extends Controller
 
    private function getAppreciationLabels()
    {
-      // Récupérer les labels d'appréciation, gérer le cache si nécessaire.
-      return EvaluationSetting::where('key', 'appreciationLabels')
-         ->first()
-         ?->value ?? [];
+       //TODO cache / constantes
+      return ["NA", "PA", "A", "LA"];
    }
 
    public function updateStatus(FormRequest $request)

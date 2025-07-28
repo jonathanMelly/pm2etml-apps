@@ -30,6 +30,11 @@ return new class extends Migration {
             $table->timestamps();
         });
 
+        //Relation miroire
+        Schema::table(tbl(\App\Models\WorkerContract::class), function (Blueprint $table) {
+            $table->foreignIdFor(App\Models\WorkerContractAssessment::class);
+        });
+
         Schema::create(tbl(\App\Models\AssessmentCriterionCategory::class), function (Blueprint $table) {
             $table->id();
 
@@ -79,9 +84,16 @@ return new class extends Migration {
     public function down(): void
     {
         Permission::firstOrFail(['name' => 'contract.assess'])->delete();
+
+        Schema::table(tbl(\App\Models\WorkerContract::class), function (Blueprint $table) {
+            $table->dropForeignIdFor(\App\Models\WorkerContractAssessment::class);
+        });
+
         Schema::dropIfExists(tbl(\App\Models\WorkerContractAssessment::class));
         Schema::dropIfExists(tbl(\App\Models\AssessmentCriterion::class));
         Schema::dropIfExists(tbl(\App\Models\AssessmentCriterionTemplate::class));
         Schema::dropIfExists(tbl(\App\Models\AssessmentCriterionCategory::class));
+
+
     }
 };
