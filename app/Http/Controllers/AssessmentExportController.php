@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
-class EvaluationExportController extends Controller
+class AssessmentExportController extends Controller
 {
     /**
      * Handle the incoming request.

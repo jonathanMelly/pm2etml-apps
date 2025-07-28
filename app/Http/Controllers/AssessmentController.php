@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Log;
 // Constantes ou enums
 
 
-class EvaluationController extends Controller
+class AssessmentController extends Controller
 {
    private $visibleCursors;
 

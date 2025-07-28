@@ -38,7 +38,7 @@ class AssessmentStateMachine
 
    private function computeState(): void
    {
-      if (!is_array($this->appreciations) || empty($this->appreciations)) {
+      if (empty($this->appreciations)) {
          $this->currentState = \App\Constants\AssessmentState::NOT_EVALUATED;
          return;
       }

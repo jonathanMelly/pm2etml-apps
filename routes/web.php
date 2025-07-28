@@ -7,11 +7,11 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\SSOController;
 use App\Http\Controllers\ContractController;
-use App\Http\Controllers\FullevaluationCriteriaController;
+use App\Http\Controllers\AssessmentTemplateController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeployController;
 use App\Http\Controllers\DmzAssetController;
-use App\Http\Controllers\EvaluationController;
+use App\Http\Controllers\AssessmentController;
 use App\Http\Controllers\JobDefinitionController;
 use App\Http\Controllers\JobDefinitionDocAttachmentController;
 use App\Http\Controllers\JobDefinitionMainImageAttachmentController;
@@ -64,19 +64,19 @@ Route::middleware(['auth', 'app'])->group(function () {
         ->name('contracts.bulkUpdate');
 
     // Start HCS
-    Route::get('evaluation/fullEvaluation/{ids}', [EvaluationController::class, 'fullEvaluation'])->name('evaluation.fullEvaluation');
-    Route::post('evaluation/storeEvaluation', [EvaluationController::class, 'storeEvaluation'])->name('evaluation.storeEvaluation');;
+    Route::get('evaluation/fullEvaluation/{ids}', [AssessmentController::class, 'fullEvaluation'])->name('evaluation.fullEvaluation');
+    Route::post('evaluation/storeEvaluation', [AssessmentController::class, 'storeEvaluation'])->name('evaluation.storeEvaluation');;
 
     // Route pour afficher le formulaire de création ou de modification des critères personnalisés
     Route::group(['middleware' => ['role:' . implode("|", RoleName::TEACHER_AND_HIGHER_RANK)]], function () {
-        Route::get('/criterias/create', [FullevaluationCriteriaController::class, 'create'])
+        Route::get('/criterias/create', [AssessmentTemplateController::class, 'create'])
             ->name('criterias.create');
-        Route::post('/criterias/update', [FullevaluationCriteriaController::class, 'update'])
+        Route::post('/criterias/update', [AssessmentTemplateController::class, 'update'])
             ->name('criterias.update');
     });
 
-    Route::post('api/evaluations/update-status', [EvaluationController::class, 'updateStatus'])->name('evaluations.update-status');
-    Route::post('api/evaluation/transition', [EvaluationController::class, 'handleTransition'])->name('evaluation.transition');
+    Route::post('api/evaluations/update-status', [AssessmentController::class, 'updateStatus'])->name('evaluations.update-status');
+    Route::post('api/evaluation/transition', [AssessmentController::class, 'handleTransition'])->name('evaluation.transition');
 
     // Générateur de pdf
     Route::get('/pdf-template/{type}', function ($type) {
@@ -139,7 +139,7 @@ Route::middleware(['auth', 'app'])->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 
-    Route::get('evaluation-export', \App\Http\Controllers\EvaluationExportController::class)->name('evaluation-export');
+    Route::get('evaluation-export', \App\Http\Controllers\AssessmentExportController::class)->name('evaluation-export');
 
     // Manage pending wishes
     Route::group(['middleware' => ['role:' . implode("|", RoleName::TEACHER_AND_HIGHER_RANK)]], function () {

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\AssessmentCriterionTemplate;
 
-class FullevaluationCriteriaController extends Controller
+class AssessmentTemplateController extends Controller
 {
    public function create()
    {
