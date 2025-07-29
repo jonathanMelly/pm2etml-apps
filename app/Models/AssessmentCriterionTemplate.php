@@ -8,6 +8,14 @@ use Illuminate\Support\Collection;
 
 class AssessmentCriterionTemplate extends Model
 {
+    public function category()
+    {
+        return $this->belongsTo(
+            \App\Models\AssessmentCriterionCategory::class,
+            'assessment_criterion_category_id',
+            'id'
+        );
+    }
 
     public function user()
     {
@@ -28,33 +36,67 @@ class AssessmentCriterionTemplate extends Model
             ->get();
     }
 
+    // public static function saveUserCriteria($criteriasData, $userId)
+    // {
+    //     // Supprimer uniquement les critères personnalisés pour l'utilisateur connecté
+    //     self::where('user_id', $userId)->delete();
+
+    //     foreach ($criteriasData as $index => $data) {
+    //         // Si l'index dépasse 8, on log et on arrête la fonction
+    //         if ($index >= 8) {
+    //             Log::warning('Tentative d\'assignation d\'une position supérieure à 8 pour l\'utilisateur', [
+    //                 'user_id' => $userId,
+    //                 'invalid_index' => $index,
+    //                 'criterias_data' => $criteriasData,
+    //             ]);
+    //             return false; // Quitte la fonction
+    //         }
+
+    //         // La position est l'index + 1
+    //         $position = $index + 1;
+
+    //         // On crée un nouveau critère ou met à jour l'existant pour l'utilisateur
+    //         $criteria = self::where('user_id', $userId)->where('position', $position)->first() ?? new self();
+
+    //         $criteria->name = $data['name'];
+    //         $criteria->category = $data['category'];
+    //         $criteria->description = $data['description'];
+    //         $criteria->user_id = $userId; // Associe le critère à l'utilisateur connecté
+    //         $criteria->position = $position; // Utilise la colonne position pour l'ordre
+
+    //         $criteria->save();
+    //     }
+
+    //     return true;
+    // }
+
     public static function saveUserCriteria($criteriasData, $userId)
     {
         // Supprimer uniquement les critères personnalisés pour l'utilisateur connecté
         self::where('user_id', $userId)->delete();
 
         foreach ($criteriasData as $index => $data) {
-            // Si l'index dépasse 8, on log et on arrête la fonction
+            // Si l'index dépasse 7 (donc position > 8), on log et on arrête
             if ($index >= 8) {
-                Log::warning('Tentative d\'assignation d\'une position supérieure à 8 pour l\'utilisateur', [
+                Log::warning('Tentative d\'assignation d\'une position supérieure à 8', [
                     'user_id' => $userId,
                     'invalid_index' => $index,
                     'criterias_data' => $criteriasData,
                 ]);
-                return false; // Quitte la fonction
+                return false;
             }
 
-            // La position est l'index + 1
             $position = $index + 1;
 
-            // On crée un nouveau critère ou met à jour l'existant pour l'utilisateur
             $criteria = self::where('user_id', $userId)->where('position', $position)->first() ?? new self();
 
             $criteria->name = $data['name'];
-            $criteria->category = $data['category'];
             $criteria->description = $data['description'];
-            $criteria->user_id = $userId; // Associe le critère à l'utilisateur connecté
-            $criteria->position = $position; // Utilise la colonne position pour l'ordre
+            $criteria->user_id = $userId;
+            $criteria->position = $position;
+
+            // Utilise 'assessment_criterion_category_id' au lieu de 'category'
+            $criteria->assessment_criterion_category_id = $data['category_id'] ?? 1; // 1 = par défaut
 
             $criteria->save();
         }

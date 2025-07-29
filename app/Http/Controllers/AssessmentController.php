@@ -488,22 +488,44 @@ class AssessmentController extends Controller
       }
    }
 
+   // private function getCriteriaGrouped($userCustomId): \Illuminate\Support\Collection
+   // {
+   //    // Vérifier si des préférences existent pour cet utilisateur
+   //    $userCriterias = AssessmentCriterionTemplate::where('user_id', $userCustomId)->get();
+
+   //    // Si des préférences existent, les utiliser
+   //    if ($userCriterias->isNotEmpty()) {
+   //       return $userCriterias->groupBy(fn($crit) => trim($crit['category']));
+   //    }
+
+   //    // Sinon, utiliser les critères par défaut
+   //    $defaultCriterias = AssessmentCriterionTemplate::where('user_id', 0)->get();
+
+   //    return $defaultCriterias->groupBy(fn($crit) => trim($crit['category']));
+   // }
+
    private function getCriteriaGrouped($userCustomId): \Illuminate\Support\Collection
    {
-      // Vérifier si des préférences existent pour cet utilisateur
-      $userCriterias = AssessmentCriterionTemplate::where('user_id', $userCustomId)->get();
+      // Charger les critères avec leur catégorie
+      $query = AssessmentCriterionTemplate::with('category')
+         ->where('user_id', $userCustomId)
+         ->orderBy('position');
 
-      // Si des préférences existent, les utiliser
-      if ($userCriterias->isNotEmpty()) {
-         return $userCriterias->groupBy(fn($crit) => trim($crit['category']));
+      // Si aucun critère pour cet utilisateur, utiliser les critères par défaut (user_id = 0)
+      if ($query->doesntExist()) {
+         $query = AssessmentCriterionTemplate::with('category')
+            ->where('user_id', 0)
+            ->orderBy('position');
       }
 
-      // Sinon, utiliser les critères par défaut
-      $defaultCriterias = AssessmentCriterionTemplate::where('user_id', 0)->get();
+      $criteria = $query->get();
 
-      return $defaultCriterias->groupBy(fn($crit) => trim($crit['category']));
+      // Regrouper par nom de catégorie
+      return $criteria->groupBy(function ($criterion) {
+         // Si la catégorie existe, on utilise son nom, sinon "Autres"
+         return $criterion->category ? trim($criterion->category->name) : 'Autres';
+      });
    }
-
 
    public function getCriterias()
    {
@@ -866,7 +888,6 @@ class AssessmentController extends Controller
          'isTeacher' => $isTeacher,
          'jsonSave' => $allJsonSave,
       ];
-
       return view('contracts-fullEvaluation', $viewData);
    }
 
