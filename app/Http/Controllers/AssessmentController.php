@@ -27,12 +27,12 @@ class AssessmentController extends Controller
 
    public function __construct()
    {
-       //TODO constantes ?
+      //TODO constantes ?
       $this->visibleCursors = [
-          'auto80' => true,
-          'eval80' => true,
-          'auto100' => false,
-          'eval100' => false
+         'auto80' => true,
+         'eval80' => true,
+         'auto100' => false,
+         'eval100' => false
       ];
    }
 
@@ -650,14 +650,36 @@ class AssessmentController extends Controller
          });
 
          $studentsDetails = $studentsDetailsQuery;
-      } else { // Is student ?
+      } else {
+
+         // // Is student ?
+         // $studentsDetails = $this->getStudentEvaluationDetailsByContractId($ids)->get();
+
+         // if ($studentsDetails->isNotEmpty()) {
+         //    $studentDetails = $studentsDetails->first();
+         //    $eval = $this->getExistingAssessment($studentDetails->student_id);
+         //    dd($eval);
+         //    $studentDetails->stateMachine = new AssessmentStateMachine($eval->appreciations);
+         // } else {
+         //    Log::warning("Aucun détail d'étudiant trouvé pour les ID de contrat : " . json_encode($ids));
+         //    $studentsDetails = collect();
+         // }
+
+
+         // Is student ?
          $studentsDetails = $this->getStudentEvaluationDetailsByContractId($ids)->get();
 
          if ($studentsDetails->isNotEmpty()) {
             $studentDetails = $studentsDetails->first();
             $eval = $this->getExistingAssessment($studentDetails->student_id);
 
-            $studentDetails->stateMachine = new AssessmentStateMachine($eval->appreciations);
+            // Vérifie que $eval existe
+            if ($eval && $eval->appreciations) {
+               $studentDetails->stateMachine = new AssessmentStateMachine($eval->appreciations);
+            } else {
+               //  Crée une machine d'état vide si aucune évaluation n'existe
+               $studentDetails->stateMachine = new AssessmentStateMachine([]);
+            }
          } else {
             Log::warning("Aucun détail d'étudiant trouvé pour les ID de contrat : " . json_encode($ids));
             $studentsDetails = collect();
@@ -747,8 +769,7 @@ class AssessmentController extends Controller
 
    private function getExistingAssessment($studentId)
    {
-       return WorkerContractAssessment::query()->
-        whereRelation('workerContract.groupMember.user','id', '=', $studentId)->first();
+      return WorkerContractAssessment::query()->whereRelation('workerContract.groupMember.user', 'id', '=', $studentId)->first();
    }
 
    private function mapExistingEvaluations(WorkerContractAssessment|null $existingEvaluation)
@@ -765,7 +786,7 @@ class AssessmentController extends Controller
          'status_eval' => $existingEvaluation->result,
          'id_eval' => $existingEvaluation->id,
          'appreciations' => $existingEvaluation->assessments()->get()->map(function (AssessmentCriterion $appreciation) {
-             /* @var $apprecition AssessmentCriterion */
+            /* @var $apprecition AssessmentCriterion */
             return [
                'level' => $appreciation->level,
                'date' => $appreciation->date,
@@ -851,7 +872,7 @@ class AssessmentController extends Controller
 
    private function getAppreciationLabels()
    {
-       //TODO cache / constantes
+      //TODO cache / constantes
       return ["NA", "PA", "A", "LA"];
    }
 
