@@ -9,71 +9,77 @@ class AssessmentCriterion extends Model
 {
     use HasFactory;
 
-    // Indique que l'ID de la table `criteria` est un BigInt
-    protected $primaryKey = 'id';
-
     // Désactive la gestion automatique des `timestamps`
     public $timestamps = false;
 
     // Indique les colonnes qui peuvent être assignées massivement
     protected $fillable = [
-        'level',
-        'appreciation_id',
-        'name',
-        'value',
+        'timing',           // level renommé en timing
+        'assessment_id',    // lien vers l'appréciation
+        'template_id',      // remplace name (pointe vers template)
+        'value',            // na,pa,a,la
         'checked',
-        'remark',
-        'position'
+        'remark_criteria',
+        'position',
+    ];
+
+    // Casts pour les types de données
+    protected $casts = [
+        'value' => 'integer',
+        'checked' => 'boolean',
+        'position' => 'integer',
     ];
 
     /**
-     * Relation avec l'appréciation (un à plusieurs)
+     * Relation avec l'appréciation (many to one)
      */
-    public function appreciation()
+    public function assessment()
     {
-        return $this->belongsTo(Assessment::class, 'appreciation_id');
+        return $this->belongsTo(Assessment::class, 'assessment_id');
+    }
+
+    /**
+     * Relation avec le template (many to one)
+     */
+    public function template()
+    {
+        return $this->belongsTo(Template::class, 'template_id');
     }
 
     /**
      * Retourne les critères d'une appréciation spécifique
      */
-    public static function getCriteriaByAppreciation($appreciationId)
+    public static function getCriteriaByAppreciation($assessmentId)
     {
-        return self::where('appreciation_id', $appreciationId)->get();
+        return self::where('assessment_id', $assessmentId)->get();
     }
 
     /**
      * Crée un critère pour une appréciation spécifique
      */
-    public static function createCriteria($appreciationId, $level, $name, $value, $checked, $remark, $position)
+    public static function createCriteria($assessmentId, $timing, $templateId, $value, $checked, $remark, $position)
     {
         return self::create([
-            'appreciation_id' => $appreciationId,
-            'level' => $level,
-            'name' => $name,
+            'assessment_id' => $assessmentId,
+            'timing' => $timing,
+            'template_id' => $templateId,
             'value' => $value,
             'checked' => $checked,
-            'remark' => $remark,
+            'remark_criteria' => $remark,
             'position' => $position
         ]);
     }
 
-    public function criteria()
-    {
-        return $this->hasMany(AssessmentCriterion::class);
-    }
-
-
     /**
-     * Met à jour un critère par son ID
+     * Met à jour un critère
      */
-    public function updateCriteria($level, $name, $value, $checked, $remark)
+    public function updateCriteria($timing, $templateId, $value, $checked, $remark)
     {
-        $this->level = $level;
-        $this->name = $name;
+        $this->timing = $timing;
+        $this->template_id = $templateId;
         $this->value = $value;
         $this->checked = $checked;
-        $this->remark = $remark;
+        $this->remark_criteria = $remark;
         $this->save();
     }
 
@@ -94,7 +100,7 @@ class AssessmentCriterion extends Model
     }
 
     /**
-     * Retourne le nom de la valeur (par exemple, "NA", "PA", "A", "LA")
+     * Retourne le nom de la valeur
      */
     public static function getValueName($value)
     {
@@ -106,5 +112,37 @@ class AssessmentCriterion extends Model
         ];
 
         return $valueNames[$value] ?? 'Unknown';
+    }
+
+    /**
+     * Scope pour filtrer par timing
+     */
+    public function scopeByTiming($query, $timing)
+    {
+        return $query->where('timing', $timing);
+    }
+
+    /**
+     * Scope pour filtrer par template
+     */
+    public function scopeByTemplate($query, $templateId)
+    {
+        return $query->where('template_id', $templateId);
+    }
+
+    /**
+     * Scope pour filtrer par valeur
+     */
+    public function scopeByValue($query, $value)
+    {
+        return $query->where('value', $value);
+    }
+
+    /**
+     * Scope pour filtrer par statut checked
+     */
+    public function scopeChecked($query, $checked = true)
+    {
+        return $query->where('checked', $checked);
     }
 }

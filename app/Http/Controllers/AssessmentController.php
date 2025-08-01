@@ -14,6 +14,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+
 // Modèles
 
 // Requêtes personnalisées
@@ -36,212 +37,211 @@ class AssessmentController extends Controller
       ];
    }
 
-   /**
-    * Enregistre une nouvelle évaluation pour un étudiant,
-    * y compris les appréciations et les critères associés.
-    *
-    * Cette fonction reçoit une requête POST contenant les données d'évaluation sous forme de JSON.
-    * Elle valide et traite les appréciations et les critères associés à chaque étudiant. L'évaluation
-    * est ensuite sauvegardée dans la base de données, et les relations avec les critères et appréciations
-    * sont établies via des tables associées.
-    *
-    * En cas de succès, un message de confirmation est renvoyé avec les détails de l'évaluation enregistrée.
-    * En cas d'erreur (données invalides ou problème lors de la sauvegarde), un message d'erreur est renvoyé.
-    *
-    * La transaction est utilisée pour garantir l'intégrité des données en cas d'échec d'une des étapes.
-    *
-    * @param  \App\Http\Requests\StoreEvaluati onRequest  $request
-    * : La requête contenant les données de l'évaluation à enregistrer.
-    * @return \Illuminate\Http\JsonResponse
-    * : La réponse JSON contenant un message de succès ou d'erreur, selon le résultat de l'opération.
-    *
-    * @throws \Exception En cas d'erreur lors du traitement ou de la sauvegarde des données.
+
+      /**
+    * Store a newly created resource in storage.
     */
    public function storeEvaluation(StoreEvaluationRequest $request)
    {
       try {
-         Log::info('storeEvaluation démarré', ['data' => $request->all()]);
+         // Les données sont déjà validées par StoreEvaluationRequest
+         $evaluationData = $request->input('evaluation_data');
 
-         // 1. Validation
-         $validated = $request->validated();
-         Log::info('Données validées', ['data' => $validated]);
+         // Appel de la méthode de création
+         return $this->createEvaluation($evaluationData);
 
-         // 2. Récupération propre des données
-         $evaluationData = $validated['evaluation_data'] ?? [];
-         Log::info('Données d\'évaluation extraites', ['evaluation_data' => $evaluationData]);
-
-         $isUpdate = filter_var($validated['isUpdate'] ?? false, FILTER_VALIDATE_BOOLEAN);
-         Log::info('Statut de mise à jour', ['isUpdate' => $isUpdate]);
-
-         // 3. Vérification de la structure d'évaluation
-         if (empty($evaluationData)) {
-            Log::error('Aucune donnée d\'évaluation reçue');
-            throw new \Exception("Aucune donnée d'évaluation reçue.");
-         } else {
-            Log::info('Données d\'évaluation validées', ['evaluation_data' => $evaluationData]);
-         }
-
-         // 4. Nettoyage des appréciations
-         if (!isset($evaluationData['appreciations']) || !is_array($evaluationData['appreciations'])) {
-            throw new \Exception("Aucune appréciation valide reçue.");
-         }
-
-         foreach ($evaluationData['appreciations'] as &$appreciation) {
-            if (!isset($appreciation['criteria']) || !is_array($appreciation['criteria'])) {
-               throw new \Exception("Appréciation invalide : critères manquants ou mal formés.");
-            }
-
-            foreach ($appreciation['criteria'] as &$criterion) {
-               $criterion['remark'] = $criterion['remark'] ?? '';
-            }
-         }
-
-         // 5. Log
-         Log::info('isUpdate flag détecté', ['isUpdate' => $isUpdate]);
-
-         DB::beginTransaction();
-
-         // 6. Création ou mise à jour
-         if ($isUpdate) {
-            Log::info('Mise à jour d\'évaluation en cours', ['evaluationData' => $evaluationData]);
-            $response = $this->updateEvaluation($evaluationData);
-         } else {
-            Log::info('Création d\'évaluation en cours', ['evaluationData' => $evaluationData]);
-            $response = $this->createEvaluation($evaluationData);
-         }
-
-         DB::commit();
-
-         $ids = $request['ids'] ?? null;
-         Log::info('ids = ', ['ids' => $ids]);
-         if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'message' => 'Évaluation enregistrée avec succès']);
-         } else {
-            return redirect()->route('evaluation.fullEvaluation', ['ids' => $ids])
-               ->with('success', 'Évaluation enregistrée avec succès');
-         }
-         return $response;
-      } catch (\Illuminate\Validation\ValidationException $e) {
-         Log::error('Erreur de validation dans storeEvaluation', ['errors' => $e->errors()]);
-         return response()->json(['errors' => $e->errors()], 422);
       } catch (\Exception $e) {
-         DB::rollBack();
-         Log::error('Erreur dans storeEvaluation', [
-            'message' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
+         Log::error('Erreur lors du traitement de la requête d\'évaluation', [
+               'error_message' => $e->getMessage(),
+               'trace' => $e->getTraceAsString(),
+               'request_data' => $request->all(),
          ]);
-         return response()->json(['error' => 'Une erreur est survenue lors du traitement.'], 500);
+
+         return response()->json([
+               'success' => false,
+               'message' => 'Erreur lors de la création de l\'évaluation.',
+               'error' => $e->getMessage()
+         ], 500);
       }
    }
 
-   private function createEvaluation(array $data)
-   {
-      // Début de la création de l'évaluation - log de l'entrée
-      Log::info('Début de la création d\'une nouvelle évaluation', [
-         'data_received' => $data,
-         'authenticated_user_id' => auth()->user()->id,
-         'timestamp' => now(),
-      ]);
+/**
+ * Création de l'évaluation
+ */
+private function createEvaluation(array $data)
+{
+    // Début de la création de l'évaluation - log de l'entrée
+    Log::info('Début de la création d\'une nouvelle évaluation', [
+        'data_received' => $data,
+        'authenticated_user_id' => auth()->user()->id,
+        'timestamp' => now(),
+    ]);
 
-      try {
-         // Récupération des informations utilisateur et définition des rôles
-         $user = auth()->user();
-         $isStudent = $user->role === 'student';  // Vérifier le rôle de l'utilisateur
-         $isTeacher = $user->role === 'teacher';
-         $evaluationLevel = $data['appreciations'][0]['level']; // Récupère le niveau d'évaluation
+    try {
+        // Récupération des informations utilisateur et définition des rôles
+        $user = auth()->user();
+        $isStudent = $user->hasRole('student');
+        $isTeacher = $user->hasRole('teacher');
+        
+        // Vérifier qu'il y a des appréciations
+        if (empty($data['appreciations'])) {
+            throw new \InvalidArgumentException("Aucune appréciation fournie.");
+        }
+        
+        $evaluationLevel = $data['appreciations'][0]['level'] ?? '';
 
-         // Validation pour les étudiants
-         if ($isStudent) {
-            if (!in_array($evaluationLevel, ['auto80', 'auto100'])) {
-               // Log de l'erreur si un étudiant soumet un niveau non autorisé
-               Log::error('Un étudiant tente de soumettre un niveau d\'évaluation non autorisé', [
-                  'auth_user_id' => $user->id,
-                  'evaluation_level' => $evaluationLevel,
-                  'role' => 'student',
-               ]);
-               throw new \InvalidArgumentException("Les étudiants ne peuvent soumettre que des auto-évaluations (auto80 ou auto100).");
-            }
+        Log::info('Niveau evaluation:', [$evaluationLevel]);
 
-            if ($user->id !== $data['student_id']) {
-               // Log de l'erreur si un étudiant essaie de soumettre une auto-évaluation pour un autre étudiant
-               Log::error('Un étudiant tente de soumettre une auto-évaluation pour un autre étudiant.', [
-                  'auth_user_id' => $user->id,
-                  'submitted_for_student_id' => $data['student_id'],
-               ]);
-               throw new \InvalidArgumentException("Un étudiant ne peut soumettre une évaluation que pour lui-même.");
-            }
-         }
+        // Vérifier si une évaluation principale existe déjà avec les mêmes identifiants
+        $existingEvaluation = WorkerContractAssessment::where([
+            'worker_contract_id' => $data['student_id'] ?? 0,
+            'teacher_id' => $data['evaluator_id'] ?? 0,
+            'student_id' => $data['student_id'] ?? 0,
+            'job_id' => $data['job_id'] ?? 0,
+            'class_id' => $data['student_class_id'] ?? 0,
+        ])->first();
 
-         // Validation pour les enseignants
-         if ($isTeacher) {
-            if (!in_array($evaluationLevel, ['eval80', 'eval100'])) {
-               // Log de l'erreur si un enseignant soumet un niveau non autorisé
-               Log::error('Un enseignant tente de soumettre un niveau d\'évaluation non autorisé', [
-                  'auth_user_id' => $user->id,
-                  'evaluation_level' => $evaluationLevel,
-                  'role' => 'teacher',
-               ]);
-               throw new \InvalidArgumentException("Les enseignants ne peuvent soumettre que des évaluations (eval80 ou eval100).");
-            }
+        if ($existingEvaluation) {
+            // Si une évaluation existe déjà, l'utiliser
+            $evaluation = $existingEvaluation;
+            Log::info('Évaluation existante trouvée', ['evaluation_id' => $evaluation->id]);
+        } else {
+            // Sinon, créer une nouvelle évaluation principale
+            $evaluation = new WorkerContractAssessment();
+            $evaluation->worker_contract_id = $data['student_id'] ?? 0;
+            $evaluation->teacher_id = $data['evaluator_id'] ?? 0;
+            $evaluation->student_id = $data['student_id'] ?? 0;
+            $evaluation->job_id = $data['job_id'] ?? 0;
+            $evaluation->class_id = $data['student_class_id'] ?? 0;
+            $evaluation->job_title = $data['job_title'] ?? '';
+            $evaluation->status = '';
+            $evaluation->save();
+            Log::info('Nouvelle évaluation principale créée', ['evaluation_id' => $evaluation->id]);
+        }
 
-            if ($user->id !== $data['evaluator_id']) {
-               // Log de l'erreur si un enseignant soumet une évaluation avec un ID incorrect
-               Log::error('Un enseignant tente de soumettre une évaluation avec un ID non valide.', [
-                  'auth_user_id' => $user->id,
-                  'submitted_evaluator_id' => $data['evaluator_id'],
-               ]);
-               throw new \InvalidArgumentException("Un enseignant ne peut soumettre une évaluation qu'en tant qu'évaluateur autorisé.");
-            }
-         }
-
-         log::info('Niveau evaluation:', [$evaluationLevel]);
-
-         // Création de l'évaluation dans la base de données
-         $evaluation = new WorkerContractAssessment();
-         $evaluation->evaluator_id = $data['evaluator_id'];
-         $evaluation->student_id = $data['student_id'];
-         $evaluation->job_definitions_id = $data['job_id'];
-         $evaluation->class_id = $data['student_class_id'];
-         $evaluation->student_remark = $data['student_remark'] ?? null;
-         // $evaluation->status = 'not_evaluated'; // Par défaut, une évaluation commence avec "not_evaluated"
-         $evaluation->save();
-
-         Log::info('Nouvelle évaluation créée avec succès', [
-            'evaluation_id' => $evaluation->id,
-            'evaluator_id' => $data['evaluator_id'],
-            'student_id' => $data['student_id'],
-            'job_id' => $data['job_id'],
-            'class_id' => $data['student_class_id'],
-            'timestamp' => now(),
-         ]);
-
-         // Traitement des appréciations et des critères associés à l'évaluation
-         $this->processAppreciations($evaluation, $data['appreciations']);
-         Log::info('Appréciations et critères traités pour l\'évaluation', [
+        // Pour chaque appréciation (auto80, eval80, auto100, eval100), créer une assessment séparée
+        $this->processAppreciations($evaluation, $data['appreciations'], $data['student_remark'] ?? '');
+        Log::info('Appréciations et critères traités pour l\'évaluation', [
             'evaluation_id' => $evaluation->id,
             'appreciations_count' => count($data['appreciations']),
             'timestamp' => now(),
-         ]);
+        ]);
 
-         // Retourner la réponse en JSON après succès
-         return response()->json([
+        // Retourner la réponse en JSON après succès
+        $message = isset($existingEvaluation) ? 'Évaluation mise à jour avec succès.' : 'Évaluation créée avec succès.';
+        return response()->json([
             'success' => true,
-            'message' => 'Évaluation créée avec succès.',
+            'message' => $message,
             'data' => $evaluation
-         ], 200);
-      } catch (\Exception $e) {
-         // Log de l'erreur lors de la création de l'évaluation
-         Log::error('Erreur lors de la création de l\'évaluation', [
+        ], 200);
+        
+    } catch (\Exception $e) {
+        Log::error('Erreur lors de la création de l\'évaluation', [
             'error_message' => $e->getMessage(),
             'trace' => $e->getTraceAsString(),
             'request_data' => $data,
             'timestamp' => now(),
-         ]);
+        ]);
 
-         // Propagation de l'exception pour être gérée ailleurs
-         throw $e;
-      }
-   }
+        // Retourner une réponse JSON en cas d'erreur
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de la création de l\'évaluation.',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+/**
+ * Traitement des appréciations
+ */
+private function processAppreciations(WorkerContractAssessment $evaluation, array $appreciations, string $studentRemark = '')
+{
+    Log::info('processAppreciations appelé', [
+        'evaluation_id' => $evaluation->id,
+        'student_remark_param' => $studentRemark,
+        'student_remark_length' => strlen($studentRemark),
+        'appreciations_count' => count($appreciations)
+    ]);
+
+    foreach ($appreciations as $index => $appreciationData) {
+        Log::info('Traitement appréciation ' . $index, [
+            'timing' => $appreciationData['level'],
+            'date' => $appreciationData['date'],
+            'student_remark_to_save' => $studentRemark
+        ]);
+
+        // Vérifier si une assessment existe déjà pour ce timing
+        $existingAssessment = Assessment::where([
+            'worker_contract_assessment_id' => $evaluation->id,
+            'timing' => $appreciationData['level']
+        ])->first();
+
+        if ($existingAssessment) {
+            // Si une assessment existe déjà pour ce timing, la mettre à jour
+            $assessment = $existingAssessment;
+            $assessment->date = $appreciationData['date'];
+            $assessment->student_remark = $studentRemark;
+            $assessment->save();
+            
+            // Supprimer les critères existants
+            $assessment->criteria()->delete();
+            Log::info('Assessment existante mise à jour et critères supprimés', [
+                'assessment_id' => $assessment->id,
+                'timing' => $appreciationData['level']
+            ]);
+        } else {
+            // Sinon, créer une nouvelle assessment
+            $assessment = new Assessment();
+            $assessment->worker_contract_assessment_id = $evaluation->id;
+            $assessment->timing = $appreciationData['level'];
+            $assessment->date = $appreciationData['date'];
+            $assessment->student_remark = $studentRemark;
+            $assessment->save();
+            Log::info('Nouvelle Assessment créée', [
+                'assessment_id' => $assessment->id,
+                'timing' => $appreciationData['level']
+            ]);
+        }
+
+        // Traitement des critères associés à l'appréciation
+        if (isset($appreciationData['criteria']) && is_array($appreciationData['criteria'])) {
+            foreach ($appreciationData['criteria'] as $criteriaIndex => $criteriaData) {
+                Log::info('Création d\'un critère', [
+                    'assessment_id' => $assessment->id,
+                    'template_id' => $criteriaData['id'],
+                    'value' => $criteriaData['value'],
+                ]);
+
+                $criteria = new AssessmentCriterion();
+                $criteria->assessment_id = $assessment->id;
+                $criteria->timing = $appreciationData['level'];
+                $criteria->template_id = $criteriaData['id'];
+                $criteria->value = $criteriaData['value'];
+                $criteria->checked = $criteriaData['checked'] ?? false;
+                $criteria->remark_criteria = $criteriaData['remark'] ?? null;
+                $criteria->position = $criteriaIndex + 1;
+                $criteria->save();
+
+                Log::info('Critère créé avec succès', [
+                    'criteria_id' => $criteria->id,
+                    'assessment_id' => $assessment->id,
+                    'value' => $criteriaData['value'],
+                ]);
+            }
+        }
+        
+        Log::info('Assessment traitée avec ses critères', [
+            'assessment_id' => $assessment->id,
+            'timing' => $assessment->timing,
+            'student_remark_saved' => $assessment->student_remark
+        ]);
+    }
+
+    Log::info('Traitement des appréciations terminé pour l\'évaluation', ['evaluation_id' => $evaluation->id]);
+}
+
+
 
    private function updateEvaluation(array $data)
    {
@@ -384,62 +384,7 @@ class AssessmentController extends Controller
       }
    }
 
-   /**
-    * Charge les évaluations associées à un contrat spécifique.
-    *
-    * @param int $contractId L'ID du contrat dont on veut charger les évaluations.
-    * @return \Illuminate\Http\JsonResponse
-    */
-   private function processAppreciations(WorkerContractAssessment $evaluation, array $appreciations)
-   {
-      Log::info('Début du traitement des appréciations', ['evaluation_id' => $evaluation->id]);
-
-      foreach ($appreciations as $appreciationData) {
-         // Log avant de créer une appréciation
-         Log::info('Création de l\'appréciation', [
-            'evaluation_id' => $evaluation->id,
-            'level' => $appreciationData['level'],
-            'date' => $appreciationData['date'],
-         ]);
-
-         $appreciation = new Assessment();
-         $appreciation->evaluation_id = $evaluation->id;
-         $appreciation->level = $this->getLevelIndex($appreciationData['level']);
-         $appreciation->date = $appreciationData['date'];
-         $appreciation->save();
-
-         Log::info('Appréciation créée avec succès', ['appreciation_id' => $appreciation->id]);
-
-         // Traitement des critères associés à l'appréciation
-         foreach ($appreciationData['criteria'] as $criteriaData) {
-            // Log avant de créer un critère
-            Log::info('Création d\'un critère', [
-               'appreciation_id' => $appreciation->id,
-               'criteria_id' => $criteriaData['id'],
-               'name' => $criteriaData['name'],
-               'value' => $criteriaData['value'],
-            ]);
-
-            $criteria = new AssessmentCriterion();
-            $criteria->appreciation_id = $appreciation->id;
-            $criteria->position = $criteriaData['id'];
-            $criteria->name = $criteriaData['name'];
-            $criteria->value = $criteriaData['value'];
-            $criteria->checked = $criteriaData['checked'] ?? 0;
-            $criteria->remark = $criteriaData['remark'] ?? null;
-            $criteria->save();
-
-            // Log après la création du critère
-            Log::info('Critère créé avec succès', [
-               'criteria_id' => $criteria->id,
-               'appreciation_id' => $appreciation->id,
-               'value' => $criteriaData['value'],
-            ]);
-         }
-      }
-
-      Log::info('Traitement des appréciations terminé pour l\'évaluation', ['evaluation_id' => $evaluation->id]);
-   }
+  
 
    /**
     * Charge les évaluations associées à un contrat spécifique.
@@ -488,44 +433,32 @@ class AssessmentController extends Controller
       }
    }
 
-   // private function getCriteriaGrouped($userCustomId): \Illuminate\Support\Collection
-   // {
-   //    // Vérifier si des préférences existent pour cet utilisateur
-   //    $userCriterias = AssessmentCriterionTemplate::where('user_id', $userCustomId)->get();
 
-   //    // Si des préférences existent, les utiliser
-   //    if ($userCriterias->isNotEmpty()) {
-   //       return $userCriterias->groupBy(fn($crit) => trim($crit['category']));
-   //    }
+private function getCriteriaGrouped($userCustomId): \Illuminate\Support\Collection
+{
+    // Vérifier d'abord s'il y a des critères personnalisés
+    $hasCustomCriteria = AssessmentCriterionTemplate::where('user_id', $userCustomId)->exists();
+    
+    $query = AssessmentCriterionTemplate::with('category');
+    
+    if ($hasCustomCriteria) {
+        // Utiliser les critères personnalisés
+        $query->where('user_id', $userCustomId);
+    } else {
+        // Utiliser les critères par défaut (null ou 0)
+        $query->where(function($q) {
+            $q->whereNull('user_id')
+              ->orWhere('user_id', 0);
+        });
+    }
+    
+    $criteria = $query->orderBy('position')->get();
 
-   //    // Sinon, utiliser les critères par défaut
-   //    $defaultCriterias = AssessmentCriterionTemplate::where('user_id', 0)->get();
-
-   //    return $defaultCriterias->groupBy(fn($crit) => trim($crit['category']));
-   // }
-
-   private function getCriteriaGrouped($userCustomId): \Illuminate\Support\Collection
-   {
-      // Charger les critères avec leur catégorie
-      $query = AssessmentCriterionTemplate::with('category')
-         ->where('user_id', $userCustomId)
-         ->orderBy('position');
-
-      // Si aucun critère pour cet utilisateur, utiliser les critères par défaut (user_id = 0)
-      if ($query->doesntExist()) {
-         $query = AssessmentCriterionTemplate::with('category')
-            ->where('user_id', 0)
-            ->orderBy('position');
-      }
-
-      $criteria = $query->get();
-
-      // Regrouper par nom de catégorie
-      return $criteria->groupBy(function ($criterion) {
-         // Si la catégorie existe, on utilise son nom, sinon "Autres"
-         return $criterion->category ? trim($criterion->category->name) : 'Autres';
-      });
-   }
+    // Regrouper par nom de catégorie
+    return $criteria->groupBy(function ($criterion) {
+        return $criterion->category ? trim($criterion->category->name) : 'Autres';
+    });
+}
 
    public function getCriterias()
    {
@@ -673,20 +606,6 @@ class AssessmentController extends Controller
 
          $studentsDetails = $studentsDetailsQuery;
       } else {
-
-         // // Is student ?
-         // $studentsDetails = $this->getStudentEvaluationDetailsByContractId($ids)->get();
-
-         // if ($studentsDetails->isNotEmpty()) {
-         //    $studentDetails = $studentsDetails->first();
-         //    $eval = $this->getExistingAssessment($studentDetails->student_id);
-         //    dd($eval);
-         //    $studentDetails->stateMachine = new AssessmentStateMachine($eval->appreciations);
-         // } else {
-         //    Log::warning("Aucun détail d'étudiant trouvé pour les ID de contrat : " . json_encode($ids));
-         //    $studentsDetails = collect();
-         // }
-
 
          // Is student ?
          $studentsDetails = $this->getStudentEvaluationDetailsByContractId($ids)->get();

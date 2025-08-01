@@ -31,7 +31,6 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-
         //https://spatie.be/docs/laravel-permission/v5/basic-usage/super-admin
         // Implicitly grant "Super Admin" role all permissions
         // This works in the app by using gate-related functions like auth()->user->can() and @can()

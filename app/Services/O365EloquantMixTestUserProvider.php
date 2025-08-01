@@ -6,6 +6,9 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Log;
+
+
 use Illuminate\Contracts\Auth\Authenticatable as UserContract;
 
 class O365EloquantMixTestUserProvider extends O365EloquantMixUserProvider
@@ -15,6 +18,8 @@ class O365EloquantMixTestUserProvider extends O365EloquantMixUserProvider
      */
     public function validateCredentials(\Illuminate\Contracts\Auth\Authenticatable $user, array $credentials): bool
     {
+    
+        Log::info('Provider utilisé : ' . static::class);
 
         $plain = $this->getPassword($credentials);
 
