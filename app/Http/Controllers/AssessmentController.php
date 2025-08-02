@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 // Namespaces Laravel
 use App\Constants\RoleName;
 use App\Http\Requests\StoreEvaluationRequest;
+use App\Models\Contract;
 use App\Models\Assessment;
 use App\Models\AssessmentCriterion;
 use App\Models\AssessmentCriterionTemplate;
@@ -37,33 +38,84 @@ class AssessmentController extends Controller
       ];
    }
 
+/**
+ * Store a newly created resource in storage.
+ *
+ * @param  \App\Http\Requests\StoreEvaluationRequest  $request
+ * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+ */
+public function storeEvaluation(StoreEvaluationRequest $request)
+{
+    try {
+        // 1. Extraction des données validées
+        $evaluationData = $request->input('evaluation_data');
 
-      /**
-    * Store a newly created resource in storage.
-    */
-   public function storeEvaluation(StoreEvaluationRequest $request)
-   {
-      try {
-         // Les données sont déjà validées par StoreEvaluationRequest
-         $evaluationData = $request->input('evaluation_data');
+// 2. Traitement de la logique métier (création/mise à jour)
+        // La méthode createEvaluation retourne une response()->json()
+        $jsonResponse = $this->createEvaluation($evaluationData);
 
-         // Appel de la méthode de création
-         return $this->createEvaluation($evaluationData);
+        // 3. Déterminer le type de réponse en fonction de la requête
+        if ($request->wantsJson() || $request->expectsJson()) {
+            // --- Cas 1 : Requête AJAX/API ---
+            // Retourner directement la réponse JSON générée par createEvaluation
+            return $jsonResponse;
+        } else {
+            // --- Cas 2 : Soumission de formulaire classique ---
+            
+            // a. Extraire les données de la réponse JSON pour vérifier le succès
+            // getData(true) convertit l'objet JSON en tableau associatif
+            $responseData = $jsonResponse->getData(true); 
+            
+            if (isset($responseData['success']) && $responseData['success'] === true) {
+                // b. Récupération de l'ID pour la redirection
+                // L'ID provient des données de la requête, comme vu dans les logs ("ids":"234")
+                $ids = $request->input('ids'); 
+                
+                if (!$ids) {
+                     // Gestion d'erreur si 'ids' n'est pas présent
+                     Log::warning('ID de redirection manquant dans la requête', ['request_data' => $request->all()]);
+                     return redirect()->back()
+                                      ->with('error', 'Données de redirection manquantes.')
+                                      ->withInput();
+                }
 
-      } catch (\Exception $e) {
-         Log::error('Erreur lors du traitement de la requête d\'évaluation', [
-               'error_message' => $e->getMessage(),
-               'trace' => $e->getTraceAsString(),
-               'request_data' => $request->all(),
-         ]);
+                // c. Redirection vers la page souhaitée avec un message de succès
+                // Utilisez route() si vous avez une route nommée, ex: route('evaluation.full', ['id' => $ids])
+                return redirect()->to("/evaluation/fullEvaluation/{$ids}")
+                                 ->with('success', $responseData['message'] ?? 'Évaluation sauvegardée.');
+            } else {
+                // d. En cas d'erreur lors de la création (bien que le log montre un succès)
+                Log::warning('Erreur retournée par createEvaluation lors d\'une requête non-AJAX', ['response_data' => $responseData]);
+                return redirect()->back()
+                                 ->with('error', $responseData['message'] ?? 'Une erreur est survenue lors de la sauvegarde.')
+                                 ->withInput(); // Conserver les données du formulaire
+            }
+        }
 
-         return response()->json([
-               'success' => false,
-               'message' => 'Erreur lors de la création de l\'évaluation.',
-               'error' => $e->getMessage()
-         ], 500);
-      }
-   }
+    } catch (\Exception $e) {
+        // Journalisation de l'erreur
+        Log::error('Erreur lors du traitement de la requête d\'évaluation', [
+            'error_message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'request_data' => $request->all(),
+        ]);
+
+        // Réponse en fonction du type de requête
+        if ($request->wantsJson() || $request->expectsJson()) {
+            // --- Erreur pour requête AJAX ---
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la création de l\'évaluation.',
+                'error' => $e->getMessage()
+            ], 500);
+        } else {
+            // --- Erreur pour soumission classique ---
+            return redirect()->back()
+                             ->with('error', 'Erreur lors de la création de l\'évaluation: ' . $e->getMessage())
+                             ->withInput(); // Conserver les données du formulaire
+        }
+    }
+}
 
 /**
  * Création de l'évaluation
@@ -91,10 +143,11 @@ private function createEvaluation(array $data)
         $evaluationLevel = $data['appreciations'][0]['level'] ?? '';
 
         Log::info('Niveau evaluation:', [$evaluationLevel]);
+    
 
         // Vérifier si une évaluation principale existe déjà avec les mêmes identifiants
         $existingEvaluation = WorkerContractAssessment::where([
-            'worker_contract_id' => $data['student_id'] ?? 0,
+            'worker_contract_id' => $data['contract_id'] ?? 0,
             'teacher_id' => $data['evaluator_id'] ?? 0,
             'student_id' => $data['student_id'] ?? 0,
             'job_id' => $data['job_id'] ?? 0,
@@ -108,7 +161,7 @@ private function createEvaluation(array $data)
         } else {
             // Sinon, créer une nouvelle évaluation principale
             $evaluation = new WorkerContractAssessment();
-            $evaluation->worker_contract_id = $data['student_id'] ?? 0;
+            $evaluation->worker_contract_id = $data['contract_id'] ?? 0;
             $evaluation->teacher_id = $data['evaluator_id'] ?? 0;
             $evaluation->student_id = $data['student_id'] ?? 0;
             $evaluation->job_id = $data['job_id'] ?? 0;
@@ -242,7 +295,7 @@ private function processAppreciations(WorkerContractAssessment $evaluation, arra
 }
 
 
-
+// peut-etre plus nécessaire ... 
    private function updateEvaluation(array $data)
    {
       Log::info('Début de la mise à jour de l\'évaluation', ['data' => $data]);
@@ -386,53 +439,62 @@ private function processAppreciations(WorkerContractAssessment $evaluation, arra
 
   
 
-   /**
-    * Charge les évaluations associées à un contrat spécifique.
-    *
-    * Cette fonction retourne toutes les évaluations liées à un contrat donné, avec leurs appréciations
-    * et critères associés. Le contrat est identifié par son ID.
-    *
-    * @param int $contractId : ID du contrat dont on veut charger les évaluations.
-    * @return \Illuminate\Http\JsonResponse : Réponse JSON contenant les évaluations ou un message d'erreur.
-    */
-   public function loadEvaluationsByContract($contractId)
-   {
-      try {
-         Log::info('Chargement des évaluations pour le contrat ID: ' . $contractId);
 
-         // Récupérer le contrat avec ses évaluations, appréciations, et critères associés
-         $evaluations = WorkerContractAssessment::with(['appreciations.criteria'])
-            ->where('contract_id', $contractId)
+/**
+ * Charge les évaluations associées à un contrat de travailleur spécifique.
+ *
+ * Cette fonction retourne toutes les évaluations principales liées à un contrat de travailleur donné,
+ * avec leurs appréciations (Assessment) et critères associés (AssessmentCriterion).
+ * Le contrat est identifié par son ID (worker_contract_id).
+ *
+ * @param int $contractId : ID du contrat de travailleur (worker_contract_id) dont on veut charger les évaluations.
+ * @return \Illuminate\Http\JsonResponse : Réponse JSON contenant les évaluations ou un message d'erreur.
+ */
+public function loadEvaluationsByContract($contractId)
+{
+    try {
+        Log::info('Chargement des évaluations pour le contrat de travailleur ID: ' . $contractId);
+
+        // Récupérer les évaluations principales avec leurs appréciations (assessments) et critères associés
+        // worker_contract_id est la clé étrangère dans WorkerContractAssessment pointant vers le contrat
+        // assessments est la relation définie dans WorkerContractAssessment vers le modèle Assessment
+        // criteria est la relation définie dans Assessment vers le modèle AssessmentCriterion
+        $evaluations = WorkerContractAssessment::with(['assessments.criteria'])
+            ->where('worker_contract_id', $contractId) // Correction : utiliser worker_contract_id
             ->get();
 
-         // Si aucune évaluation trouvée, retourner un message
-         if ($evaluations->isEmpty()) {
-            Log::warning("Aucune évaluation trouvée pour le contrat ID: {$contractId}");
+        // Si aucune évaluation trouvée, retourner un message
+        if ($evaluations->isEmpty()) {
+            Log::warning("Aucune évaluation trouvée pour le contrat de travailleur ID: {$contractId}");
             return response()->json([
-               'success' => false,
-               'message' => 'Aucune évaluation trouvée pour ce contrat.',
+                'success' => false,
+                'message' => 'Aucune évaluation trouvée pour ce contrat.',
+                // 'data' => [] // Optionnel : vous pouvez aussi retourner un tableau vide data
             ], 404);
-         }
+        }
 
-         // Retourner les évaluations trouvées
-         Log::info("Evaluations trouvées pour le contrat ID: {$contractId}", ['count' => $evaluations->count()]);
-         return response()->json([
+        // Retourner les évaluations trouvées
+        Log::info("Evaluations trouvées pour le contrat de travailleur ID: {$contractId}", ['count' => $evaluations->count()]);
+        return response()->json([
             'success' => true,
             'message' => 'Évaluations chargées avec succès.',
-            'data' => $evaluations,
-         ], 200);
-      } catch (\Exception $e) {
-         Log::error("Erreur lors du chargement des évaluations pour le contrat ID: {$contractId}", [
+            'data' => $evaluations, // Contient WorkerContractAssessment, leurs Assessments et AssessmentCriteria
+        ], 200);
+
+    } catch (\Exception $e) {
+        Log::error("Erreur lors du chargement des évaluations pour le contrat de travailleur ID: {$contractId}", [
             'exception_message' => $e->getMessage(),
             'exception_trace' => $e->getTraceAsString()
-         ]);
+        ]);
 
-         return response()->json([
-            'error' => 'Une erreur est survenue lors du chargement des évaluations.',
-         ], 500);
-      }
-   }
-
+        // Réponse d'erreur cohérente avec storeEvaluation
+        return response()->json([
+            'success' => false, // Ajout de 'success' => false
+            'message' => 'Une erreur est survenue lors du chargement des évaluations.', // Changé 'error' en 'message'
+            // 'error' => $e->getMessage() // Optionnel : vous pouvez inclure le message d'exception détaillé
+        ], 500);
+    }
+}
 
 private function getCriteriaGrouped($userCustomId): \Illuminate\Support\Collection
 {
@@ -468,69 +530,6 @@ private function getCriteriaGrouped($userCustomId): \Illuminate\Support\Collecti
    }
 
 
-   /**
-    * Récupérer les étudiants associés à plusieurs contrats avec leurs informations liées.
-    *
-    * @param array $contractIds
-    * @return \Illuminate\Support\Collection
-    */
-   private static function getStudentEvaluationDetailsByContractIds(array $contractIds)
-   {
-      return \App\Models\Contract::join('contract_worker as cw', 'contracts.id', '=', 'cw.contract_id')
-         ->join('group_members as gm', 'gm.id', '=', 'cw.group_member_id')
-         ->join('users as u', 'u.id', '=', 'gm.user_id')
-         ->join('groups as g', 'g.id', '=', 'gm.group_id')
-         ->join('group_names as gn', 'gn.id', '=', 'g.group_name_id')
-         ->join('job_definitions as jd', 'contracts.job_definition_id', '=', 'jd.id')
-         ->leftJoin('contract_client as cc', 'contracts.id', '=', 'cc.contract_id')
-         ->leftJoin('users as client', 'cc.user_id', '=', 'client.id')
-         ->whereIn('contracts.id', $contractIds)
-         ->select(
-            'contracts.id as contract_id',
-            'contracts.start as contract_start',
-            'contracts.end as contract_end',
-            'jd.title as project_name',
-            'jd.id as job_id',
-            'u.id as student_id',
-            'u.firstname as student_firstname',
-            'u.lastname as student_lastname',
-            'gn.id as class_id',
-            'gn.name as class_name',
-            'client.id as evaluator_id',
-            'client.firstname as evaluator_firstname',
-            'client.lastname as evaluator_lastname'
-         )
-         // Exécuter la requête et retourner une collection d'objets
-         ->get();
-   }
-
-   /*
-    SELECT
-    contracts.id AS contract_id,
-    contracts.start AS contract_start,
-    contracts.end AS contract_end,
-    jd.title AS project_name,
-    jd.id AS job_id,
-    u.id AS student_id,
-    u.firstname AS student_firstname,
-    u.lastname AS student_lastname,
-    gn.id AS class_id,
-    gn.name AS class_name,
-    client.id AS evaluator_id,
-    client.firstname AS evaluator_firstname,
-    client.lastname AS evaluator_lastname
-      FROM contracts
-      JOIN contract_worker AS cw ON contracts.id = cw.contract_id
-      JOIN group_members AS gm ON gm.id = cw.group_member_id
-      JOIN users AS u ON u.id = gm.user_id
-      JOIN groups AS g ON g.id = gm.group_id
-      JOIN group_names AS gn ON gn.id = g.group_name_id
-      JOIN job_definitions AS jd ON contracts.job_definition_id = jd.id
-      LEFT JOIN contract_client AS cc ON contracts.id = cc.contract_id
-      LEFT JOIN users AS client ON cc.user_id = client.id
-      WHERE contracts.id IN (:contractIds);
-   */
-
 
    /**
     * Récupérer les détails des étudiants associés à un contrat avec leurs informations liées.
@@ -538,22 +537,26 @@ private function getCriteriaGrouped($userCustomId): \Illuminate\Support\Collecti
     * @param int $contractId
     * @return \Illuminate\Database\Eloquent\Builder
     */
-   private static function getStudentEvaluationDetailsByContractId(int $contractId): \Illuminate\Database\Eloquent\Builder
-   {
-      if (!is_numeric($contractId)) {
-         throw new \InvalidArgumentException("Contract ID must be a valid integer.");
-      }
+private static function getStudentEvaluationDetailsByContractIds(array $contractIds): \Illuminate\Support\Collection // <= Changement ici
+{
+    // Vérification préliminaire pour éviter une requête inutile si le tableau est vide.
+    if (empty($contractIds)) {
+        return collect(); // collect() retourne une Illuminate\Support\Collection
+    }
 
-      return \App\Models\Contract::join('contract_worker as cw', 'contracts.id', '=', 'cw.contract_id')
-         ->join('group_members as gm', 'gm.id', '=', 'cw.group_member_id')
-         ->join('users as u', 'u.id', '=', 'gm.user_id')
-         ->join('groups as g', 'g.id', '=', 'gm.group_id')
-         ->join('group_names as gn', 'gn.id', '=', 'g.group_name_id')
-         ->join('job_definitions as jd', 'contracts.job_definition_id', '=', 'jd.id')
-         ->leftJoin('contract_client as cc', 'contracts.id', '=', 'cc.contract_id')
-         ->leftJoin('users as client', 'cc.user_id', '=', 'client.id')
-         ->where('contracts.id', $contractId)
-         ->select(
+    // Construction de la requête Eloquent en utilisant des jointures.
+    return Contract::query() // Utilisation du 'use App\Models\Contract;' pour Contract
+        ->join('contract_worker as cw', 'contracts.id', '=', 'cw.contract_id')
+        ->join('group_members as gm', 'gm.id', '=', 'cw.group_member_id')
+        ->join('users as u', 'u.id', '=', 'gm.user_id')
+        ->join('groups as g', 'g.id', '=', 'gm.group_id')
+        ->join('group_names as gn', 'gn.id', '=', 'g.group_name_id')
+        ->join('job_definitions as jd', 'contracts.job_definition_id', '=', 'jd.id')
+        ->leftJoin('contract_client as cc', 'contracts.id', '=', 'cc.contract_id')
+        ->leftJoin('users as client', 'cc.user_id', '=', 'client.id')
+        ->whereIn('contracts.id', $contractIds)
+        ->select(
+            'cw.id as worker_contract_id',
             'contracts.id as contract_id',
             'contracts.start as contract_start',
             'contracts.end as contract_end',
@@ -567,72 +570,101 @@ private function getCriteriaGrouped($userCustomId): \Illuminate\Support\Collecti
             'client.id as evaluator_id',
             'client.firstname as evaluator_firstname',
             'client.lastname as evaluator_lastname'
-         );
-   }
+        )
+        ->get(); // ->get() retourne une Illuminate\Database\Eloquent\Collection qui est une sous-classe de Illuminate\Support\Collection
+}
 
-   public function fullEvaluation(string $ids)
-   {
-      $user = auth()->user();
-      $isTeacher = $this->checkIfUserIsTeacher($user);
-      $studentsDetails = null;
 
-      if ($isTeacher) {
-         // Convertir la chaîne des IDs en un tableau
-         $idsArray = explode(',', $ids);
 
-         // Récupérer les détails des étudiants liés aux contrats
-         $studentsDetailsQuery = $this->getStudentsDetails($idsArray);
+public function fullEvaluation(string $ids)
+{
+    $user = auth()->user();
+    $isTeacher = $this->checkIfUserIsTeacher($user);
+    $studentsDetails = null;
 
-         // Si aucun détail n'est trouvé, déclencher une erreur 404
-         if ($studentsDetailsQuery->count() === 0) {
+    if ($isTeacher) {
+        // Convertir la chaîne des IDs en un tableau
+        $idsArray = explode(',', $ids);
+
+        // Récupérer les détails des étudiants liés aux contrats
+        $studentsDetailsQuery = $this->getStudentsDetails($idsArray);
+
+        // Si aucun détail n'est trouvé, déclencher une erreur 404
+        if ($studentsDetailsQuery->count() === 0) {
             abort(404, 'Contrats non trouvés.');
-         }
+        }
 
-         // Ajouter la StateMachine à chaque étudiant
-         $studentsDetailsQuery->transform(function ($details) {
-            // ajouter peut-etre l'évaluateur ?
-            $eval = $this->getExistingAssessment($details->student_id);
+        // Ajouter la StateMachine ET l'ID du WorkerContract à chaque étudiant
+        $studentsDetailsQuery->transform(function ($details) {
+            // --- Utiliser worker_contract_id pour la recherche ---
+            // Vérifier si worker_contract_id existe dans les détails
+            $workerContractId = $details->worker_contract_id ?? null;
+
+            if ($workerContractId === null) {
+                // Logguer une erreur si l'ID est manquant
+                \Log::error('worker_contract_id manquant dans les détails de l\'étudiant', ['details' => $details]);
+                // Vous pouvez choisir d'arrêter ou de continuer avec null
+                // Ici, on continue avec null
+            }
+
+            // Utiliser worker_contract_id pour trouver l'évaluation
+            $eval = $this->getExistingAssessment($workerContractId); // <-- Changement ici
 
             if ($eval) {
-               $details->evaluation_id = $eval->id;
-               $details->stateMachine = new AssessmentStateMachine($eval->appreciations->toArray());
+                $details->evaluation_id = $eval->id;
+                // Utiliser 'assessments' au lieu de 'appreciations' (nom de la relation Eloquent)
+                // Et vérifier que la relation est chargée ou la charger
+                // getExistingAssessment devrait charger avec(['assessments.criteria'])
+                // Si ce n'est pas le cas, charger ici :
+                // $eval->loadMissing('assessments'); // Optionnel si pas déjà fait
+                $details->stateMachine = new AssessmentStateMachine($eval->assessments->toArray()); // <-- Changement ici (appreciations -> assessments)
             } else {
-               $details->evaluation_id = null;
-               $details->stateMachine = null;
+                // Si aucune évaluation n'est trouvée
+                $details->evaluation_id = null;
+                $details->stateMachine = null; // Ou new AssessmentStateMachine([]) si vous préférez
             }
+
+            // Ajouter worker_contract_id aux détails s'il n'y est pas déjà (normalement il y est grâce à la requête)
+            // $details->worker_contract_id = $workerContractId; // Normalement inutile
 
             return $details;
-         });
+        });
 
-         $studentsDetails = $studentsDetailsQuery;
-      } else {
+        $studentsDetails = $studentsDetailsQuery;
+    } else {
+        // Cas étudiant
+        // $ids est un seul ID de contrat/worker_contract
+        $studentsDetails =$this->getStudentEvaluationDetailsByContractIds([$ids]);
 
-         // Is student ?
-         $studentsDetails = $this->getStudentEvaluationDetailsByContractId($ids)->get();
-
-         if ($studentsDetails->isNotEmpty()) {
+        if ($studentsDetails->isNotEmpty()) {
             $studentDetails = $studentsDetails->first();
-            $eval = $this->getExistingAssessment($studentDetails->student_id);
+            
+            // --- Utiliser worker_contract_id pour la recherche ---
+            $workerContractId = $studentDetails->worker_contract_id ?? (int) $ids; // Fallback sur $ids s'il n'est pas dans les détails
+            $eval = $this->getExistingAssessment($workerContractId); // <-- Changement ici
 
             // Vérifie que $eval existe
-            if ($eval && $eval->appreciations) {
-               $studentDetails->stateMachine = new AssessmentStateMachine($eval->appreciations);
+            if ($eval) { // <-- Ajout de la vérification null
+                // Utiliser 'assessments' au lieu de 'appreciations'
+                $studentDetails->stateMachine = new AssessmentStateMachine($eval->assessments->toArray()); // <-- Changement ici
+                $studentDetails->evaluation_id = $eval->id;
             } else {
-               //  Crée une machine d'état vide si aucune évaluation n'existe
-               $studentDetails->stateMachine = new AssessmentStateMachine([]);
+                // Si aucune évaluation n'est trouvée
+                $studentDetails->stateMachine = new AssessmentStateMachine([]); // Machine d'état vide
+                $studentDetails->evaluation_id = null;
             }
-         } else {
-            Log::warning("Aucun détail d'étudiant trouvé pour les ID de contrat : " . json_encode($ids));
+        } else {
+            \Log::warning("Aucun détail d'étudiant trouvé pour les ID de contrat : " . json_encode($ids));
             $studentsDetails = collect();
-         }
-      }
+        }
+    }
 
-      // Étape 5 : Construire le tableau JSON de sauvegarde
-      $allJsonSave = $this->buildJsonSave($studentsDetails);
+    // Étape 5 : Construire le tableau JSON de sauvegarde
+    $allJsonSave = $this->buildJsonSave($studentsDetails);
 
-      // Étape 6 : Renvoyer la vue Blade avec les données, y compris la machine d'état
-      return $this->renderEvaluationPage($studentsDetails, $isTeacher, $allJsonSave);
-   }
+    // Étape 6 : Renvoyer la vue Blade avec les données, y compris la machine d'état
+    return $this->renderEvaluationPage($studentsDetails, $isTeacher, $allJsonSave);
+}
 
 
    private function getStudentsDetails(array $idsArray)
@@ -647,103 +679,184 @@ private function getCriteriaGrouped($userCustomId): \Illuminate\Support\Collecti
    }
 
 
-   /**
-    * Construire un tableau JSON pour un étudiant ou une liste d'étudiants.
-    *
-    * @param mixed $studentOrStudents
-    * @return array
-    * @throws \InvalidArgumentException
-    */
-   // private function buildJsonSave($studentOrStudents): array
-   // {
-   //    // Mapper la collection pour construire les données JSON
-   //    return $studentOrStudents->map(function ($student) {
-   //       // Récupérer les évaluations pour cet étudiant
-   //       $existingEvaluations = $this->getExistingEvaluations($student->student_id, $student->job_id);
-   //       $evaluationsData = $this->mapExistingEvaluations($existingEvaluations);
+/**
+ * Construit un tableau de données JSON pour la sauvegarde/affichage des évaluations.
+ *
+ * Prend une collection ou un tableau d'objets étudiants (ou WorkerContracts)
+ * et pour chacun, récupère l'évaluation associée (WorkerContractAssessment) depuis la base de données,
+ * la transforme en un format standardisé, et compile toutes les données nécessaires.
+ *
+ * @param mixed $studentOrStudents Un objet, un tableau d'objets, ou une Collection représentant le(s) étudiant(s)/contrat(s).
+ * @return array Un tableau formaté contenant les données de chaque étudiant/contrat et son évaluation.
+ */
+private function buildJsonSave($studentOrStudents): array
+{
+    // 1. Normalisation de l'entrée en Collection
+    // Cela permet de traiter uniformément un seul élément ou plusieurs éléments.
+    /** @var Collection $students */
+    $students = collect($studentOrStudents);
 
-   //       // Retourner les données formatées pour cet étudiant
-   //       return [
-   //          'student_id' => $student->student_id,
-   //          'student_lastname' => $student->student_lastname,
-   //          'student_firstname' => $student->student_firstname,
-   //          'student_class_id' => $student->class_id,
-   //          'student_className' => $student->class_name,
-   //          'evaluator_id' => $student->evaluator_id,
-   //          'evaluator_name' => "{$student->evaluator_firstname}-{$student->evaluator_lastname}",
-   //          'job_id' => $student->job_id,
-   //          'job_title' => $student->project_name,
-   //          'evaluations' => $evaluationsData,
-   //       ];
-   //    })->toArray();
-   // }
+    // 2. Itération sur chaque élément de la collection
+    return $students->map(function ($student) { // $student est l'objet direct
+        
+        // 3. Détermination de l'ID du WorkerContract
+        // La logique précédente utilisait $student->student_id comme workerContractId.
+        // Nous la rétablissons, en supposant que $student est l'objet direct contenant student_id.
+        // Selon les logs, c'est cet ID (78) qui est utilisé comme worker_contract_id lors de la création.
+        $workerContractId = $student->student_id ?? $student->id ?? null;
 
-   private function buildJsonSave($studentOrStudents): array
-   {
-      // Assure-toi que $studentOrStudents est une Collection, même si un seul étudiant est passé
-      $students = collect($studentOrStudents);
+        if (!$workerContractId) {
+             \Log::warning('buildJsonSave: Impossible de déterminer le workerContractId pour l\'élément', ['element' => $student]);
+             $workerContractId = 0; // Ou gérer l'erreur comme approprié
+        } else {
+            $workerContractId = (int) $workerContractId;
+        }
 
-      return $students->map(function ($student) {
-         // Récupérer les évaluations pour cet étudiant
-         $existingEvaluations = $this->getExistingAssessment($student->student_id);
-         $evaluationsData = $this->mapExistingEvaluations($existingEvaluations);
+        // 4. Récupération de l'évaluation existante dans la base de données
+        // getExistingAssessment doit être corrigée pour prendre un $workerContractId
+        // et utiliser where('worker_contract_id', $workerContractId).
+        $existingEvaluations = $this->getExistingAssessment($workerContractId);
 
-         // Retourner les données formatées pour cet étudiant
-         return [
-            'student_id'        => $student->student_id,
-            'student_lastname'  => $student->student_lastname,
-            'student_firstname' => $student->student_firstname,
-            'student_class_id'  => $student->class_id,
-            'student_class_name' => $student->class_name,
-            'evaluator_id'      => $student->evaluator_id,
-            'evaluator_name'    => "{$student->evaluator_firstname}-{$student->evaluator_lastname}",
-            'job_id'            => $student->job_id,
-            'job_title'         => $student->project_name,
-            'evaluations'       => $evaluationsData,
-            'project_start'              => $student->contract_start,
-            'project_end'             => $student->contract_end,
-         ];
-      })->toArray();
+        // 5. Transformation de l'évaluation récupérée en un format standardisé
+        // mapExistingEvaluations transforme l'objet Eloquent en tableau.
+        $evaluationsData = $this->mapExistingEvaluations($existingEvaluations);
+
+        // 6. Compilation des données finales pour cet élément
+        // Utilisation de l'opérateur null coalescent (??) pour éviter les erreurs
+        // si certaines propriétés de $student sont manquantes.
+        return [
+            'student_id'         => $student->student_id ?? null,
+            'student_lastname'   => $student->student_lastname ?? '',
+            'student_firstname'  => $student->student_firstname ?? '',
+            'student_class_id'   => $student->class_id ?? null,
+            'student_class_name' => $student->class_name ?? '',
+            'evaluator_id'       => $student->evaluator_id ?? null,
+            'evaluator_name'     => trim(implode('-', [
+                $student->evaluator_firstname ?? '',
+                $student->evaluator_lastname ?? ''
+            ]), '-'),
+            'job_id'             => $student->job_id ?? null,
+            'job_title'          => $student->project_name ?? '', // Vérifiez le nom exact de la propriété
+            'evaluations'        => $evaluationsData, // Sera [] si $existingEvaluations était null
+            'project_start'      => $student->contract_start ?? null,
+            'project_end'        => $student->contract_end ?? null,
+            'contract_id'        => $student->contract_id
+            
+        ];
+    })->toArray(); // 7. Conversion de la Collection résultante en tableau PHP simple
    }
 
+/**
+ * Récupère l'évaluation principale (WorkerContractAssessment) associée à un étudiant.
+ *
+ * Cette fonction utilise whereRelation pour naviguer à travers les modèles liés :
+ * WorkerContractAssessment -> WorkerContract -> GroupMember -> User
+ *
+ * @param int $studentId L'ID de l'utilisateur étudiant.
+ * @return WorkerContractAssessment|null L'objet WorkerContractAssessment trouvé, ou null.
+ */
+private function getExistingAssessment(int $studentId): ?WorkerContractAssessment
+{
+    // Requête pour trouver le premier WorkerContractAssessment
+    // où l'ID de l'utilisateur lié via workerContract.groupMember.user correspond à $studentId.
+    return WorkerContractAssessment::query()
+        ->whereRelation('workerContract.groupMember.user', 'id', '=', $studentId)
+        ->first(); // Retourne null si aucun résultat trouvé
+
+    // Note : Si vous avez besoin des appréciations et critères immédiatement après,
+    // vous pouvez ajouter ->with(['assessments.criteria']) avant ->first()
+    // Exemple :
+    // ->with(['assessments.criteria'])
+    // ->first();
+}
+
+/*
+ * Transforme une évaluation existante en un tableau structuré.
+ *
+ * @param WorkerContractAssessment|null $existingEvaluation L'évaluation à mapper.
+ * @return array Le tableau représentant l'évaluation, ou un tableau vide si $existingEvaluation est null.
+ */
+private function mapExistingEvaluations(WorkerContractAssessment|null $existingEvaluation): array
+{
+    // Vérifie si l'évaluation existe
+    if ($existingEvaluation === null) {
+        \Log::debug('mapExistingEvaluations: Aucune évaluation fournie, retourne tableau vide.');
+        return []; // Retourne un tableau vide si aucune évaluation n'est trouvée
+    }
+
+    \Log::debug('mapExistingEvaluations: Traitement de l\'évaluation ID ' . $existingEvaluation->id);
+
+    // Charger les appréciations (Assessment) avec leurs critères (AssessmentCriterion) et les templates (AssessmentCriterionTemplate)
+    // pour éviter les requêtes N+1
+    $assessments = $existingEvaluation->assessments()->with('criteria.template')->get();
+    \Log::debug('mapExistingEvaluations: Nombre d\'appréciations trouvées: ' . $assessments->count());
+
+    // Mapper les appréciations
+    $mappedAppreciations = $assessments->map(function (Assessment $assessment) { // Correction 1: Type hinting Assessment
+        \Log::debug('mapExistingEvaluations: Traitement de l\'appréciation ID ' . $assessment->id . ' (Timing: ' . $assessment->timing . ')');
+        return [
+            'level' => $assessment->timing, // Correction 2: timing au lieu de level
+            'date' => $assessment->date ? $assessment->date->toDateTimeString() : null, // Formatage de la date
+            'student_remark' => $assessment->student_remark ?? '', // Récupérer la remarque de l'étudiant pour cette appréciation
+            'criteria' => $assessment->criteria->map(function ($criterion) { // $criterion est AssessmentCriterion
+                \Log::debug('mapExistingEvaluations: Traitement du critère ID ' . $criterion->id . ' (Template ID: ' . $criterion->template_id . ')');
+                return [
+                    // L'ID unique du critère dans l'évaluation est $criterion->id
+                    // L'ID du template de critère est $criterion->template_id
+                    // Selon le JS frontend, 'id' est souvent le template_id pour identifier le "type" de critère
+                    'id' => $criterion->template_id, // Ou $criterion->id si c'est l'ID unique voulu
+                    // Récupérer le nom depuis le template
+                    'name' => $criterion->template->name ?? 'Critère inconnu', // Correction 3: via ->template
+                    'value' => $criterion->value,
+                    'checked' => $criterion->checked,
+                    // Utiliser le bon nom de colonne pour la remarque sur le critère
+                    'remark' => $criterion->remark_criteria ?? '', // Correction 4: remark_criteria au lieu de remark
+                ];
+            })->values(), // ->values() pour s'assurer d'avoir un tableau indexé numériquement
+        ];
+    })->values(); // ->values() pour s'assurer d'avoir un tableau indexé numériquement
+
+    // Déterminer l'ID de l'évaluateur
+    // Option 1: Utiliser directement teacher_id (plus simple et direct)
+    $evaluatorId = $existingEvaluation->teacher_id ?? null;
+    
+    // Option 2: Utiliser la méthode evaluator() (plus complexe, fait une requête)
+    // if ($evaluatorId === null) {
+    //     try {
+    //         $evaluatorUser = $existingEvaluation->evaluator(); // Retourne un User
+    //         $evaluatorId = $evaluatorUser->id ?? null;
+    //     } catch (\Exception $e) {
+    //         \Log::warning('mapExistingEvaluations: Impossible de récupérer l\'évaluateur via la méthode evaluator()', ['error' => $e->getMessage()]);
+    //         $evaluatorId = null;
+    //     }
+    // }
+
+    // Déterminer la remarque générale de l'étudiant
+    // Comme il peut y avoir plusieurs appréciations, prenons celle de la première
+    // ou une logique plus complexe si nécessaire.
+    $studentRemark = '';
+    if ($assessments->isNotEmpty()) {
+        // On prend la remarque de la première appréciation trouvée.
+        // Vous pouvez adapter cette logique si vous voulez fusionner ou choisir autrement.
+        $studentRemark = $assessments->first()->student_remark ?? '';
+    }
 
 
-   private function getExistingAssessment($studentId)
-   {
-      return WorkerContractAssessment::query()->whereRelation('workerContract.groupMember.user', 'id', '=', $studentId)->first();
-   }
+    // Mappage des données principales de l'évaluation
+    $mappedData = [
+        'evaluator_id' => $evaluatorId,
+        'student_remark' => $studentRemark, // Utiliser la remarque déterminée ci-dessus
+        'status_eval' => $existingEvaluation->status ?? '', // Utiliser 'status' (colonne existante)
+        'id_eval' => $existingEvaluation->id,
+        'appreciations' => $mappedAppreciations,
+    ];
 
-   private function mapExistingEvaluations(WorkerContractAssessment|null $existingEvaluation)
-   {
-      // Vérifie si l'évaluation existe
-      if ($existingEvaluation === null) {
-         return []; // Retourne un tableau vide si aucune évaluation n'est trouvée
-      }
+    \Log::debug('mapExistingEvaluations: Mapping terminé', ['mapped_data' => $mappedData]);
+    return $mappedData;
+}
 
-      // Mappage des appréciations
-      return [
-         'evaluator_id' => $existingEvaluation->evaluator()->id,
-         'student_remark' => "N/A plus disponible ??",
-         'status_eval' => $existingEvaluation->result,
-         'id_eval' => $existingEvaluation->id,
-         'appreciations' => $existingEvaluation->assessments()->get()->map(function (AssessmentCriterion $appreciation) {
-            /* @var $apprecition AssessmentCriterion */
-            return [
-               'level' => $appreciation->level,
-               'date' => $appreciation->date,
-               'criteria' => $appreciation->criteria->map(function ($criteria) {
-                  return [
-                     'id' => $criteria->position,
-                     'name' => $criteria->name,
-                     'value' => $criteria->value,
-                     'checked' => $criteria->checked,
-                     'remark' => $criteria->remark,
-                  ];
-               })->toArray(),
-            ];
-         })->toArray(),
-      ];
-   }
+
+
 
    private function getInitialVisibleCategories($tabCriterias)
    {

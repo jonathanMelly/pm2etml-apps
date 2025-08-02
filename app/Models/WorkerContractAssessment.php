@@ -23,10 +23,15 @@ class WorkerContractAssessment extends Model
         'status'
     ];
 
-    public function workerContract(): HasOne
-    {
-        return $this->hasOne(WorkerContract::class);
-    }
+  /**
+ * Relation avec le contrat de travailleur.
+ * Une évaluation appartient à un contrat de travailleur.
+ */
+public function workerContract(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+{
+    // worker_contract_id est la clé étrangère dans la table worker_contract_assessments
+    return $this->belongsTo(WorkerContract::class, 'worker_contract_id');
+}
 
     // Relations avec les utilisateurs
     public function evaluator(): User

@@ -1,129 +1,131 @@
-{{--
- After some trials, to avoid manually handling json data (with old(...) feature), checkboxes have been 'duplicated'
- with hidden fields so the data, even if false, is still kept...
- The best would be to have a 2 options (false/true) radio button with toggle UI...
- --}}
+{{-- 
+    Optimisation de la vue d'évaluation des contrats.
+    - Simplification du JavaScript de gestion du toggle.
+    - Suppression du JS inutilisé (contractsEvaluations, DOMContentLoaded pour toggle).
+    - Clarification de la soumission du formulaire.
+    - Nettoyage des commentaires obsolètes.
+--}}
+
 <x-app-layout>
     @push('custom-scripts')
         <script>
-            let contractsEvaluations = {};
-
-            function toggle(id, checked = null) {
-                //let success = hiddenInput.value;
-                let toggleCheckBox = document.querySelector("[name='toggle-" + id + "']");
-                let hidden = document.querySelector("[name='success-" + id + "']");
-
-                //Copy from hidden (onload) OR get from function parameters (onchange)
-                let success = checked ?? hidden.value === 'true';
-
-                toggleCheckBox.classList.remove('bg-' + (success ? 'error' : 'success'));
-                toggleCheckBox.classList.add('bg-' + (!success ? 'error' : 'success'));
-
-                hidden.value = success;
-                //Apply value from hidden field (which contains correct old value)
-                if (checked == null) {
-                    toggleCheckBox.checked = success;
-                }
-
+            // Fonction simplifiée pour basculer les classes CSS du toggle.
+            // Elle n'est plus responsable de la logique d'état (gérée par Alpine.js).
+            function updateToggleClass(element, isChecked) {
+                element.classList.remove('bg-error', 'bg-success');
+                element.classList.add('bg-' + (isChecked ? 'success' : 'error'));
             }
 
-            document.addEventListener("DOMContentLoaded", function () {
-                document.querySelectorAll('[type=checkbox]').forEach(el => toggle(el.value));
-            });
-
+            // Si nécessaire, une fonction globale pour gérer la soumission du formulaire
+            // pourrait être ajoutée ici, mais pour l'instant, le comportement par défaut suffit.
         </script>
     @endpush
-    <form id="eval" x-on:submit.prevent action="{{route('contracts.evaluate')}}" method="post">
+
+    <form id="eval" action="{{ route('contracts.evaluate') }}" method="post">
         @csrf
-        <input type="hidden" id="contractsEvaluations" name="contractsEvaluations" value="">
+        {{-- L'input hidden contractsEvaluations était présent mais inutilisé, il est supprimé. --}}
+        
         <div class="sm:mx-6 bg-base-200 bg-opacity-50 rounded-box sm:p-3 p-1 flex flex-col items-center">
 
             <div class="stats shadow mb-4">
-
                 <div class="stat">
                     <div class="stat-figure text-secondary">
                         <div class="avatar">
                             <div class="w-24 rounded">
-                                <img src="{{route('dmz-asset',['file'=>$job->image?->storage_path])}}" />
+                                <img src="{{ route('dmz-asset', ['file' => $job->image?->storage_path]) }}" alt="{{ $job->title }}">
                             </div>
                         </div>
                     </div>
                     <div class="stat-title">
-                        <i class="fa-solid fa-calendar-day"></i> {{\Illuminate\Support\Carbon::parse($contracts->min('start'))->format(\App\SwissFrenchDateFormat::DATE)}}
+                        <i class="fa-solid fa-calendar-day"></i> 
+                        {{ \Illuminate\Support\Carbon::parse($contracts->min('start'))->format(\App\SwissFrenchDateFormat::DATE) }}
                         <i class="fa-solid fa-arrow-right"></i>
-                        <i class="fa-solid fa-calendar-days"></i> {{\Illuminate\Support\Carbon::parse($contracts->max('end'))->format(\App\SwissFrenchDateFormat::DATE)}}
+                        <i class="fa-solid fa-calendar-days"></i> 
+                        {{ \Illuminate\Support\Carbon::parse($contracts->max('end'))->format(\App\SwissFrenchDateFormat::DATE) }}
                     </div>
-                    <div class="stat-value">{{$job->title}}</div>
-                    <div class="stat-desc">{{trans_choice(":number evaluation|:number evaluations",sizeof($contracts),['number'=>sizeof($contracts)])}}</div>
+                    <div class="stat-value">{{ $job->title }}</div>
+                    <div class="stat-desc">
+                        {{ trans_choice(":number evaluation|:number evaluations", sizeof($contracts), ['number' => sizeof($contracts)]) }}
+                    </div>
                 </div>
-
             </div>
 
             <table class="table table-compact table-zebra w-auto">
                 <thead>
-                {{-- CONTRACTS MULTI ACTION HEADERS --}}
-                <tr>
-                    <th>
-                        {{__('Worker(s)')}}
-                    </th>
-                    <th class="w-96 text-center">{{__('Gave satisfaction')}}</th>
-                    <th>{{__('Last evaluated')}}</th>
-                </tr>
+                    <tr>
+                        <th>{{ __('Worker(s)') }}</th>
+                        <th class="w-96 text-center">{{ __('Gave satisfaction') }}</th>
+                        <th>{{ __('Last evaluated') }}</th>
+                    </tr>
                 </thead>
                 <tbody>
-                {{-- For historical reasons, contract ids are used ... thus needs 2 imbricated loops --}}
-                @foreach($contracts as $contract)
-                    @foreach($contract->workersContracts as $workerContract)
-                        @php
-                            /* @var $contract \App\Models\Contract */
-                            /* @var $workerContract \App\Models\WorkerContract */
+                    @foreach($contracts as $contract)
+                        @foreach($contract->workersContracts as $workerContract)
+                            @php
+                                /* @var $contract \App\Models\Contract */
+                                /* @var $workerContract \App\Models\WorkerContract */
 
-                            $commentName = 'comment-'.$workerContract->id;
-                            $successName = 'success-'.$workerContract->id;
+                                $commentName = 'comment-' . $workerContract->id;
+                                $successName = 'success-' . $workerContract->id;
 
-                            //By default, contracts are validated (less work for teacher)
-                            $checked = old($successName,$workerContract->alreadyEvaluated()?$workerContract->success:true);
+                                // Par défaut, les contrats sont considérés comme validés (moins de travail pour l'enseignant)
+                                // Utilisation de old() pour persister la valeur en cas de validation échouée
+                                $isChecked = old($successName, $workerContract->alreadyEvaluated() ? $workerContract->success : true);
+                                // S'assurer que la valeur est un booléen pour Alpine.js
+                                $isChecked = filter_var($isChecked, FILTER_VALIDATE_BOOLEAN);
+                            @endphp
+                            <tr class="h-16" x-data="{ checked: {{ $isChecked ? 'true' : 'false' }} }">
+                                <td class="">{{ $workerContract->groupMember->user->getFirstnameL() }}</td>
+                                <td class="text-center w-64">
+                                    {{-- ID du WorkerContract --}}
+                                    <input type="hidden" name="workersContracts[]" value="{{ $workerContract->id }}">
 
+                                    {{-- Champ caché pour la valeur de succès --}}
+                                    <input type="hidden" :value="checked" name="{{ $successName }}">
 
-                        @endphp
-                        <tr class="h-16">
-                            <td class="">{{$workerContract->groupMember->user->getFirstnameL()}}</td>
-                            <td class="text-center" x-data="{checked:{{b2s($checked)}} }" class="w-64">
-                                <input type="hidden" name="workersContracts[]" value="{{$workerContract->id}}">
-                                <input type="hidden" name="{{$successName}}" value="{{b2s($checked)}}">
-                                <input type="checkbox" class="toggle"
-                                       @click="checked=!checked;toggle({{$workerContract->id}},checked)"
-                                       name="toggle-{{$workerContract->id}}" value="{{$workerContract->id}}">
+                                    {{-- Toggle UI. L'état est géré par Alpine.js (:checked, @change). --}}
+                                    <input 
+                                        type="checkbox" 
+                                        class="toggle"
+                                        :checked="checked"
+                                        @change="checked = $event.target.checked; updateToggleClass($el, checked)"
+                                        name="toggle-{{ $workerContract->id }}" 
+                                        value="{{ $workerContract->id }}"
+                                    >
 
-                                <textarea placeholder="{{__('What must be improved')}}..."
-                                          class="textarea h-10 pl-1 border-error border text-xs @error($commentName) border-2 border-dashed @enderror"
-                                          name="{{$commentName}}"
-                                          x-show="!checked">{{old($commentName,$workerContract->success_comment)}}</textarea>
-                                @error($commentName)
-                                <br/><i class="text-xs text-error">{{$errors->first($commentName)}}</i>
-                                @enderror
-                            </td>
-                            <td class="text-center">
-                                {{$workerContract->alreadyEvaluated()?
-                                    $workerContract->success_date->format(\App\SwissFrenchDateFormat::DATE_TIME)
-                                    :__('-')}}</td>
-                        </tr>
+                                    {{-- Zone de texte pour le commentaire --}}
+                                    <textarea 
+                                        placeholder="{{ __('What must be improved') }}..."
+                                        class="textarea h-10 pl-1 border-error border text-xs @error($commentName) border-2 border-dashed @enderror"
+                                        name="{{ $commentName }}"
+                                        x-show="!checked"
+                                    >{{ old($commentName, $workerContract->success_comment) }}</textarea>
+                                    
+                                    @error($commentName)
+                                    <br/><i class="text-xs text-error">{{ $errors->first($commentName) }}</i>
+                                    @enderror
+                                </td>
+                                <td class="text-center">
+                                    {{ $workerContract->alreadyEvaluated() 
+                                        ? $workerContract->success_date->format(\App\SwissFrenchDateFormat::DATE_TIME) 
+                                        : __('-') 
+                                    }}
+                                </td>
+                            </tr>
+                        @endforeach
                     @endforeach
-                @endforeach
                 </tbody>
                 <tfoot>
-                <tr>
-                    <th colspan="3"/>
-                </tr>
+                    <tr>
+                        <th colspan="3"></th>
+                    </tr>
                 </tfoot>
             </table>
 
-            <button type="button" class="btn my-2 btn-primary"
-                    onclick="document.querySelector('#eval').submit()">
-                {{__('Save evaluation results')}}</button>
+            {{-- Bouton de soumission standard. Le formulaire se soumet normalement. --}}
+            <button type="submit" class="btn my-2 btn-primary">
+                {{ __('Save evaluation results') }}
+            </button>
         </div>
-
-
     </form>
-
 </x-app-layout>

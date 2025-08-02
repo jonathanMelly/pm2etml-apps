@@ -4,7 +4,7 @@ const state = window.evaluationState;
 
 document.addEventListener('DOMContentLoaded', function () {
 
-   console.log(state);
+   console.log('les val de state ; ',state);
 
    // Gestion des boutons de soumission
    const submitBtns = document.querySelectorAll('[id^="id-"][id$="-buttonSubmit"]');
@@ -859,7 +859,6 @@ function loadFrom(js) {
 
 function loadFromJsonSave(js, indexLevel) {
 
-
    const currentAppreciation = js.evaluations.appreciations[indexLevel];
 
    const levelIndex = currentAppreciation.level;
@@ -939,6 +938,8 @@ function makeToJsonSave(js) {
 
    // Ajouter la remarque générale de l'étudiant
    js.student_remark = getGeneralRemark(js.student_id);
+
+   //js.worker_contract_id
 
    // Sélection des boutons associés à l'étudiant
    const selectedButtons = Array.from(document.querySelectorAll(`#id-${js.student_id}-btn > button`))

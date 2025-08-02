@@ -41,9 +41,11 @@ class AssessmentCriterion extends Model
     /**
      * Relation avec le template (many to one)
      */
-    public function template()
+  public function template()
     {
-        return $this->belongsTo(Template::class, 'template_id');
+    
+        return $this->belongsTo(AssessmentCriterionTemplate::class, 'template_id');
+        
     }
 
     /**
