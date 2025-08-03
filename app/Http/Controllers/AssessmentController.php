@@ -792,7 +792,7 @@ private function buildJsonSave($studentOrStudents): array
     return $students->map(function ($student) { // $student est l'objet direct
         
         // 3. Détermination de l'ID du WorkerContract
-        $workerContractId = $student->student_id ?? $student->id ?? null;
+        $workerContractId = $student->worker_contract_id ?? null;
 
         if (!$workerContractId) {
              \Log::warning('buildJsonSave: Impossible de déterminer le workerContractId pour l\'élément', ['element' => $student]);
