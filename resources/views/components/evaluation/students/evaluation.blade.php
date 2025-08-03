@@ -42,6 +42,7 @@
     }
 
     $status_eval = $jsonStudent['evaluations']['status_eval'] ?? null;
+
 @endphp
 
 <div id="idStudent-{{ $studentDetails->student_id }}-visible"

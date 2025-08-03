@@ -837,91 +837,75 @@ window.toggleExclusion = function (btn) {
 // #region: Load jsonSave
 
 function loadFrom(js) {
-   // Vérifier que des appréciations existent
    const appreciations = js.evaluations.appreciations;
    if (!Array.isArray(appreciations) || appreciations.length === 0) {
       console.error(`Aucune appréciation trouvée pour l'étudiant ${js.student_id}.`);
       return;
    }
 
-   // Charger les données pour chaque niveau d'appréciation
-   appreciations.forEach((app, indexLevel) => {
+   appreciations.forEach(app => {
       try {
+         if (!app.level) {
+            console.warn("Appréciation sans niveau détectée :", app);
+            return;
+         }
 
-         console.log("dans la boucle loadFrom: ", app, indexLevel);
-
-         loadFromJsonSave(js, indexLevel);
+         loadFromJsonSave(js, app.level);
       } catch (error) {
-         console.error(`Erreur lors du chargement de l'appréciation niveau ${indexLevel} pour l'étudiant ${js.student_id} :`, error);
+         console.error(`Erreur lors du chargement de l'appréciation (${app.level}) pour l'étudiant ${js.student_id} :`, error);
       }
    });
 }
 
-function loadFromJsonSave(js, indexLevel) {
+function loadFromJsonSave(js, level) {
+   const currentAppreciation = js.evaluations.appreciations.find(app => app.level === level);
 
-   const currentAppreciation = js.evaluations.appreciations[indexLevel];
-
-   const levelIndex = currentAppreciation.level;
-
-   console.log("dans lfJsave: ", currentAppreciation, levelIndex);
-
-   // Obtenir le niveau en texte via le mapping
-   const evaluationLevel = state.evaluationLevels[levelIndex];
-   if (!evaluationLevel) {
-      console.error(`Niveau d'appréciation invalide (${levelIndex}) pour l'étudiant ${js.student_id}`);
+   if (!currentAppreciation) {
+      console.warn(`Aucune appréciation trouvée pour le niveau ${level} chez l'étudiant ${js.student_id}`);
       return;
    }
 
-   // Mettre à jour la remarque générale de l'étudiant
-   setGeneralRemark(js.student_id, js.evaluations.student_remark);
+   // Mise à jour de la remarque générale
+   setGeneralRemark(js.student_id, currentAppreciation.student_remark);
 
-   // Sélectionner l'onglet correspondant au niveau et mettre à jour les boutons
-   // onglet teacher disponible si teacher sinon student ... 
+   // Mise à jour des boutons sélectionnés
    const buttons = document.querySelectorAll(`#id-${js.student_id}-btn > button`);
    buttons.forEach(button => {
-      if (button.dataset.level === evaluationLevel) {
+      if (button.dataset.level === level) {
          button.classList.add('selected');
       } else {
          button.classList.remove('selected');
       }
    });
 
-   // Mettre à jour les critères pour chaque catégorie
+   // Mise à jour des critères
    const categoryDivs = document.querySelectorAll(`#idStudent-${js.student_id}-visible > form > .categories-container`);
-
    categoryDivs.forEach(categoryDiv => {
       const criterionCards = categoryDiv.querySelectorAll('.criterion-card');
 
       criterionCards.forEach(card => {
-         const criterionId = card.querySelector('[data-criterion-id]').dataset.criterionId;
-         const criterion = currentAppreciation.criteria.find(crit => {
-            return parseInt(crit.id, 10) === parseInt(criterionId, 10);
-         });
+         const criterionId = parseInt(card.querySelector('[data-criterion-id]').dataset.criterionId, 10);
+         const criterion = currentAppreciation.criteria.find(crit => parseInt(crit.id, 10) === criterionId);
 
          if (criterion) {
-            const sliders = card.querySelectorAll('input[type="range"]');
-            const slider = Array.from(sliders).find(sl => sl.dataset.level === evaluationLevel);
+            const slider = card.querySelector(`input[type="range"][data-level="${level}"]`);
             if (slider) {
                slider.parentElement.style.display = 'flex';
                slider.value = criterion.value;
             }
+
             const checkbox = card.querySelector('input[type="checkbox"]');
-            if (checkbox) {
-               checkbox.checked = criterion.checked;
-            }
+            if (checkbox) checkbox.checked = criterion.checked;
+
             const textarea = card.querySelector('textarea');
-            if (textarea) {
-               textarea.value = criterion.remark;
-            }
+            if (textarea) textarea.value = criterion.remark;
          }
       });
    });
 
-   console.log('evaluationLevel:', evaluationLevel);
-
-   // Mettre à jour le résultat final
-   calculateFinalResults(js.student_id, evaluationLevel, 'saved');
+   calculateFinalResults(js.student_id, level, 'saved');
 }
+
 
 // Fonction de mise à jour de la remarque générale de l'étudiant
 function setGeneralRemark(studentId, remark) {
@@ -931,6 +915,8 @@ function setGeneralRemark(studentId, remark) {
       remarkElement.value = remark;
    }
 }
+
+
 // #endregion
 
 // #region: Submitbutton
@@ -1452,13 +1438,9 @@ async function fillAndSavePdf(data, type = 'formative', filename = 'evaluation.p
 
       };
 
-      // Ajout dynamique des champs d’évaluation
-      const levels = ['auto80', 'auto100', 'eval80', 'eval100'];
-      const suffixes = ['NA', 'PA', 'A', 'LA'];
-
-      levels.forEach(level => {
+      state.evaluationLevels.forEach(level => {
          for (let i = 1; i <= 8; i++) {
-            suffixes.forEach(suffix => {
+            state.appreciationLabels.forEach(suffix => {
                const fieldName = `${level}_${i}_${suffix}`;
                fieldMapping[fieldName] = data[fieldName] || '';
             });
