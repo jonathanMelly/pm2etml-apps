@@ -78,9 +78,17 @@ test('Student see his contracts as a worker and can download summary even for tr
     \PHPUnit\Framework\assertGreaterThan(0, $contracts->count());
     \PHPUnit\Framework\assertGreaterThan(0, $contracts->filter(fn ($c) => $c->workerContract($eleve->groupMember()->firstOrFail())->firstOrFail()->alreadyEvaluated())->count());
 
+    //mimic a teacher that has left...
+    $contract = $contracts->firstOrFail();
+    $client = $contract->clients()->firstOrFail();
+    \PHPUnit\Framework\assertTrue($client->delete());
+    $contract = $contract->fresh(['clients']); //without this, delete is not seen... (stays in cache ?)
+    $eleve->refresh(); //without this, delete is not seen... (stays in cache ?)
+
     //When
     /* @var $response TestResponse */
     $response = $this->get('/dashboard');
+    $response->assertStatus(200);
 
     //Then
     foreach ($contracts as $contract) {

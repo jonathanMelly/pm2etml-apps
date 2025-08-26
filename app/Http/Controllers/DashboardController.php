@@ -44,8 +44,10 @@ class DashboardController extends Controller
             } else { //Students (auto filtered on student periodId as using groupmember...)
                 //Get jobs as Workers
                 $query = $user->contractsAsAWorker()
-                    ->with('jobDefinition.image') //eager load definitions as needed on UI
-                    ->with('clients') //eager load clients as needed on UI
+                    ->with('jobDefinition.image') //eager load definitions as needed on UI. AND trashed jobs are by default in defined relation
+                    ->with('clients', function($query) {
+                        $query->withTrashed();
+                    }) //eager load clients as needed on UI (AND includes trashed if teacher has left but still in the 4 years history of student)
                     ->with('workersContracts')
 
                     ->orderByDesc('end')
