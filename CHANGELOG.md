@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.54.1](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.54.0...v1.54.1) (2025-08-26)
+
+
+### Bug Fixes
+
+* **student dashboard:** no more error for old contracts with teachers that have left ([98e3894](https://github.com/jonathanMelly/pm2etml-apps/commit/98e3894e4ba750ac964b49f9e27e01def98f41ae))
+
 ## [1.54.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.53.2...v1.54.0) (2025-06-28)
 
 
