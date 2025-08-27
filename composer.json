@@ -32,7 +32,7 @@
         "tightenco/ziggy": "^2.2"
     },
     "require-dev": {
-        "barryvdh/laravel-debugbar": "^3.10",
+        "barryvdh/laravel-debugbar": "^3.14",
         "laravel-lang/lang": "^15.5",
         "laravel-lang/publisher": "^16.4",
         "laravel/breeze": "^2.0",

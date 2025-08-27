@@ -6,6 +6,7 @@ use App\Constants\RemediationStatus;
 use App\Enums\CustomPivotTableNames;
 use App\Enums\RequiredTimeUnit;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use JetBrains\PhpStorm\Pure;
 use Kirschbaum\PowerJoins\PowerJoins;
@@ -131,5 +132,10 @@ class WorkerContract extends Pivot
             return $this->save();
         }
 
+    }
+
+    public function workerContractAssessment() : HasOne
+    {
+        return $this->hasOne(WorkerContractAssessment::class);
     }
 }

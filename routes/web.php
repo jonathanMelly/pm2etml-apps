@@ -1,18 +1,25 @@
 <?php
 
 use App\Constants\FileFormat;
+use App\Constants\RoleName;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\SSOController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\AssessmentTemplateController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeployController;
 use App\Http\Controllers\DmzAssetController;
+use App\Http\Controllers\AssessmentController;
 use App\Http\Controllers\JobDefinitionController;
 use App\Http\Controllers\JobDefinitionDocAttachmentController;
 use App\Http\Controllers\JobDefinitionMainImageAttachmentController;
 use Illuminate\Support\Facades\Route;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,6 +63,58 @@ Route::middleware(['auth', 'app'])->group(function () {
     Route::post('contracts/bulkUpdate', [ContractController::class, 'bulkUpdate'])
         ->name('contracts.bulkUpdate');
 
+    // Start HCS
+    Route::get('evaluation/fullEvaluation/{ids}', [AssessmentController::class, 'fullEvaluation'])->name('evaluation.fullEvaluation');
+    Route::post('evaluation/storeEvaluation', [AssessmentController::class, 'storeEvaluation'])->name('evaluation.storeEvaluation');;
+
+    // Route pour afficher le formulaire de création ou de modification des critères personnalisés
+    Route::group(['middleware' => ['role:' . implode("|", RoleName::TEACHER_AND_HIGHER_RANK)]], function () {
+        Route::get('/criterias/create', [AssessmentTemplateController::class, 'create'])
+            ->name('criterias.create');
+        Route::post('/criterias/update', [AssessmentTemplateController::class, 'update'])
+            ->name('criterias.update');
+    });
+
+    Route::post('api/evaluations/update-status', [AssessmentController::class, 'updateStatus'])->name('evaluations.update-status');
+    Route::post('api/evaluation/transition', [AssessmentController::class, 'handleTransition'])->name('evaluation.transition');
+
+    // Générateur de pdf
+    Route::get('/pdf-template/{type}', function ($type) {
+        $filename = match (strtolower($type)) {
+            'formative' => 'tmpFormative.pdf',
+            'summative' => 'tmpSommative.pdf',
+            default => abort(404)
+        };
+
+        $path = resource_path("templates/$filename");
+
+        if (!file_exists($path)) {
+            abort(404, "Fichier PDF introuvable");
+        }
+
+        return Response::file($path);
+    });
+
+
+    Route::post('/save-filled-pdf', function (Request $request) {
+        $request->headers->set('Accept', 'application/json');
+
+        $pdfBase64 = $request->input('pdf');
+        $filename = $request->input('filename', 'evaluation.pdf');
+
+        if (!$pdfBase64) {
+            return response()->json(['error' => 'PDF manquant'], 400);
+        }
+
+        $pdfData = base64_decode(preg_replace('/^data:application\/pdf;base64,/', '', $pdfBase64));
+
+        Storage::disk('public')->put("evaluations/$filename", $pdfData);
+
+        return response()->json(['success' => true, 'path' => "storage/evaluations/$filename"]);
+    });
+
+    // End HCS
+
     //Add basic CRUD actions for contracts
     Route::resource('contracts', ContractController::class);
 
@@ -80,10 +139,10 @@ Route::middleware(['auth', 'app'])->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 
-    Route::get('evaluation-export', \App\Http\Controllers\EvaluationExportController::class)->name('evaluation-export');
+    Route::get('evaluation-export', \App\Http\Controllers\AssessmentExportController::class)->name('evaluation-export');
 
     // Manage pending wishes
-    Route::group(['middleware' => ['role:prof']], function () {
+    Route::group(['middleware' => ['role:' . implode("|", RoleName::TEACHER_AND_HIGHER_RANK)]], function () {
         Route::get('applications', [ContractController::class, 'pendingContractApplications'])
             ->name('applications');
         Route::post('applications', [ContractController::class, 'confirmApplication'])
@@ -91,7 +150,6 @@ Route::middleware(['auth', 'app'])->group(function () {
         Route::delete('applications', [ContractController::class, 'cancelApplication'])
             ->name('applications.resign');
     });
-
 });
 
 //LOGIN

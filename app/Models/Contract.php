@@ -26,13 +26,11 @@ class Contract extends Model
         'end',
     ];
 
-    protected function casts(): array
-    {
-        return [
+    protected $casts = [
             'start' => 'datetime',
             'end' => 'datetime',
         ];
-    }
+
 
     public function clients(): BelongsToMany
     {

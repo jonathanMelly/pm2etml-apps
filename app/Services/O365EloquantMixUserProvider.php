@@ -7,9 +7,11 @@
 namespace App\Services;
 
 use App\Models\User;
+
 use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Contracts\Auth\Authenticatable as UserContract;
 use Illuminate\Support\Facades\Log;
+
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 
@@ -32,6 +34,8 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
 
     public function validateCredentialsRaw(string $user, string $password): bool
     {
+        
+       
         //Create an instance; passing `true` enables exceptions
         $mail = new PHPMailer(true);
 
@@ -74,6 +78,7 @@ class O365EloquantMixUserProvider extends EloquentUserProvider
      */
     public function validateCredentials(\Illuminate\Contracts\Auth\Authenticatable $user, array $credentials): bool
     {
+        Log::info('Provider utilisé : ' . static::class);
         $plain = $this->getPassword($credentials);
         $username = $this->getUsername($user, $credentials);
 

@@ -210,3 +210,80 @@ INSERT INTO `users` (`id`, `firstname`, `lastname`, `email`, `remember_token`, `
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+
+
+/*
+Extension pour les évaluations
+ -- nécessaire à fullEvaluation
+ -- HCS
+
+evaluations:
+  - Stocke les évaluations, chaque évaluation ayant :
+  - Un professeur évaluateur (evaluator_id).
+  - Un étudiant évalué (student_id).
+  - Le nom du projet concerné (project_name).
+  - Une remarque générale (student_remark).
+  - Les relations avec les utilisateurs sont définies par des clés étrangères.
+
+appreciations:
+  - Représente une appréciation individuelle pour une évaluation donnée.
+  - Chaque appréciation a une date et est liée à une évaluation via evaluation_id.
+
+criteria:
+  - Stocke les critères d'évaluation pour chaque appréciation.
+  - Chaque critère a :
+  - Un nom (name).
+  - Une valeur numérique entre 0 et 3 (value), avec une contrainte pour garantir cette plage.
+  - Un statut booléen (checked) pour indiquer s'il est sélectionné.
+*/
+
+-- Création d'index pour optimiser les requêtes de recherche sur plusieurs colonnes
+-- dans différentes tables de la base de données.
+CREATE INDEX idx_email ON users (email);
+CREATE INDEX idx_permission_id ON role_has_permissions (permission_id);
+CREATE INDEX idx_evaluator_id ON evaluations (evaluator_id);
+CREATE INDEX idx_student_id ON evaluations (student_id);
+CREATE INDEX idx_evaluation_id ON appreciations (evaluation_id);
+CREATE INDEX idx_appreciation_id ON criteria (appreciation_id);
+CREATE INDEX idx_date ON appreciations (date);
+CREATE INDEX idx_project_name ON evaluations (project_name);
+CREATE INDEX idx_checked ON criteria (checked);
+
+-- Table evaluations
+CREATE TABLE IF NOT EXISTS `evaluations` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `evaluator_id` BIGINT UNSIGNED NOT NULL,        -- Référence à l'utilisateur prof
+  `student_id` BIGINT UNSIGNED NOT NULL,          -- Référence à l'utilisateur étudiant
+  `project_name` VARCHAR(255) NOT NULL,           -- Nom du projet
+  `student_remark` TEXT,                          -- Remarque générale sur l'étudiant
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`evaluator_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`student_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table appreciations
+CREATE TABLE IF NOT EXISTS `appreciations` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `evaluation_id` BIGINT UNSIGNED NOT NULL,       -- Référence à l'évaluation
+  `date` DATE NOT NULL,                           -- Date de l'appréciation
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`evaluation_id`) REFERENCES `evaluations`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table criteria
+CREATE TABLE IF NOT EXISTS `criteria` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `level` TINYINT NOT NULL,                       -- Niveau (géré côté app : auto80, eval80,auto100, eval100)
+  `appreciation_id` BIGINT UNSIGNED NOT NULL,      -- Référence à l'appréciation
+  `name` VARCHAR(255) NOT NULL,                    -- Nom du critère
+  `value` TINYINT NOT NULL,                        -- Niveau (géré coté app: NA, PA, A, LA )
+  `checked` TINYINT(1) NOT NULL DEFAULT 0,         -- Booléen pour indiquer si coché (0 ou 1)
+  `remark` VARCHAR(255),
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`appreciation_id`) REFERENCES `appreciations`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Garantir les valeurs {NA0, PA1, A2, LA3,}
+ALTER TABLE criteria ADD CONSTRAINT chk_value CHECK (value >= 0 AND value <= 3);
+

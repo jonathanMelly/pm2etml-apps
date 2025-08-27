@@ -13,7 +13,7 @@ export default defineConfig({
             //css
             'resources/css/app.css', //mainly tailwind
             'resources/sass/app.scss', //mainly fa
-
+            // TODO HCS 'resources/css/fullEvaluation.css', (missing file !!!)
             //test
 
             //js
@@ -25,6 +25,7 @@ export default defineConfig({
 
             'resources/js/dropzone.js', //for draq/drop file upload
             'resources/js/dashboard-charts.js',
+            'resources/js/evaluation.js',
 
             //inertia
             'resources/js/apps.ts',//

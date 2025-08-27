@@ -32,16 +32,39 @@ class ContractSeeder extends Seeder
             ->orderBy('id')
             ->limit($faker->numberBetween($user++ < $usersWithJobs[0] ? $jobs[1] : $jobs[0], $jobs[1]))
             ->get() as $job) {
+            
             $currentPeriod = AcademicPeriod::current(false);
+
+            // Vérification que currentPeriod existe et a des dates valides
+            if (!$currentPeriod || !$currentPeriod->start || !$currentPeriod->end) {
+                continue;
+            }
 
             $past = $faker->boolean(30);
             $startMax = $past ? now()->toImmutable()->subDays(2) : $currentPeriod->end->toImmutable()->subDay();
 
-            $start = $faker->dateTimeBetween($currentPeriod->start, $startMax);
+            // S'assurer que startMax n'est pas avant startMin
+            $startMin = $currentPeriod->start;
+            if ($startMax < $startMin) {
+                $startMin = $startMax->copy()->subDay(); // Ajuster startMin si nécessaire
+            }
 
-            $end = $faker->dateTimeBetween($start, $past ?
-                today()->toImmutable()->subDay()
-                : $currentPeriod->end);
+            // S'assurer que les dates sont dans le bon ordre
+            $safeStartMin = min($startMin, $startMax);
+            $safeStartMax = max($startMin, $startMax);
+
+            $start = $faker->dateTimeBetween($safeStartMin, $safeStartMax);
+
+            // S'assurer que end est après start
+            $endMin = clone $start;
+            $endMax = $past ? today()->toImmutable()->subDay() : $currentPeriod->end;
+            
+            // Vérifier que endMax est après start
+            if ($endMax < $start) {
+                $endMax = $start->copy()->addDays(7); // Ajouter une semaine si nécessaire
+            }
+
+            $end = $faker->dateTimeBetween($start, $endMax);
 
             $workersQuery = User::role(RoleName::STUDENT)
                 ->orderBy('id')
@@ -52,6 +75,7 @@ class ContractSeeder extends Seeder
             //$sql = $workersQuery->getQuery()->toSql();
             $workers = $workersQuery->get();
             $evaluatedCount = 0; // force at least 1 evaluated contract...
+            
             foreach ($workers as $worker) {
                 $client = $job->providers[0];
 
@@ -82,9 +106,7 @@ class ContractSeeder extends Seeder
                     //Only 1 worker for 1 shots
                     break;
                 }
-
             }
         }
-
     }
 }
