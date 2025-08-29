@@ -126,6 +126,7 @@ class SSOController extends Controller
         else {
             //Try to match with email or username as data source is not very accurate (best effort)
             $user = User::query()
+                //TODO only use username ?
                 ->where('email', '=', $email)
                 ->orWhere('username', '=', $username)
                 ->first();
