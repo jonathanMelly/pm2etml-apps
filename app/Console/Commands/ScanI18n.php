@@ -24,8 +24,14 @@ class ScanI18n extends Command
     protected array $patterns = [
         // JSON translations
         'json' => [
-            // __('example')
-            '/__\([\'"]([^\'"]+)[\'"]\)/',
+            // __('example') - single quotes
+            '/__\(\'([^\']+)\'\)/',
+            // __("example") - double quotes
+            '/__\("([^"]+)"\)/',
+            // __('example', [...]) - with parameters - single quotes
+            '/__\(\'([^\']+)\'\s*,/',
+            // __("example", [...]) - with parameters - double quotes
+            '/__\("([^"]+)"\s*,/',
             // @lang('example')
             '/@lang\([\'"]([^\'"]+)[\'"]\)/',
             // trans('example')
@@ -34,6 +40,10 @@ class ScanI18n extends Command
             '/\{\{\s*__\([\'"]([^\'"]+)[\'"](,[^\)]+)?\)\s*\}\}/',
             // {!! __('example') !!}
             '/\{!!\s*__\([\'"]([^\'"]+)[\'"]\)\s*!!\}/',
+            // onclick="....__('example')..." and other HTML attributes
+            '/(?:onclick|onchange|onsubmit|data-[a-z-]+)=[\'"][^\'\"]*__\([\'"]([^\'"]+)[\'"]\)[^\'\"]*[\'"]/',
+            // onclick="...{{'{{__('example')}}'}}..." - Blade syntax in HTML attributes
+            '/(?:onclick|onchange|onsubmit|data-[a-z-]+)=[\'"][^\'\"]*\{\{\s*__\([\'"]([^\'"]+)[\'"]\)\s*\}\}[^\'\"]*[\'"]/',
         ],
         // PHP translations (with dots)
         'php' => [
@@ -80,7 +90,7 @@ class ScanI18n extends Command
 
         // Scan files for JSON-style translations
         $usedTranslations = $this->scanFiles($this->patterns['json']);
-
+        
         // Find untranslated strings
         $untranslatedStrings = $this->findUntranslatedJsonStrings($usedTranslations, $frTranslations);
 
@@ -221,8 +231,11 @@ class ScanI18n extends Command
         $untranslated = [];
 
         foreach ($usedTranslations as $string => $files) {
-            // Only include strings without dots (PHP translations use dots)
-            if (!str_contains($string, '.') && !isset($frTranslations[$string])) {
+            // Check if this looks like a PHP translation key (has dots that separate words, not punctuation)
+            $isPhpTranslationKey = preg_match('/^[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-\.]+$/', $string);
+            
+            // Include strings that are not PHP translation keys and not already translated
+            if (!$isPhpTranslationKey && !isset($frTranslations[$string])) {
                 $untranslated[$string] = $files;
             }
         }
