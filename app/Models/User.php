@@ -151,7 +151,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
             ->whereHas('workers.group.academicPeriod', fn($q) => $q->where(tbl(AcademicPeriod::class) . '.id', '=', $periodId))
             ->with('workers.user')
             ->with('workers.group.groupName')
-            ->with('workersContracts')
+            ->with('workersContracts.evaluationAttachments')
 
             //Contract workers
             ->orderByPowerJoins('workers.group.groupName.year')
@@ -166,7 +166,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
             ->whereRelation('workers.group.academicPeriod','id','<',$currentPeriodId)
            ->with('jobDefinition') //eager load definitions as needed on UI
            ->with('clients') //eager load clients as needed on UI
-           ->with('workersContracts')
+           ->with('workersContracts.evaluationAttachments') //eager load evaluation attachments
            ->orderByDesc('end')
            ->orderByDesc('start');
     }

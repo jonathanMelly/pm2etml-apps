@@ -7,12 +7,12 @@ use App\Constants\MorphTargets;
 use App\Models\JobDefinition;
 use App\Models\JobDefinitionMainImageAttachment;
 use App\Models\User;
+use App\Models\WorkerContract;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
@@ -48,6 +48,7 @@ class AppServiceProvider extends ServiceProvider
             //AttachmentTypes::JOB_DEFINITION_ATTACHMENT => JobDefinitionAttachment::class,
             MorphTargets::MORPH2_JOB_DEFINITION => JobDefinition::class,
             MorphTargets::MORPH2_USER => User::class, //Used for spatie permissions
+            MorphTargets::MORPH2_WORKER_CONTRACT => WorkerContract::class,
         ]);
 
         Event::listen(function (\SocialiteProviders\Manager\SocialiteWasCalled $event) {

@@ -6,7 +6,7 @@
         dictFallbackText    : "'.("Please use the fallback form below to upload your files like in the olden daysaaa.").'",
         dictFileTooBig      : "'.__("File is too big ({{filesize}} MiB). Max filesize: {{maxFilesize}} MiB.").'",
         dictInvalidFileType : "'.__("You can't upload files of this type.").'",
-        dictResponseError   : "'.__("Server responded with statusCode code.").'",
+        dictResponseError   : "'.__("Server responded with {{statusCode}} code.").'",
         dictCancelUpload    : "'.__("Cancel upload").'",
         dictCancelUploadConfirmation : "'.__("Are you sure you want to cancel this upload?").'",
         dictRemoveFile       : "'.__("Remove file").'",

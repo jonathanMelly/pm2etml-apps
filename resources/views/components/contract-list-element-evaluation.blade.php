@@ -22,6 +22,25 @@
             </script>
         @endif
     </div>
+
+        {{-- Show attachment icon if evaluation has supporting documents --}}
+        @if($workerContract->alreadyEvaluated())
+            @php
+                $evaluationAttachments = $workerContract->evaluationAttachments;
+            @endphp
+            @if($evaluationAttachments->isNotEmpty())
+                @foreach($evaluationAttachments as $attachment)
+
+                    <a href="{{route('dmz-asset', ['file' => $attachment->storage_path, 'name' => encrypt($attachment->name)])}}"
+                       target="_blank"
+                       class="ml-2 tooltip"
+                       data-tip="{{__('View evaluation document')}} - {{$attachment->name}}">
+                        <i class="fa-solid fa-xl fa-file-circle-check text-accent hover:opacity-70 cursor-pointer" title="PDF"></i>
+                    </a>
+
+                @endforeach
+            @endif
+        @endif
         @role(\App\Constants\RoleName::STUDENT)
         @if($workerContract->canRemediate())
             <button class="ml-2 btn btn-outline btn-xs btn-success text-xs" onclick="switchClient{{$workerContract->id}}.showModal()">

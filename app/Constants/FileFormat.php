@@ -26,6 +26,8 @@ class FileFormat
     public const JOB_DOC_ATTACHMENT_ALLOWED_EXTENSIONS =
         ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'md', 'zip', 'sql'];
 
+    public const CONTRACT_EVALUATION_FORMATS = ['pdf'];
+
     public static function getImageFormatsAsRegex(): string
     {
         return self::getFileFormatAsRegex(self::IMAGE_FORMATS);

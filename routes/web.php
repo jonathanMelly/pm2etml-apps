@@ -12,6 +12,7 @@ use App\Http\Controllers\DmzAssetController;
 use App\Http\Controllers\JobDefinitionController;
 use App\Http\Controllers\JobDefinitionDocAttachmentController;
 use App\Http\Controllers\JobDefinitionMainImageAttachmentController;
+use App\Http\Controllers\ContractEvaluationAttachmentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -68,6 +69,9 @@ Route::middleware(['auth', 'app'])->group(function () {
         ->name('job-definition-main-image-attachment.store');
     Route::post('job-doc-attachment', JobDefinitionDocAttachmentController::class)
         ->name('job-definition-doc-attachment.store');
+
+    Route::post('contract-evaluation-attachment', ContractEvaluationAttachmentController::class)
+        ->name('contract-evaluation-attachment.store');
 
     //For now, destroy is same for any kind of attachment...
     Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy'])

@@ -154,3 +154,125 @@ test('Storage disks cannot be hacked using path traversal ../', function () {
     uploadDisk()->get('test/../../notreachable.txt');
 
 });
+
+test('Regular job attachments remain unencrypted while contract evaluation attachments are encrypted', function () {
+    /* @var $this \Tests\TestCase */
+
+    $this->be($this->createUser(roles: \App\Constants\RoleName::TEACHER));
+
+    // Test 1: Regular JobDefinitionDocAttachment should NOT be encrypted
+    $jobContent = 'This is regular job definition content - not sensitive';
+    $jobFile = \Illuminate\Http\UploadedFile::fake()->createWithContent('job.pdf', $jobContent);
+
+    $jobResponse = $this->call('POST', 'job-doc-attachment', [], [], [
+        'file' => [$jobFile]
+    ]);
+
+    $jobResponse->assertStatus(200);
+    $jobAttachment = \App\Models\JobDefinitionDocAttachment::find(json_decode($jobResponse->getContent(), true)['id']);
+    
+    // Verify job attachment is NOT encrypted
+    $this->assertFalse($jobAttachment->shouldBeEncrypted());
+    $rawJobContent = uploadDisk()->get($jobAttachment->storage_path);
+    $this->assertEquals($jobContent, $rawJobContent); // Should be readable as-is
+
+    // Test 2: ContractEvaluationAttachment should BE encrypted
+    $clientAndJob = $this->createClientAndJob(1);
+    $contract = $clientAndJob['client']->contractsAsAClientForJob($clientAndJob['job'], \App\Models\AcademicPeriod::current())->first();
+    $wc = \App\Models\WorkerContract::query()->where('contract_id', $contract->id)->first();
+    $wc->evaluate(true, null);
+
+    $evalContent = 'This is sensitive evaluation data that should be encrypted';
+    $evalFile = \Illuminate\Http\UploadedFile::fake()->createWithContent('eval.pdf', $evalContent);
+
+    $evalResponse = $this->call('POST', 'contract-evaluation-attachment', [
+        'worker_contract_id' => $wc->id,
+        '_token' => csrf_token(),
+    ], [], [
+        'file' => $evalFile
+    ]);
+
+    $evalResponse->assertStatus(200);
+    $evalAttachment = \App\Models\ContractEvaluationAttachment::find(json_decode($evalResponse->getContent(), true)['id']);
+    
+    // Verify evaluation attachment IS encrypted
+    $this->assertTrue($evalAttachment->shouldBeEncrypted());
+    $rawEvalContent = uploadDisk()->get($evalAttachment->storage_path);
+    $this->assertNotEquals($evalContent, $rawEvalContent); // Should be encrypted
+    $this->assertStringStartsWith('eyJpdiI6', $rawEvalContent); // Laravel encryption signature
+
+    // Test 3: Both can be accessed correctly via getFileContent method
+    $this->assertEquals($jobContent, $jobAttachment->getFileContent());
+    $this->assertEquals($evalContent, $evalAttachment->getFileContent());
+
+    // Test 4: Both can be accessed via DmzAssetController
+    $jobAccessResponse = $this->get(route('dmz-asset', ['file' => $jobAttachment->storage_path]));
+    $jobAccessResponse->assertStatus(200);
+    $jobAccessResponse->assertHeader('Content-Type', 'application/pdf');
+
+    // Get content from BinaryFileResponse
+    ob_start();
+    $jobAccessResponse->sendContent();
+    $jobResponseContent = ob_get_clean();
+    $this->assertEquals($jobContent, $jobResponseContent);
+
+    $evalAccessResponse = $this->get(route('dmz-asset', ['file' => $evalAttachment->storage_path]));
+    $evalAccessResponse->assertStatus(200);
+    $evalAccessResponse->assertHeader('Content-Type', 'application/pdf');
+
+    // Get content from response (encrypted files use regular response with content)
+    $this->assertEquals($evalContent, $evalAccessResponse->getContent());
+});
+
+test('Contract evaluation PDF attachments are automatically encrypted', function () {
+    /* @var $this \Tests\TestCase */
+
+    $this->be($this->createUser(roles: \App\Constants\RoleName::TEACHER));
+
+    // Create a contract to attach PDF to
+    $clientAndJob = $this->createClientAndJob(1);
+    $contract = $clientAndJob['client']->contractsAsAClientForJob($clientAndJob['job'], \App\Models\AcademicPeriod::current())->first();
+    
+    // Evaluate the contract first
+    $wc = \App\Models\WorkerContract::query()->where('contract_id', $contract->id)->first();
+    $wc->evaluate(true, null);
+
+    // Given
+    $filename = 'evaluation.pdf';
+    $originalContent = 'This is sensitive evaluation data that should be encrypted';
+
+    // When - Upload PDF attachment
+    $file = \Illuminate\Http\UploadedFile::fake()->createWithContent($filename, $originalContent);
+
+    $response = $this->call('POST', 'contract-evaluation-attachment', [
+        'worker_contract_id' => $wc->id,
+        '_token' => csrf_token(),
+    ], [], [
+        'file' => $file
+    ]);
+
+    // Then - Verify upload succeeded
+    $response->assertStatus(200);
+    $responseData = json_decode($response->getContent(), true);
+    $attachmentId = $responseData['id'];
+
+    // Verify attachment is created and marked as encrypted type
+    $attachment = \App\Models\ContractEvaluationAttachment::find($attachmentId);
+    $this->assertNotNull($attachment);
+    $this->assertTrue($attachment->shouldBeEncrypted());
+
+    // Verify raw file content is encrypted (not readable)
+    $rawFileContent = uploadDisk()->get($attachment->storage_path);
+    $this->assertNotEquals($originalContent, $rawFileContent);
+    $this->assertStringStartsWith('eyJpdiI6', $rawFileContent); // Laravel encryption starts with base64 encoded data
+
+    // Verify decrypted content matches original
+    $decryptedContent = $attachment->getDecrypted();
+    $this->assertEquals($originalContent, $decryptedContent);
+
+    // Verify the attachment can be accessed via DmzAssetController (decrypted)
+    $response = $this->get(route('dmz-asset', ['file' => $attachment->storage_path]));
+    $response->assertStatus(200);
+    $response->assertHeader('Content-Type', 'application/pdf');
+    $this->assertEquals($originalContent, $response->getContent());
+});

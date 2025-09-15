@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use Ramsey\Uuid\Guid\Guid;
 
 class ContractController extends Controller
 {
@@ -76,7 +77,7 @@ class ContractController extends Controller
 
         $jobDefinition = JobDefinition::whereId($jobDefinitionId)->firstOrFail();
         if (! $jobDefinition->isPublished()) {
-            return back()->withErrors(__('Cannot apply for a draft/upcoming job...)'))->withInput();
+            return back()->withErrors(__('Cannot apply for a draft/upcoming job...'))->withInput();
         }
 
         //Default part (1 eval per project) name is empty string
@@ -281,7 +282,7 @@ class ContractController extends Controller
         $app = WorkerContract::find($request->input('applicationid'));
         if (!$app || $app->groupMember->user_id != Auth::user()->id || $app->application_status <= 0) {
             return redirect('/dashboard')
-                ->with('error', __('Something unorthodox happened...'));
+                ->with('error', __('Something wrong happened...'));
         }
         $app->delete();
         return redirect('/dashboard')
@@ -560,6 +561,14 @@ class ContractController extends Controller
 
         $contracts = $this->getContractsForModifications(collect($request->workersContracts)->join(','), true);
 
+        // Handle attachments marked for deletion
+        if ($request->has('attachmentsToDelete') && !empty($request->input('attachmentsToDelete'))) {
+            $attachmentIds = json_decode($request->input('attachmentsToDelete'), true);
+            if (is_array($attachmentIds)) {
+                $this->deleteEvaluationAttachments($attachmentIds);
+            }
+        }
+
         $updated = 0;
         foreach ($contracts as $contract) {
             foreach ($contract->workersContracts as $workerContract) {
@@ -578,6 +587,12 @@ class ContractController extends Controller
                 if ($workerContract->evaluate($success, $comment)) {
                     $updated++;
                 }
+            }
+
+            // In case of error, only do that if all went well !
+            // Finalize evaluation attachments: move from temporary to final storage
+            foreach ($contract->workersContracts as $workerContract) {
+                $this->finalizeEvaluationAttachments($workerContract);
             }
         }
 
@@ -612,6 +627,7 @@ class ContractController extends Controller
         return $query
             ->with('workers.user')
             ->with('workersContracts.groupMember')
+            ->with('workersContracts.evaluationAttachments')
             ->get();
     }
 
@@ -674,5 +690,48 @@ class ContractController extends Controller
             return $isUpdated??false;
         }
         return false;
+    }
+
+    private function deleteEvaluationAttachments(array $attachmentIds): void
+    {
+        // Single query with IN operator, then delete each to trigger model events
+        \App\Models\ContractEvaluationAttachment::whereIn('id', $attachmentIds)
+            ->each(function ($attachment) {
+                $attachment->delete();
+            });
+    }
+
+    private function finalizeEvaluationAttachments(WorkerContract $workerContract): void
+    {
+        foreach ($workerContract->evaluationAttachments as $attachment) {
+            // Only process if attachment is in temporary storage
+            if (str_contains($attachment->storage_path, 'pending')) {
+                // Get file extension from original path
+                $pathInfo = pathinfo($attachment->storage_path);
+                $extension = isset($pathInfo['extension']) ? '.' . $pathInfo['extension'] : '';
+
+                // Generate unique filename with contract-doc- prefix
+                do {
+                    $uuid = Guid::uuid4()->toString();
+                    $finalPath = "eval-wcid" . $workerContract->id . '-' . $uuid . "." . $extension;
+                } while (uploadDisk()->exists($finalPath));
+
+                // Get encrypted content from temporary location
+                $encryptedContent = uploadDisk()->get($attachment->storage_path);
+
+                // Store in final location
+                if (uploadDisk()->put($finalPath, $encryptedContent)) {
+                    // Delete temporary file last (after updating path)
+                    $tempPath = $attachment->storage_path;
+
+                    // Update attachment storage path
+                    $attachment->storage_path = $finalPath;
+                    $attachment->save();
+
+                    // Delete temporary file
+                    uploadDisk()->delete($tempPath);
+                }
+            }
+        }
     }
 }

@@ -48,7 +48,7 @@ class DashboardController extends Controller
                     ->with('clients', function($query) {
                         $query->withTrashed();
                     }) //eager load clients as needed on UI (AND includes trashed if teacher has left but still in the 4 years history of student)
-                    ->with('workersContracts')
+                    ->with('workersContracts.evaluationAttachments')//eager load evaluation attachments
 
                     ->orderByDesc('end')
                     ->orderByDesc('start');

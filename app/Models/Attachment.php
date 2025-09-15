@@ -31,6 +31,7 @@ class Attachment extends Model
     protected $childTypes = [
         AttachmentTypes::STI_JOB_DEFINITION_MAIN_IMAGE_ATTACHMENT => JobDefinitionMainImageAttachment::class,
         AttachmentTypes::STI_JOB_DEFINITION_ATTACHMENT => JobDefinitionDocAttachment::class,
+        AttachmentTypes::STI_CONTRACT_EVALUATION_ATTACHMENT => ContractEvaluationAttachment::class,
     ];
 
     public static function boot()
@@ -59,6 +60,26 @@ class Attachment extends Model
     public function attachable(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    /**
+     * Check if this attachment should be encrypted based on traits used
+     */
+    public function shouldBeEncrypted(): bool
+    {
+        return in_array(\App\Traits\EncryptedAttachment::class, class_uses_recursive($this));
+    }
+
+    /**
+     * Get file content (encrypted or regular based on child class traits)
+     */
+    public function getFileContent(): string
+    {
+        if ($this->shouldBeEncrypted()) {
+            return $this->getDecrypted();
+        }
+        
+        return uploadDisk()->get($this->storage_path);
     }
 
     public function attachJobDefinition(JobDefinition $jobDefinition, bool $update = true): Attachment

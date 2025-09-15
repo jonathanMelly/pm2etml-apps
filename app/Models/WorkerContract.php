@@ -26,6 +26,17 @@ class WorkerContract extends Pivot
         static::addGlobalScope('withoutTrashed', function (Builder $builder) {
             $builder->whereNull(tbl(WorkerContract::class).'.deleted_at');
         });
+
+        // Handle cascade soft delete for evaluation attachments
+        static::updated(function (WorkerContract $workerContract) {
+            // If the worker contract is being soft deleted (deleted_at was set)
+            if ($workerContract->isDirty('deleted_at') && $workerContract->deleted_at !== null) {
+                // Soft delete all evaluation attachments using Eloquent to trigger events
+                $workerContract->evaluationAttachments()->each(function ($attachment) {
+                    $attachment->delete();
+                });
+            }
+        });
     }
 
     /**
@@ -50,6 +61,11 @@ class WorkerContract extends Pivot
     public function groupMember(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(GroupMember::class);
+    }
+
+    public function evaluationAttachments(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(ContractEvaluationAttachment::class, 'attachable');
     }
 
     public function evaluate(?bool $success, $comment = null, $save = true): bool

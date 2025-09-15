@@ -358,5 +358,20 @@
     "Actions": "Actions",
     "No jobs": "Pas d'emplois",
     "Validate remediation request for :name and project :project": "Valider la demande de remédiation pour :name et le projet :project",
-    "Particularities": "Particularités"
+    "Particularities": "Particularités",
+    "View evaluation document": "Voir le document d'évaluation",
+    "Please select a PDF file": "Veuillez sélectionner un fichier PDF",
+    "Change PDF": "Modifier PDF",
+    "Upload failed:": "Le téléchargement a échoué :",
+    "Upload PDF": "Téléverser le PDF",
+    "Evaluation Document": "Document d'évaluation",
+    "Add PDF": "Ajouter PDF",
+    "Are you sure you want to delete this attachment?": "Êtes-vous sûr de vouloir supprimer cette pièce jointe ?",
+    "Cannot apply for a draft/upcoming job...": "Impossible de postuler pour un projet/emploi à venir...",
+    "Something wrong happened...": "Il s'est passé quelque chose d'anormal...",
+    "Wrong skill format, expected ...:...": "Mauvais format de compétence, attendu ... :...",
+    "Are you sure you want to cancel? Any unsaved changes will be lost.": "Êtes-vous sûr de vouloir annuler ? Toutes les modifications non enregistrées seront perdues.",
+    "Your browser does not support drag'n'drop file uploads.": "Votre navigateur ne prend pas en charge les téléchargements de fichiers par glisser-déposer.",
+    "Server responded with {{statusCode}} code.": "Le serveur a répondu avec le code {{statusCode}}.",
+    "File format :extension not allowed. Only :formats files are accepted.": "Le format de fichier :extension n'est pas autorisé. Seuls les fichiers :formats sont acceptés."
 }

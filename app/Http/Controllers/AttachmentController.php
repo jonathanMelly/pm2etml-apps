@@ -75,6 +75,10 @@ class AttachmentController extends Controller
 
                     break;
 
+                case MorphTargets::MORPH2_WORKER_CONTRACT:
+                    $this->authorize('contracts.evaluate');
+                    break;
+
                 default:
                     $this->deny('Attachment type not implemented');
                     break;
