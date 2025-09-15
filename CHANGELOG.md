@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.55.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.54.1...v1.55.0) (2025-09-15)
+
+
+### Features
+
+* **eval:** possibilité d'attacher un fichier PDF pour une éval (visible par l'élève) ([c454143](https://github.com/jonathanMelly/pm2etml-apps/commit/c45414360db90a1899ce91182fc4f08e7d10d2ef))
+
+
+### Bug Fixes
+
+* **academic period:** do not cache empty periods ([0935de3](https://github.com/jonathanMelly/pm2etml-apps/commit/0935de3fa35074b58a6e45801550785c4e0585be))
+* **i18n scan:** better handle custom translation patterns ([280fd3b](https://github.com/jonathanMelly/pm2etml-apps/commit/280fd3bb14d3a59f5f77a0a9bd5d86eea9a27157))
+
 ## [1.54.1](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.54.0...v1.54.1) (2025-08-26)
 
 
