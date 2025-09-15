@@ -45,23 +45,28 @@ class AcademicPeriod extends Model
     {
         $key = 'currentAcademicPeriod'.($idOnly ? 'Id' : '');
 
-        return Cache::remember($key, Carbon::today()->secondsUntilEndOfDay(), function () use ($idOnly) {
-            $today = today(); //don’t try with DB:raw(now()) as it doesn’t work on sqlite used for faster testing...
-            $builder = self::forDate($today);
+        // Check if we have a cached value
+        $cached = Cache::get($key);
+        if ($cached !== null) {
+            return $cached;
+        }
 
-            if ($builder->exists()) {
-                /* @var $period AcademicPeriod */
-                $period = $builder->first();
+        $today = today(); //don't try with DB:raw(now()) as it doesn't work on sqlite used for faster testing...
+        $builder = self::forDate($today);
 
-                return $idOnly ? $period->id : $period;
-            }
+        if ($builder->exists()) {
+            /* @var $period AcademicPeriod */
+            $period = $builder->first();
+            $result = $idOnly ? $period->id : $period;
 
-            Log::warning('Missing period in db for '.$today->format(SwissFrenchDateFormat::DATE));
+            // Only cache when we found a period
+            Cache::put($key, $result, Carbon::today()->secondsUntilEndOfDay());
+            return $result;
+        }
 
-            return $idOnly ? -1 : null;
-
-        });
-
+        // Don't cache when no period is found, just return the fallback value
+        Log::warning('Missing period in db for '.today()->format(SwissFrenchDateFormat::DATE));
+        return $idOnly ? -1 : null;
     }
 
     public static function forDate(Carbon $date): Builder
