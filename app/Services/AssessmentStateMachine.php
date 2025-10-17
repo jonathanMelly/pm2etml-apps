@@ -3,79 +3,111 @@
 namespace App\Services;
 
 use App\Constants\AssessmentState;
+use App\Constants\AssessmentTiming;
+use App\Constants\AssessmentWorkflowState;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 class AssessmentStateMachine
 {
-    private Collection $appreciations;
+    /** @var \Illuminate\Support\Collection<int, array> */
+    private Collection $items;
+
     private AssessmentState $currentState;
+    private array $timings = [];
 
     /**
-     * Constructeur de la machine à états.
-     *
-     * @param array $appreciations Liste des appréciations (objets ou tableaux) contenant un champ 'timing'.
+     * @param  iterable  $appreciations  Liste d’items (Eloquent models, arrays…) contenant un champ 'timing'
      */
-    public function __construct(array $appreciations)
+    public function __construct(iterable $appreciations)
     {
-        Log::debug('AssessmentStateMachine: Constructeur appelé', ['input_appreciations' => $appreciations]);
+        // Uniformiser en Collection d'arrays
+        if ($appreciations instanceof Collection) {
+            $this->items = $appreciations->map(fn ($it) => $this->toArrayItem($it));
+        } else {
+            $this->items = collect($appreciations)->map(fn ($it) => $this->toArrayItem($it));
+        }
 
-        $this->appreciations = collect($appreciations);
+        Log::debug('ASM: constructor', ['count' => $this->items->count()]);
+
         $this->currentState = $this->computeState();
+        Log::debug('ASM: initial state', ['state' => $this->currentState->value]);
+    }
 
-        Log::debug('AssessmentStateMachine: État initial calculé', [
-            'initial_state' => $this->currentState->value,
-            'initial_state_object' => get_class($this->currentState),
-        ]);
+    private function toArrayItem($it): array
+    {
+        if (is_array($it)) {
+            return $it;
+        }
+
+        // Eloquent/objets
+        return [
+            'timing' => $it->timing ?? null,
+        ];
     }
 
     /**
-     * Calcule l'état actuel à partir des appréciations en utilisant la propriété 'timing'.
+     * Normalise un timing libre (auto_formative, autoFormative, AUTO-FINALE, …) vers une valeur d’enum valide.
+     */
+    private function normalizeTiming(?string $raw): ?AssessmentState
+    {
+        if (!$raw) {
+            return null;
+        }
+
+        // Uniformiser
+        $k = strtolower(str_replace(['-', ' '], '_', $raw));
+
+        // Tolérer quelques variantes courantes
+        return match ($k) {
+            // anciens identifiants
+            'auto_formative', 'autoformative' => AssessmentState::AUTO_FORMATIVE,
+            'eval_formative', 'evalformative' => AssessmentState::EVAL_FORMATIVE,
+            'auto_finale', 'autofinale'       => AssessmentState::AUTO_FINALE,
+            'eval_finale', 'evalfinale'       => AssessmentState::EVAL_FINALE,
+            // nouveaux identifiants
+            'a_formative1', 'aformative1'     => AssessmentState::AUTO_FORMATIVE,
+            'e_formative1', 'eformative1'     => AssessmentState::EVAL_FORMATIVE,
+            'a_formative2', 'aformative2'     => AssessmentState::AUTO_FINALE,
+            'e_sommative',  'esommative'      => AssessmentState::EVAL_FINALE,
+            'not_started', 'not_evaluated'    => AssessmentState::NOT_EVALUATED,
+            default => AssessmentState::tryFrom($raw), // si on reçoit déjà la valeur camelCase exacte
+        };
+    }
+
+    /**
+     * Calcule l’état courant par **priorité métier** :
+     * EVAL_FINALE > EVAL_FORMATIVE > AUTO_FINALE > AUTO_FORMATIVE > NOT_EVALUATED
      */
     private function computeState(): AssessmentState
     {
-        Log::debug('AssessmentStateMachine: computeState démarré', [
-            'appreciations_count' => $this->appreciations->count(),
-            'appreciations_sample' => $this->appreciations->take(5)->all(),
-        ]);
+        $normalized = $this->items
+            ->map(fn ($it) => $this->normalizeTiming($it['timing'] ?? null))
+            ->filter(); // supprime null
 
-        // On récupère les timings dans les appréciations
-        $timings = $this->appreciations->map(function ($item) {
-            if (is_array($item) && isset($item['timing'])) {
-                return $item['timing'];
-            }
-
-            if (is_object($item) && isset($item->timing)) {
-                return $item->timing;
-            }
-
-            return null;
-        });
-
-        Log::debug('AssessmentStateMachine: computeState - timings extraits', [
-            'timings' => $timings->all(),
-        ]);
-
-        // On filtre uniquement les timings valides reconnus comme état
-        $validTimings = $timings->filter(fn($t) => AssessmentState::tryFrom($t) !== null)->values();
-
-        Log::debug('AssessmentStateMachine: computeState - timings valides', [
-            'valid_timings' => $validTimings->all(),
-        ]);
-
-        if ($validTimings->isEmpty()) {
-            Log::debug('AssessmentStateMachine: computeState - Aucun timing valide trouvé, état NOT_EVALUATED');
+        if ($normalized->isEmpty()) {
             return AssessmentState::NOT_EVALUATED;
         }
 
-        // On prend le dernier timing comme état courant
-        $lastTiming = $validTimings->last();
+        // Mémoriser les timings présents (pour workflow enrichi)
+        $this->timings = $normalized->map(fn($s) => $s->value)->unique()->values()->all();
 
-        return AssessmentState::from($lastTiming);
+        // Priorité décroissante
+        $priority = [
+            AssessmentState::EVAL_FINALE->value     => 5,
+            AssessmentState::EVAL_FORMATIVE->value  => 4,
+            AssessmentState::AUTO_FINALE->value     => 3,
+            AssessmentState::AUTO_FORMATIVE->value  => 2,
+            AssessmentState::NOT_EVALUATED->value   => 1,
+        ];
+
+        $best = $normalized->sortByDesc(fn ($state) => $priority[$state->value] ?? 0)->first();
+
+        return $best ?? AssessmentState::NOT_EVALUATED;
     }
 
     /**
-     * Retourne l’état courant.
+     * État courant (enum).
      */
     public function getCurrentState(): AssessmentState
     {
@@ -83,40 +115,89 @@ class AssessmentStateMachine
     }
 
     /**
-     * Calcule l’état suivant à partir du rôle utilisateur et de l’état actuel.
+     * État de workflow enrichi basé sur les timings présents et un statut global optionnel.
+     * @param string|null $evaluationStatus Statut global (ex: pending_signature, completed)
+     */
+    public function getWorkflowState(?string $evaluationStatus = null): AssessmentWorkflowState
+    {
+        $has = fn(string $value) => in_array($value, $this->timings, true);
+
+        $hasAutoF = $has(AssessmentState::AUTO_FORMATIVE->value) || $has(AssessmentTiming::AUTO_FORMATIVE);
+        $hasEvalF = $has(AssessmentState::EVAL_FORMATIVE->value) || $has(AssessmentTiming::EVAL_FORMATIVE);
+        $hasAutoS = $has(AssessmentState::AUTO_FINALE->value)    || $has(AssessmentTiming::AUTO_FINALE);
+        $hasEvalS = $has(AssessmentState::EVAL_FINALE->value)    || $has(AssessmentTiming::EVAL_FINALE);
+
+        // Clôture / signature prioritaire si éval finale faite
+        if ($hasEvalS) {
+            if ($evaluationStatus === AssessmentState::COMPLETED->value) {
+                return AssessmentWorkflowState::CLOSED_BY_TEACHER;
+            }
+            // Signature supprimée: si ENS‑S présent et non terminé → TEACHER_SUMMATIVE_DONE
+            return AssessmentWorkflowState::TEACHER_SUMMATIVE_DONE;
+        }
+
+        // Sommatif élève optionnel → s'il a été fait, on attend l'enseignant
+        if ($hasAutoS && !$hasEvalS) {
+            return AssessmentWorkflowState::WAITING_TEACHER_SUMMATIVE;
+        }
+
+        // Phase formative détaillée
+        if ($hasEvalF) {
+            // L'enseignant a réalisé son évaluation formative
+            // Priorités: attente validation élève (si activée) > formative close > proposer sommative élève optionnelle
+            if ($evaluationStatus === AssessmentWorkflowState::WAITING_STUDENT_VALIDATION_F->value) {
+                return AssessmentWorkflowState::WAITING_STUDENT_VALIDATION_F;
+            }
+            if ($evaluationStatus === AssessmentWorkflowState::FORMATIVE_VALIDATED->value) {
+                return AssessmentWorkflowState::FORMATIVE_VALIDATED;
+            }
+            // défaut: invitons l'élève à une éventuelle sommative (optionnelle)
+            return AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE2_OPT;
+        }
+
+        // Élève a fait l'auto formative → en attente de validation / prise en compte par l'enseignant
+        if ($hasAutoF && !$hasEvalF) {
+            // Si l'enseignant a accusé réception, refléter l'ACK
+            if ($evaluationStatus === AssessmentWorkflowState::TEACHER_ACK_FORMATIVE->value) {
+                return AssessmentWorkflowState::TEACHER_ACK_FORMATIVE;
+            }
+            return AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F;
+        }
+
+        // Par défaut: première étape formative élève
+        return AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE;
+    }
+
+    /**
+     * Transition suivante selon le rôle.
      *
-     * @param string $role Le rôle de l'utilisateur (ex: 'student' ou 'teacher')
-     * @return AssessmentState|null L'état suivant ou null si aucun
+     * Règles proposées (ajuste si besoin) :
+     * - student : NOT_EVALUATED → AUTO_FORMATIVE → AUTO_FINALE
+     * - teacher : AUTO_FORMATIVE → EVAL_FORMATIVE → AUTO_FINALE → EVAL_FINALE → PENDING_SIGNATURE → COMPLETED
      */
     public function getNextState(string $role): ?AssessmentState
     {
-        Log::debug('AssessmentStateMachine: getNextState appelé', [
-            'role' => $role,
-            'current_state' => $this->currentState->value,
-        ]);
+        $role = strtolower($role);
 
-        $transitions = [
-            'student' => [
-                AssessmentState::NOT_EVALUATED->value => AssessmentState::AUTO80,
-                AssessmentState::EVAL80->value        => AssessmentState::AUTO100,
-            ],
-            'teacher' => [
-                AssessmentState::AUTO80->value           => AssessmentState::EVAL80,
-                AssessmentState::AUTO100->value          => AssessmentState::EVAL100,
-                AssessmentState::EVAL100->value          => AssessmentState::PENDING_SIGNATURE,
-                AssessmentState::PENDING_SIGNATURE->value => AssessmentState::COMPLETED,
-            ],
+        $studentFlow = [
+            AssessmentState::NOT_EVALUATED->value => AssessmentState::AUTO_FORMATIVE,
+            AssessmentState::AUTO_FORMATIVE->value => AssessmentState::AUTO_FINALE,
+            // après éval formative enseignant, l'élève peut faire F2
+            AssessmentState::EVAL_FORMATIVE->value => AssessmentState::AUTO_FINALE,
         ];
 
-        $roleTransitions = $transitions[$role] ?? [];
+        $teacherFlow = [
+            AssessmentState::AUTO_FORMATIVE->value   => AssessmentState::EVAL_FORMATIVE,
+            AssessmentState::EVAL_FORMATIVE->value   => AssessmentState::AUTO_FINALE,
+            AssessmentState::AUTO_FINALE->value      => AssessmentState::EVAL_FINALE,
+            AssessmentState::EVAL_FINALE->value      => AssessmentState::PENDING_SIGNATURE,
+            AssessmentState::PENDING_SIGNATURE->value => AssessmentState::COMPLETED,
+        ];
 
-        $next = $roleTransitions[$this->currentState->value] ?? null;
+        $map = $role === 'student' ? $studentFlow : ($role === 'teacher' ? $teacherFlow : []);
 
-        Log::debug('AssessmentStateMachine: getNextState - Résultat', [
-            'next_state_value_from_array' => $next?->value ?? null,
-            'next_state_value_type' => gettype($next),
-        ]);
-
-        return $next;
+        return $map[$this->currentState->value] ?? null;
     }
 }
+
+

@@ -1,6 +1,6 @@
 @props([
-    'student', // Objet étudiant unique
-    'active' => false, // Défaut : inactif
+    'student', 
+    'active' => false,
 ])
 
 <button id="tab-{{ $student->student_id }}-view" role="tab" aria-selected="{{ $active ? 'true' : 'false' }}"

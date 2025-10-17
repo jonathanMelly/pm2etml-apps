@@ -25,17 +25,12 @@ class JobDefinition extends Model
     use HasFactory, SoftDeletes;
 
     public const MIN_PERIODS = 24;
-
     public const MAX_PERIODS = 999;
-
     public const MIN_WISH_PRIORITY = 1;
-
     public const MAX_WISH_PRIORITY = 3;
-
     const SIZE_MEDIUM_MIN = 90;
-
     const SIZE_LARGE_MIN = 120;
-
+    
     /**
      * The attributes that are mass assignable.
      *

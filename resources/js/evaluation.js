@@ -4,7 +4,7 @@ const state = window.evaluationState;
 
 document.addEventListener('DOMContentLoaded', function () {
 
-   console.log('les val de state ; ',state);
+   console.log('les val de state ; ', state);
 
    // Gestion des boutons de soumission
    const submitBtns = document.querySelectorAll('[id^="id-"][id$="-buttonSubmit"]');
@@ -74,6 +74,11 @@ document.addEventListener('DOMContentLoaded', function () {
    //          todoListContainer.classList.add('flex', 'gap-5', 'flex-wrap');
    //       });
    //    });
+
+   // Appliquer les messages workflow dès le chargement (si data-workflow présent)
+   document.querySelectorAll('.evaluation-tabs').forEach((container) => {
+      applyWorkflowMessages(container); toggleValidateButton(container);
+   });
 
 });
 
@@ -248,8 +253,12 @@ function syncSliders(slider) {
 }
 
 function getEvaluationLevelIndex(levelName) {
-   return state.evaluationLevels.indexOf(levelName);
+   const keys = Object.keys(state.evaluationLabels);
+   const index = keys.indexOf(levelName);
+   console.log("getEval dynamic:", levelName, "=> index:", index, keys);
+   return index !== -1 ? index : 0;
 }
+
 
 function getGeneralRemark(studentId) {
    const idGeneralRemark = `id-${studentId}-generalRemark`;
@@ -317,46 +326,45 @@ function hideError(errorDiv) {
    }, 300); // Durée de l'animation (0.3s)
 }
 
-// // Mise à jour des résultats des curseurs
-// window.updateSliderValue = function (slider) {
-//    const id = slider.id.replace('-range', '-result');
-//    syncSliders(slider);
-
-//    console.log('update: ', id.split('-')[1], id.split('-')[3]);
-//    calculateFinalResults(id.split('-')[1], id.split('-')[3]);
-// };
-
 
 window.updateSliderValue = function (slider) {
+   // Synchronise le label du curseur (affiche NA, PA, A, LA)
    const id = slider.id.replace('-range', '-result');
    syncSliders(slider);
 
+   // Extraction de l'ID, du niveau et de l'index du critère
    const match = slider.id.match(/^id-(\d+)-range-([^-]+)-(\d+)$/);
-
-   if (match) {
-      const studentId = match[1];
-      const level = match[2];
-      const criterionIndex = match[3];
-
-      calculateFinalResults(studentId, level);
-
-      const remarkId = `id-${studentId}-remark-${criterionIndex}`;
-      const remarkField = document.getElementById(remarkId);
-
-      if (remarkField) {
-         if (parseInt(slider.value) < 2) {
-            remarkField.classList.add('border-red-500');
-            remarkField.setAttribute('required', 'required');
-            window.openRemark(studentId, criterionIndex);
-         } else {
-            remarkField.classList.remove('border-red-500');
-            remarkField.removeAttribute('required');
-         }
-      } else {
-         console.warn('Champ de remarque non trouvé pour :', remarkId);
-      }
-   } else {
+   if (!match) {
       console.error("Format d'ID de slider invalide :", slider.id);
+      return;
+   }
+
+   const [_, studentId, level, criterionIndex] = match;
+   const value = parseInt(slider.value);
+
+   // Recalcul dynamique des résultats
+   calculateFinalResults(studentId, level);
+
+   // Récupération de la zone de remarque associée
+   const remarkId = `id-${studentId}-remark-${criterionIndex}`;
+   const remarkField = document.querySelector(`textarea[data-student-id="${studentId}"][data-textarea-id="${criterionIndex}"]`) || document.getElementById(remarkId);
+
+   if (!remarkField) {
+      console.warn(`Champ de remarque non trouvé pour : ${remarkId}`);
+      return;
+   }
+
+   // Si la valeur est basse (NA ou PA), on exige une remarque
+   const requireRemark = value < 2;
+   remarkField.classList.toggle('border-red-500', requireRemark);
+   remarkField.toggleAttribute('required', requireRemark);
+
+   if (requireRemark) {
+      window.openRemark(studentId, criterionIndex);
+
+      // Affiche un petit message pédagogique dans la console
+      const shortLabel = window.evaluationState?.evaluationShortLabels?.[level] || level;
+      console.info(`(${shortLabel}) - Niveau faible détecté → remarque obligatoire`);
    }
 };
 
@@ -383,53 +391,54 @@ window.openRemark = function (studentId, criterionIndex) {
    }
 };
 
-// Fonction qui permet de changer l'onglet (eval80 vs eval100)
+// Fonction qui permet de changer l'onglet (autoFormative, evalFormative, etc.)
 window.changeTab = function (onClickBtn) {
+   const studentId = onClickBtn.dataset.studentId || onClickBtn.closest('.evaluation-tabs')?.id.split('-')[1];
+   const selectedLevel = onClickBtn.dataset.level;
+   const isTeacher = onClickBtn.closest('.evaluation-tabs')?.dataset.role === 'teacher';
+   const buttonClass = isTeacher ? 'btn-secondary' : 'btn-primary';
 
-   const TAB_80 = '80';
-   const TAB_100 = '100';
-   const tabName = onClickBtn.id.replace('btn', 'range');
-   const studentId = onClickBtn.id.split('-')[1];
-   const buttonClass = state.isTeacher ? 'btn-secondary' : 'btn-primary';
+   // Supprime le message d’aide si présent
+   const helpMsg = document.getElementById(`help-msg-${studentId}`);
+   if (helpMsg) helpMsg.remove();
 
-   const idsRangesDisabled = `[id^="${tabName}-"]`;
+   // Réinitialise les boutons
+   const allBtns = document.querySelectorAll(`#id-${studentId}-btn > button.eval-tab-btn`);
+   allBtns.forEach(btn => {
+      btn.classList.add('btn-outline');
+      btn.classList.remove(buttonClass);
+   });
+   onClickBtn.classList.remove('btn-outline');
+   onClickBtn.classList.add(buttonClass);
 
-   if (onClickBtn.classList.contains(buttonClass)) {
-      onClickBtn.classList.remove(buttonClass);
+   // Désactive tous les curseurs (ne masque pas les lignes existantes)
+   const allRanges = document.querySelectorAll(`input[type="range"][data-student-id="${studentId}"]`);
+   allRanges.forEach(r => (r.disabled = true));
+
+   // Active uniquement les curseurs du niveau choisi + effet visuel
+   // Si enseignant et passage à ENS‑S: ELEV‑F2 est optionnelle → informer mais autoriser
+   if (isTeacher && selectedLevel === 'eSommative' && !hasStudentAFormative2(studentId)) {
+      notify("ELEV‑F2 optionnelle non faite.", 'info');
+      // on n'interdit pas: on continue pour permettre l'évaluation ENS‑S
    }
 
-   // Détermine le nouvel onglet et met à jour les classes CSS
-   let idsRangesEnabled;
+   const activeRanges = document.querySelectorAll(`input[data-student-id="${studentId}"][data-level="${selectedLevel}"]`);
+   activeRanges.forEach(r => {
+      // Afficher la ligne correspondante si elle était masquée (ex. ELEV‑S / ENS‑S)
+      const row = r.closest(`div[id^="id-${studentId}-${selectedLevel}-"]`);
+      if (row) row.style.display = 'flex';
 
-   if (idsRangesDisabled.includes(TAB_80)) {
-      idsRangesEnabled = idsRangesDisabled.replace(TAB_80, TAB_100);
-      // onClickBtn.classList.remove('btn-outline');
-      onClickBtn.classList.add(buttonClass);
-      // document.getElementById(onClickBtn.id.replace(TAB_80, TAB_100)).classList.add('btn-outline');
-   } else {
-      idsRangesEnabled = idsRangesDisabled.replace(TAB_100, TAB_80);
-      // onClickBtn.classList.remove('btn-outline');
-      onClickBtn.classList.add(buttonClass);
-      // document.getElementById(onClickBtn.id.replace(TAB_100, TAB_80)).classList.add('btn-outline');
+      r.disabled = false;
+      r.classList.add('ring-1', 'ring-amber-500', 'ring-offset-1'); // halo visuel
+      setTimeout(() => r.classList.remove('ring-1', 'ring-amber-500', 'ring-offset-1'), 800);
+   });
 
-      const rangesAuto100 = document.querySelectorAll(`[id^="id-${studentId}-auto100-"]`);
-      rangesAuto100.forEach(rAuto100 => {
-         console.log(rAuto100);
-         rAuto100.style.display = 'flex';
-      });
+   // Mise à jour de la logique métier (si tu as déjà cette fonction)
+   if (typeof calculateFinalResults === 'function') {
+      calculateFinalResults(studentId, selectedLevel);
    }
-
-   // Active/Désactive les éléments des onglets
-   const divsDisabled = document.querySelectorAll(idsRangesDisabled);
-   const divsEnabled = document.querySelectorAll(idsRangesEnabled);
-
-   divsDisabled.forEach(div => { div.disabled = false; });
-   divsEnabled.forEach(div => { div.disabled = true; });
-
-   // Calcule les résultats finaux
-   calculateFinalResults(studentId, onClickBtn.dataset.level);
-
 };
+
 
 // Fonction pour afficher un message popup
 function showReloadPopup(message, delay = 2000) {
@@ -466,11 +475,23 @@ window.validateEvaluation = async function (idStudent) {
 
    // Appel des fonctions nécessaires
    OnThisBtn(btn);
-   await setStatusEvalInBD(idEval, btns); // Attendre la fin de l'appel asynchrone
-   await notifyStatusEval(btns);         // Attendre la fin de l'appel asynchrone
-
-   // Affichage du popup avant le rechargement
-   showReloadPopup("La page va se recharger dans quelques secondes...", 2000);
+   try {
+      const resp = await setStatusEvalInBD(idEval, btns);
+      if (resp && resp.success) {
+         // Informer seulement; mettre à jour le workflow exposé pour l'UI
+         if (resp.workflow) {
+            btns.setAttribute('data-workflow', resp.workflow);
+            applyWorkflowMessages(btns);
+            try { toggleValidateButton(btns); } catch (_) {}
+         }
+         await notifyStatusEval(btns);
+      } else {
+         notify(resp?.message || "La transition n'a pas pu être appliquée.", 'error');
+      }
+   } catch (e) {
+      console.error(e);
+      notify("Erreur pendant la validation.", 'error');
+   }
 };
 
 
@@ -556,31 +577,166 @@ document.head.appendChild(style);
 
 
 function notifyStatusEval(btns) {
-   // Vérifier si le bouton est défini
    if (!btns) {
       console.error("ID d'évaluation non trouvé.");
       return;
    }
+// Affichage du bouton Valider/Terminer selon le workflow
+function toggleValidateButton(btns) {
+   const role = btns.getAttribute('data-role') || '';
+   const wf = btns.getAttribute('data-workflow') || '';
+   const validateBtn = btns.querySelector('button.btn-success');
+   if (!validateBtn) return;
 
-   // Obtenir l'état actuel à partir du data-attribute
-   const currentState = btns.getAttribute('data-current-state') || 'not_evaluated';
+   let show = false;
+   if (role === 'student') {
+      show = (wf === 'teacher_summative_done');
+   } else if (role === 'teacher') {
+      show = (wf === 'waiting_teacher_validation_f' || wf === 'waiting_teacher_validation_f2' || wf === 'waiting_teacher_summative' || wf === 'teacher_summative_done' || wf === 'summative_validated');
+      validateBtn.textContent = (wf === 'teacher_summative_done' || wf === 'summative_validated') ? 'Terminer' : 'Valider';
+   }
+   validateBtn.style.display = show ? '' : 'none';
+}
 
-   // Dictionnaire des messages liés aux états
-   const stateMessages = {
-      'not_evaluated': "L'évaluation a été initiée.",
-      'eval80': "Votre évaluation formative (80%) a été validée.",
-      'auto80': "Votre auto-évaluation formative (80%) a été validée.",
-      'eval100': "Votre évaluation sommative (100%) a été validée.",
-      'auto100': "Votre auto-évaluation sommative (100%) a été validée.",
-      'pending_signature': "L'évaluation est en attente de signature finale.",
-      'completed': "L'évaluation est terminée."
+   const role = btns.getAttribute('data-role') || '';
+   const workflow = btns.getAttribute('data-workflow') || '';
+   const currentState = btns.getAttribute('data-current-state') || 'not_started';
+
+   // Messages concis basés sur le workflow (prioritaire)
+   const wfMessages = {
+      waiting_student_formative: "En attente d'auto-éval élève (ELEV-F).",
+      waiting_student_formative2_optional: "Vous pouvez faire ELEV‑F2 (optionnel).",
+      waiting_teacher_validation_f: "À valider par l'enseignant (ENS-F).",
+      teacher_ack_formative: "Accusé de réception de l'enseignant (F).",
+      teacher_formative_done: "Évaluation formative enseignant effectuée.",
+      waiting_student_validation_f: "Validation élève (formative) requise.",
+      formative_validated: "Phase formative clôturée.",
+      waiting_teacher_summative: "À évaluer par l'enseignant (ENS-S).",
+      teacher_summative_done: "Évaluation sommative enseignant effectuée.",
+      summative_validated: "Validation élève enregistrée.",
+      closed_by_teacher: "Évaluation clôturée.",
    };
 
-   // Message à afficher
-   const message = stateMessages[currentState] || "État de l'évaluation mis à jour.";
+   // Fallback sur l'état principal (timing)
+   const stateMessages = {
+      not_started: "Débutez l'évaluation.",
+      autoFormative: "Auto-évaluation formative enregistrée.",
+      evalFormative: "Formative validée.",
+      autoFinale: "Auto-évaluation F2 enregistrée.",
+      evalFinale: "Sommative validée.",
+      pending_signature: "En attente de signature.",
+      completed: "Évaluation terminée.",
+   };
 
-   // Appel à la fonction de notification générique
-   notify(message, 'success');
+   const message = wfMessages[workflow] || stateMessages[currentState] || null;
+   if (message) {
+      notify(message, 'success');
+   }
+}
+
+function applyWorkflowMessages(btns) {
+   if (!btns) return;
+   const role = btns.getAttribute('data-role') || '';
+   const studentId = (btns.id || '').split('-')[1];
+   const workflow = btns.getAttribute('data-workflow') || '';
+
+   // Status + hint concis
+   const texts = {
+      waiting_student_formative: {
+         status: "En attente d'auto-éval élève (ELEV‑F1).",
+         hintStudent: "Cliquez sur ELEV‑F1 pour commencer.",
+         hintTeacher: "En attente que l'élève commence.",
+      },
+      waiting_student_formative2_optional: {
+         status: "Formative 2 (ELEV‑F2) optionnelle.",
+         hintStudent: "Vous pouvez faire ELEV‑F2 (optionnel).",
+         hintTeacher: "Invitez l'élève à ELEV‑F2 (optionnel).",
+      },
+      waiting_teacher_validation_f: {
+         status: "À valider par l'enseignant (ENS-F).",
+         hintStudent: "En attente de validation de l'enseignant.",
+         hintTeacher: "Validez l'évaluation formative (ENS‑F).",
+      },
+      teacher_ack_formative: {
+         status: "Accusé de réception (formative).",
+         hintStudent: "Attendez la suite de l'enseignant.",
+         hintTeacher: "Préparez votre évaluation formative.",
+      },
+      teacher_formative_done: {
+         status: "Formative enseignant effectuée.",
+         hintStudent: "Poursuivez vers F2 (si demandé).",
+         hintTeacher: "Invitez l'élève à ELEV‑F2 (optionnel).",
+      },
+      waiting_teacher_summative: {
+         status: "À évaluer (ENS-S).",
+         hintStudent: "En attente de l'enseignant.",
+         hintTeacher: "Réalisez l'évaluation sommative.",
+      },
+      teacher_summative_done: {
+         status: "Sommative enseignant effectuée.",
+         hintStudent: "Cliquez sur Valider pour confirmer.",
+         hintTeacher: "Vous pouvez cliquer sur Terminer.",
+      },
+      summative_validated: {
+         status: "Validation élève enregistrée.",
+         hintStudent: null,
+         hintTeacher: "Cliquez sur Terminer pour clôturer.",
+      },
+      closed_by_teacher: {
+         status: "Évaluation clôturée.",
+         hintStudent: null,
+         hintTeacher: null,
+      },
+   };
+
+   const t = texts[workflow];
+   if (!t) return;
+
+   // Mettre à jour le statut visible
+   const statusSpan = btns.querySelector('.next-state-message');
+   if (statusSpan) {
+      statusSpan.textContent = `Statut : ${t.status}`;
+   }
+
+   // Mettre à jour ou créer le hint
+   const hintId = `help-msg-${studentId}`;
+   let hint = document.getElementById(hintId);
+   const hintText = role === 'teacher' ? t.hintTeacher : t.hintStudent;
+   if (hintText) {
+      if (!hint) {
+         hint = document.createElement('div');
+         hint.id = hintId;
+         hint.className = 'absolute -top-10 -right-3 bg-amber-50 text-amber-800 text-sm font-medium border border-amber-300 px-3 py-1 rounded-md animate-pulse';
+         btns.appendChild(hint);
+      }
+      hint.textContent = hintText;
+   } else if (hint) {
+      hint.remove();
+   }
+
+   // Surligner le prochain bouton pertinent (sans forcer ELEV‑S côté élève)
+   btns.querySelectorAll('button.eval-tab-btn').forEach(b => b.classList.remove('ring-2', 'ring-amber-500', 'animate-pulse'));
+   const highlight = (level) => {
+      const target = btns.querySelector(`button.eval-tab-btn[data-level='${level}']`);
+      if (target) target.classList.add('ring-2', 'ring-amber-500', 'animate-pulse');
+   };
+   if (role === 'teacher') {
+      if (workflow === 'waiting_teacher_validation_f' || workflow === 'teacher_ack_formative') highlight('eFormative1'); if (workflow === 'waiting_teacher_validation_f2') { const validateBtn = btns.querySelector('button.btn-success'); if (validateBtn) validateBtn.classList.add('ring-2', 'ring-amber-500', 'animate-pulse'); }
+      else if (workflow === 'waiting_teacher_summative') highlight('eSommative');
+      else if (workflow === 'teacher_summative_done') {
+         const endBtn = btns.querySelector('button.btn-success');
+         if (endBtn) endBtn.classList.add('ring-2', 'ring-emerald-500', 'animate-pulse');
+      }
+   } else if (role === 'student') {
+      if (workflow === 'waiting_student_formative') highlight('aFormative1');
+      if (workflow === 'teacher_summative_done') {
+         const validateBtn = btns.querySelector('button.btn-success');
+         if (validateBtn) validateBtn.classList.add('ring-2', 'ring-emerald-500', 'animate-pulse');
+      }
+   }
+
+   // Ajuster la visibilité/contenu du bouton Valider/Terminer selon workflow
+   try { toggleValidateButton(btns); } catch (_) {}
 }
 
 
@@ -592,31 +748,30 @@ function removePopup(popup) {
 }
 
 function OnThisRangesFotIdStudent(idStudent) {
+   const tabs = document.querySelector(`#id-${idStudent}-btn`);
+   if (!tabs) return null;
 
-   let idBtn, sliders100Elem, sliders80Elem;
+   const role = tabs.dataset.role; // 'teacher' | 'student'
+   const current = tabs.getAttribute('data-current-state') || 'not_started';
 
-   if (state.isTeacher) {
-      idBtn = `id-${idStudent}-btn-eval100`;
-      sliders100Elem = `[id^="id-${idStudent}-eval100-"]`;
-      sliders80Elem = `[id^="id-${idStudent}-eval80-"]`;
+   let targetLevel;
+   if (role === 'teacher') {
+      targetLevel = (current === 'autoFormative' || current === 'evalFormative') ? 'eFormative1' : 'eSommative';
    } else {
-      idBtn = `id-${idStudent}-btn-auto100`;
-      sliders100Elem = `[id^="id-${idStudent}-auto100-"]`;
-      sliders80Elem = `[id^="id-${idStudent}-auto80-"]`;
+      targetLevel = (current === 'not_started' || current === 'autoFormative') ? 'aFormative1' : 'aFormative2';
    }
-   const btn = document.getElementById(idBtn);
-   const divSliders = document.querySelectorAll(sliders100Elem);
 
-   if (btn) {
-      btn.disabled = false;
-      divSliders.forEach(div => {
-         div.style.display = 'flex';
-         const range = div.querySelector('input[type="range"]');
-         if (range) {
-            range.disabled = false;
-         }
-      });
-   }
+   const btn = tabs.querySelector(`button[data-level='${targetLevel}']`);
+
+   const divSliders = document.querySelectorAll(`[id^="id-${idStudent}-${targetLevel}-"]`);
+   divSliders.forEach(div => {
+      div.style.display = 'flex';
+      const range = div.querySelector('input[type="range"]');
+      if (range) {
+         range.disabled = false;
+      }
+   });
+
    return btn;
 }
 
@@ -640,7 +795,7 @@ function setStatusEvalInBD(idEval, btns) {
    }
 
    // Envoyer une requête AJAX pour mettre à jour l'état dans la base de données
-   fetch('/api/evaluations/update-status', {
+   return fetch('/api/evaluations/update-status', {
       method: 'POST',
       headers: {
          'Content-Type': 'application/json',
@@ -659,9 +814,11 @@ function setStatusEvalInBD(idEval, btns) {
          } else {
             console.error("Erreur lors de la mise à jour de l'état :", data.message);
          }
+         return data;
       })
       .catch(error => {
          console.error("Une erreur s'est produite lors de la mise à jour de l'état :", error);
+         throw error;
       });
 }
 
@@ -837,7 +994,7 @@ window.toggleExclusion = function (btn) {
 // #region: Load jsonSave
 
 function loadFrom(js) {
-   const appreciations = js.evaluations.appreciations;
+   const appreciations = js.evaluations;
    if (!Array.isArray(appreciations) || appreciations.length === 0) {
       console.error(`Aucune appréciation trouvée pour l'étudiant ${js.student_id}.`);
       return;
@@ -858,17 +1015,17 @@ function loadFrom(js) {
 }
 
 function loadFromJsonSave(js, level) {
-   const currentAppreciation = js.evaluations.appreciations.find(app => app.level === level);
+   const currentAppreciation = js.evaluations.find(app => app.level === level);
 
    if (!currentAppreciation) {
       console.warn(`Aucune appréciation trouvée pour le niveau ${level} chez l'étudiant ${js.student_id}`);
       return;
    }
 
-   // Mise à jour de la remarque générale
+   // 🟢 Remarque générale
    setGeneralRemark(js.student_id, currentAppreciation.student_remark);
 
-   // Mise à jour des boutons sélectionnés
+   // 🟢 Sélection du bon bouton
    const buttons = document.querySelectorAll(`#id-${js.student_id}-btn > button`);
    buttons.forEach(button => {
       if (button.dataset.level === level) {
@@ -878,7 +1035,7 @@ function loadFromJsonSave(js, level) {
       }
    });
 
-   // Mise à jour des critères
+   // 🟢 Chargement des critères
    const categoryDivs = document.querySelectorAll(`#idStudent-${js.student_id}-visible > form > .categories-container`);
    categoryDivs.forEach(categoryDiv => {
       const criterionCards = categoryDiv.querySelectorAll('.criterion-card');
@@ -892,13 +1049,29 @@ function loadFromJsonSave(js, level) {
             if (slider) {
                slider.parentElement.style.display = 'flex';
                slider.value = criterion.value;
+               // Afficher la zone remarque si valeur faible (NA/PA)
+               if (!isNaN(parseInt(criterion.value)) && parseInt(criterion.value) < 2) {
+                  const t = card.querySelector('textarea');
+                  if (t) {
+                     t.classList.remove('hidden');
+                     const toggle = card.querySelector(`input.swap-input[data-remark-id='${criterionId}']`);
+                     if (toggle) toggle.checked = true;
+                  }
+               }
             }
 
             const checkbox = card.querySelector('input[type="checkbox"]');
             if (checkbox) checkbox.checked = criterion.checked;
 
             const textarea = card.querySelector('textarea');
-            if (textarea) textarea.value = criterion.remark;
+            if (textarea) {
+               textarea.value = criterion.remark;
+               if (criterion.remark && criterion.remark.trim().length > 0) {
+                  textarea.classList.remove('hidden');
+                  const toggle = card.querySelector(`input.swap-input[data-remark-id='${criterionId}']`);
+                  if (toggle) toggle.checked = true;
+               }
+            }
          }
       });
    });
@@ -906,16 +1079,10 @@ function loadFromJsonSave(js, level) {
    calculateFinalResults(js.student_id, level, 'saved');
 }
 
-
-// Fonction de mise à jour de la remarque générale de l'étudiant
 function setGeneralRemark(studentId, remark) {
    const remarkElement = document.querySelector(`#id-${studentId}-generalRemark`);
-   console.log(`#id-${studentId}-generalRemark`);
-   if (remarkElement) {
-      remarkElement.value = remark;
-   }
+   if (remarkElement) remarkElement.value = remark || '';
 }
-
 
 // #endregion
 
@@ -1020,11 +1187,16 @@ function makeToJsonSave(js) {
       criteria: criterias
    });
 
-   // Ajouter les données collectées au JSON final
-   js.appreciations = appreciations;
+   // Mettre à jour le bloc "evaluations" pour que le backend voie le contenu
+   js.evaluations = {
+      status_eval: js.status_eval || 'not_evaluated',
+      appreciations: appreciations
+   };
 
    // Assurez-vous que les données sont correctes avant d'envoyer
-   displayError(js.student_id, 'Données envoyées pour l\'étudiant');
+   displayError(js.student_id, 'Données prêtes pour l’envoi.');;
+
+
 
    return true;
 
@@ -1041,7 +1213,6 @@ function addSubmitButtonListeners(submitBtns) {
 function handleSubmitButtonClick(event) {
    event.preventDefault(); // Empêche l'envoi immédiat du formulaire
 
-   // console.log(`Bouton de soumission cliqué pour l'élève ID: ${studentId}`);
    const studentId = getStudentIdFromButton(event.target);
    const isUpdate = getIsUpdateFromButton(event.target);
 
@@ -1053,8 +1224,17 @@ function handleSubmitButtonClick(event) {
 
    console.log(`Données de l'élève récupérées :`, studentData);
 
-   makeToJsonSave(studentData)
+   //  Récupère le statut d’évaluation actuel depuis la div des onglets
+   const currentStatus = document
+      .querySelector(`#id-${studentId}-btn`)
+      ?.dataset.currentState || 'not_evaluated';
 
+   // On ajoute ce statut dans les données envoyées
+   studentData.status_eval = currentStatus;
+
+   console.log(`Statut courant détecté pour l'élève ${studentId} :`, currentStatus);
+
+   //  Construction du JSON à envoyer
    if (!makeToJsonSave(studentData)) {
       const errorMessage = '⚠️ Veuillez sélectionner un type d’évaluation ou valider l’évaluation reçue.';
       console.error(`Erreur pour l'étudiant ${studentId} : ${errorMessage}`);
@@ -1064,28 +1244,32 @@ function handleSubmitButtonClick(event) {
 
    studentData.isUpdate = isUpdate;
 
+   // Conversion en JSON
    const jsonData = convertToJsonString(studentData);
    updateEvaluationDataTextarea(studentId, jsonData);
    updateEvaluationDataField(studentId, jsonData);
 
+   // Récupération du formulaire parent
    const form = getParentForm(event.target);
    if (!form) {
       handleMissingForm(studentId, event.target.id);
       return;
    }
 
+   // Validation HTML du formulaire
    if (!form.checkValidity()) {
       validateForm(form, studentId);
       return;
    }
 
-   console.log("Contenu de evaluation_data juste avant l'envoi : ", document.getElementById('evaluation-data-' + studentId).value);
+   // Log avant envoi
+   console.log(`Formulaire prêt à être soumis pour l'élève ${studentId} :`, jsonData);
 
+   // Soumission finale
    form.submit();
-   displayError(studentId, 'Formulaire soumis pour l\'élève ID:', studentId);
-   console.log("Formulaire prêt à être soumis avec les données : ", document.getElementById('evaluation-data-' + studentId).value);
-
+   displayError(studentId, `Formulaire soumis avec succès pour l'élève ${studentId}`);
 }
+
 
 function validateForm(form, studentId) {
    if (!form.checkValidity()) {
@@ -1176,139 +1360,71 @@ function handleMissingForm(studentId, buttonId) {
 // #endregion
 
 // #region détermination du résultat
-//
-// Ce n'est pas une bonne solution (que faire si je change de type d'évaluation ?)
-//  (function () {
-//    // Sélectionne tous les éléments dont l'ID se termine par '-finalResult' 
-//    const divResults = document.querySelectorAll('[id$="-finalResult"]');
-
-//    setInterval(() => {
-//       divResults.forEach(element => {
-//          const studentId = element.id.split('-')[1];
-//          const levelName = state.isTeacher ? 'eval80' : 'auto80';
-//          console.log('start');
-//          calculateFinalResults(studentId, levelName);
-//       });
-//    }, 2000);
-// })();
-
 
 /**
- * Fonction qui affiche le résultat dans la div #id-{{ $studentDetails->student_id }}-finalResult  
- * et la div #id-{{ $studentDetails->student_id }}-small_finalResult selon le calcul défini par le règlement ETML.
- * Cette fonction parcourt les catégories de critères définies dans 'state.criteriaGrouped',
- * et calcule un score en fonction des valeurs des sliders (évaluations) et de l'exclusion de certains critères via les checkboxes.
- * Le résultat est ensuite affiché en fonction des appréciations prédéfinies dans 'state.appreciationLabels'.
- * 
- * @param {number} student_id - L'ID de l'étudiant pour lequel les résultats sont calculés.
- * @param {string} levelName - Le niveau d'évaluation (ex. "auto80", "eval80", "auto100", "eval100").
- * 
- * @returns {void} Aucun retour ; les résultats sont directement affichés dans les divs correspondantes.
+ * Calcule et affiche le résultat final pour un étudiant selon les critères sélectionnés.
+ *
+ * @param {number|string} student_id - ID de l'étudiant.
+ * @param {string} levelName - Niveau d’évaluation ("autoFormative", "evalFormative", "autoFinale", "evalFinale").
+ * @param {string} [resultType='live'] - Type d'affichage ("live" ou "saved").
  */
 function calculateFinalResults(student_id, levelName, resultType = 'live') {
+   // Vérifie la présence des données nécessaires
+   if (!state?.criteriaGrouped || !state?.evaluationLabels || !state?.evaluationShortLabels) {
+      console.warn('calculateFinalResults: données d’état manquantes.');
+      return;
+   }
 
-   // Variables pour calculer les scores et statistiques
    let count = 8;
    let totalScores = 0;
-   let naCount = 0;
-   let paCount = 0;
-   let aCount = 0;
-   let laCount = 0;
-   let result = 0;
+   let naCount = 0, paCount = 0, aCount = 0, laCount = 0;
+   let result = '';
+   let bgClass = '';
 
-   // Variable pour le titre
-   let finalResultTitle = '';
-   let smallFinalResultTitle = '';
-   let spanResult = ''
-
-   // pour le fond 
-   let bgClass = null;
-
-   // Les divs à traiter
-   const divSamllFinalResult = document.getElementById(`id-${student_id}-small_finalResult`);
+   const divSmallFinalResult = document.getElementById(`id-${student_id}-small_finalResult`);
    const divFinalResult = document.getElementById(`id-${student_id}-finalResult-${resultType}`);
+   if (!divFinalResult || !divSmallFinalResult) return;
 
-   // Sélectionner les sliders avec les attributs spécifiques
    const sliders = document.querySelectorAll(
       `input[type="range"][data-level="${levelName}"][data-student-id="${student_id}"]`
    );
-
-   // Sélectionner les checkboxes avec les attributs spécifiques
    const checkboxes = document.querySelectorAll(
       `input[type="checkbox"][data-student-id="${student_id}"]`
    );
 
-   // Assigner un titre en fonction du levelName
-   console.log('valeur de evaluationLeves : ', state.evaluationLevels, 'levelName: ', levelName);
+   // Titres dynamiques depuis le backend (PHP)
+   const finalResultTitle = state.evaluationLabels?.[levelName] ?? 'Erreur';
+   const smallFinalResultTitle = (state.evaluationShortLabels?.[levelName] ?? 'X') + ': ';
 
-   switch (levelName) {
-      case state.evaluationLevels[0]: // auto80
-         finalResultTitle = 'AFormative';
-         smallFinalResultTitle = 'A: ';
-         spanResult = '80%';
-         break;
-      case state.evaluationLevels[1]:
-         finalResultTitle = 'Formative';
-         smallFinalResultTitle = 'F: ';
-         spanResult = '80%';
+   // Détermine si c’est une évaluation formative ou finale
+   const spanResult = levelName.toLowerCase().includes('finale') ? '100%' : '>79%';
 
-         break;
-      case state.evaluationLevels[2]:
-         finalResultTitle = 'ASommative';
-         smallFinalResultTitle = 'A+: ';
-         spanResult = '100%';
-         break;
-
-      case state.evaluationLevels[3]:
-         finalResultTitle = 'Sommative';
-         smallFinalResultTitle = 'S: ';
-         spanResult = '100%';
-         break;
-
-      default:
-         finalResultTitle = 'Erreur';
-         smallFinalResultTitle = 'X: ';
-         spanResult = '404';
-         break;
-   }
-
-   // Afficher les titres dans les divs correspondantes
+   // Met à jour les titres dans le DOM
    divFinalResult.querySelector(`#finalResultTitle-${student_id}-${resultType}`).innerHTML = finalResultTitle;
-   divSamllFinalResult.querySelector(`#smallResultTitle-${student_id}`).innerHTML = smallFinalResultTitle;
+   divSmallFinalResult.querySelector(`#smallResultTitle-${student_id}`).innerHTML = smallFinalResultTitle;
    divFinalResult.querySelector(`#spanResult-${student_id}-${resultType}`).innerHTML = spanResult;
 
-
-   // Parcours des catégories dans criteriaGrouped
+   // Calcul des résultats
    Object.entries(state.criteriaGrouped).forEach(([categoryName, crits]) => {
       crits.forEach(crit => {
-         // Vérifier si le critère est exclu via la checkbox
-         const isExcluded = Array.from(checkboxes).some(checkbox => {
-            // Vérifie si la checkbox correspond au critère et à l'élève
-            return (
-               checkbox.dataset.excludeId === `${crit.position}` &&
-               checkbox.dataset.studentId === `${student_id}` &&
-               checkbox.checked
-            );
-         });
-
+         const isExcluded = Array.from(checkboxes).some(checkbox =>
+            checkbox.dataset.excludeId === `${crit.position}` &&
+            checkbox.dataset.studentId === `${student_id}` &&
+            checkbox.checked
+         );
          if (isExcluded) {
-            count--; // Réduire le nombre total attendu si le critère est exclu
-            return; // Passer au critère suivant
+            count--;
+            return;
          }
 
-         // Trouver le slider associé au critère
-         const slider = Array.from(sliders).find(slider => {
-            const match = slider.dataset.criterionId === `${crit.position}`;
-            return match;
-         });
-
-         // console.log('slide: ', slider);
+         const slider = Array.from(sliders).find(
+            s => s.dataset.criterionId === `${crit.position}`
+         );
          if (slider) {
-            // console.log('valeur du slider selon le critère : ', slider.value);
-            const value = parseInt(slider.value, 10); // Convertir en entier
-            totalScores += value; // Ajouter la valeur au score total
+            const value = parseInt(slider.value, 10);
+            if (isNaN(value)) return;
 
-            // Mettre à jour les compteurs basés sur la valeur
+            totalScores += value;
             if (value < 1) naCount++;
             else if (value < 2) paCount++;
             else if (value < 3) aCount++;
@@ -1317,48 +1433,44 @@ function calculateFinalResults(student_id, levelName, resultType = 'live') {
       });
    });
 
-
-   // Déterminer l'appréciation en fonction des scores obtenus
+   // 🔹 Détermination du résultat global
    if (naCount > 0) {
-      result = state.appreciationLabels[0]; // NA - Non acquis
-      bgClass = 'bg-error';
+      result = state.appreciationLabels[0];
+      bgClass = 'bg-red-200';
    } else if (paCount > 0) {
-      result = state.appreciationLabels[1]; // PA - Partiellement acquis
-      bgClass = 'bg-warning';
+      result = state.appreciationLabels[1];
+      bgClass = 'bg-yellow-200';
+   } else if (aCount > Math.floor(count / 2)) {
+      result = state.appreciationLabels[2];
+      bgClass = 'bg-green-200';
    } else {
-      if (aCount > Math.floor(count / 2)) {
-         result = state.appreciationLabels[2]; // A - Approuvé
-         bgClass = 'bg-success';
-      } else {
-         result = state.appreciationLabels[3]; // LA - Largement approuvé
-         bgClass = 'bg-info';
-      }
+      result = state.appreciationLabels[3];
+      bgClass = 'bg-blue-200';
    }
 
-   // Fonction pour supprimer les classes de couleur de fond existantes
-   function removeBackgroundClasses(element) {
-      element.classList.forEach(className => {
-         if (className.startsWith('bg-')) {
-            element.classList.remove(className);
-         }
-      });
-   }
+   // 🔹 Nettoyage et application du fond
+   const cleanBg = el => el.classList.forEach(c => c.startsWith('bg-') && el.classList.remove(c));
+   cleanBg(divFinalResult);
+   cleanBg(divSmallFinalResult);
 
-   // Supprimer les classes de couleur de fond existantes
-   removeBackgroundClasses(divFinalResult);
-   removeBackgroundClasses(divSamllFinalResult);
-
-   // Ajouter la nouvelle classe de couleur de fond
    divFinalResult.classList.add(bgClass);
-   divSamllFinalResult.classList.add(bgClass);
+   divSmallFinalResult.classList.add(bgClass);
 
-
-   console.log(`#finalResultContent-${student_id}-${resultType}`);
-
-   // Afficher le résultat dans les divs
+   // 🔹 Affichage du résultat final
    divFinalResult.querySelector(`#finalResultContent-${student_id}-${resultType}`).innerHTML = result;
+   divSmallFinalResult.querySelector('#smallResultContent').innerHTML = result;
    divFinalResult.classList.replace('hidden', 'flex');
-   divSamllFinalResult.querySelector('#smallResultContent').innerHTML = result;
+}
+
+// Helper: vérifie si l'élève a une auto‑évaluation sommative (ELEV‑S) enregistrée
+function hasStudentAFormative2(studentId) {
+   try {
+      const js = getStudentData(studentId);
+      if (!js || !Array.isArray(js.evaluations)) return false;
+      return js.evaluations.some(app => (app.level === 'aFormative2'));
+   } catch (_) {
+      return false;
+   }
 }
 
 
@@ -1529,10 +1641,10 @@ function getCriteriaValues() {
       const criterionRemark = containerRemark.querySelector('textarea')?.value || '';
 
       const evals = {
-         auto80: containerRanges.children[0]?.querySelector('input')?.value || '',
-         eval80: containerRanges.children[1]?.querySelector('input')?.value || '',
-         auto100: containerRanges.children[2]?.querySelector('input')?.value || '',
-         eval100: containerRanges.children[3]?.querySelector('input')?.value || ''
+         auto_formative: containerRanges.children[0]?.querySelector('input')?.value || '',
+         eval_formative: containerRanges.children[1]?.querySelector('input')?.value || '',
+         auto_finale: containerRanges.children[2]?.querySelector('input')?.value || '',
+         eval_finale: containerRanges.children[3]?.querySelector('input')?.value || ''
       };
 
       criteria.push({
@@ -1651,4 +1763,9 @@ function print(btn) {
       printWindow.close();  // Fermer la fenêtre après l'impression
    }, 300);
 }
+
+
+
+
+
 

@@ -2,231 +2,215 @@
 
 namespace App\Models;
 
-use App\Constants\AssessmentState;
 use App\Services\AssessmentStateMachine;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
 
 class WorkerContractAssessment extends Model
 {
     use HasFactory;
 
+    /**
+     * Champs autorisés à l’écriture.
+     */
     protected $fillable = [
         'worker_contract_id',
-        'timing'
+        'teacher_id',
+        'student_id',
+        'job_id',
+        'class_id',
+        'job_title',
+        'status',
+        'student_remark',
     ];
 
-  /**
- * Relation avec le contrat de travailleur.
- * Une évaluation appartient à un contrat de travailleur.
- */
-public function workerContract(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-{
-    // worker_contract_id est la clé étrangère dans la table worker_contract_assessments
-    return $this->belongsTo(WorkerContract::class, 'worker_contract_id');
-}
-
-    // Relations avec les utilisateurs
-    public function evaluator(): User
-    {
-        /* @var $wc WorkerContract */
-        $wc = $this->workerContract()->firstOrFail();
-        return $wc->contract->clients->first();
-    }
-
-    //TODO HCS amuse-toi ;-)
-    public function getStatus()
-    {
-        return (new AssessmentStateMachine($this->assessments()))->getCurrentState();
-    }
-
-    public function student(): User
-    {
-        /* @var $wc WorkerContract */
-        $wc = $this->workerContract()->firstOrFail();
-        return $wc->contract->workers->first()->user;
-    }
-
-    // Relations directes
-    public function teacher()
-    {
-        return $this->workerContract->contract->clients->first();
-    }
-
-    public function studentUser()
-    {
-        return $this->workerContract->contract->workers->first();
-    }
-
-    public function job()
-    {
-        return $this->workerContract->contract->jobDefinition;
-    }
-
-    public function class(): HasOne
-    {
-        return $this->workerContract->contract->workers->first()->group->groupName;
-    }
-
-    // Casts pour les types de données
-    protected $casts = [
-        'date' => 'datetime',
-    ];
-
-    /**
-     * Relation avec WorkerContractAssessment (many to one)
+    /* -----------------------------------------------------------------
+     |  Relations principales
+     | -----------------------------------------------------------------
      */
-    public function workerContractAssessment()
+
+    public function workerContract(): BelongsTo
     {
-        return $this->belongsTo(WorkerContractAssessment::class);
+        return $this->belongsTo(WorkerContract::class, 'worker_contract_id');
     }
 
-    /**
-     * Relation avec les critères d'évaluation (one to many)
-     */
-    public function criteria()
+    public function teacher(): BelongsTo
     {
-        return $this->hasMany(AssessmentCriterion::class, 'assessment_id');
+        return $this->belongsTo(User::class, 'teacher_id');
     }
 
-    /**
-     * Créer une nouvelle appréciation avec ses critères
-     */
-    public static function createAssessment(array $data)
+    public function student(): BelongsTo
     {
-        $assessment = self::create([
-            'worker_contract_assessment_id' => $data['worker_contract_assessment_id'],
-            'date' => $data['date'] ?? now(),
-            'timing' => $data['timing'] ?? '',
-            'student_remark' => $data['student_remark'] ?? '',
-        ]);
+        return $this->belongsTo(User::class, 'student_id');
+    }
 
-        // Créer les critères si fournis
-        if (isset($data['criteria']) && is_array($data['criteria'])) {
-            foreach ($data['criteria'] as $criterionData) {
-                $assessment->criteria()->create(array_merge($criterionData, [
-                    'assessment_id' => $assessment->id
-                ]));
+    public function assessments(): HasMany
+    {
+        return $this->hasMany(Assessment::class, 'worker_contract_assessment_id');
+    }
+
+    /* -----------------------------------------------------------------
+     |  Accesseurs et méthodes utilitaires
+     | -----------------------------------------------------------------
+     */
+
+    public function getStatus(): string
+    {
+        return (new AssessmentStateMachine($this->assessments))->getCurrentState();
+    }
+
+    public function getCriteriaCountAttribute(): int
+    {
+        return $this->assessments->flatMap->criteria->count();
+    }
+
+    /* -----------------------------------------------------------------
+     |  Méthodes métier
+     | -----------------------------------------------------------------
+     */
+
+    public static function createWithAssessments(array $data): self
+    {
+        return DB::transaction(function () use ($data) {
+            // Création de l’évaluation principale
+            $evaluation = self::create([
+                'worker_contract_id' => $data['worker_contract_id'],
+                'teacher_id' => $data['teacher_id'] ?? null,
+                'student_id' => $data['student_id'] ?? null,
+                'job_id' => $data['job_id'] ?? null,
+                'class_id' => $data['class_id'] ?? null,
+                'job_title' => $data['job_title'] ?? '',
+                'status' => $data['status'] ?? 'not_started',
+            ]);
+
+            // Création des sous-évaluations (assessments)
+            foreach ($data['appreciations'] ?? [] as $app) {
+                $assessment = $evaluation->assessments()->create([
+                    'timing' => $app['level'] ?? '',
+                    'date' => $app['date'] ?? now(),
+                    'student_remark' => $app['student_remark'] ?? $data['student_remark'] ?? null,
+                ]);
+
+                // Critères associés à chaque assessment
+                foreach ($app['criteria'] ?? [] as $index => $criterion) {
+                    $assessment->criteria()->create([
+                        'timing' => $assessment->timing,
+                        'template_id' => $criterion['id'],
+                        'value' => $criterion['value'],
+                        'checked' => $criterion['checked'] ?? false,
+                        'remark_criteria' => $criterion['remark'] ?? null,
+                        'position' => $index + 1,
+                    ]);
+                }
             }
-        }
 
-        return $assessment;
+            return $evaluation;
+        });
     }
 
-    /**
-     * Met à jour une appréciation et ses critères
-     */
-    public function updateAssessment(array $data)
+    public function updateWithAssessments(array $data): self
     {
-        $this->update([
-            'date' => $data['date'] ?? $this->date,
-            'timing' => $data['timing'] ?? $this->timing,
-            'student_remark' => $data['student_remark'] ?? $this->student_remark,
-        ]);
+        return DB::transaction(function () use ($data) {
+            // Mise à jour de l'évaluation principale (le champ student_remark n'existe pas ici)
+            $this->update([
+                'status' => $data['status'] ?? $this->status,
+            ]);
 
-        return $this;
+            // Mise à jour ou création des sous-évaluations
+            foreach ($data['appreciations'] ?? [] as $app) {
+                $assessment = $this->assessments()
+                    ->firstOrCreate(
+                        ['timing' => $app['level']],
+                        ['date' => $app['date'] ?? now()]
+                    );
+
+                // Mettre à jour la remarque élève au niveau de l'assessment
+                $assessment->update([
+                    'student_remark' => $app['student_remark'] ?? $data['student_remark'] ?? $assessment->student_remark,
+                ]);
+
+                $assessment->criteria()->delete();
+
+                foreach ($app['criteria'] ?? [] as $index => $criterion) {
+                    $assessment->criteria()->create([
+                        'timing' => $assessment->timing,
+                        'template_id' => $criterion['id'],
+                        'value' => $criterion['value'],
+                        'checked' => $criterion['checked'] ?? false,
+                        'remark_criteria' => $criterion['remark'] ?? null,
+                        'position' => $index + 1,
+                    ]);
+                }
+            }
+
+            return $this;
+        });
     }
 
-    /**
-     * Supprime une appréciation et tous ses critères
-     */
-    public function deleteAssessment()
+    public function deleteWithAssessments(): bool
     {
-        // Supprime d'abord les critères
-        $this->criteria()->delete();
-
-        // Puis supprime l'appréciation
-        return $this->delete();
+        return DB::transaction(function () {
+            foreach ($this->assessments as $assessment) {
+                $assessment->criteria()->delete();
+                $assessment->delete();
+            }
+            return $this->delete();
+        });
     }
 
     /**
-     * Retourne toutes les appréciations pour une évaluation spécifique
+     * Ajoute ou met à jour un assessment spécifique avec ses critères.
      */
-    public static function getAssessmentsByWorkerContractAssessment($workerContractAssessmentId)
+    public function addAssessmentWithCriteria(string $timing, array $criteriaData, ?string $studentRemark = null)
     {
-        return self::where('worker_contract_assessment_id', $workerContractAssessmentId)->get();
+        return DB::transaction(function () use ($timing, $criteriaData, $studentRemark) {
+            $assessment = $this->assessments()->updateOrCreate(
+                ['timing' => $timing],
+                ['date' => now(), 'student_remark' => $studentRemark]
+            );
+
+            $assessment->criteria()->delete();
+
+            foreach ($criteriaData as $index => $criterion) {
+                $assessment->criteria()->create([
+                    'template_id' => $criterion['id'],
+                    'value' => $criterion['value'],
+                    'checked' => $criterion['checked'] ?? false,
+                    'remark_criteria' => $criterion['remark'] ?? '',
+                    'position' => $index + 1,
+                    'timing' => $timing,
+                ]);
+            }
+
+            return $assessment;
+        });
     }
 
-    /**
-     * Scope pour filtrer par timing
+    /* -----------------------------------------------------------------
+     |  Scopes de requêtes
+     | -----------------------------------------------------------------
      */
-    public function scopeByTiming($query, $timing)
-    {
-        return $query->where('timing', $timing);
-    }
 
-    /**
-     * Scope pour filtrer par date
-     */
-    public function scopeByDate($query, $date)
-    {
-        return $query->whereDate('date', $date);
-    }
-
-    /**
-     * Scope pour filtrer par période
-     */
-    public function scopeBetweenDates($query, $startDate, $endDate)
-    {
-        return $query->whereBetween('date', [$startDate, $endDate]);
-    }
-
-    /**
-     * Retourne le nombre de critères pour cette appréciation
-     */
-    public function getCriteriaCountAttribute()
-    {
-        return $this->criteria()->count();
-    }
-
-    /**
-     * Retourne les critères cochés
-     */
-    public function getActiveCriteria()
-    {
-        return $this->criteria()->where('active', true)->get();
-    }
-
-    /**
-     * Retourne les critères non cochés
-     */
-    public function getInactiveCriteria()
-    {
-        return $this->criteria()->where('active', false)->get();
-    }
-
-
-    /**
-     * Scope pour filtrer par enseignant
-     */
-    public function scopeByTeacher($query, $teacherId)
+    public function scopeByTeacher($query, int $teacherId)
     {
         return $query->where('teacher_id', $teacherId);
     }
 
-    /**
-     * Scope pour filtrer par étudiant
-     */
-    public function scopeByStudent($query, $studentId)
+    public function scopeByStudent($query, int $studentId)
     {
         return $query->where('student_id', $studentId);
     }
 
-    /**
-     * Scope pour filtrer par classe
-     */
-    public function scopeByClass($query, $classId)
+    public function scopeByStatus($query, string $status)
     {
-        return $query->where('class_id', $classId);
+        return $query->where('status', $status);
     }
 
-    /**
-     * Scope pour filtrer par job
-     */
-    public function scopeByJob($query, $jobId)
+    public function scopeBetweenDates($query, $start, $end)
     {
-        return $query->where('job_id', $jobId);
+        return $query->whereBetween('created_at', [$start, $end]);
     }
 }

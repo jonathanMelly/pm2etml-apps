@@ -10,11 +10,20 @@
     @endpush
 
     <div id="eval" class="evaluation-form p-4 relative">
+
+        @php
+            $appreciationLabels = \App\Constants\AssessmentTiming::appreciationLabels();
+            $evaluationLabels = \App\Constants\AssessmentTiming::labels();
+            $evaluationShortLabels = \App\Constants\AssessmentTiming::shortLabels();
+            $evaluationLevels = \App\Constants\AssessmentTiming::all();
+        @endphp
+
         {{-- Transfert des variables PHP vers JavaScript --}}
         <x-evaluation.state :state="[
             'visibleCategories' => $visibleCategories,
             'visibleSliders' => $visibleSliders,
-            'evaluationLevels' => $evaluationLevels,
+            'evaluationLabels' => $evaluationLabels,
+            'evaluationShortLabels' => $evaluationShortLabels,
             'appreciationLabels' => $appreciationLabels,
             'criteriaGrouped' => $criteriaGrouped,
             'isTeacher' => $isTeacher,

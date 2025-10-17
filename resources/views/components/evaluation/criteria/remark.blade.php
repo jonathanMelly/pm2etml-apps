@@ -1,70 +1,126 @@
 @props(['status_eval', 'studentDetails', 'isTeacher'])
 
-<div class="remark mt-2 mb-2 relative w-full">
-    <!-- Titre de la section -->
-    <label for="generalRemark" class="w-full block font-medium text-gray-900 dark:text-gray-200 mb-2">
-        {{ __('General remark') }}
+@php
+    use App\Constants\AssessmentState;
+    use App\Services\AssessmentStateMachine;
+
+    /**
+     * On détermine l'état courant
+     * Si $status_eval est null, on part sur NOT_EVALUATED
+     */
+    $currentState = AssessmentState::tryFrom($status_eval) ?? AssessmentState::NOT_EVALUATED;
+
+    /**
+     * Une évaluation est considérée "enregistrée"
+     * dès qu'on n'est plus dans l'état NOT_EVALUATED
+     */
+    $hasSavedResult = $currentState !== AssessmentState::NOT_EVALUATED;
+
+    /**
+     * On instancie la machine à états pour déterminer l’état suivant
+     */
+    $machine = new AssessmentStateMachine([
+        ['timing' => $currentState->value],
+    ]);
+
+    $nextState = $machine->getNextState($isTeacher ? 'teacher' : 'student');
+
+    /**
+     * Type d’évaluation pour affichage
+     */
+    $evaluationType = match ($currentState) {
+        AssessmentState::AUTO_FORMATIVE,
+        AssessmentState::EVAL_FORMATIVE => __('Formative'),
+
+        AssessmentState::AUTO_FINALE,
+        AssessmentState::EVAL_FINALE => __('Finale'),
+
+        default => __('Pas encore évalué'),
+    };
+
+    /**
+     * Message contextuel selon le rôle
+     */
+    $placeholderMessage = $isTeacher
+        ? __('Ajoutez une remarque globale pour cet élève (visible par lui).')
+        : __('Exprimez ici vos impressions générales sur le projet.');
+@endphp
+
+{{--  Debug temporaire (à retirer quand tout est validé) --}}
+{{-- @dump([
+    'student' => "{$studentDetails->student_firstname} {$studentDetails->student_lastname}",
+    'status_eval' => $status_eval,
+    'currentState' => $currentState->value,
+    'nextState' => $nextState?->value ?? null,
+    'hasSavedResult' => $hasSavedResult,
+    'evaluationType' => $evaluationType,
+]) --}}
+{{-- /debug --}}
+
+<div class="remark mt-4 mb-4 relative w-full">
+    {{-- Titre --}}
+    <label for="generalRemark" class="block font-medium text-gray-900 dark:text-gray-200 mb-3">
+        {{ __('Remarque générale') }}
     </label>
 
-    <!-- Conteneur principal -->
-    <div class="flex h-full bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-        <!-- Première colonne : Zone de texte pour la remarque + ToDo List -->
-        <div class="flex flex-col w-full p-4 space-y-4 border-r border-gray-300 dark:border-gray-600">
-            <!-- Zone de texte avec compteur de caractères -->
+    <div class="flex flex-col md:flex-row bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+        {{-- Zone de texte --}}
+        <div class="flex flex-col w-full p-6 space-y-4 border-b md:border-b-0 md:border-r border-gray-300 dark:border-gray-600">
             <div class="relative">
-                <textarea id="id-{{ $studentDetails->student_id }}-generalRemark" name="generalRemark" maxlength="10000"
-                    {{-- placeholder="{{ __('Add your general remark here...') }}" --}}
-                    class="textarea textarea-bordered w-full dark:border-gray-600 hover:border-gray-400 
-                    dark:hover:border-gray-500 px-4 py-2 resize-none rounded-md 
-                    focus:outline-none focus:ring-2 focus:ring-blue-500 h-40"></textarea>
-                <!-- Compteur de caractères (positionné en bas à droite) -->
-                <span id="charCounter"
-                    class="absolute bottom-2 right-2 text-sm text-gray-500 dark:text-gray-400">10000/10000</span>
-            </div>
+                <textarea id="id-{{ $studentDetails->student_id }}-generalRemark"
+                          name="generalRemark"
+                          maxlength="10000"
+                          placeholder="{{ $placeholderMessage }}"
+                          class="textarea textarea-bordered w-full dark:border-gray-600 hover:border-gray-400 
+                                 dark:hover:border-gray-500 px-4 py-3 resize-none rounded-md 
+                                 focus:outline-none focus:ring-2 focus:ring-blue-500 h-44"></textarea>
 
-            {{-- <!-- ToDo List for Teacher -->
-            @if ($isTeacher)
-                <div id="todo-list-container" class="hidden p-4 mt-4 bg-gray-50 dark:bg-gray-700 rounded-md space-y-4">
-                    <!-- Titre de la ToDo List -->
-                    <h6 id="msgTodo" class="font-semibold text-gray-800 dark:text-gray-200">
-                        {{ __('Please fill all sections') }}
-                    </h6>
-                    <!-- Liste des tâches -->
-                    <div class="todo-item space-y-2 max-h-[10rem] overflow-y-auto ">
-                        <!-- Template for to-do item here -->
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-700 dark:text-gray-300">Task Example</span>
-                            <button type="button"
-                                class="btn btn-danger rounded-full p-1 text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
-                                X
-                            </button>
-                        </div>
-                    </div>
-                    <!-- Bouton Ajouter -->
-                    <button type="button"
-                        class="btn btn-primary rounded-full px-4 py-2 text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 w-full"
-                        onclick="addTodoItem(this)">
-                        {{ __('Add task') }}
-                    </button>
-                </div>
-            @endif --}}
+                {{-- Compteur caractères --}}
+                <span id="charCounter" class="absolute bottom-3 right-3 text-sm text-gray-500 dark:text-gray-400">
+                    10000/10000
+                </span>
+            </div>
         </div>
 
-        <!-- Deuxième colonne : Résultats (enregistré + en temps réel) -->
-        <div class="flex flex-row p-4 gap-4">
-            <!-- Affichage du résultat enregistré (si l'étudiant a déjà été évalué) -->
-            @if ($studentDetails->stateMachine && $studentDetails->stateMachine->getCurrentState()->value !== 'not_evaluated')
-                <x-evaluation.criteria.finalResult :studentId="$studentDetails->student_id" :stateMachine="$studentDetails->stateMachine" :isTeacher="$isTeacher"
-                    :grade="'A'" :score="80" :evaluationType="'Formative'" :resultType="'saved'"
-                    class="bg-green-100 dark:bg-green-900 rounded-lg p-4 shadow-sm" :remark="__('Evaluated Result')" />
+        {{-- Zone des résultats --}}
+        @php
+            $wf = $studentDetails->workflow_state ?? null;
+            $isClosed = ($wf === \App\Constants\AssessmentWorkflowState::CLOSED_BY_TEACHER->value)
+                        || (($studentDetails->status ?? null) === \App\Constants\AssessmentState::COMPLETED->value);
+            // Cacher aussi le “live” dès que la sommative enseignant est faite ou au‑delà
+            $isSummativeDone = in_array($wf, [
+                \App\Constants\AssessmentWorkflowState::TEACHER_SUMMATIVE_DONE->value,
+                \App\Constants\AssessmentWorkflowState::CLOSED_BY_TEACHER->value,
+            ], true);
+        @endphp
+        <div class="flex flex-col md:flex-row justify-center items-center p-4 gap-4">
+            {{-- Bloc “Résultat enregistré” (uniquement si la BD contient une évaluation) --}}
+            @if ($hasSavedResult)
+                <div class="flex flex-col items-center animate-fade-in">
+                    <x-evaluation.criteria.finalResult
+                        :studentId="$studentDetails->student_id"
+                        :isTeacher="$isTeacher"
+                        :grade="null"
+                        :score="null"
+                        :evaluationType="$evaluationType"
+                        :resultType="'saved'"
+                        class="bg-green-100 dark:bg-green-900 rounded-lg p-4 shadow-sm" />
+                </div>
             @endif
 
-            <!-- Affichage du résultat en temps réel (toujours visible) -->
-            @if ($status_eval !== 'completed')
-                <x-evaluation.criteria.finalResult :studentId="$studentDetails->student_id" :stateMachine="$studentDetails->stateMachine" :isTeacher="$isTeacher"
-                    :grade="'A'" :score="100" :evaluationType="'Formative'" :resultType="'live'"
-                    class="bg-blue-100 dark:bg-blue-900 rounded-lg p-4 shadow-sm" :remark="__('Live Evaluation')" />
-            @endif
+            {{-- Bloc “Résultat en direct” (masqué si évaluation clôturée) --}}
+            @unless($isClosed || $isSummativeDone)
+                <div class="flex flex-col items-center">
+                    <x-evaluation.criteria.finalResult
+                        :studentId="$studentDetails->student_id"
+                        :isTeacher="$isTeacher"
+                        :grade="null"
+                        :score="null"
+                        :evaluationType="$evaluationType"
+                        :resultType="'live'"
+                        class="bg-blue-100 dark:bg-blue-900 rounded-lg p-4 shadow-sm" />
+                </div>
+            @endunless
         </div>
     </div>
 </div>
