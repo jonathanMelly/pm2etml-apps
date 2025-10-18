@@ -77,7 +77,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
    // Appliquer les messages workflow dès le chargement (si data-workflow présent)
    document.querySelectorAll('.evaluation-tabs').forEach((container) => {
-      applyWorkflowMessages(container); toggleValidateButton(container);
+      applyWorkflowMessages(container);
+      try { toggleValidateButton(container); } catch (_) { }
    });
 
 });
@@ -424,7 +425,7 @@ window.changeTab = function (onClickBtn) {
 
    const activeRanges = document.querySelectorAll(`input[data-student-id="${studentId}"][data-level="${selectedLevel}"]`);
    activeRanges.forEach(r => {
-      // Afficher la ligne correspondante si elle était masquée (ex. ELEV‑S / ENS‑S)
+      // Afficher la ligne correspondante si elle était masquée (ex. ELEV‑F2 / ENS‑S)
       const row = r.closest(`div[id^="id-${studentId}-${selectedLevel}-"]`);
       if (row) row.style.display = 'flex';
 
@@ -482,7 +483,7 @@ window.validateEvaluation = async function (idStudent) {
          if (resp.workflow) {
             btns.setAttribute('data-workflow', resp.workflow);
             applyWorkflowMessages(btns);
-            try { toggleValidateButton(btns); } catch (_) {}
+            try { toggleValidateButton(btns); } catch (_) { }
          }
          await notifyStatusEval(btns);
       } else {
@@ -576,12 +577,7 @@ style.textContent = `
 document.head.appendChild(style);
 
 
-function notifyStatusEval(btns) {
-   if (!btns) {
-      console.error("ID d'évaluation non trouvé.");
-      return;
-   }
-// Affichage du bouton Valider/Terminer selon le workflow
+// Affichage du bouton Valider/Terminer selon le workflow (extrait en fonction globale)
 function toggleValidateButton(btns) {
    const role = btns.getAttribute('data-role') || '';
    const wf = btns.getAttribute('data-workflow') || '';
@@ -598,34 +594,43 @@ function toggleValidateButton(btns) {
    validateBtn.style.display = show ? '' : 'none';
 }
 
+function notifyStatusEval(btns) {
+   if (!btns) {
+      console.error("ID d'évaluation non trouvé.");
+      return;
+   }
+   // Affichage du bouton Valider/Terminer selon le workflow
+   try { toggleValidateButton(btns); } catch (_) { }
+
    const role = btns.getAttribute('data-role') || '';
    const workflow = btns.getAttribute('data-workflow') || '';
    const currentState = btns.getAttribute('data-current-state') || 'not_started';
 
    // Messages concis basés sur le workflow (prioritaire)
    const wfMessages = {
-      waiting_student_formative: "En attente d'auto-éval élève (ELEV-F).",
-      waiting_student_formative2_optional: "Vous pouvez faire ELEV‑F2 (optionnel).",
-      waiting_teacher_validation_f: "À valider par l'enseignant (ENS-F).",
-      teacher_ack_formative: "Accusé de réception de l'enseignant (F).",
-      teacher_formative_done: "Évaluation formative enseignant effectuée.",
-      waiting_student_validation_f: "Validation élève (formative) requise.",
-      formative_validated: "Phase formative clôturée.",
-      waiting_teacher_summative: "À évaluer par l'enseignant (ENS-S).",
-      teacher_summative_done: "Évaluation sommative enseignant effectuée.",
-      summative_validated: "Validation élève enregistrée.",
-      closed_by_teacher: "Évaluation clôturée.",
+      waiting_student_formative: "Attente ELEV‑F1",
+      waiting_student_formative2_optional: "ELEV‑F2 optionnelle",
+      waiting_teacher_validation_f: "Valider ENS‑F1",
+      waiting_teacher_validation_f2: "Valider F2",
+      teacher_ack_formative: "Accusé ENS‑F1",
+      teacher_formative_done: "ENS‑F1 effectuée",
+      waiting_student_validation_f: "Validation élève F1",
+      formative_validated: "Formative clôturée",
+      waiting_teacher_summative: "Attente ENS‑S",
+      teacher_summative_done: "ENS‑S effectuée",
+      summative_validated: "Validation élève (S)",
+      closed_by_teacher: "Clôturée",
    };
 
    // Fallback sur l'état principal (timing)
    const stateMessages = {
-      not_started: "Débutez l'évaluation.",
-      autoFormative: "Auto-évaluation formative enregistrée.",
-      evalFormative: "Formative validée.",
-      autoFinale: "Auto-évaluation F2 enregistrée.",
-      evalFinale: "Sommative validée.",
-      pending_signature: "En attente de signature.",
-      completed: "Évaluation terminée.",
+      not_started: "Commencer ELEV‑F1",
+      autoFormative: "ELEV‑F1 envoyée",
+      evalFormative: "Formative validée",
+      autoFinale: "ELEV‑F2 envoyée",
+      evalFinale: "ENS‑S validée",
+      pending_signature: "Signature en attente",
+      completed: "Clôturée",
    };
 
    const message = wfMessages[workflow] || stateMessages[currentState] || null;
@@ -643,47 +648,52 @@ function applyWorkflowMessages(btns) {
    // Status + hint concis
    const texts = {
       waiting_student_formative: {
-         status: "En attente d'auto-éval élève (ELEV‑F1).",
-         hintStudent: "Cliquez sur ELEV‑F1 pour commencer.",
-         hintTeacher: "En attente que l'élève commence.",
+         status: "Attente ELEV‑F1",
+         hintStudent: "Cliquez ELEV‑F1",
+         hintTeacher: "Attente élève",
+      },
+      waiting_teacher_validation_f2: {
+         status: "Valider F2",
+         hintStudent: "Attente enseignant",
+         hintTeacher: "Valider F2",
       },
       waiting_student_formative2_optional: {
-         status: "Formative 2 (ELEV‑F2) optionnelle.",
-         hintStudent: "Vous pouvez faire ELEV‑F2 (optionnel).",
-         hintTeacher: "Invitez l'élève à ELEV‑F2 (optionnel).",
+         status: "ELEV‑F2 optionnelle",
+         hintStudent: "Faites ELEV‑F2 (opt.)",
+         hintTeacher: "Proposez ELEV‑F2",
       },
       waiting_teacher_validation_f: {
-         status: "À valider par l'enseignant (ENS-F).",
-         hintStudent: "En attente de validation de l'enseignant.",
-         hintTeacher: "Validez l'évaluation formative (ENS‑F).",
+         status: "Valider ENS‑F1",
+         hintStudent: "Attente enseignant",
+         hintTeacher: "Valider ENS‑F1",
       },
       teacher_ack_formative: {
-         status: "Accusé de réception (formative).",
-         hintStudent: "Attendez la suite de l'enseignant.",
-         hintTeacher: "Préparez votre évaluation formative.",
+         status: "Accusé ENS‑F1",
+         hintStudent: "Attente enseignant",
+         hintTeacher: "Préparer ENS‑F1",
       },
       teacher_formative_done: {
-         status: "Formative enseignant effectuée.",
-         hintStudent: "Poursuivez vers F2 (si demandé).",
-         hintTeacher: "Invitez l'élève à ELEV‑F2 (optionnel).",
+         status: "ENS‑F1 effectuée",
+         hintStudent: "Faites ELEV‑F2 (opt.)",
+         hintTeacher: "Inviter ELEV‑F2",
       },
       waiting_teacher_summative: {
-         status: "À évaluer (ENS-S).",
-         hintStudent: "En attente de l'enseignant.",
-         hintTeacher: "Réalisez l'évaluation sommative.",
+         status: "Attente ENS‑S",
+         hintStudent: "Attente enseignant",
+         hintTeacher: "Faire ENS‑S",
       },
       teacher_summative_done: {
-         status: "Sommative enseignant effectuée.",
-         hintStudent: "Cliquez sur Valider pour confirmer.",
-         hintTeacher: "Vous pouvez cliquer sur Terminer.",
+         status: "ENS‑S effectuée",
+         hintStudent: "Confirmez",
+         hintTeacher: "Terminer",
       },
       summative_validated: {
-         status: "Validation élève enregistrée.",
+         status: "Validation élève (S)",
          hintStudent: null,
-         hintTeacher: "Cliquez sur Terminer pour clôturer.",
+         hintTeacher: "Terminer",
       },
       closed_by_teacher: {
-         status: "Évaluation clôturée.",
+         status: "Clôturée",
          hintStudent: null,
          hintTeacher: null,
       },
@@ -714,14 +724,18 @@ function applyWorkflowMessages(btns) {
       hint.remove();
    }
 
-   // Surligner le prochain bouton pertinent (sans forcer ELEV‑S côté élève)
+   // Surligner le prochain bouton pertinent (sans forcer ELEV‑F2 côté élève)
    btns.querySelectorAll('button.eval-tab-btn').forEach(b => b.classList.remove('ring-2', 'ring-amber-500', 'animate-pulse'));
    const highlight = (level) => {
       const target = btns.querySelector(`button.eval-tab-btn[data-level='${level}']`);
       if (target) target.classList.add('ring-2', 'ring-amber-500', 'animate-pulse');
    };
    if (role === 'teacher') {
-      if (workflow === 'waiting_teacher_validation_f' || workflow === 'teacher_ack_formative') highlight('eFormative1'); if (workflow === 'waiting_teacher_validation_f2') { const validateBtn = btns.querySelector('button.btn-success'); if (validateBtn) validateBtn.classList.add('ring-2', 'ring-amber-500', 'animate-pulse'); }
+      if (workflow === 'waiting_teacher_validation_f' || workflow === 'teacher_ack_formative') highlight('eFormative1');
+      if (workflow === 'waiting_teacher_validation_f2') {
+         const validateBtn = btns.querySelector('button.btn-success');
+         if (validateBtn) validateBtn.classList.add('ring-2', 'ring-amber-500', 'animate-pulse');
+      }
       else if (workflow === 'waiting_teacher_summative') highlight('eSommative');
       else if (workflow === 'teacher_summative_done') {
          const endBtn = btns.querySelector('button.btn-success');
@@ -736,7 +750,7 @@ function applyWorkflowMessages(btns) {
    }
 
    // Ajuster la visibilité/contenu du bouton Valider/Terminer selon workflow
-   try { toggleValidateButton(btns); } catch (_) {}
+   try { toggleValidateButton(btns); } catch (_) { }
 }
 
 
@@ -1462,7 +1476,7 @@ function calculateFinalResults(student_id, levelName, resultType = 'live') {
    divFinalResult.classList.replace('hidden', 'flex');
 }
 
-// Helper: vérifie si l'élève a une auto‑évaluation sommative (ELEV‑S) enregistrée
+// Helper: vérifie si l'élève a une auto‑évaluation F2 (ELEV‑F2) enregistrée
 function hasStudentAFormative2(studentId) {
    try {
       const js = getStudentData(studentId);

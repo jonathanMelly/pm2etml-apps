@@ -7,6 +7,7 @@ use App\Constants\AssessmentTiming;
 use App\Constants\AssessmentWorkflowState;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use App\Support\AssessmentNormalizer;
 
 class AssessmentStateMachine
 {
@@ -51,28 +52,7 @@ class AssessmentStateMachine
      */
     private function normalizeTiming(?string $raw): ?AssessmentState
     {
-        if (!$raw) {
-            return null;
-        }
-
-        // Uniformiser
-        $k = strtolower(str_replace(['-', ' '], '_', $raw));
-
-        // Tolérer quelques variantes courantes
-        return match ($k) {
-            // anciens identifiants
-            'auto_formative', 'autoformative' => AssessmentState::AUTO_FORMATIVE,
-            'eval_formative', 'evalformative' => AssessmentState::EVAL_FORMATIVE,
-            'auto_finale', 'autofinale'       => AssessmentState::AUTO_FINALE,
-            'eval_finale', 'evalfinale'       => AssessmentState::EVAL_FINALE,
-            // nouveaux identifiants
-            'a_formative1', 'aformative1'     => AssessmentState::AUTO_FORMATIVE,
-            'e_formative1', 'eformative1'     => AssessmentState::EVAL_FORMATIVE,
-            'a_formative2', 'aformative2'     => AssessmentState::AUTO_FINALE,
-            'e_sommative',  'esommative'      => AssessmentState::EVAL_FINALE,
-            'not_started', 'not_evaluated'    => AssessmentState::NOT_EVALUATED,
-            default => AssessmentState::tryFrom($raw), // si on reçoit déjà la valeur camelCase exacte
-        };
+        return AssessmentNormalizer::normalizeTimingToState($raw);
     }
 
     /**
@@ -138,6 +118,13 @@ class AssessmentStateMachine
 
         // Sommatif élève optionnel → s'il a été fait, on attend l'enseignant
         if ($hasAutoS && !$hasEvalS) {
+            // Respecter un statut enregistré plus précis s'il existe
+            if ($evaluationStatus === AssessmentWorkflowState::TEACHER_ACK_FORMATIVE2->value) {
+                return AssessmentWorkflowState::TEACHER_ACK_FORMATIVE2;
+            }
+            if ($evaluationStatus === AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F2->value) {
+                return AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F2;
+            }
             return AssessmentWorkflowState::WAITING_TEACHER_SUMMATIVE;
         }
 

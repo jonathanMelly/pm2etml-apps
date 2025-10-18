@@ -22,35 +22,35 @@
     $statusMessage = null;
     if ($workflow) {
         $statusMessage = match ($workflow) {
-            AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE->value     => __("En attente de l’auto‑évaluation formative (ELEV‑F)."),
-            AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F->value  => __("Auto‑évaluation formative envoyée — validation enseignant requise (ENS‑F)."),
-            AssessmentWorkflowState::FORMATIVE_VALIDATED->value           => __("Évaluation formative validée."),
-            AssessmentWorkflowState::WAITING_TEACHER_SUMMATIVE->value     => __("En attente de l’évaluation sommative de l’enseignant (ENS‑S)."),
-            AssessmentWorkflowState::TEACHER_SUMMATIVE_DONE->value        => __("Évaluation sommative de l’enseignant effectuée."),
-            AssessmentWorkflowState::CLOSED_BY_TEACHER->value             => __("Évaluation clôturée."),
-            AssessmentWorkflowState::TEACHER_ACK_FORMATIVE->value         => __('Accusé de réception (formative). Démarrez ENS‑F.'),
-            AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F2->value  => __('Validation de F2 par enseignant requise.'),
-            AssessmentWorkflowState::TEACHER_ACK_FORMATIVE2->value         => __('F2 validée par l’enseignant.'),
-            AssessmentWorkflowState::TEACHER_FORMATIVE_DONE->value        => __('Formative enseignant effectuée.'),
-            AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE2_OPT->value => __('Formative 2 (ELEV‑F2) optionnelle.'),
+            AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE->value      => __('Attente ELEV‑F1'),
+            AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F->value   => __('Valider ENS‑F1'),
+            AssessmentWorkflowState::FORMATIVE_VALIDATED->value            => __('Formative clôturée'),
+            AssessmentWorkflowState::WAITING_TEACHER_SUMMATIVE->value      => __('Attente ENS‑S'),
+            AssessmentWorkflowState::TEACHER_SUMMATIVE_DONE->value         => __('ENS‑S effectuée'),
+            AssessmentWorkflowState::CLOSED_BY_TEACHER->value              => __('Clôturée'),
+            AssessmentWorkflowState::TEACHER_ACK_FORMATIVE->value          => __('Accusé ENS‑F1'),
+            AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F2->value  => __('Valider F2'),
+            AssessmentWorkflowState::TEACHER_ACK_FORMATIVE2->value         => __('F2 validée'),
+            AssessmentWorkflowState::TEACHER_FORMATIVE_DONE->value         => __('ENS‑F1 effectuée'),
+            AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE2_OPT->value => __('ELEV‑F2 optionnelle'),
             default => null,
         };
     } else {
         // Repli simple sur l'état principal
         $statusMessage = match ($currentState) {
             AssessmentState::NOT_EVALUATED->value => $isTeacher
-                ? __("En attente de l’auto‑éval formative (ELEV‑F).")
-                : __("Commencez l’auto‑éval formative (ELEV‑F)."),
+                ? __('Attente ELEV‑F1')
+                : __('Commencer ELEV‑F1'),
             AssessmentState::AUTO_FORMATIVE->value => $isTeacher
-                ? __("Auto‑éval formative à valider (ENS‑F).")
-                : __("Auto‑éval formative envoyée."),
-            AssessmentState::EVAL_FORMATIVE->value => __("Éval formative validée."),
+                ? __('Valider ENS‑F1')
+                : __('ELEV‑F1 envoyée'),
+            AssessmentState::EVAL_FORMATIVE->value => __('Formative validée'),
             AssessmentState::AUTO_FINALE->value    => $isTeacher
-                ? __('Auto‑éval F2 élève à valider (ENS‑S).')
-                : __('Auto‑éval F2 envoyée.'),
-            AssessmentState::EVAL_FINALE->value    => __("Évaluation sommative effectuée (ENS‑S)."),
-            AssessmentState::PENDING_SIGNATURE->value => __("Signature en attente."),
-            AssessmentState::COMPLETED->value => __("Évaluation finalisée."),
+                ? __('Valider ELEV‑F2')
+                : __('ELEV‑F2 envoyée'),
+            AssessmentState::EVAL_FINALE->value    => __('ENS‑S effectuée'),
+            AssessmentState::PENDING_SIGNATURE->value => __('Signature en attente'),
+            AssessmentState::COMPLETED->value => __('Clôturée'),
             default => null,
         };
     }
@@ -150,50 +150,50 @@
             if ($workflow) {
                 if ($isStudent) {
                     $hintMessage = match ($workflow) {
-                        AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE->value     => __('💡 Cliquez sur “ELEV‑F” pour démarrer votre auto‑évaluation formative.'),
-                        AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F->value  => __('💡 En attente de validation de l’enseignant (ENS‑F).'),
-                        AssessmentWorkflowState::TEACHER_ACK_FORMATIVE->value         => __('💡 L’enseignant va réaliser l’évaluation formative (ENS‑F).'),
-                        AssessmentWorkflowState::TEACHER_FORMATIVE_DONE->value        => __('💡 Poursuivez vers F2 (optionnel) si demandé.'),
-                        AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F2->value  => __('💡 Validez la F2 (clic sur Valider).'),
-                        AssessmentWorkflowState::TEACHER_ACK_FORMATIVE2->value         => __('💡 Réalisez l’évaluation sommative (ENS‑S).'),
-                        AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE2_OPT->value => __('💡 Vous pouvez faire ELEV‑F2 (optionnel).'),
-                        AssessmentWorkflowState::FORMATIVE_VALIDATED->value           => __('💡 Choisissez ELEV‑F2 (optionnel) si demandé.'),
-                        AssessmentWorkflowState::WAITING_TEACHER_SUMMATIVE->value     => __('💡 En attente de validation de l’enseignant (ENS‑S).'),
-                        AssessmentWorkflowState::TEACHER_SUMMATIVE_DONE->value        => __('💡 Vérifiez l’évaluation de l’enseignant.'),
+                        AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE->value      => __('Cliquez ELEV‑F1'),
+                        AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F->value   => __('Attente enseignant'),
+                        AssessmentWorkflowState::TEACHER_ACK_FORMATIVE->value          => __('Attente ENS‑F1'),
+                        AssessmentWorkflowState::TEACHER_FORMATIVE_DONE->value         => __('Faites ELEV‑F2 (opt.)'),
+                        AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F2->value  => __('Attente enseignant'),
+                        AssessmentWorkflowState::TEACHER_ACK_FORMATIVE2->value         => __('Attente ENS‑S'),
+                        AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE2_OPT->value => __('ELEV‑F2 (optionnel)'),
+                        AssessmentWorkflowState::FORMATIVE_VALIDATED->value            => __('Faites ELEV‑F2 (opt.)'),
+                        AssessmentWorkflowState::WAITING_TEACHER_SUMMATIVE->value      => __('Attente ENS‑S'),
+                        AssessmentWorkflowState::TEACHER_SUMMATIVE_DONE->value         => __('Confirmez'),
                         default => null,
                     };
                 } elseif ($isTeacher) {
                     $hintMessage = match ($workflow) {
-                        AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE->value     => __('💡 Attente que l’élève démarre l’auto‑évaluation formative.'),
-                        AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F->value  => __('💡 Validez l’évaluation formative (ENS‑F).'),
-                        AssessmentWorkflowState::TEACHER_ACK_FORMATIVE->value         => __('💡 Démarrez l’évaluation formative (ENS‑F).'),
-                        AssessmentWorkflowState::TEACHER_FORMATIVE_DONE->value        => __('💡 Invitez l’élève à ELEV‑F2 (optionnel) ou à poursuivre.'),
-                        AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE2_OPT->value => __('💡 Proposez ELEV‑F2 (optionnel).'),
-                        AssessmentWorkflowState::FORMATIVE_VALIDATED->value           => __('💡 Invitez l’élève à ELEV‑F2 (optionnel) ou à poursuivre.'),
-                        AssessmentWorkflowState::WAITING_TEACHER_SUMMATIVE->value     => __('💡 Réalisez/validez l’évaluation sommative (ENS‑S).'),
-                        AssessmentWorkflowState::TEACHER_SUMMATIVE_DONE->value        => __('💡 Cliquez sur “Terminer” pour clôturer.'),
-                        AssessmentWorkflowState::CLOSED_BY_TEACHER->value             => null,
+                        AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE->value      => __('Attente élève'),
+                        AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F->value   => __('Valider ENS‑F1'),
+                        AssessmentWorkflowState::TEACHER_ACK_FORMATIVE->value          => __('Préparer ENS‑F1'),
+                        AssessmentWorkflowState::TEACHER_FORMATIVE_DONE->value         => __('Inviter ELEV‑F2'),
+                        AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE2_OPT->value => __('Proposer ELEV‑F2'),
+                        AssessmentWorkflowState::FORMATIVE_VALIDATED->value            => __('Inviter ELEV‑F2'),
+                        AssessmentWorkflowState::WAITING_TEACHER_SUMMATIVE->value      => __('Faire ENS‑S'),
+                        AssessmentWorkflowState::TEACHER_SUMMATIVE_DONE->value         => __('Terminer'),
+                        AssessmentWorkflowState::CLOSED_BY_TEACHER->value              => null,
                         default => null,
                     };
                 }
             } else {
                 if ($currentState === AssessmentState::NOT_EVALUATED->value) {
-                    $hintMessage = __('💡 Cliquez sur un type d’évaluation pour commencer');
+                    $hintMessage = __('Choisissez un type pour commencer');
                 } elseif ($isStudent) {
                     $hintMessage = match ($currentState) {
-                        AssessmentState::AUTO_FORMATIVE->value    => __('💡 En attente de validation de l’enseignant (ENS‑F).'),
-                        AssessmentState::EVAL_FORMATIVE->value    => __('💡 Sélectionnez l’auto‑évaluation sommative (ELEV‑S).'),
-                        AssessmentState::AUTO_FINALE->value       => __('💡 En attente de validation de l’enseignant (ENS‑S).'),
-                        AssessmentState::EVAL_FINALE->value       => __('💡 En attente de signature.'),
+                        AssessmentState::AUTO_FORMATIVE->value    => __('Attente enseignant (ENS‑F1)'),
+                        AssessmentState::EVAL_FORMATIVE->value    => __('Faites ELEV‑F2 (opt.)'),
+                        AssessmentState::AUTO_FINALE->value       => __('Attente enseignant (ENS‑S)'),
+                        AssessmentState::EVAL_FINALE->value       => __('Signature en attente'),
                         AssessmentState::PENDING_SIGNATURE->value => __('💡 Signez l’évaluation.'),
                         default => null,
                     };
                 } elseif ($isTeacher) {
                     $hintMessage = match ($currentState) {
-                        AssessmentState::AUTO_FORMATIVE->value    => __('💡 Validez l’évaluation formative (ENS‑F).'),
-                        AssessmentState::EVAL_FORMATIVE->value    => __('💡 Invitez l’élève à ELEV‑F2 (optionnel) ou à poursuivre.'),
-                        AssessmentState::AUTO_FINALE->value       => __('💡 Réalisez l’évaluation sommative (ENS‑S).'),
-                        AssessmentState::EVAL_FINALE->value       => __('💡 Cliquez sur “Terminer” pour clôturer.'),
+                        AssessmentState::AUTO_FORMATIVE->value    => __('Valider ENS‑F1'),
+                        AssessmentState::EVAL_FORMATIVE->value    => __('Inviter ELEV‑F2'),
+                        AssessmentState::AUTO_FINALE->value       => __('Faire ENS‑S'),
+                        AssessmentState::EVAL_FINALE->value       => __('Terminer'),
                         default => null,
                     };
                 }

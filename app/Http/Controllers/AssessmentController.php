@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Constants\AssessmentState;
 use App\Constants\AssessmentTiming;
 use App\Constants\RoleName;
+use App\Constants\AssessmentWorkflowState;
 use App\Services\AssessmentStateMachine;
+use App\Support\AssessmentNormalizer;
 use App\Http\Requests\StoreEvaluationRequest;
 use App\Models\AssessmentCriterionTemplate;
 use App\Models\WorkerContract;
@@ -37,8 +39,14 @@ class AssessmentController extends Controller
             // Décodage sûr (car souvent string JSON)
             $data = is_array($raw) ? $raw : json_decode($raw ?? '', true);
 
-            Log::info('Requête reçue', ['full_request' => $request->all()]);
-            Log::info('Decoded evaluation_data', $data ?? ['_decoded' => 'null']);
+            if (config('app.debug')) {
+                Log::debug('Requête reçue (storeEvaluation)');
+                Log::debug('Decoded evaluation_data', [
+                    'keys' => is_array($data) ? array_keys($data) : null,
+                    'has_evaluations' => isset($data['evaluations']),
+                    'worker_contract_id' => $data['worker_contract_id'] ?? null,
+                ]);
+            }
 
             if (empty($data) || !is_array($data)) {
                 return response()->json(['success' => false, 'message' => 'Aucune donnée reçue.'], 422);
@@ -46,7 +54,9 @@ class AssessmentController extends Controller
 
             $response = $this->createOrUpdateEvaluation($data);
 
-            Log::info('storeEvaluation process finish evaluation_data', ['data' => $data]);
+            if (config('app.debug')) {
+                Log::debug('storeEvaluation terminé');
+            }
 
             if ($request->wantsJson()) {
                 return $response;
@@ -56,7 +66,8 @@ class AssessmentController extends Controller
             $ids = $request->input('ids');
 
             if (($responseData['success'] ?? false) && $ids) {
-                return redirect()->to("/evaluation/fullEvaluation/{$ids}")
+                return redirect()
+                    ->route('evaluation.fullEvaluation', ['ids' => $ids])
                     ->with('success', $responseData['message']);
             }
 
@@ -189,23 +200,8 @@ class AssessmentController extends Controller
      */
     private function normalizeTiming(?string $raw): string
     {
-        if (!$raw) return 'not_started';
-
-        $k = str_replace(['-', ' '], '_', strtolower($raw));
-
-        return match ($k) {
-            // anciens identifiants
-            'auto_formative',  'autoformative'  => AssessmentTiming::AUTO_FORMATIVE,
-            'eval_formative',  'evalformative'  => AssessmentTiming::EVAL_FORMATIVE,
-            'auto_finale',     'autofinale'     => AssessmentTiming::AUTO_FINALE,
-            'eval_finale',     'evalfinale'     => AssessmentTiming::EVAL_FINALE,
-            // nouveaux identifiants
-            'a_formative1', 'aformative1'       => AssessmentTiming::AUTO_FORMATIVE,
-            'e_formative1', 'eformative1'       => AssessmentTiming::EVAL_FORMATIVE,
-            'a_formative2', 'aformative2'       => AssessmentTiming::AUTO_FINALE,
-            'e_sommative',  'esommative'        => AssessmentTiming::EVAL_FINALE,
-            default => in_array($raw, AssessmentTiming::all(), true) ? $raw : 'not_started',
-        };
+        // Utilise le helper partagé; retombe sur 'not_started' si non reconnu
+        return AssessmentNormalizer::normalizeTimingToTiming($raw) ?? 'not_started';
     }
 
     /**
@@ -239,7 +235,9 @@ class AssessmentController extends Controller
         if ($hasCustom) {
             $query->where('user_id', $userId);
         } else {
-            $query->whereNull('user_id')->orWhere('user_id', 0);
+            $query->where(function ($q) {
+                $q->whereNull('user_id')->orWhere('user_id', 0);
+            });
         }
 
         $criteria = $query->orderBy('position')->get();
@@ -286,7 +284,7 @@ class AssessmentController extends Controller
     }
 
     /**
-     * Calcule un statut workflow le plus précis possible à partir des timings présents
+     * Calcule le statut de workflow le plus précis possible à partir des timings présents
      * et du statut courant éventuellement enregistré.
      */
     private function computePreciseWorkflowStatus(array $rawTimings, ?string $currentStatus): string
@@ -294,57 +292,79 @@ class AssessmentController extends Controller
         // Normaliser tous les timings vers les constantes d'AssessmentTiming
         $normTimings = collect($rawTimings)
             ->map(fn($t) => $this->normalizeTiming($t))
-            ->filter()
+            ->filter(fn($t) => in_array($t, AssessmentTiming::all(), true))
             ->values()
             ->all();
 
         $has = fn(string $v) => in_array($v, $normTimings, true);
 
-        // ENS-S présent
-        if ($has(\App\Constants\AssessmentTiming::EVAL_FINALE)) {
-            // Si déjà terminé
-            if ($currentStatus === \App\Constants\AssessmentState::COMPLETED->value
-                || $currentStatus === \App\Constants\AssessmentWorkflowState::CLOSED_BY_TEACHER->value) {
-                return \App\Constants\AssessmentWorkflowState::CLOSED_BY_TEACHER->value;
+        // Détection des phases
+        $hasAutoF = $has(AssessmentTiming::AUTO_FORMATIVE);
+        $hasEvalF = $has(AssessmentTiming::EVAL_FORMATIVE);
+        $hasAutoS = $has(AssessmentTiming::AUTO_FINALE);
+        $hasEvalS = $has(AssessmentTiming::EVAL_FINALE);
+
+        // Phase finale enseignant (ENS-S)
+        if ($hasEvalS) {
+            if (
+                $currentStatus === AssessmentState::COMPLETED->value ||
+                $currentStatus === AssessmentWorkflowState::CLOSED_BY_TEACHER->value
+            ) {
+                return AssessmentWorkflowState::CLOSED_BY_TEACHER->value;
             }
-            return \App\Constants\AssessmentWorkflowState::TEACHER_SUMMATIVE_DONE->value;
+            return AssessmentWorkflowState::TEACHER_SUMMATIVE_DONE->value;
         }
 
-        // ELEV-F2 présent, pas ENS-S → attente de validation F2 par enseignant
-        if ($has(\App\Constants\AssessmentTiming::AUTO_FINALE)) {
-            if ($currentStatus === \App\Constants\AssessmentWorkflowState::TEACHER_ACK_FORMATIVE2->value) {
-                // Après validation F2 par enseignant, on peut proposer ENS‑S
-                return \App\Constants\AssessmentWorkflowState::WAITING_TEACHER_SUMMATIVE->value;
+        // Phase F2 (auto finale) détectée après formative validée
+        if ($hasAutoS && !$hasEvalS && $hasEvalF) {
+            if ($currentStatus === AssessmentWorkflowState::TEACHER_ACK_FORMATIVE2->value) {
+                return AssessmentWorkflowState::TEACHER_ACK_FORMATIVE2->value;
             }
-            return \App\Constants\AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F2->value;
+            if ($currentStatus === AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F2->value) {
+                return AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F2->value;
+            }
+            return AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F2->value;
         }
 
-        // ENS-F présent, pas F2
-        if ($has(\App\Constants\AssessmentTiming::EVAL_FORMATIVE)) {
-            // Si un statut plus précis est déjà présent, le conserver
+        // Phase formative validée
+        if ($currentStatus === AssessmentWorkflowState::FORMATIVE_VALIDATED->value) {
+            if (!$hasAutoS) {
+                return AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE2_OPT->value;
+            }
+            return AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F2->value;
+        }
+
+        // Auto finale présente sans ENS-S
+        if ($hasAutoS && !$hasEvalS) {
+            if ($currentStatus === AssessmentWorkflowState::TEACHER_ACK_FORMATIVE2->value) {
+                return AssessmentWorkflowState::WAITING_TEACHER_SUMMATIVE->value;
+            }
+            return AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F2->value;
+        }
+
+        // Évaluation formative enseignant présente
+        if ($hasEvalF) {
             if (in_array($currentStatus, [
-                \App\Constants\AssessmentWorkflowState::WAITING_STUDENT_VALIDATION_F->value,
-                \App\Constants\AssessmentWorkflowState::FORMATIVE_VALIDATED->value,
-                \App\Constants\AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE2_OPT->value,
-                \App\Constants\AssessmentWorkflowState::TEACHER_FORMATIVE_DONE->value,
+                AssessmentWorkflowState::WAITING_STUDENT_VALIDATION_F->value,
+                AssessmentWorkflowState::FORMATIVE_VALIDATED->value,
+                AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE2_OPT->value,
+                AssessmentWorkflowState::TEACHER_FORMATIVE_DONE->value,
             ], true)) {
                 return $currentStatus;
             }
-            // Par défaut, enregistrer que l'enseignant a terminé la formative
-            return \App\Constants\AssessmentWorkflowState::TEACHER_FORMATIVE_DONE->value;
+            return AssessmentWorkflowState::TEACHER_FORMATIVE_DONE->value;
         }
 
-        // ELEV-F1 présent, pas ENS-F
-        if ($has(\App\Constants\AssessmentTiming::AUTO_FORMATIVE)) {
-            // Si l'enseignant a déjà accusé réception, conserver
-            if ($currentStatus === \App\Constants\AssessmentWorkflowState::TEACHER_ACK_FORMATIVE->value) {
+        // Auto formative présente sans ENS-F
+        if ($hasAutoF && !$hasEvalF) {
+            if ($currentStatus === AssessmentWorkflowState::TEACHER_ACK_FORMATIVE->value) {
                 return $currentStatus;
             }
-            return \App\Constants\AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F->value;
+            return AssessmentWorkflowState::WAITING_TEACHER_VALIDATION_F->value;
         }
 
-        // Par défaut
-        return \App\Constants\AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE->value;
+        // Par défaut : première étape formative élève
+        return AssessmentWorkflowState::WAITING_STUDENT_FORMATIVE->value;
     }
 
     /**
@@ -467,8 +487,12 @@ class AssessmentController extends Controller
             return response()->json(['success' => false, 'message' => 'Statut ou timing invalide.'], 422);
         }
 
-        // Recalcule et persiste le statut global actuel
-        $evaluation->status = $this->getCurrentStatus($evaluation->assessments()->get()->toArray());
+        // Recalcule et persiste le statut de workflow actuel (enrichi)
+        $assessmentsArray = $evaluation->assessments()->get()->toArray();
+        $workflowState = (new AssessmentStateMachine($assessmentsArray))
+            ->getWorkflowState($evaluation->status ?? null)
+            ->value;
+        $evaluation->status = $workflowState;
         $evaluation->save();
 
         return response()->json([
@@ -498,13 +522,16 @@ class AssessmentController extends Controller
         try {
             $user = auth()->user();
             $isTeacher = $user->hasRole(RoleName::TEACHER);
-            $idsArray = explode(',', $ids);
+            // Nettoyage/sanitation des IDs (liste séparée par virgules)
+            $idsArray = array_values(array_filter(array_map('intval', explode(',', $ids)), fn($v) => $v > 0));
 
-            Log::info('[fullEvaluation] Démarrage de la récupération des évaluations', [
-                'user_id' => $user->id,
-                'role' => $isTeacher ? 'teacher' : 'student',
-                'ids_reçus' => $idsArray,
-            ]);
+            if (config('app.debug')) {
+                Log::debug('[fullEvaluation] Démarrage de la récupération des évaluations', [
+                    'user_id' => $user->id,
+                    'role' => $isTeacher ? 'teacher' : 'student',
+                    'ids_count' => count($idsArray),
+                ]);
+            }
 
             $workerContracts = WorkerContract::with([
                 'groupMember.user',                 // élève
@@ -521,10 +548,11 @@ class AssessmentController extends Controller
                 abort(404, 'Aucun contrat trouvé.');
             }
 
-            Log::info('Contrats récupérés', [
-                'count' => $workerContracts->count(),
-                'ids_trouvés' => $workerContracts->pluck('id')->toArray(),
-            ]);
+            if (config('app.debug')) {
+                Log::debug('Contrats récupérés', [
+                    'count' => $workerContracts->count(),
+                ]);
+            }
 
             $studentsDetails = $workerContracts->map(function ($wc) {
                 $evaluation = $wc->workerContractAssessment;
@@ -588,7 +616,9 @@ class AssessmentController extends Controller
                 default => ['type_inconnu' => gettype($criteriaGrouped)],
             };
 
-            Log::info('Critères d’évaluation chargés', ['groupes' => $groupKeys]);
+            if (config('app.debug')) {
+                Log::debug('Critères d’évaluation chargés', ['group_count' => count($groupKeys)]);
+            }
 
             // ➜ Alimentation du JSON côté front : inclure status_eval
             $jsonSave = $studentsDetails->map(fn($student) => [
@@ -604,10 +634,11 @@ class AssessmentController extends Controller
             ])->toArray();
 
 
-            Log::info('Données prêtes pour le front', [
-                'students' => count($jsonSave),
-                'example' => $jsonSave[0] ?? '—'
-            ]);
+            if (config('app.debug')) {
+                Log::debug('Données prêtes pour le front', [
+                    'students' => count($jsonSave),
+                ]);
+            }
 
             return view('contracts-fullEvaluation', [
                 'studentsDatas'      => $studentsDetails,
