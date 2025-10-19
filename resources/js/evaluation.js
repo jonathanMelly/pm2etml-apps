@@ -55,6 +55,11 @@ document.addEventListener('DOMContentLoaded', function () {
       }
    });
 
+   // Menu contextuel enseignant pour insertion de remarques prédéfinies
+   if (state.isTeacher) {
+      initTeacherContextMenu();
+   }
+
 
    // En cours de dev. pour version 2
    // if (state.isTeacher) {
@@ -592,6 +597,172 @@ function toggleValidateButton(btns) {
       validateBtn.textContent = (wf === 'teacher_summative_done' || wf === 'summative_validated') ? 'Terminer' : 'Valider';
    }
    validateBtn.style.display = show ? '' : 'none';
+}
+
+// === Menu contextuel pour enseignants ===
+function initTeacherContextMenu() {
+   const predefined = [
+      { text: 'Analyse pertinente mais gagnerait à être étayée par des exemples concrets.', tone: 'neutral' },
+      { text: 'Références insuffisamment variées : ajouter des sources primaires et secondaires.', tone: 'negative' },
+      { text: 'Argumentation peu structurée : clarifier l’introduction, le développement et la conclusion.', tone: 'negative' },
+      { text: 'Approche critique superficielle : confronter des points de vue divergents.', tone: 'negative' },
+      { text: 'Liens théorie–pratique faibles : illustrer avec des situations du projet.', tone: 'neutral' },
+      { text: 'Développement personnel à expliciter : motiver les choix et leurs impacts.', tone: 'neutral' },
+      { text: 'Références présentes mais incomplètes (auteur/date/URL) : compléter et normaliser.', tone: 'neutral' },
+      { text: 'Qualité rédactionnelle à améliorer (syntaxe/terminologie/typographie).', tone: 'neutral' },
+      { text: 'Critères partiellement remplis : préciser la méthodologie et les résultats attendus.', tone: 'negative' },
+      { text: 'Travail satisfaisant et globalement cohérent : poursuivre l’approfondissement.', tone: 'positive' },
+      { text: 'Objectifs peu clairs : reformuler le problème et le périmètre.', tone: 'negative' },
+      { text: 'Démarche méthodologique insuffisamment explicitée : détailler les étapes clés.', tone: 'neutral' },
+      { text: 'Justification des choix à compléter : comparer des alternatives.', tone: 'neutral' },
+      { text: 'Visualisations perfectibles : soigner la lisibilité (titres, légendes, unités).', tone: 'neutral' },
+      { text: 'Organisation des livrables à structurer : plan, annexes, nomenclature.', tone: 'neutral' },
+      { text: 'Gestion du temps à optimiser : jalons non respectés ou peu visibles.', tone: 'negative' },
+      { text: 'Collaboration à renforcer : préciser la contribution de chacun.', tone: 'neutral' },
+      { text: 'Synthèse finale trop courte : formuler des recommandations concrètes.', tone: 'negative' },
+      { text: 'Très bon niveau d’analyse : poursuivre avec des perspectives/limites.', tone: 'positive' },
+      { text: 'Excellente maîtrise des concepts : exemples et références bien mobilisés.', tone: 'positive' }
+   ];
+
+   let currentTargetTextarea = null;
+
+   // Crée un menu flottant réutilisable
+   const menu = document.createElement('div');
+   menu.id = 'teacher-ctx-menu';
+   Object.assign(menu.style, {
+      position: 'fixed', zIndex: 9999, background: 'white', border: '1px solid #e5e7eb',
+      borderRadius: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)', padding: '6px 0',
+      minWidth: '280px', maxHeight: '60vh', overflowY: 'auto', display: 'none'
+   });
+   // Header with live search
+   const header = document.createElement('div');
+   header.style.padding = '8px 8px';
+   header.style.borderBottom = '1px solid #e5e7eb';
+   header.style.display = 'grid';
+   header.style.gridTemplateColumns = '1fr auto';
+   header.style.columnGap = '8px';
+   header.style.rowGap = '6px';
+   const search = document.createElement('input');
+   search.type = 'text';
+   search.placeholder = 'Rechercher…';
+   Object.assign(search.style, {
+      width: '100%', padding: '6px 8px', border: '1px solid #e5e7eb',
+      borderRadius: '6px', fontSize: '0.9rem'
+   });
+   // Tone filter
+   const toneWrap = document.createElement('div');
+   toneWrap.style.display = 'flex';
+   toneWrap.style.alignItems = 'center';
+   toneWrap.style.gap = '6px';
+   const toneLabel = document.createElement('span');
+   toneLabel.textContent = 'Tonalité';
+   toneLabel.style.fontSize = '0.8rem';
+   toneLabel.style.color = '#6b7280';
+   const toneSel = document.createElement('select');
+   Object.assign(toneSel.style, { padding: '6px 8px', border: '1px solid #e5e7eb', borderRadius: '6px', fontSize: '0.9rem' });
+   ;[
+      {v:'all', l:'Toutes'},
+      {v:'positive', l:'Positive'},
+      {v:'neutral', l:'Neutre'},
+      {v:'negative', l:'Négative'}
+   ].forEach(o => { const opt = document.createElement('option'); opt.value = o.v; opt.textContent = o.l; toneSel.appendChild(opt); });
+   toneWrap.appendChild(toneLabel); toneWrap.appendChild(toneSel);
+   header.appendChild(search);
+   header.appendChild(toneWrap);
+
+   const list = document.createElement('ul');
+   list.style.listStyle = 'none'; list.style.margin = '0'; list.style.padding = '0';
+   const entries = [];
+   function addEntry(item) {
+      const txt = typeof item === 'string' ? item : item.text;
+      const tone = typeof item === 'object' ? (item.tone || 'neutral') : 'neutral';
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = '#'; a.style.display = 'flex'; a.style.alignItems = 'center';
+      a.style.padding = '8px 12px'; a.style.fontSize = '0.9rem'; a.style.color = '#111827';
+      a.addEventListener('mouseenter', () => a.style.background = '#f3f4f6');
+      a.addEventListener('mouseleave', () => a.style.background = 'transparent');
+      a.addEventListener('click', (e) => {
+         e.preventDefault();
+         if (currentTargetTextarea) { insertAtCursor(currentTargetTextarea, txt); hideMenu(); }
+      });
+      // Colored sentiment dot
+      const dot = document.createElement('span');
+      dot.style.display = 'inline-block'; dot.style.width = '8px'; dot.style.height = '8px';
+      dot.style.borderRadius = '9999px'; dot.style.marginRight = '10px';
+      dot.style.flex = '0 0 auto';
+      dot.style.background = tone === 'positive' ? '#10b981' : (tone === 'negative' ? '#ef4444' : '#f59e0b');
+      const label = document.createElement('span');
+      label.textContent = txt; label.style.flex = '1 1 auto';
+      a.appendChild(dot); a.appendChild(label);
+      li.appendChild(a); list.appendChild(li); entries.push({ li, txt: txt.toLowerCase(), tone });
+   }
+   predefined.forEach(addEntry);
+   menu.appendChild(header);
+   menu.appendChild(list); document.body.appendChild(menu);
+
+   // Live filter
+   let selectedTone = 'all';
+   function applyFilter() {
+      const q = search.value.trim().toLowerCase();
+      entries.forEach(({ li, txt, tone }) => {
+         const byText = (!q || txt.includes(q));
+         const byTone = (selectedTone === 'all' || tone === selectedTone);
+         li.style.display = (byText && byTone) ? 'block' : 'none';
+      });
+   }
+   search.addEventListener('input', applyFilter);
+   toneSel.addEventListener('change', () => { selectedTone = toneSel.value; applyFilter(); });
+
+   function showMenu(x, y, ta) {
+      currentTargetTextarea = ta;
+      const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+      const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+      // Show first to measure, offscreen
+      menu.style.display = 'block';
+      menu.style.left = '-9999px';
+      menu.style.top = '-9999px';
+      const rect = menu.getBoundingClientRect();
+      const menuWidth = rect.width || 300;
+      const menuHeight = Math.min(rect.height || 300, vh * 0.6);
+      let left = x;
+      let top = y;
+      if (left + menuWidth > vw - 8) left = vw - menuWidth - 8;
+      if (top + menuHeight > vh - 8) top = vh - menuHeight - 8;
+      if (left < 8) left = 8;
+      if (top < 8) top = 8;
+      menu.style.left = left + 'px';
+      menu.style.top = top + 'px';
+   }
+   function hideMenu() { menu.style.display = 'none'; currentTargetTextarea = null; }
+
+   // Cible: remarques critère + remarque générale
+   const remarkTextareas = document.querySelectorAll('.remark textarea');
+   const generalTextareas = document.querySelectorAll('textarea[name="generalRemark"]');
+   [...remarkTextareas, ...generalTextareas].forEach(ta => {
+      ta.addEventListener('contextmenu', (e) => {
+         e.preventDefault(); showMenu(e.clientX, e.clientY, ta);
+      });
+   });
+
+   document.addEventListener('click', (e) => { if (menu.style.display === 'block' && !menu.contains(e.target)) hideMenu(); });
+   window.addEventListener('blur', hideMenu);
+   window.addEventListener('resize', hideMenu);
+   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideMenu(); });
+
+   function insertAtCursor(textarea, text) {
+      const start = textarea.selectionStart ?? textarea.value.length;
+      const end = textarea.selectionEnd ?? textarea.value.length;
+      const before = textarea.value.substring(0, start);
+      const after = textarea.value.substring(end);
+      const prefix = before && !before.endsWith('\n') ? '\n' : '';
+      const suffix = after && !after.startsWith('\n') ? '\n' : '';
+      textarea.value = before + prefix + text + suffix + after;
+      const caret = (before + prefix + text + suffix).length;
+      try { textarea.setSelectionRange(caret, caret); } catch (_) { }
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      textarea.focus();
+   }
 }
 
 function notifyStatusEval(btns) {
