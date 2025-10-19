@@ -220,6 +220,7 @@
                                 <th><i class="fa-solid fa-people-roof"></i> {{__('Group')}}</th>
                                 <th><i class="fa-solid fa-sack-dollar"></i> {{__('Worker(s)')}}</th>
                                 <x-contract-list-header :effort="false"/>
+                                <th class="text-center"><i class="fa-solid fa-book"></i> {{ __('Journal') }}</th>
                             </tr>
 
                             @foreach(auth()->user()->contractsAsAClientForJob($job,$periodId)->get() as $contract)

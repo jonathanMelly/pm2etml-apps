@@ -34,8 +34,16 @@ $remainingDays = $progress['remainingDays'];
             </div>
             <div>
                 <div class="indicator">
+                    @php
+                        $hasTodayLog = $wc->dayLogs()->whereDate('date', now()->toDateString())->exists();
+                    @endphp
                     @if(session('contractId')==$contract->id)
                     <span class="indicator-item indicator-start badge badge-primary -mt-2 text-xs">{{__('new')}}</span>
+                    @endif
+                    @if($hasTodayLog)
+                        <span class="indicator-item indicator-start badge badge-info -mt-2 text-xs ml-24">
+                            <i class="fa-solid fa-book-open mr-1"></i>{{ __('Journal aujourd\'hui') }}
+                        </span>
                     @endif
                     @if($wc->remediation_status == \App\Constants\RemediationStatus::ASKED_BY_WORKER)
                         <span class="indicator-item indicator-start badge badge-warning -mt-2 text-xs ml-20">
@@ -154,5 +162,12 @@ $remainingDays = $progress['remainingDays'];
         @else
             <span class="text-gray-400">{{ __('Non disponible') }}</span>
         @endif
+    </td>
+    <!-- Journal button -->
+    <td class="text-center">
+        <button class="btn btn-outline btn-primary btn-xs"
+                @click="window.location.href='{{ route('worker-contracts.journal.index', $wc) }}'">
+            <i class="fa-solid fa-book mr-1"></i> {{ __('Journal') }}
+        </button>
     </td>
 </tr>

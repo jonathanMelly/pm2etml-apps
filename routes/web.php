@@ -15,6 +15,7 @@ use App\Http\Controllers\AssessmentController;
 use App\Http\Controllers\JobDefinitionController;
 use App\Http\Controllers\JobDefinitionDocAttachmentController;
 use App\Http\Controllers\JobDefinitionMainImageAttachmentController;
+use App\Http\Controllers\WorkerContractJournalController;
 use Illuminate\Support\Facades\Route;
 
 use Illuminate\Http\Request;
@@ -77,6 +78,12 @@ Route::middleware(['auth', 'app'])->group(function () {
 
     Route::post('api/evaluations/update-status', [AssessmentController::class, 'updateStatus'])->name('evaluations.update-status');
     Route::post('api/evaluation/transition', [AssessmentController::class, 'handleTransition'])->name('evaluation.transition');
+
+    // Journal de journée (élève / prof)
+    Route::get('worker-contracts/{workerContract}/journal', [WorkerContractJournalController::class, 'index'])->name('worker-contracts.journal.index');
+    Route::post('worker-contracts/{workerContract}/journal', [WorkerContractJournalController::class, 'store'])->name('worker-contracts.journal.store');
+    Route::get('worker-contracts/{workerContract}/journal/export', [WorkerContractJournalController::class, 'export'])->name('worker-contracts.journal.export');
+    Route::patch('day-logs/{dayLog}/appreciation', [WorkerContractJournalController::class, 'updateAppreciation'])->name('day-logs.appreciation.update');
 
     // Générateur de pdf
     Route::get('/pdf-template/{type}', function ($type) {

@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use JetBrains\PhpStorm\Pure;
 use Kirschbaum\PowerJoins\PowerJoins;
 
@@ -111,6 +112,14 @@ class WorkerContract extends Pivot
     public function teacherFromAssessment()
     {
         return $this->workerContractAssessment?->teacher;
+    }
+
+    /**
+     * Journaux quotidiens associés au WorkerContract.
+     */
+    public function dayLogs(): HasMany
+    {
+        return $this->hasMany(WorkerContractDayLog::class, 'worker_contract_id');
     }
 
 

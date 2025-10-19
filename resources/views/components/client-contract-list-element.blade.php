@@ -97,4 +97,21 @@
     </td>
 
     <x-contract-list-element-evaluation :job="$job"  :contract="$contract" />
+    <!-- Journal access for teachers -->
+    @php
+        $hasTodayLog = $wc->dayLogs()->whereDate('date', now()->toDateString())->exists();
+    @endphp
+    <td class="text-center">
+        <div class="flex items-center justify-center gap-2">
+            <button class="btn btn-outline btn-primary btn-xs"
+                    @click="window.location.href='{{ route('worker-contracts.journal.index', $wc) }}'">
+                <i class="fa-solid fa-book mr-1"></i> {{ __('Journal') }}
+            </button>
+            @if($hasTodayLog)
+                <span class="badge badge-info">
+                    <i class="fa-solid fa-book-open mr-1"></i>{{ __('Journal aujourd\'hui') }}
+                </span>
+            @endif
+        </div>
+    </td>
 </tr>
