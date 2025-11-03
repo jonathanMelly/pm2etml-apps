@@ -33,7 +33,7 @@ class DmzAssetController extends Controller
                 if ($request->has("name")) {
                     return response($fileContent, 200, [
                         'Content-Type' => $mimeType,
-                        'Content-Disposition' => 'attachment; filename="' . Crypt::decryptString($request->get("name")) . '"'
+                        'Content-Disposition' => 'attachment; filename="' . decrypt($request->get("name")) . '"'
                     ]);
                 }
 
