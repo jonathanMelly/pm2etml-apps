@@ -155,7 +155,7 @@ test('Storage disks cannot be hacked using path traversal ../', function () {
 
 });
 
-test('Regular job attachments remain unencrypted while contract evaluation attachments are encrypted', function () {
+test('Regular job attachments remain unencrypted while contract evaluation attachments are encrypted and dmz-asset sends correct name to client', function () {
     /* @var $this \Tests\TestCase */
 
     $this->be($this->createUser(roles: \App\Constants\RoleName::TEACHER));
@@ -206,9 +206,11 @@ test('Regular job attachments remain unencrypted while contract evaluation attac
     $this->assertEquals($evalContent, $evalAttachment->getFileContent());
 
     // Test 4: Both can be accessed via DmzAssetController
-    $jobAccessResponse = $this->get(route('dmz-asset', ['file' => $jobAttachment->storage_path]));
+    $name="bob.pdf";
+    $jobAccessResponse = $this->get(route('dmz-asset', ['file' => $jobAttachment->storage_path,'name'=>encrypt($name)]));
     $jobAccessResponse->assertStatus(200);
     $jobAccessResponse->assertHeader('Content-Type', 'application/pdf');
+    $jobAccessResponse->assertHeader('Content-Disposition', 'attachment; filename="'.$name.'"');
 
     // Get content from BinaryFileResponse
     ob_start();
