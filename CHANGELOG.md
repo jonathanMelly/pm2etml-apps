@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.55.1](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.55.0...v1.55.1) (2025-11-04)
+
+
+### Bug Fixes
+
+* **student evaluation download:** filename corresponds to original ([c6a3697](https://github.com/jonathanMelly/pm2etml-apps/commit/c6a36972c5fd57096d3e5cd5d8164bc6177a2058))
+
 ## [1.55.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.54.1...v1.55.0) (2025-09-15)
 
 
