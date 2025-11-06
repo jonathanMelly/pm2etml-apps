@@ -65,6 +65,32 @@ class JobDefinition extends Model
 
     public function scopeFilter(Builder $query, Request $request)
     {
+        //WARNING: trashed filter (archived) must be handled first
+        //as withTrashed must be applied before any where condition...
+        $onlyPublished = true;
+        //Students should not see drafts
+        if (! $request->user()->hasRole(RoleName::STUDENT)) {
+            if (($input = existsAndNotEmpty($request, 'status')) != null) {
+                if ($input === 'only') {
+                    $query->where(function (Builder $q) {
+                        $q
+                            ->where('published_date', '>', now())
+                            ->orWhereNull('published_date');
+                    });
+                    $onlyPublished = false;
+                } elseif ($input === 'include') {
+                    $onlyPublished = false;
+                }
+                elseif($input === 'trashed'){
+                    $query->withTrashed();
+                    $onlyPublished=false;
+                }
+            }
+        }
+        if ($onlyPublished) {
+            $query->where(fn($q) => $q->published());
+        }
+        
         //Simple ones
         foreach (['required_xp_years', 'priority'] as $filter) {
             if (($input = existsAndNotEmpty($request, $filter)) != null) {
@@ -103,25 +129,6 @@ class JobDefinition extends Model
             });
         }
 
-        $onlyPublished = true;
-        //Students should not see drafts
-        if (! $request->user()->hasRole(RoleName::STUDENT)) {
-            if (($input = existsAndNotEmpty($request, 'draft')) != null) {
-                if ($input === 'only') {
-                    $query->where(function (Builder $q) {
-                        $q
-                            ->where('published_date', '>', now())
-                            ->orWhereNull('published_date');
-                    });
-                    $onlyPublished = false;
-                } elseif ($input === 'include') {
-                    $onlyPublished = false;
-                }
-            }
-        }
-        if ($onlyPublished) {
-            $query->where(fn($q) => $q->published());
-        }
 
         return $query;
     }

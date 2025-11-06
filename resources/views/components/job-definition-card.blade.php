@@ -138,9 +138,9 @@ $myApplication = $job->pendingApplicationFrom(Auth::user());
 
         </div>
 
-        @if(!$job->isPublished())
+        @if(!$job->isPublished() || $job->trashed())
         <div class="-skew-y-12 bg-gradient-to-r from-secondary/50 to-secondary text-center">
-            {{__('Draft')}}
+            {{__($job->trashed()?'Trashed':'Draft')}}
         </div>
         @endif
 

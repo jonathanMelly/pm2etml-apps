@@ -24,10 +24,11 @@
             </select>
 
             @can('jobDefinitions.create')
-            <select class="select select-sm" name="draft">
-                <option @selected(request('draft')=='exclude') value="exclude">{{__('Published')}}</option>
-                <option @selected(request('draft')=='include') value="include">{{__('With drafts')}}</option>
-                <option @selected(request('draft')=='only') value="only">{{__('Drafts only')}}</option>
+            <select class="select select-sm" name="status">
+                <option @selected(request('status')=='exclude') value="exclude">{{__('Published')}}</option>
+                <option @selected(request('status')=='include') value="include">{{__('With drafts')}}</option>
+                <option @selected(request('status')=='only') value="only">{{__('Drafts only')}}</option>
+                <option @selected(request('status')=='trashed') value="trashed">{{__('With trashed')}}</option>
             </select>
             @endcan
 

@@ -34,8 +34,8 @@ class JobDefinitionController extends Controller
 
         $definitions = JobDefinition::query()
             //->where(fn($q)=>$q->published())
+            ->filter($request) /*WARNING: filter must be FIRST to be able to handle trashed stuff*/
             ->where(fn ($q) => $q->available())
-            ->where(fn ($q) => $q->filter($request))
             ->whereNotIn('id', auth()->user()->contractsAsAWorker()->select('job_definition_id'))
             ->orderBy('required_xp_years')
             ->orderByDesc('one_shot')
