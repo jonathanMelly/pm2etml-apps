@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.56.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.55.1...v1.56.0) (2025-11-06)
+
+
+### Features
+
+* **marketplace status filter:** added trashed status ([01fe8eb](https://github.com/jonathanMelly/pm2etml-apps/commit/01fe8eb4a387d1525fb92c4f329f2adccc6430a8))
+
 ## [1.55.1](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.55.0...v1.55.1) (2025-11-04)
 
 
