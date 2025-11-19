@@ -25,6 +25,7 @@ export default defineConfig({
 
             'resources/js/dropzone.js', //for draq/drop file upload
             'resources/js/dashboard-charts.js',
+            'resources/js/contract-dispatch.js', //for contract evaluation bulk upload
 
             //inertia
             'resources/js/apps.ts',//

@@ -1,3 +1,43 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+
+/* Dispatch Drop Zone Styles */
+@layer components {
+    .dispatch-zone {
+        @apply border-4 border-dashed rounded-lg p-6 transition-all duration-300 min-h-[120px];
+        border-color: hsl(var(--primary) / 0.4);
+        background-color: hsl(var(--base-100));
+    }
+
+    .dispatch-zone.drag-over {
+        @apply scale-[1.01];
+        border-color: hsl(var(--primary));
+        background-color: hsl(var(--primary) / 0.1);
+    }
+
+    .dispatch-zone.has-files {
+        @apply border-solid;
+        border-color: hsl(var(--success));
+    }
+
+    .match-status-matched {
+        color: hsl(var(--success));
+    }
+
+    .match-status-ambiguous {
+        color: hsl(var(--warning));
+    }
+
+    .match-status-unmatched {
+        color: hsl(var(--error));
+    }
+
+    .dispatch-file-item {
+        @apply transition-all duration-200;
+    }
+
+    .dispatch-file-item:hover {
+        background-color: hsl(var(--base-300));
+    }
+}

@@ -246,6 +246,45 @@
             }
 
         </script>
+
+        {{-- Dispatch Drop Zone Module --}}
+        <script type="module">
+            import { initializeDispatchZone } from '{{ Vite::asset('resources/js/contract-dispatch.js') }}';
+
+            // Build workers data from server
+            const workers = [
+                @foreach($contracts as $contract)
+                    @foreach($contract->workersContracts as $workerContract)
+                        {
+                            id: '{{$workerContract->id}}',
+                            firstname: '{{$workerContract->groupMember->user->firstname}}',
+                            lastname: '{{$workerContract->groupMember->user->lastname}}',
+                            fullname: '{{$workerContract->groupMember->user->getFirstnameL()}}'
+                        },
+                    @endforeach
+                @endforeach
+            ];
+
+            // Set up global configuration
+            window.csrfToken = '{{csrf_token()}}';
+            window.uploadUrl = '{{route("contract-evaluation-attachment.store")}}';
+            window.translations = {
+                selectPdfOnly: '{{__("Please select PDF files only")}}',
+                uploading: '{{__("Uploading...")}}',
+                selectWorker: '{{__("Select worker...")}}',
+                assignWorkerFirst: '{{__("Please assign a worker first")}}',
+                workerContainerNotFound: '{{__("Worker container not found")}}',
+                uploadFailed: '{{__("Upload failed:")}}',
+                noMatchedFiles: '{{__("No matched files to upload")}}',
+                clearWhileUploading: '{{__("Some files are still uploading. Are you sure you want to clear?")}}'
+            };
+
+            // Make addAttachmentToContainer globally available for dispatch module
+            window.addAttachmentToContainer = addAttachmentToContainer;
+
+            // Initialize dispatch zone
+            initializeDispatchZone(workers);
+        </script>
     @endpush
     <form id="eval" x-on:submit.prevent action="{{route('contracts.evaluate')}}" method="post">
         @csrf
@@ -272,6 +311,38 @@
                     <div class="stat-desc">{{trans_choice(":number evaluation|:number evaluations",sizeof($contracts),['number'=>sizeof($contracts)])}}</div>
                 </div>
 
+            </div>
+
+            {{-- Dispatch Drop Zone --}}
+            <div class="w-full max-w-4xl mb-6">
+                <div id="dispatch-zone" class="dispatch-zone text-center cursor-pointer">
+                    <div id="dispatch-empty-state">
+                        <i class="fas fa-cloud-upload-alt text-4xl mb-2 opacity-50"></i>
+                        <p class="text-lg font-semibold">{{__('Drop multiple PDFs here to auto-dispatch')}}</p>
+                        <p class="text-sm opacity-70">{{__('Files will be matched by firstname or lastname')}}</p>
+                        <p class="text-xs opacity-50 mt-2">{{__('No upload will happen until you confirm')}}</p>
+                    </div>
+                    <div id="dispatch-preview" class="hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">
+                                <i class="fas fa-list-check mr-2"></i>{{__('Files Ready for Dispatch')}}
+                                <span id="dispatch-count" class="badge badge-primary ml-2">0</span>
+                            </h3>
+                            <button type="button" class="btn btn-ghost btn-sm" onclick="clearDispatchZone()">
+                                <i class="fas fa-times mr-1"></i>{{__('Clear All')}}
+                            </button>
+                        </div>
+                        <div id="dispatch-files-list" class="space-y-2 max-h-96 overflow-y-auto">
+                            <!-- Files will be dynamically added here -->
+                        </div>
+                        <div class="flex gap-2 mt-4 justify-end">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="uploadAllMatched()">
+                                <i class="fas fa-upload mr-1"></i>{{__('Upload All Matched')}}
+                                <span id="matched-count" class="badge badge-success ml-1">0</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <table class="table table-compact table-zebra w-auto">
