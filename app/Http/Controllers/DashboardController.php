@@ -40,7 +40,9 @@ class DashboardController extends Controller
                     ->whereHas('groupMembers.group.academicPeriod', fn ($q) => $q->whereId($periodId))
                     ->get();
 
-                $result = $view->with(compact('jobs', 'candidatesForWork'));
+                $allJobs = $user->getJobDefinitions($periodId);
+
+                $result = $view->with(compact('jobs', 'candidatesForWork','allJobs'));
             } else { //Students (auto filtered on student periodId as using groupmember...)
                 //Get jobs as Workers
                 $query = $user->contractsAsAWorker()

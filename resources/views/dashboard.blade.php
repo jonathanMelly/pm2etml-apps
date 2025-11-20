@@ -43,7 +43,7 @@
                     @if($jobs->isEmpty())
                         <p>{{__('No contracts')}}</p>
                     @else
-                        <x-client-job-list :periodId="$periodId" :jobs="$jobs" :candidatesForWork="$candidatesForWork" />
+                        <x-client-job-list :periodId="$periodId" :jobs="$jobs" :candidatesForWork="$candidatesForWork" :allJobs="$allJobs" />
                     @endempty
                     @endrole
 

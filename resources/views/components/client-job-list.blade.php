@@ -33,6 +33,73 @@
         </label>
     </div>
 
+    <div class="form-control flex flex-row">
+        <button class="btn btn-outline btn-neutral btn-xs"
+                id="addContractButtonMain"
+                onclick="addContractMain.showModal()">
+            <i class="fa-solid fa-user-plus"></i>{{__('Add a contract')}}
+        </button>
+        <dialog id="addContractMain" class="modal">
+            <div class="modal-box">
+                <h3 class="font-bold text-lg">{{__('Add a contract')}}</h3>
+                <form method="post" action="{{route('contracts.store')}}"
+                      id="addContract-Main-form"
+                      name="addContract-Main-form">
+                    @method('POST')
+                    @csrf
+
+                    <label>
+                        {{__('Job')}}
+                        <select name="job_definition_id" class="input select mb-4 mt-3" type="text">
+                            @foreach($allJobs as $job1)
+                                <option value="{{$job1->id}}">{{$job1->title}}</option>
+                            @endforeach
+                        </select>
+                    </label>
+
+                    <label>
+                        {{__('Worker')}}
+                        <input name="worker" class="input w-full" type="text"
+                               placeholder="{{__('Select worker')}}" list="workers-list"/>
+                    </label>
+
+                    <label class="input-group flex justify-between mt-3">
+                        <div
+                            class="self-center justify-self-end">{{__('Start date')}}</div>
+                        <input type="date" name="start_date"
+                               value="{{old('start_date')??now()->format(\App\DateFormat::HTML_FORMAT)}}"
+                               class=" input input-bordered input-primary">
+                    </label>
+
+                    <label class="input-group flex justify-between">
+                        <div
+                            class="self-center justify-self-end">{{__('End date')}}</div>
+                        <input type="date" name="end_date"
+                               value="{{old('end_date')??now()->addWeeks(3)->format(\App\DateFormat::HTML_FORMAT)}}"
+                               class=" input input-secondary input-bordered">
+                    </label>
+
+                    <input type="hidden" name="client-0" value="{{\Illuminate\Support\Facades\Auth::user()->id}}"/>
+
+                </form>
+                <div class="modal-action">
+
+                    <button class="btn btn-success"
+                            onclick="spin('SaveContractButtonMain');document.querySelector('#addContract-Main-form').submit()">
+                        <span id="SaveContractButtonMain" class="hidden"></span>
+                        {{__('Add')}}
+                    </button>
+
+                    <form method="dialog">
+                        <!-- if there is a button in form, it will close the modal -->
+                        <button class="btn btn-error">{{__('Cancel')}}</button>
+                    </form>
+                </div>
+            </div>
+        </dialog>
+    </div>
+
+
     <datalist id="workers-list">
         @foreach($candidatesForWork as $worker)
             <option value="{{$worker->email}}">{{$worker->firstname}} {{$worker->lastname}}</option>
