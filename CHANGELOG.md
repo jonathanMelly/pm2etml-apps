@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.57.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.56.0...v1.57.0) (2025-11-21)
+
+
+### Features
+
+* **contract:** better dispatch detection ([5de07e3](https://github.com/jonathanMelly/pm2etml-apps/commit/5de07e359679b2c810615e976304bd1080353902))
+* **contract:** provider can add an arbitrary contract ([97b35cc](https://github.com/jonathanMelly/pm2etml-apps/commit/97b35cc4c7700886ad9dc8d14a0ea11765f92fce))
+* **eval:** auto pdfs dispatcher ([932291b](https://github.com/jonathanMelly/pm2etml-apps/commit/932291b8911f1e09c1c40733c4d1cea80d5f6f67))
+
+
+### Bug Fixes
+
+* **contract:** avoid errors on already moved pending attachments ([df29c9c](https://github.com/jonathanMelly/pm2etml-apps/commit/df29c9c155c8f63d30e739af448b2227d09a0e74))
+* **contract:** dispatch js es6 to standard ([75bb092](https://github.com/jonathanMelly/pm2etml-apps/commit/75bb0929c66d50f69b1279aa2f89ff0dcedbb686))
+
 ## [1.56.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.55.1...v1.56.0) (2025-11-06)
 
 
