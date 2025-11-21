@@ -13,8 +13,8 @@ let workersList = [];
 function initializeDispatchZone(workers) {
     workersList = workers.map(w => ({
         ...w,
-        firstname: w.firstname.toLowerCase(),
-        lastname: w.lastname.toLowerCase()
+        firstname: w.firstname.toLowerCase().trim(),
+        lastname: w.lastname.toLowerCase().trim()
     }));
 
     const dispatchZone = document.getElementById('dispatch-zone');
@@ -106,14 +106,26 @@ function matchFileToWorker(file) {
 
     // Try to find matches
     workersList.forEach(worker => {
+        let shouldAdd = false;
+
         const firstnameMatch = filename.includes(worker.firstname);
         const lastnameMatch = filename.includes(worker.lastname);
         const fullnameMatch = filename.includes(worker.firstname + ' ' + worker.lastname);
 
         if (fullnameMatch || (firstnameMatch && lastnameMatch)) {
-            possibleMatches.push(worker);
-        } else if (firstnameMatch || lastnameMatch) {
-            // Partial match - check if it's unique
+            shouldAdd = true;
+        }
+        else if (firstnameMatch || lastnameMatch) {
+            shouldAdd = true;
+        }
+        else {
+            const nameParts = [...worker.firstname.split(' '), ...worker.lastname.split(' ')];
+            if (nameParts.some(part => part && filename.includes(part))) {
+                shouldAdd = true;
+            }
+        }
+
+        if (shouldAdd) {
             possibleMatches.push(worker);
         }
     });
