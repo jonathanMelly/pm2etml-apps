@@ -13,6 +13,7 @@ use App\Http\Controllers\JobDefinitionController;
 use App\Http\Controllers\JobDefinitionDocAttachmentController;
 use App\Http\Controllers\JobDefinitionMainImageAttachmentController;
 use App\Http\Controllers\ContractEvaluationAttachmentController;
+use App\Http\Controllers\EvalPulseController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -59,6 +60,12 @@ Route::middleware(['auth', 'app'])->group(function () {
 
     //Add basic CRUD actions for contracts
     Route::resource('contracts', ContractController::class);
+
+    // Eval Pulse
+    Route::post('eval-pulse', [EvalPulseController::class, 'store'])->name('eval_pulse.store');
+    Route::get('eval-pulse/bulk/{ids}', [EvalPulseController::class, 'bulkEvaluate'])->name('eval_pulse.bulk');
+    Route::get('eval-pulse/{evaluation}', [EvalPulseController::class, 'show'])->name('eval_pulse.show');
+    Route::post('eval-pulse/{evaluation}/update', [EvalPulseController::class, 'update'])->name('eval_pulse.update');
 
     //Files (images) handling (avoid any injected script in image as returning the file as file !)
     Route::get(FileFormat::DMZ_ASSET_URL . '/{file?}', [DmzAssetController::class, 'getFile'])
