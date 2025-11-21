@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.58.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.57.0...v1.58.0) (2025-11-21)
+
+
+### Features
+
+* **evaluation:** na,pa,a,la draft (tests to be fixed and some cleanup) ([498af8e](https://github.com/jonathanMelly/pm2etml-apps/commit/498af8ecba17b862e681745329a8305e98bf8c09))
+
 ## [1.57.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.56.0...v1.57.0) (2025-11-21)
 
 
