@@ -248,9 +248,8 @@
         </script>
 
         {{-- Dispatch Drop Zone Module --}}
+        @vite(['resources/js/contract-dispatch.js'])
         <script type="module">
-            import { initializeDispatchZone } from '{{ Vite::asset('resources/js/contract-dispatch.js') }}';
-
             // Build workers data from server
             const workers = [
                 @foreach($contracts as $contract)

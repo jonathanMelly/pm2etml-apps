@@ -10,7 +10,7 @@ let workersList = [];
  * Initialize the dispatch drop zone functionality
  * @param {Array} workers - Array of worker objects with id, firstname, lastname, fullname
  */
-export function initializeDispatchZone(workers) {
+function initializeDispatchZone(workers) {
     workersList = workers.map(w => ({
         ...w,
         firstname: w.firstname.toLowerCase(),
@@ -279,7 +279,7 @@ function assignWorkerToFile(index, workerId) {
  * Upload a single file from the dispatch queue
  * @param {number} index - Index in the dispatch queue
  */
-export function uploadSingleDispatchedFile(index) {
+function uploadSingleDispatchedFile(index) {
     const fileMatch = dispatchQueue[index];
     const t = window.translations || {};
 
@@ -344,7 +344,7 @@ export function uploadSingleDispatchedFile(index) {
 /**
  * Upload all matched files in the dispatch queue
  */
-export function uploadAllMatched() {
+function uploadAllMatched() {
     const t = window.translations || {};
     const matchedFiles = dispatchQueue.filter(f =>
         f.matchStatus === 'matched' &&
@@ -371,7 +371,7 @@ export function uploadAllMatched() {
  * Remove a file from the dispatch queue
  * @param {number} index - Index in the dispatch queue
  */
-export function removeFromDispatchQueue(index) {
+function removeFromDispatchQueue(index) {
     dispatchQueue.splice(index, 1);
     renderDispatchPreview();
 }
@@ -379,7 +379,7 @@ export function removeFromDispatchQueue(index) {
 /**
  * Clear all files from the dispatch zone
  */
-export function clearDispatchZone() {
+function clearDispatchZone() {
     const t = window.translations || {};
     if (dispatchQueue.some(f => f.uploading)) {
         if (!confirm(t.clearWhileUploading || 'Some files are still uploading. Are you sure you want to clear?')) {
@@ -391,7 +391,11 @@ export function clearDispatchZone() {
 }
 
 // Export for global access (for onclick handlers in blade)
+// Export for global access
 if (typeof window !== 'undefined') {
+    window.initializeDispatchZone = initializeDispatchZone;
     window.uploadAllMatched = uploadAllMatched;
     window.clearDispatchZone = clearDispatchZone;
+    window.uploadSingleDispatchedFile = uploadSingleDispatchedFile;
+    window.removeFromDispatchQueue = removeFromDispatchQueue;
 }
