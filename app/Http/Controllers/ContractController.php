@@ -573,9 +573,18 @@ class ContractController extends Controller
         foreach ($contracts as $contract) {
             foreach ($contract->workersContracts as $workerContract) {
 
-                $success = filter_var($request->input('success-' . $workerContract->id), FILTER_VALIDATE_BOOLEAN);
+                $evaluationResult = $request->input('evaluation_result-' . $workerContract->id);
+
+                // Validate evaluation result - abort if invalid
+                if (!in_array($evaluationResult, ['na', 'pa', 'a', 'la'])) {
+                    return back()
+                        ->withErrors(['evaluation_result-' . $workerContract->id => __('Invalid evaluation result')])
+                        ->withInput();
+                }
+
                 $comment = null;
-                if (! $success) {
+                // Require comment for failed or partially acquired evaluations
+                if (in_array($evaluationResult, ['na', 'pa'])) {
                     $commentAttributeName = 'comment-' . $workerContract->id;
                     $comment = $request->input($commentAttributeName);
                     if (empty(trim($comment))) {
@@ -584,7 +593,8 @@ class ContractController extends Controller
                             ->withInput();
                     }
                 }
-                if ($workerContract->evaluate($success, $comment)) {
+
+                if ($workerContract->evaluate($evaluationResult, $comment)) {
                     $updated++;
                 }
             }

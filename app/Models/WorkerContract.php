@@ -17,6 +17,12 @@ class WorkerContract extends Pivot
 
     use PowerJoins;
 
+    // Evaluation result constants
+    const EVAL_NON_ACQUIS = 'na';
+    const EVAL_PARTIELLEMENT_ACQUIS = 'pa';
+    const EVAL_ACQUIS = 'a';
+    const EVAL_LARGEMENT_ACQUIS = 'la';
+
     // Cannot use Enum... TODO Transform Enum to CONST !!!!
 
     protected static function boot(): void
@@ -68,9 +74,16 @@ class WorkerContract extends Pivot
         return $this->morphMany(ContractEvaluationAttachment::class, 'attachable');
     }
 
-    public function evaluate(?bool $success, $comment = null, $save = true): bool
+    /**
+     * Evaluate the worker contract with a grade
+     * @param string $evaluationResult - 'na', 'pa', 'a', or 'la'
+     * @param string|null $comment
+     * @param bool $save
+     * @return bool
+     */
+    public function evaluate(string $evaluationResult, $comment = null, $save = true): bool
     {
-        $this->success = $success;
+        $this->evaluation_result = $evaluationResult;
         $this->success_date = now();
         $this->success_comment = $comment;
 
@@ -86,15 +99,24 @@ class WorkerContract extends Pivot
         return true;
     }
 
+    /**
+     * Check if the evaluation is a success (a or la)
+     * @return bool
+     */
+    public function isSuccess(): bool
+    {
+        return in_array($this->evaluation_result, [self::EVAL_ACQUIS, self::EVAL_LARGEMENT_ACQUIS]);
+    }
+
     public function alreadyEvaluated(): bool
     {
-        return $this->success !== null && !$this->hasPendingRemediation();
+        return $this->evaluation_result !== null && !$this->hasPendingRemediation();
     }
 
     public function canRemediate():bool
     {
         return $this->alreadyEvaluated()
-            && $this->success==false
+            && !$this->isSuccess()
             && $this->remediation_status === RemediationStatus::NONE;
     }
 
@@ -109,7 +131,22 @@ class WorkerContract extends Pivot
             return 'n/a';
         }
 
-        return $this->success ? 'true' : 'false';
+        return $this->isSuccess() ? 'true' : 'false';
+    }
+
+    /**
+     * Get human-readable evaluation result label
+     * @return string
+     */
+    public function getEvaluationLabel(): string
+    {
+        return match($this->evaluation_result) {
+            self::EVAL_LARGEMENT_ACQUIS => __('Largely Acquired'),
+            self::EVAL_ACQUIS => __('Acquired'),
+            self::EVAL_PARTIELLEMENT_ACQUIS => __('Partially Acquired'),
+            self::EVAL_NON_ACQUIS => __('Not Acquired'),
+            default => __('Not evaluated')
+        };
     }
 
     #[Pure]

@@ -387,5 +387,11 @@
     "Please assign a worker first": "Veuillez d'abord désigner un élève",
     "Worker container not found": "Le conteneur de l'élève n'a pas été trouvé",
     "No matched files to upload": "Aucun fichier correspondant à téléverser",
-    "Some files are still uploading. Are you sure you want to clear?": "Certains fichiers sont encore en cours d'upload. Êtes-vous sûr de vouloir effacer ?"
+    "Some files are still uploading. Are you sure you want to clear?": "Certains fichiers sont encore en cours d'upload. Êtes-vous sûr de vouloir effacer ?",
+    "Largely Acquired": "Largement Acquis",
+    "Acquired": "Acquis",
+    "Partially Acquired": "Partiellement Acquis",
+    "Not Acquired": "Non Acquis",
+    "Not evaluated": "Non évalué",
+    "Invalid evaluation result": "Résultat d'évaluation invalide"
 }

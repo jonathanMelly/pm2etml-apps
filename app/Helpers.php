@@ -97,6 +97,35 @@ if (! function_exists('troolHtml')) {
     }
 }
 
+if (! function_exists('gradeHtml')) {
+    /**
+     * Convert evaluation result (na/pa/a/la or old boolean 0/1) to HTML with color
+     */
+    function gradeHtml($value): string
+    {
+        if ($value === null) {
+            return 'n/a';
+        }
+
+        // Handle old boolean values (backward compatibility)
+        if ($value === '1' || $value === 1 || $value === true) {
+            return spanColor('green', 'A');
+        }
+        if ($value === '0' || $value === 0 || $value === false) {
+            return spanColor('red', 'NA');
+        }
+
+        // Handle new grade values
+        return match($value) {
+            'la' => spanColor('green', 'LA'),
+            'a' => spanColor('green', 'A'),
+            'pa' => spanColor('orange', 'PA'),
+            'na' => spanColor('red', 'NA'),
+            default => 'n/a'
+        };
+    }
+}
+
 if (! function_exists('spanColor')) {
     function spanColor(string $color, string $content): string
     {

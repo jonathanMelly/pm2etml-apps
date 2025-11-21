@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Constants\RemediationStatus;
 use App\Constants\RoleName;
+use App\Exports\EvaluationResult;
 use App\Models\AcademicPeriod;
 use App\Models\ContractEvaluationAttachment;
 use App\Models\User;
@@ -78,8 +79,8 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
         $this->assertEquals($logCount + count($contractIds), WorkerContractEvaluationLog::query()->count());
 
         //check data
-        $this->assertEquals(WorkerContract::whereId($wkIds[0])->firstOrFail()->success, true);
-        $this->assertEquals(WorkerContract::whereId($wkIds[1])->firstOrFail()->success, false);
+        $this->assertEquals(WorkerContract::whereId($wkIds[0])->firstOrFail()->isSuccess(), true);
+        $this->assertEquals(WorkerContract::whereId($wkIds[1])->firstOrFail()->isSuccess(), false);
         $this->assertEquals(WorkerContract::whereId($wkIds[1])->firstOrFail()->success_comment, $comment);
     }
 
@@ -100,7 +101,7 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
 
         //Make contracts fail and asked for remediation
         $wks->each(function (WorkerContract $wc) {
-            $wc->success=0;
+            $wc->evaluation_result='na';
             $wc->success_date = now();
             $wc->remediation_status=RemediationStatus::ASKED_BY_WORKER;
             $wc->save();
@@ -184,7 +185,7 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
         $logCount = WorkerContractEvaluationLog::query()->count();
         $c = WorkerContract::query()->firstOrFail();
         $c->evaluate(true);
-        $this->assertEquals(WorkerContract::query()->firstOrFail()->fresh()->success, true);
+        $this->assertEquals(WorkerContract::query()->firstOrFail()->fresh()->isSuccess(), true);
         //sleep(3);
         $this->assertEquals($logCount + 1, WorkerContractEvaluationLog::query()->count());
 

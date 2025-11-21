@@ -22,6 +22,87 @@
                 border-color: hsl(var(--primary)) !important;
                 background-color: hsl(var(--base-100)) !important;
             }
+
+            /* Custom grade selector styling */
+            .grade-selector {
+                display: flex;
+                gap: 0.5rem;
+                justify-content: center;
+                align-items: center;
+                position: relative;
+            }
+
+            .grade-option {
+                position: relative;
+                cursor: pointer;
+                z-index: 1;
+            }
+
+            .grade-option input[type="radio"] {
+                position: absolute;
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+
+            .grade-circle {
+                width: 3rem;
+                height: 3rem;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 0.875rem;
+                border: 3px solid hsl(var(--bc) / 0.2);
+                background-color: hsl(var(--b1));
+                color: hsl(var(--bc) / 0.5);
+                transition: all 0.2s ease;
+            }
+
+            .grade-option:hover .grade-circle {
+                border-color: hsl(var(--bc) / 0.4);
+                transform: scale(1.05);
+            }
+
+            .grade-option input[type="radio"]:checked ~ .grade-circle {
+                color: white;
+                font-weight: 800;
+                transform: scale(1.1);
+            }
+
+            .grade-option input[type="radio"]:checked ~ .grade-circle.grade-na {
+                background-color: hsl(var(--er));
+                border-color: hsl(var(--er));
+            }
+
+            .grade-option input[type="radio"]:checked ~ .grade-circle.grade-pa {
+                background-color: hsl(var(--wa));
+                border-color: hsl(var(--wa));
+            }
+
+            .grade-option input[type="radio"]:checked ~ .grade-circle.grade-a {
+                background-color: hsl(var(--su));
+                border-color: hsl(var(--su));
+            }
+
+            .grade-option input[type="radio"]:checked ~ .grade-circle.grade-la {
+                background-color: hsl(var(--su));
+                border-color: hsl(var(--su));
+            }
+
+            /* Connector line between circles */
+            .grade-selector::before {
+                content: '';
+                position: absolute;
+                height: 3px;
+                background-color: hsl(var(--bc) / 0.1);
+                width: calc(100% - 6rem);
+                top: 50%;
+                left: 3rem;
+                transform: translateY(-50%);
+                z-index: 0;
+            }
         </style>
         <script>
             let contractsEvaluations = {};
@@ -31,27 +112,7 @@
                 document.querySelector('[name=attachmentsToDelete]').value = JSON.stringify(attachmentsToDelete);
             }
 
-            function toggle(id, checked = null) {
-                //let success = hiddenInput.value;
-                let toggleCheckBox = document.querySelector("[name='toggle-" + id + "']");
-                let hidden = document.querySelector("[name='success-" + id + "']");
-
-                //Copy from hidden (onload) OR get from function parameters (onchange)
-                let success = checked ?? hidden.value === 'true';
-
-                toggleCheckBox.classList.remove('bg-' + (success ? 'error' : 'success'));
-                toggleCheckBox.classList.add('bg-' + (!success ? 'error' : 'success'));
-
-                hidden.value = success;
-                //Apply value from hidden field (which contains correct old value)
-                if (checked == null) {
-                    toggleCheckBox.checked = success;
-                }
-
-            }
-
             document.addEventListener("DOMContentLoaded", function () {
-                document.querySelectorAll('[type=checkbox]').forEach(el => toggle(el.value));
                 initializePDFUploads();
             });
 
@@ -365,26 +426,48 @@
                             /* @var $workerContract \App\Models\WorkerContract */
 
                             $commentName = 'comment-'.$workerContract->id;
-                            $successName = 'success-'.$workerContract->id;
+                            $evaluationName = 'evaluation_result-'.$workerContract->id;
 
-                            //By default, contracts are validated (less work for teacher)
-                            $checked = old($successName,$workerContract->alreadyEvaluated()?$workerContract->success:true);
-
+                            //By default, contracts are validated with 'a' (less work for teacher)
+                            $currentEval = old($evaluationName, $workerContract->alreadyEvaluated() ? $workerContract->evaluation_result : 'a');
 
                         @endphp
                         <tr class="h-16">
                             <td class="">{{$workerContract->groupMember->user->getFirstnameL()}}</td>
-                            <td class="text-center" x-data="{checked:{{b2s($checked)}} }" class="w-64">
+                            <td class="text-center flex" x-data="{evaluation:'{{$currentEval}}'}" class="w-auto">
                                 <input type="hidden" name="workersContracts[]" value="{{$workerContract->id}}">
-                                <input type="hidden" name="{{$successName}}" value="{{b2s($checked)}}">
-                                <input type="checkbox" class="toggle"
-                                       @click="checked=!checked;toggle({{$workerContract->id}},checked)"
-                                       name="toggle-{{$workerContract->id}}" value="{{$workerContract->id}}">
 
+                                {{-- DaisyUI Steps for grades --}}
+                                <ul class="steps steps-horizontal steps-evaluation w-full mb-2">
+                                    <li class="step cursor-pointer"
+                                        data-content="NA"
+                                        :class="evaluation === 'na' ? 'step-error' : ''"
+                                        @click="evaluation = 'na'">
+                                    </li>
+                                    <li class="step cursor-pointer"
+                                        data-content="PA"
+                                        :class="evaluation === 'pa' ? 'step-warning' : ''"
+                                        @click="evaluation = 'pa'">
+                                    </li>
+                                    <li class="step cursor-pointer"
+                                        data-content="A"
+                                        :class="evaluation === 'a' ? 'step-success' : ''"
+                                        @click="evaluation = 'a'">
+                                    </li>
+                                    <li class="step cursor-pointer"
+                                        data-content="LA"
+                                        :class="evaluation === 'la' ? 'step-success' : ''"
+                                        @click="evaluation = 'la'">
+                                    </li>
+                                </ul>
+
+                                <input type="hidden" name="{{$evaluationName}}" :value="evaluation">
+
+                                {{-- Show comment field for failed/partial evaluations --}}
                                 <textarea placeholder="{{__('What must be improved')}}..."
                                           class="textarea h-10 pl-1 border-error border text-xs @error($commentName) border-2 border-dashed @enderror"
                                           name="{{$commentName}}"
-                                          x-show="!checked">{{old($commentName,$workerContract->success_comment)}}</textarea>
+                                          x-show="evaluation === 'na' || evaluation === 'pa'">{{old($commentName,$workerContract->success_comment)}}</textarea>
                                 @error($commentName)
                                 <br/><i class="text-xs text-error">{{$errors->first($commentName)}}</i>
                                 @enderror
@@ -393,7 +476,7 @@
                                 {{$workerContract->alreadyEvaluated()?
                                     $workerContract->success_date->format(\App\SwissFrenchDateFormat::DATE_TIME)
                                     :__('-')}}</td>
-                            <td class="text-center">
+                            <td class="text-center w-auto">
                                 <div class="upload-container" data-worker-contract-id="{{$workerContract->id}}">
                                     <input type="file"
                                            id="pdf-{{$workerContract->id}}"

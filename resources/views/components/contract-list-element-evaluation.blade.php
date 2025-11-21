@@ -6,11 +6,45 @@
 <td class="text-left flex">
     @foreach($contract->workersContracts as $workerContract)
 
-    <div class="ml-5 w-7 bg-opacity-50 bg-{{$workerContract->alreadyEvaluated()?($workerContract->success?'success':'error'):'warning'}}">
+    @php
+        // Determine background color, icon and grade text based on evaluation result
+        if (!$workerContract->alreadyEvaluated()) {
+            $bgColor = 'warning';
+            $bgOpacity = 'bg-opacity-50';
+            $icon = 'person-digging';
+            $gradeLabel = __('Not evaluated');
+            $gradeText = '';
+        } else {
+            $grade = $workerContract->evaluation_result;
+
+            // More intense colors for extreme grades (NA and LA)
+            if ($grade === 'la') {
+                $bgColor = 'success';
+                $bgOpacity = 'bg-opacity-70';
+            } elseif ($grade === 'a') {
+                $bgColor = 'success';
+                $bgOpacity = 'bg-opacity-50';
+            } elseif ($grade === 'na') {
+                $bgColor = 'error';
+                $bgOpacity = 'bg-opacity-70';
+            } else { // pa
+                $bgColor = 'error';
+                $bgOpacity = 'bg-opacity-50';
+            }
+
+            $icon = in_array($grade, ['a', 'la']) ? 'square-check' : 'square-xmark';
+            $gradeLabel = $workerContract->getEvaluationLabel();
+            $gradeText = strtoupper($grade);
+        }
+    @endphp
+    <div class="ml-5 px-2 {{$bgOpacity}} bg-{{$bgColor}} flex items-center gap-1">
         @if($workerContract->alreadyEvaluated())
-            <div class="tooltip" data-tip="{{$multiple?$workerContract->groupMember->user->getFirstnameL().':':''}}{{$workerContract->success_date}}{{$workerContract->success?'':' | '.$workerContract->success_comment}}">
+            <div class="tooltip" data-tip="{{$multiple?$workerContract->groupMember->user->getFirstnameL().': ':''}}{{$gradeLabel}} - {{$workerContract->success_date}}{{$workerContract->isSuccess()?'':' | '.$workerContract->success_comment}}">
         @endif
-                <i class="ml-2 fa-solid fa-{{$workerContract->alreadyEvaluated()?($workerContract->success?'square-check':'square-xmark'):'person-digging'}}"></i>
+                <i class="fa-solid fa-{{$icon}}"></i>
+                @if($gradeText)
+                    <span class="text-xs font-bold">{{$gradeText}}</span>
+                @endif
         @if($workerContract->alreadyEvaluated())
             </div>
         @elseif(isset($job))

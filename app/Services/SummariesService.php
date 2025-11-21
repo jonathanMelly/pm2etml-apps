@@ -230,7 +230,7 @@ class SummariesService
 
             //Do not use $wContract->alreadyEvaluated because it handles remediation
             //But even with remediation, we keep the old result...
-            if ($wContract->success !== null && $wContract->getAllocatedTime() > 0) {
+            if ($wContract->evaluation_result !== null && $wContract->getAllocatedTime() > 0) {
 
                 $groupMember = $wContract->groupMember;
                 $worker = $groupMember->user;
@@ -246,7 +246,7 @@ class SummariesService
                 }
 
                 $group = $groupMember->group->groupName->name;
-                $success = $wContract->success;
+                $success = $wContract->isSuccess();
                 $project = $contract->jobDefinition->title;
 
                 $date = $wContract->success_date;

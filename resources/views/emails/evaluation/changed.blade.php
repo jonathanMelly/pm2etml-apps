@@ -7,7 +7,7 @@ Le(s) évaluation(s) suivante(s) ont été mise(s) à jour :
     | Classe| Élève  | Job | Avant | Maintenant  |
     | ------|--------|-----| :---- | ---------:  |
     @foreach($informations as $i)
-        | {{$i['group']}} | {{$i['name']}} | {{$i['job']}} | {!! troolHtml($i['log']->old_success) !!} {!! mdSmall(df($i['log']->old_date),true) !!} | **{!! troolHtml($i['log']->new_success) !!}** {!! mdSmall(df($i['log']->new_date),true) !!} |
+        | {{$i['group']}} | {{$i['name']}} | {{$i['job']}} | {!! gradeHtml($i['log']->old_result) !!} {!! mdSmall(df($i['log']->old_date),true) !!} | **{!! gradeHtml($i['log']->new_result) !!}** {!! mdSmall(df($i['log']->new_date),true) !!} |
     @endforeach
 @endcomponent
 
