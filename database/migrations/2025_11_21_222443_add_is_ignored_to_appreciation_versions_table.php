@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('appreciation_versions', function (Blueprint $table) {
-            //
+            $table->boolean('is_ignored')->default(false)->after('remark_id');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('appreciation_versions', function (Blueprint $table) {
-            //
+            $table->dropColumn('is_ignored');
         });
     }
 };

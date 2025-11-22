@@ -103,6 +103,8 @@ Route::middleware(['auth', 'app'])->group(function () {
             ->name('applications.resign');
     });
 
+
+
 });
 
 //LOGIN
