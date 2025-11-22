@@ -12,6 +12,7 @@ class EvaluationVersion extends Model
     protected $fillable = [
         'evaluation_id',
         'version_number',
+        'evaluator_type',
         'created_by_user_id',
         'general_remark_id',
     ];
@@ -34,5 +35,12 @@ class EvaluationVersion extends Model
     public function appreciations()
     {
         return $this->hasMany(AppreciationVersion::class, 'version_id');
+    }
+
+    public function getVersionNameAttribute()
+    {
+        return $this->evaluator_type === 'teacher' 
+            ? 'Formative ' . $this->version_number 
+            : 'Self eval ' . $this->version_number;
     }
 }
