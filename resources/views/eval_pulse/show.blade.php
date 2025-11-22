@@ -1,362 +1,510 @@
 <x-app-layout>
-    <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-12" x-data="{ activeTab: 0 }">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Header Card -->
-            <div class="bg-white/80 backdrop-blur-sm overflow-hidden shadow-2xl rounded-2xl mb-8 border border-indigo-100">
-                <div class="p-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h2 class="font-bold text-3xl text-white leading-tight flex items-center gap-3">
-                                <i class="fa-solid fa-heart-pulse text-4xl"></i>
-                                {{ __('Pulse Evaluation') }}
-                            </h2>
-                            <p class="text-indigo-100 mt-2">{{ __('Professional Skills Assessment') }}</p>
-                        </div>
-                        <a href="{{ route('dashboard') }}" class="btn btn-sm bg-white text-indigo-600 hover:bg-indigo-50 border-0">
-                            <i class="fa-solid fa-arrow-left mr-2"></i>{{ __('Back to Dashboard') }}
-                        </a>
+    <div class="min-h-screen bg-gray-50 pb-20" x-data="{ activeTab: 0 }">
+        
+        {{-- STICKY HEADER --}}
+        <div class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="bg-indigo-600 text-white w-8 h-8 rounded flex items-center justify-center">
+                        <i class="fa-solid fa-heart-pulse"></i>
                     </div>
+                    <h1 class="text-lg font-bold text-gray-900 leading-tight">
+                        {{ __('Pulse Evaluation') }}
+                    </h1>
                 </div>
+                <a href="{{ route('dashboard') }}" class="text-sm font-medium text-gray-500 hover:text-gray-900 flex items-center gap-2 transition-colors">
+                    <i class="fa-solid fa-arrow-left"></i> {{ __('Back') }}
+                </a>
             </div>
+        </div>
 
-            <!-- Content Card -->
-            <div class="bg-white/90 backdrop-blur-sm overflow-hidden shadow-2xl rounded-2xl border border-indigo-100">
-                <div class="p-8">
-                    {{-- TABS --}}
-                    <div class="flex gap-2 mb-8 overflow-x-auto pb-2">
-                        @foreach($evaluations as $index => $evaluation)
-                            <button 
-                                class="px-6 py-3 rounded-xl font-semibold transition-all duration-300 whitespace-nowrap"
-                                :class="activeTab === {{ $index }} ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg scale-105' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-                                @click="activeTab = {{ $index }}">
-                                <i class="fa-solid fa-user mr-2"></i>
-                                {{ $evaluation->student->firstname }} {{ $evaluation->student->lastname }}
-                            </button>
-                        @endforeach
-                    </div>
-
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-8">
+            
+            {{-- TABS (Only if multiple) --}}
+            @if($evaluations->count() > 1)
+                <div class="flex border-b border-gray-200 mb-6 overflow-x-auto">
                     @foreach($evaluations as $index => $evaluation)
-                        <div x-show="activeTab === {{ $index }}" 
-                             x-transition:enter="transition ease-out duration-300"
-                             x-transition:enter-start="opacity-0 transform scale-95"
-                             x-transition:enter-end="opacity-100 transform scale-100"
-                             x-data="{ 
-                            version: {{ $evaluation->versions->count() + 1 }}, 
-                            maxVersion: {{ $evaluation->versions->count() + 1 }},
-                            versions: {{ $evaluation->versions->map(function($v) {
-                                return [
-                                    'number' => $v->version_number,
-                                    'date' => $v->created_at->format('d.m.Y H:i'),
-                                    'creator' => $v->creator->firstname . ' ' . $v->creator->lastname,
-                                    'general_remark' => $v->generalRemark ? $v->generalRemark->text : '',
-                                    'appreciations' => $v->appreciations->mapWithKeys(function($a) {
-                                        return [$a->criterion_id => [
-                                            'value' => $a->value,
-                                            'is_ignored' => $a->is_ignored ?? false,
-                                            'remark' => $a->remark ? $a->remark->text : ''
-                                        ]];
-                                    })
-                                ];
-                            })->toJson() }}
-                        }">
+                        <button 
+                            class="px-6 py-3 border-b-2 font-medium text-sm whitespace-nowrap transition-colors"
+                            :class="activeTab === {{ $index }} ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                            @click="activeTab = {{ $index }}">
+                            {{ $evaluation->student->firstname }} {{ $evaluation->student->lastname }}
+                        </button>
+                    @endforeach
+                </div>
+            @endif
+
+            @foreach($evaluations as $index => $evaluation)
+                @php
+                    $currentUserId = Auth::id();
+                    $currentUserType = ($currentUserId === $evaluation->teacher_id) ? 'teacher' : 'student';
+                    $myVersions = $evaluation->versions->where('evaluator_type', $currentUserType)->values();
+                    $otherUserType = $currentUserType === 'teacher' ? 'student' : 'teacher';
+                    $otherVersions = $evaluation->versions->where('evaluator_type', $otherUserType)->values();
+                @endphp
+
+                <div x-show="activeTab === {{ $index }}" 
+                     x-data="{
+                        myVersion: {{ $myVersions->count() + 1 }},
+                        myMaxVersion: {{ $myVersions->count() + 1 }},
+                        myVersions: {{ $myVersions->map(function($v) {
+                            return [
+                                'number' => $v->version_number,
+                                'name' => $v->version_name,
+                                'date' => $v->created_at->format('d.m.Y H:i'),
+                                'creator' => $v->creator->firstname . ' ' . $v->creator->lastname,
+                                'general_remark' => $v->generalRemark ? $v->generalRemark->text : '',
+                                'appreciations' => $v->appreciations->mapWithKeys(function($a) {
+                                    return [$a->criterion_id => [
+                                        'value' => $a->value,
+                                        'is_ignored' => $a->is_ignored ?? false,
+                                        'remark' => $a->remark ? $a->remark->text : ''
+                                    ]];
+                                })
+                            ];
+                        })->toJson() }},
+                        
+                        otherMaxVersion: {{ $otherVersions->count() }},
+                        otherVersions: {{ $otherVersions->map(function($v) {
+                            return [
+                                'number' => $v->version_number,
+                                'name' => $v->version_name,
+                                'date' => $v->created_at->format('d.m.Y H:i'),
+                                'creator' => $v->creator->firstname . ' ' . $v->creator->lastname,
+                                'appreciations' => $v->appreciations->mapWithKeys(function($a) {
+                                    return [$a->criterion_id => [
+                                        'value' => $a->value,
+                                        'is_ignored' => $a->is_ignored ?? false,
+                                        'remark' => $a->remark ? $a->remark->text : ''
+                                    ]];
+                                })
+                            ];
+                        })->toJson() }},
+                        
+                        currentUserType: '{{ $currentUserType }}',
+                        otherUserType: '{{ $otherUserType }}',
+                        status: '{{ $evaluation->status }}',
+                        currentAppreciations: {},
+                        
+                        init() {
+                            if (this.myVersion < this.myMaxVersion) {
+                                this.currentAppreciations = this.myVersions[this.myVersion-1].appreciations;
+                                for (let id in this.currentAppreciations) {
+                                    if (this.currentAppreciations[id].is_ignored === undefined) {
+                                        this.currentAppreciations[id].is_ignored = false;
+                                    }
+                                }
+                            }
+                        },
+                        get score() {
+                            let activeAppreciations = Object.values(this.currentAppreciations).filter(a => !a.is_ignored);
+                            let values = activeAppreciations.map(a => a.value);
                             
-                            <!-- Student Info -->
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
-                                        <i class="fa-solid fa-user text-white"></i>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs text-gray-500 block">{{ __('Student') }}</span>
-                                        <span class="font-bold text-gray-800">{{ $evaluation->student->firstname }} {{ $evaluation->student->lastname }}</span>
-                                    </div>
+                            if (values.length === 0) return '-';
+                            if (values.includes('NA')) return 'NA';
+                            if (values.includes('PA')) return 'PA';
+                            
+                            let laCount = values.filter(v => v === 'LA').length;
+                            if (laCount >= 4) return 'LA';
+                            
+                            return 'A';
+                        },
+                        get isReadOnly() {
+                            return this.myVersion < this.myMaxVersion || (this.currentUserType === 'student' && this.status === 'clos');
+                        },
+                        updateAppreciation(criterionId, field, value) {
+                            if (!this.currentAppreciations[criterionId]) {
+                                this.currentAppreciations[criterionId] = { value: 'A', is_ignored: false, remark: '' };
+                            }
+                            this.currentAppreciations[criterionId][field] = value;
+                        },
+                        initCriterion(criterionId, position) {
+                            if (this.myVersion == this.myMaxVersion && !this.currentAppreciations[criterionId]) {
+                                this.currentAppreciations[criterionId] = {
+                                    value: 'A',
+                                    is_ignored: position === 7,
+                                    remark: ''
+                                };
+                            }
+                        },
+                        getPreviousScore(criterionId) {
+                            if (this.otherMaxVersion === 0 || this.myVersion !== this.myMaxVersion) return null;
+                            const latest = this.otherVersions[this.otherMaxVersion-1].appreciations[criterionId];
+                            return latest && !latest.is_ignored ? latest.value : null;
+                        },
+                        getPreviousRemark(criterionId) {
+                            if (this.otherMaxVersion === 0 || this.myVersion !== this.myMaxVersion) return '';
+                            const latest = this.otherVersions[this.otherMaxVersion-1].appreciations[criterionId];
+                            return latest && !latest.is_ignored ? latest.remark : '';
+                        },
+                        getComparisonArrow(criterionId) {
+                            if (this.otherMaxVersion < 2 || this.myVersion !== this.myMaxVersion) return '';
+                            const latest = this.otherVersions[this.otherMaxVersion-1].appreciations[criterionId];
+                            const previous = this.otherVersions[this.otherMaxVersion-2].appreciations[criterionId];
+                            if (!latest || !previous || latest.is_ignored || previous.is_ignored) return '';
+                            
+                            const scores = { 'NA': 0, 'PA': 1, 'A': 2, 'LA': 3 };
+                            const currentScore = scores[latest.value];
+                            const previousScore = scores[previous.value];
+                            
+                            if (currentScore > previousScore) return '↗';
+                            if (currentScore < previousScore) return '↘';
+                            return '→';
+                        },
+                        getPreviousVersionName() {
+                            if (this.otherMaxVersion === 0) return '';
+                            return this.otherVersions[this.otherMaxVersion-1].name;
+                        }
+                    }"
+                    x-effect="
+                        if (myVersion < myMaxVersion) {
+                            currentAppreciations = myVersions[myVersion-1].appreciations;
+                        }
+                    ">
+                    
+                    {{-- INFO BAR & CONTROLS --}}
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+                        
+                        {{-- Context Info --}}
+                        <div class="flex flex-wrap gap-6 text-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                                    <i class="fa-solid {{ $currentUserType === 'student' ? 'fa-chalkboard-user' : 'fa-user-graduate' }}"></i>
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
-                                        <i class="fa-solid fa-briefcase text-white"></i>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs text-gray-500 block">{{ __('Project') }}</span>
-                                        <span class="font-bold text-gray-800">{{ $evaluation->jobDefinition->title }}</span>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-pink-600 rounded-lg flex items-center justify-center">
-                                        <i class="fa-solid fa-calendar-plus text-white"></i>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs text-gray-500 block">{{ __('Start Date') }}</span>
-                                        <span class="font-bold text-gray-800">{{ $evaluation->start_date ? $evaluation->start_date->format('d.m.Y') : '-' }}</span>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
-                                        <i class="fa-solid fa-calendar-check text-white"></i>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs text-gray-500 block">{{ __('End Date') }}</span>
-                                        <span class="font-bold text-gray-800">{{ $evaluation->end_date ? $evaluation->end_date->format('d.m.Y') : '-' }}</span>
+                                <div>
+                                    <div class="text-xs text-gray-500 uppercase tracking-wider font-semibold">{{ $currentUserType === 'student' ? __('Teacher') : __('Student') }}</div>
+                                    <div class="font-bold text-gray-900">
+                                        {{ $currentUserType === 'student' ? $evaluation->teacher->firstname . ' ' . $evaluation->teacher->lastname : $evaluation->student->firstname . ' ' . $evaluation->student->lastname }}
                                     </div>
                                 </div>
                             </div>
+                            
+                            <div class="hidden md:block w-px h-10 bg-gray-200"></div>
 
-                            {{-- SLIDER --}}
-                            <div class="mb-8 px-6 py-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl" x-show="maxVersion > 1">
-                                <div class="flex items-center gap-4 mb-4">
-                                    <i class="fa-solid fa-clock-rotate-left text-2xl text-indigo-600"></i>
-                                    <h3 class="font-bold text-lg">{{ __('Version History') }}</h3>
+                            <div class="flex items-center gap-3">
+                                <div>
+                                    <div class="text-xs text-gray-500 uppercase tracking-wider font-semibold">{{ __('Project') }}</div>
+                                    <div class="font-medium text-gray-900">{{ $evaluation->jobDefinition->title }}</div>
                                 </div>
-                                <input type="range" min="1" :max="maxVersion" x-model="version" class="range range-primary w-full" step="1" />
-                                <div class="w-full flex justify-between text-xs px-2 mt-2">
-                                    <template x-for="i in maxVersion">
-                                        <span class="font-semibold" :class="version == i ? 'text-indigo-600 scale-110' : 'text-gray-400'" x-text="i === maxVersion ? 'New' : 'v' + i"></span>
+                            </div>
+
+                            <div class="hidden md:block w-px h-10 bg-gray-200"></div>
+
+                            <div class="flex items-center gap-3">
+                                <div>
+                                    <div class="text-xs text-gray-500 uppercase tracking-wider font-semibold">{{ __('Dates') }}</div>
+                                    <div class="font-medium text-gray-900">
+                                        {{ $evaluation->start_date ? $evaluation->start_date->format('d.m.Y') : '-' }} 
+                                        <span class="text-gray-400 mx-1">→</span> 
+                                        {{ $evaluation->end_date ? $evaluation->end_date->format('d.m.Y') : '-' }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- History Slider --}}
+                        <div class="w-full md:w-auto flex items-center gap-4 bg-gray-50 rounded-lg p-2 border border-gray-200" x-show="myMaxVersion > 1">
+                            <div class="text-xs font-semibold text-gray-500 uppercase px-2">{{ __('History') }}</div>
+                            <div class="flex-1 md:w-48 relative flex items-center">
+                                <input type="range" min="1" :max="myMaxVersion" x-model.number="myVersion" class="range range-xs range-primary w-full z-10" step="1" />
+                                <div class="w-full flex justify-between text-xs px-1 absolute top-1/2 -translate-y-1/2 pointer-events-none">
+                                    <template x-for="i in myMaxVersion">
+                                        <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
                                     </template>
                                 </div>
-                                <div class="mt-4 text-center p-3 bg-white rounded-lg shadow-sm">
-                                    <span x-show="version == maxVersion" class="text-indigo-600 font-bold text-lg">✨ {{ __('New Evaluation') }}</span>
-                                    <span x-show="version < maxVersion" class="text-gray-700">
-                                        <strong>{{ __('Version') }} <span x-text="version"></span></strong> - 
-                                        <span x-text="versions[version-1].date"></span> 
-                                        <span class="text-indigo-600">({{ __('by') }} <span x-text="versions[version-1].creator"></span>)</span>
-                                    </span>
+                            </div>
+                            <div class="text-xs font-bold text-indigo-600 min-w-[60px] text-right">
+                                <span x-show="myVersion == myMaxVersion">{{ __('New') }}</span>
+                                <span x-show="myVersion < myMaxVersion" x-text="'v' + myVersion"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- STATUS & SCORE SUMMARY --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        {{-- Status --}}
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+                             @click="if(myVersion == myMaxVersion && currentUserType === 'teacher') { status = status === 'clos' ? 'encours' : 'clos' }">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-full flex items-center justify-center"
+                                     :class="status === 'clos' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'">
+                                    <i class="fa-solid text-xl" :class="status === 'clos' ? 'fa-check' : 'fa-pen'"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-500 uppercase tracking-wider font-semibold">{{ __('Status') }}</div>
+                                    <div class="text-xl font-bold text-gray-900" x-text="status === 'clos' ? '{{ __('Sommative') }}' : '{{ __('Formative') }}'"></div>
                                 </div>
                             </div>
+                            <div x-show="currentUserType === 'teacher' && myVersion == myMaxVersion">
+                                <i class="fa-solid fa-rotate text-gray-400"></i>
+                            </div>
+                        </div>
 
-                            @if(session('success'))
-                                <div class="alert alert-success mb-6 shadow-lg">
-                                    <i class="fa-solid fa-circle-check"></i>
-                                    {{ session('success') }}
+                        {{-- Global Score --}}
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                                    <i class="fa-solid fa-chart-pie text-xl"></i>
                                 </div>
-                            @endif
+                                <div>
+                                    <div class="text-sm text-gray-500 uppercase tracking-wider font-semibold">{{ __('Global Score') }}</div>
+                                    <div class="text-2xl font-black text-gray-900" x-text="score"></div>
+                                </div>
+                            </div>
+                            <div class="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-indigo-600 transition-all duration-500" 
+                                     :style="`width: ${score === 'LA' ? '100' : score === 'A' ? '75' : score === 'PA' ? '50' : score === 'NA' ? '25' : '0'}%`"></div>
+                            </div>
+                        </div>
+                    </div>
 
-                            {{-- FORM --}}
-                            <form method="POST" action="{{ route('eval_pulse.update', $evaluation->id) }}" x-data="{
-                                currentAppreciations: {},
-                                status: '{{ $evaluation->status }}',
-                                init() {
-                                    if (this.version < this.maxVersion) {
-                                        this.currentAppreciations = this.versions[this.version-1].appreciations;
-                                        for (let id in this.currentAppreciations) {
-                                            if (this.currentAppreciations[id].is_ignored === undefined) {
-                                                this.currentAppreciations[id].is_ignored = false;
-                                            }
-                                        }
-                                    }
-                                },
-                                get score() {
-                                    let activeAppreciations = Object.values(this.currentAppreciations).filter(a => !a.is_ignored);
-                                    let values = activeAppreciations.map(a => a.value);
+                    @if(session('success'))
+                        <div class="alert alert-success mb-6 shadow-sm border border-green-200 bg-green-50 text-green-800 rounded-lg">
+                            <i class="fa-solid fa-circle-check"></i>
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
+                    {{-- FORM --}}
+                    <form method="POST" action="{{ route('eval_pulse.update', $evaluation->id) }}">
+                        @csrf
+                        <input type="hidden" name="status" :value="status">
+
+                        {{-- Criteria Icons Mapping --}}
+                        @php
+                            $criteriaIcons = [
+                                1 => 'fa-gauge-high',
+                                2 => 'fa-award',
+                                3 => 'fa-brain',
+                                4 => 'fa-diagram-project',
+                                5 => 'fa-comments',
+                                6 => 'fa-leaf',
+                                7 => 'fa-users',
+                                8 => 'fa-rocket'
+                            ];
+                            $criteriaColors = [
+                                1 => 'text-red-600 bg-red-50 border-red-100',
+                                2 => 'text-amber-600 bg-amber-50 border-amber-100',
+                                3 => 'text-purple-600 bg-purple-50 border-purple-100',
+                                4 => 'text-blue-600 bg-blue-50 border-blue-100',
+                                5 => 'text-emerald-600 bg-emerald-50 border-emerald-100',
+                                6 => 'text-teal-600 bg-teal-50 border-teal-100',
+                                7 => 'text-indigo-600 bg-indigo-50 border-indigo-100',
+                                8 => 'text-pink-600 bg-pink-50 border-pink-100'
+                            ];
+                            $criteriaBottomBorder = [
+                                1 => 'border-b-red-500',
+                                2 => 'border-b-amber-500',
+                                3 => 'border-b-purple-500',
+                                4 => 'border-b-blue-500',
+                                5 => 'border-b-emerald-500',
+                                6 => 'border-b-teal-500',
+                                7 => 'border-b-indigo-500',
+                                8 => 'border-b-pink-500'
+                            ];
+                        @endphp
+
+                        <div class="space-y-6 mb-8">
+                            @foreach($criteria as $criterion)
+                                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden border-b-2 {{ $criteriaBottomBorder[$criterion->position] ?? 'border-b-gray-300' }}"
+                                     x-init="initCriterion({{ $criterion->id }}, {{ $criterion->position }})">
                                     
-                                    if (values.length === 0) return '-';
-                                    if (values.includes('NA')) return 'NA';
-                                    if (values.includes('PA')) return 'PA';
-                                    
-                                    let laCount = values.filter(v => v === 'LA').length;
-                                    if (laCount >= 4) return 'LA';
-                                    
-                                    return 'A';
-                                },
-                                updateAppreciation(criterionId, field, value) {
-                                    if (!this.currentAppreciations[criterionId]) {
-                                        this.currentAppreciations[criterionId] = { value: 'A', is_ignored: false, remark: '' };
-                                    }
-                                    this.currentAppreciations[criterionId][field] = value;
-                                },
-                                initCriterion(criterionId, position) {
-                                    if (this.version == this.maxVersion && !this.currentAppreciations[criterionId]) {
-                                        this.currentAppreciations[criterionId] = {
-                                            value: 'A',
-                                            is_ignored: position === 7,
-                                            remark: ''
-                                        };
-                                    }
-                                }
-                            }" x-effect="
-                                if (version < maxVersion) {
-                                    currentAppreciations = versions[version-1].appreciations;
-                                }
-                            ">
-                                @csrf
-                                
-                                {{-- STATUS & SCORE CARD --}}
-                                <div class="mb-8 p-8 rounded-2xl shadow-2xl transform transition-all duration-300 hover:scale-[1.02] cursor-pointer" 
-                                     :class="status === 'clos' ? 'bg-gradient-to-br from-red-500 to-pink-600' : 'bg-gradient-to-br from-blue-500 to-indigo-600'"
-                                     @click="if(version == maxVersion) { status = status === 'clos' ? 'encours' : 'clos' }"
-                                     x-show="version == maxVersion">
-                                    <div class="flex flex-col md:flex-row justify-between items-center gap-6 text-white">
-                                        <div class="flex-1">
-                                            <div class="flex items-center gap-4">
-                                                <i class="fa-solid text-4xl" :class="status === 'clos' ? 'fa-graduation-cap' : 'fa-book-open'"></i>
-                                                <div>
-                                                    <h2 class="text-3xl font-black" x-text="status === 'clos' ? '{{ __('Sommative') }}' : '{{ __('Formative') }}'"></h2>
-                                                    <p class="text-white/80 text-sm mt-1" x-text="status === 'clos' ? 'Évaluation finale' : 'Évaluation formative'"></p>
-                                                </div>
+                                    {{-- Criterion Header --}}
+                                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg flex items-center justify-center border {{ $criteriaColors[$criterion->position] ?? 'text-gray-600 bg-gray-50 border-gray-200' }}">
+                                                <i class="fa-solid {{ $criteriaIcons[$criterion->position] ?? 'fa-star' }} text-lg"></i>
                                             </div>
-                                            <input type="hidden" name="status" :value="status">
+                                            <h3 class="font-bold text-gray-900 text-lg">{{ $criterion->name }}</h3>
                                         </div>
-                                        <div class="text-center bg-white/20 backdrop-blur-sm p-8 rounded-2xl min-w-[200px]">
-                                            <div class="text-sm uppercase tracking-wider font-semibold mb-2 text-white/90">{{ __('Global Score') }}</div>
-                                            <div class="text-7xl font-black mb-2" x-text="score"></div>
-                                            <div class="h-2 bg-white/30 rounded-full overflow-hidden">
-                                                <div class="h-full bg-white transition-all duration-500" 
-                                                     :style="`width: ${score === 'LA' ? '100' : score === 'A' ? '75' : score === 'PA' ? '50' : score === 'NA' ? '25' : '0'}%`"></div>
-                                            </div>
-                                        </div>
+                                        
+                                        {{-- Ignore Toggle --}}
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <span class="text-xs text-gray-500 font-medium uppercase">{{ __('Ignore') }}</span>
+                                            <input type="checkbox" 
+                                                name="appreciations[{{ $criterion->id }}][is_ignored]" 
+                                                value="1"
+                                                class="toggle toggle-sm toggle-secondary" 
+                                                :disabled="isReadOnly"
+                                                :checked="currentAppreciations[{{ $criterion->id }}] && currentAppreciations[{{ $criterion->id }}].is_ignored"
+                                                @change="updateAppreciation({{ $criterion->id }}, 'is_ignored', $event.target.checked)" />
+                                        </label>
                                     </div>
-                                </div>
 
-                                {{-- Criteria Icons Mapping --}}
-                                @php
-                                    $criteriaIcons = [
-                                        1 => 'fa-gauge-high',
-                                        2 => 'fa-award',
-                                        3 => 'fa-brain',
-                                        4 => 'fa-diagram-project',
-                                        5 => 'fa-comments',
-                                        6 => 'fa-leaf',
-                                        7 => 'fa-users',
-                                        8 => 'fa-rocket'
-                                    ];
-                                    $criteriaColors = [
-                                        1 => 'from-red-500 to-orange-500',
-                                        2 => 'from-yellow-500 to-amber-500',
-                                        3 => 'from-purple-500 to-pink-500',
-                                        4 => 'from-blue-500 to-cyan-500',
-                                        5 => 'from-green-500 to-emerald-500',
-                                        6 => 'from-teal-500 to-green-600',
-                                        7 => 'from-indigo-500 to-purple-500',
-                                        8 => 'from-pink-500 to-rose-500'
-                                    ];
-                                @endphp
-
-                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                                    @foreach($criteria as $criterion)
-                                        <div class="group relative bg-white rounded-2xl shadow-lg border-2 border-transparent transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 overflow-hidden" 
-                                             :class="{'opacity-60 grayscale': currentAppreciations[{{ $criterion->id }}] && currentAppreciations[{{ $criterion->id }}].is_ignored, 'border-indigo-200': version < maxVersion}"
-                                             x-init="initCriterion({{ $criterion->id }}, {{ $criterion->position }})">
+                                    {{-- Criterion Body --}}
+                                    <div class="p-6" x-show="!currentAppreciations[{{ $criterion->id }}] || !currentAppreciations[{{ $criterion->id }}].is_ignored">
+                                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                             
-                                            {{-- Gradient Header --}}
-                                            <div class="h-2 bg-gradient-to-r {{ $criteriaColors[$criterion->position] ?? 'from-gray-400 to-gray-600' }}"></div>
-                                            
-                                            <div class="p-6">
-                                                <div class="flex justify-between items-start mb-4">
-                                                    <div class="flex items-start gap-4 flex-1">
-                                                        <div class="w-14 h-14 rounded-xl bg-gradient-to-br {{ $criteriaColors[$criterion->position] ?? 'from-gray-400 to-gray-600' }} flex items-center justify-center flex-shrink-0 shadow-lg">
-                                                            <i class="fa-solid {{ $criteriaIcons[$criterion->position] ?? 'fa-star' }} text-white text-2xl"></i>
-                                                        </div>
-                                                        <div class="flex-1">
-                                                            <h3 class="font-bold text-lg text-gray-800 mb-1 leading-tight">{{ $criterion->name }}</h3>
-                                                            @if($criterion->description)
-                                                                <p class="text-sm text-gray-600 leading-relaxed">{{ $criterion->description }}</p>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    {{-- IGNORE TOGGLE --}}
-                                                    <div class="ml-2">
-                                                        <label class="flex flex-col items-center gap-1 cursor-pointer group">
-                                                            <input type="checkbox" 
-                                                                name="appreciations[{{ $criterion->id }}][is_ignored]" 
-                                                                value="1"
-                                                                class="toggle toggle-sm toggle-secondary" 
-                                                                :disabled="version < maxVersion"
-                                                                :checked="currentAppreciations[{{ $criterion->id }}] && currentAppreciations[{{ $criterion->id }}].is_ignored"
-                                                                @change="updateAppreciation({{ $criterion->id }}, 'is_ignored', $event.target.checked)" />
-                                                            <span class="text-xs text-gray-400 group-hover:text-gray-600">{{ __('Ignored') }}</span>
+                                            {{-- LEFT: My Input --}}
+                                            <div :class="{'lg:col-span-2': !(status === 'encours' && myVersion == myMaxVersion && otherMaxVersion > 0)}">
+                                                <div class="mb-4">
+                                                    <div class="flex gap-2 w-full">
+                                                        <label class="flex-1 cursor-pointer group">
+                                                            <input type="radio" 
+                                                                name="appreciations[{{ $criterion->id }}][value]" 
+                                                                value="NA" 
+                                                                class="peer sr-only" 
+                                                                :disabled="isReadOnly"
+                                                                :checked="currentAppreciations[{{ $criterion->id }}] && currentAppreciations[{{ $criterion->id }}].value === 'NA'"
+                                                                @change="updateAppreciation({{ $criterion->id }}, 'value', 'NA')"
+                                                                required>
+                                                            <div class="h-10 flex items-center justify-center rounded border-2 border-gray-200 bg-white text-gray-600 font-bold text-sm transition-all peer-checked:border-red-500 peer-checked:bg-red-100 peer-checked:text-red-700 peer-checked:shadow-md hover:bg-gray-50">
+                                                                NA
+                                                            </div>
+                                                        </label>
+                                                        <label class="flex-1 cursor-pointer group">
+                                                            <input type="radio" 
+                                                                name="appreciations[{{ $criterion->id }}][value]" 
+                                                                value="PA" 
+                                                                class="peer sr-only" 
+                                                                :disabled="isReadOnly"
+                                                                :checked="currentAppreciations[{{ $criterion->id }}] && currentAppreciations[{{ $criterion->id }}].value === 'PA'"
+                                                                @change="updateAppreciation({{ $criterion->id }}, 'value', 'PA')"
+                                                                required>
+                                                            <div class="h-10 flex items-center justify-center rounded border-2 border-gray-200 bg-white text-gray-600 font-bold text-sm transition-all peer-checked:border-orange-500 peer-checked:bg-orange-100 peer-checked:text-orange-700 peer-checked:shadow-md hover:bg-gray-50">
+                                                                PA
+                                                            </div>
+                                                        </label>
+                                                        <label class="flex-1 cursor-pointer group">
+                                                            <input type="radio" 
+                                                                name="appreciations[{{ $criterion->id }}][value]" 
+                                                                value="A" 
+                                                                class="peer sr-only" 
+                                                                :disabled="isReadOnly"
+                                                                :checked="currentAppreciations[{{ $criterion->id }}] && currentAppreciations[{{ $criterion->id }}].value === 'A'"
+                                                                @change="updateAppreciation({{ $criterion->id }}, 'value', 'A')"
+                                                                required>
+                                                            <div class="h-10 flex items-center justify-center rounded border-2 border-gray-200 bg-white text-gray-600 font-bold text-sm transition-all peer-checked:border-blue-500 peer-checked:bg-blue-100 peer-checked:text-blue-700 peer-checked:shadow-md hover:bg-gray-50">
+                                                                A
+                                                            </div>
+                                                        </label>
+                                                        <label class="flex-1 cursor-pointer group">
+                                                            <input type="radio" 
+                                                                name="appreciations[{{ $criterion->id }}][value]" 
+                                                                value="LA" 
+                                                                class="peer sr-only" 
+                                                                :disabled="isReadOnly"
+                                                                :checked="currentAppreciations[{{ $criterion->id }}] && currentAppreciations[{{ $criterion->id }}].value === 'LA'"
+                                                                @change="updateAppreciation({{ $criterion->id }}, 'value', 'LA')"
+                                                                required>
+                                                            <div class="h-10 flex items-center justify-center rounded border-2 border-gray-200 bg-white text-gray-600 font-bold text-sm transition-all peer-checked:border-green-500 peer-checked:bg-green-100 peer-checked:text-green-700 peer-checked:shadow-md hover:bg-gray-50">
+                                                                LA
+                                                            </div>
                                                         </label>
                                                     </div>
                                                 </div>
-
-                                                <div x-show="!currentAppreciations[{{ $criterion->id }}] || !currentAppreciations[{{ $criterion->id }}].is_ignored">
-                                                    {{-- Radio Buttons --}}
-                                                    <div class="grid grid-cols-4 gap-3 mb-4">
-                                                        @foreach(['NA' => ['label' => 'Non Acquis', 'color' => 'red'], 'PA' => ['label' => 'Partiellement Acquis', 'color' => 'orange'], 'A' => ['label' => 'Acquis', 'color' => 'blue'], 'LA' => ['label' => 'Largement Acquis', 'color' => 'green']] as $val => $config)
-                                                            <label class="relative cursor-pointer group/radio">
-                                                                <input type="radio" 
-                                                                    name="appreciations[{{ $criterion->id }}][value]" 
-                                                                    value="{{ $val }}" 
-                                                                    class="peer sr-only" 
-                                                                    :disabled="version < maxVersion"
-                                                                    :checked="currentAppreciations[{{ $criterion->id }}] && currentAppreciations[{{ $criterion->id }}].value === '{{ $val }}'"
-                                                                    @change="updateAppreciation({{ $criterion->id }}, 'value', '{{ $val }}')"
-                                                                    required>
-                                                                <div class="w-full p-3 rounded-xl border-2 border-gray-200 bg-gray-50 peer-checked:border-{{ $config['color'] }}-500 peer-checked:bg-{{ $config['color'] }}-50 peer-checked:shadow-lg transition-all duration-200 hover:border-{{ $config['color'] }}-300 text-center">
-                                                                    <div class="text-lg font-black text-gray-700 peer-checked:text-{{ $config['color'] }}-600">{{ $val }}</div>
-                                                                    <div class="text-xs text-gray-500 peer-checked:text-{{ $config['color'] }}-600 mt-1 hidden lg:block">{{ explode(' ', $config['label'])[0] }}</div>
-                                                                </div>
-                                                            </label>
-                                                        @endforeach
-                                                    </div>
+                                                
+                                                <div class="relative" x-data="{ showMenu: false, top: 0, left: 0 }">
+                                                    <textarea 
+                                                        name="appreciations[{{ $criterion->id }}][remark]" 
+                                                        class="w-full h-32 p-3 rounded border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm resize-none"
+                                                        :class="{'border-red-300 bg-red-50': (currentAppreciations[{{ $criterion->id }}]?.value === 'NA' || currentAppreciations[{{ $criterion->id }}]?.value === 'PA') && myVersion == myMaxVersion}"
+                                                        :placeholder="(currentAppreciations[{{ $criterion->id }}]?.value === 'NA' || currentAppreciations[{{ $criterion->id }}]?.value === 'PA') ? '{{ __('Justification required for NA/PA...') }}' : '{{ __('Add a remark...') }}'"
+                                                        :disabled="isReadOnly"
+                                                        :required="(currentAppreciations[{{ $criterion->id }}]?.value === 'NA' || currentAppreciations[{{ $criterion->id }}]?.value === 'PA') && myVersion == myMaxVersion"
+                                                        x-text="currentAppreciations[{{ $criterion->id }}] ? currentAppreciations[{{ $criterion->id }}].remark : ''"
+                                                        @contextmenu.prevent="if(currentUserType === 'teacher') { showMenu = true; top = $event.clientY; left = $event.clientX; }"
+                                                        @click.outside="showMenu = false"
+                                                    ></textarea>
                                                     
-                                                    {{-- Textarea with Context Menu --}}
-                                                    <div class="relative" x-data="{ showMenu: false, top: 0, left: 0 }">
-                                                        <textarea 
-                                                            name="appreciations[{{ $criterion->id }}][remark]" 
-                                                            class="textarea textarea-bordered w-full h-24 resize-none bg-gray-50 border-2 border-gray-200 focus:border-indigo-400 focus:bg-white rounded-xl transition-all" 
-                                                            placeholder="{{ __('Remark for') }} {{ $criterion->name }}"
-                                                            :disabled="version < maxVersion"
-                                                            x-text="currentAppreciations[{{ $criterion->id }}] ? currentAppreciations[{{ $criterion->id }}].remark : ''"
-                                                            @contextmenu.prevent="showMenu = true; top = $event.clientY; left = $event.clientX"
-                                                            @click.outside="showMenu = false"
-                                                        ></textarea>
-
-                                                        {{-- CONTEXT MENU --}}
+                                                    {{-- Context Menu (Teachers only) --}}
+                                                    @if($currentUserType === 'teacher')
                                                         <div x-show="showMenu" 
-                                                             class="fixed bg-white border-2 border-indigo-200 rounded-xl shadow-2xl z-50 py-2 min-w-[200px] overflow-hidden"
+                                                             class="fixed bg-white border border-gray-200 rounded shadow-lg z-50 py-1 min-w-[250px]"
                                                              :style="`top: ${top}px; left: ${left}px`"
                                                              style="display: none;">
-                                                            <div class="px-4 py-2 text-xs font-bold text-indigo-600 border-b-2 border-indigo-100 bg-indigo-50">
-                                                                <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> {{ __('Templates') }}
+                                                            <div class="px-3 py-1 text-xs font-bold text-gray-500 uppercase border-b border-gray-100 bg-gray-50">
+                                                                {{ __('Templates') }}
                                                             </div>
-                                                            @foreach($templates as $template)
-                                                                <a href="#" class="block px-4 py-3 text-sm hover:bg-indigo-50 transition-colors border-l-4 border-transparent hover:border-indigo-500"
+                                                            @foreach($templatesData[$evaluation->id][$criterion->id] as $template)
+                                                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
                                                                    @click.prevent="updateAppreciation({{ $criterion->id }}, 'remark', '{{ addslashes($template->text) }}'); showMenu = false; $nextTick(() => { $el.closest('.relative').querySelector('textarea').value = '{{ addslashes($template->text) }}'; })">
-                                                                    <div class="font-semibold text-gray-800">{{ $template->title }}</div>
-                                                                    <div class="text-xs text-gray-500 truncate">{{ Str::limit($template->text, 40) }}</div>
+                                                                    <div class="font-semibold">{{ $template->title }}</div>
+                                                                    <div class="text-xs text-gray-500 truncate">{{ Str::limit($template->text, 50) }}</div>
                                                                 </a>
                                                             @endforeach
                                                         </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div x-show="currentAppreciations[{{ $criterion->id }}] && currentAppreciations[{{ $criterion->id }}].is_ignored" class="text-center py-6">
-                                                    <i class="fa-solid fa-eye-slash text-4xl text-gray-300 mb-2"></i>
-                                                    <p class="text-sm italic text-gray-400 font-medium">{{ __('This criterion is excluded from the evaluation.') }}</p>
+                                                    @endif
                                                 </div>
                                             </div>
-                                        </div>
-                                    @endforeach
-                                </div>
 
-                                {{-- General Remark --}}
-                                <div class="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 p-8 rounded-2xl shadow-lg mb-8">
-                                    <div class="flex items-center gap-3 mb-4">
-                                        <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
-                                            <i class="fa-solid fa-message-lines text-white text-xl"></i>
+                                            {{-- RIGHT: Other Input (Read Only) --}}
+                                            <div x-show="status === 'encours' && myVersion == myMaxVersion && otherMaxVersion > 0" 
+                                                 class="bg-gray-50 rounded border border-gray-200 p-4 flex flex-col">
+                                                <div class="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
+                                                    <span class="text-xs font-bold text-gray-500 uppercase">
+                                                        {{ $currentUserType === 'teacher' ? __('Student') : __('Teacher') }}
+                                                    </span>
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-xl font-black" 
+                                                              :class="{
+                                                                  'text-red-600': getPreviousScore({{ $criterion->id }}) === 'NA',
+                                                                  'text-orange-600': getPreviousScore({{ $criterion->id }}) === 'PA',
+                                                                  'text-blue-600': getPreviousScore({{ $criterion->id }}) === 'A',
+                                                                  'text-green-600': getPreviousScore({{ $criterion->id }}) === 'LA'
+                                                              }"
+                                                              x-text="getPreviousScore({{ $criterion->id }}) || '-'"></span>
+                                                        <span class="text-lg text-gray-400" x-text="getComparisonArrow({{ $criterion->id }})"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="text-sm text-gray-600 italic flex-1 whitespace-pre-wrap" 
+                                                     x-text="getPreviousRemark({{ $criterion->id }}) || '{{ __('No remark') }}'"></div>
+                                            </div>
+
                                         </div>
-                                        <h3 class="font-bold text-2xl text-gray-800">{{ __('General Remark') }}</h3>
                                     </div>
-                                    <textarea 
-                                        name="general_remark" 
-                                        class="textarea textarea-bordered w-full h-32 resize-none bg-white border-2 border-amber-200 focus:border-amber-400 rounded-xl text-base" 
-                                        placeholder="{{ __('General observation about the student\'s performance...') }}"
-                                        :disabled="version < maxVersion"
-                                        x-text="version < maxVersion ? versions[version-1].general_remark : ''"
-                                    ></textarea>
-                                </div>
 
-                                {{-- Submit Button --}}
-                                <div class="flex justify-end" x-show="version == maxVersion">
-                                    <button type="submit" class="btn btn-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white border-0 shadow-xl px-8 transform transition-all duration-300 hover:scale-105">
-                                        <i class="fa-solid fa-save mr-2 text-xl"></i> 
-                                        <span class="text-lg font-bold">{{ __('Save Evaluation') }}</span>
-                                    </button>
+                                    <div x-show="currentAppreciations[{{ $criterion->id }}] && currentAppreciations[{{ $criterion->id }}].is_ignored" class="p-8 text-center bg-gray-50">
+                                        <p class="text-sm text-gray-400 italic">{{ __('Criterion ignored') }}</p>
+                                    </div>
                                 </div>
-                            </form>
+                            @endforeach
                         </div>
-                    @endforeach
+
+                        {{-- General Remark --}}
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+                            <h3 class="font-bold text-gray-900 text-lg mb-4">{{ __('General Remark') }}</h3>
+                            <div class="relative" x-data="{ showGeneralMenu: false, top: 0, left: 0 }">
+                                <textarea 
+                                    name="general_remark" 
+                                    class="w-full h-32 p-3 rounded border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm resize-none"
+                                    placeholder="{{ __('General observation...') }}"
+                                    :disabled="isReadOnly"
+                                    x-text="myVersion < myMaxVersion ? myVersions[myVersion-1].general_remark : ''"
+                                    @contextmenu.prevent="if(currentUserType === 'teacher') { showGeneralMenu = true; top = $event.clientY; left = $event.clientX; }"
+                                    @click.outside="showGeneralMenu = false"
+                                ></textarea>
+                                
+                                {{-- Context Menu for General Remark (Teachers only) --}}
+                                @if($currentUserType === 'teacher')
+                                    <div x-show="showGeneralMenu" 
+                                         class="fixed bg-white border border-gray-200 rounded shadow-lg z-50 py-1 min-w-[300px]"
+                                         :style="`top: ${top}px; left: ${left}px`"
+                                         style="display: none;">
+                                        <div class="px-3 py-1 text-xs font-bold text-gray-500 uppercase border-b border-gray-100 bg-gray-50">
+                                            {{ __('General Templates') }}
+                                        </div>
+                                        @foreach($templatesData[$evaluation->id]['general'] as $template)
+                                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"
+                                               @click.prevent="showGeneralMenu = false; $nextTick(() => { $el.closest('.relative').querySelector('textarea').value = '{{ addslashes($template->text) }}'; })">
+                                                <div class="font-semibold">{{ $template->title }}</div>
+                                                <div class="text-xs text-gray-500 line-clamp-2">{{ $template->text }}</div>
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Submit --}}
+                        <div class="flex justify-end pb-12" x-show="!isReadOnly">
+                            <button type="submit" class="btn bg-indigo-600 hover:bg-indigo-700 text-white border-0 px-8">
+                                {{ __('Save Evaluation') }}
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            </div>
+            @endforeach
         </div>
     </div>
 </x-app-layout>

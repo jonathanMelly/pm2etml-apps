@@ -81,6 +81,18 @@
                 <i class="fa-solid fa-wrench fa-xs"></i> {{__('Ask for remediation')}}
             </button>
         @endif
+        
+        {{-- Self Evaluation Button --}}
+        @php
+            // Find if there's an evaluation for this student
+            $evaluation = \App\Models\Evaluation::where('student_id', $workerContract->groupMember->user->id)
+                ->where('job_definition_id', $contract->jobDefinition->id)
+                ->first();
+        @endphp
+        <a href="{{ route('eval_pulse.bulk', ['ids' => $workerContract->id]) }}" 
+           class="ml-2 btn btn-outline btn-xs btn-primary text-xs">
+            <i class="fa-solid fa-heart-pulse fa-xs"></i> {{__('Self Eval')}}
+        </a>
         @endrole
 
 
