@@ -66,6 +66,7 @@ Route::middleware(['auth', 'app'])->group(function () {
     Route::get('eval-pulse/bulk/{ids}', [EvalPulseController::class, 'bulkEvaluate'])->name('eval_pulse.bulk');
     Route::get('eval-pulse/{evaluation}', [EvalPulseController::class, 'show'])->name('eval_pulse.show');
     Route::post('eval-pulse/{evaluation}/update', [EvalPulseController::class, 'update'])->name('eval_pulse.update');
+    Route::get('eval-pulse/{evaluation}/pdf', [EvalPulseController::class, 'generatePdf'])->name('eval_pulse.pdf');
 
     //Files (images) handling (avoid any injected script in image as returning the file as file !)
     Route::get(FileFormat::DMZ_ASSET_URL . '/{file?}', [DmzAssetController::class, 'getFile'])

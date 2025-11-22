@@ -9,4 +9,6 @@ class MorphTargets
     public const MORPH2_USER = 'user';
 
     public const MORPH2_WORKER_CONTRACT = 'workerContract';
+
+    public const MORPH2_EVALUATION = 'evaluation';
 }
