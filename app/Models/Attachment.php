@@ -32,6 +32,7 @@ class Attachment extends Model
         AttachmentTypes::STI_JOB_DEFINITION_MAIN_IMAGE_ATTACHMENT => JobDefinitionMainImageAttachment::class,
         AttachmentTypes::STI_JOB_DEFINITION_ATTACHMENT => JobDefinitionDocAttachment::class,
         AttachmentTypes::STI_CONTRACT_EVALUATION_ATTACHMENT => ContractEvaluationAttachment::class,
+        AttachmentTypes::STI_EVALUATION_PDF_ATTACHMENT => EvaluationPdfAttachment::class,
     ];
 
     public static function boot()

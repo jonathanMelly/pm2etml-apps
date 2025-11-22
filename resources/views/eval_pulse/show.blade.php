@@ -496,11 +496,19 @@
                             </div>
                         </div>
 
-                        {{-- Submit --}}
-                        <div class="flex justify-end pb-12" x-show="!isReadOnly">
-                            <button type="submit" class="btn bg-indigo-600 hover:bg-indigo-700 text-white border-0 px-8">
-                                {{ __('Save Evaluation') }}
-                            </button>
+                        {{-- Submit & PDF --}}
+                        <div class="flex justify-end items-center gap-4 pb-12">
+                            @if($currentUserType === 'teacher' && $evaluation->status === 'clos')
+                                <a href="{{ route('eval_pulse.pdf', $evaluation->id) }}" class="btn bg-white border-indigo-600 text-indigo-600 hover:bg-indigo-50 px-8 gap-2">
+                                    <i class="fa-solid fa-file-pdf"></i> {{ __('Generate PDF') }}
+                                </a>
+                            @endif
+
+                            <div x-show="!isReadOnly">
+                                <button type="submit" class="btn bg-indigo-600 hover:bg-indigo-700 text-white border-0 px-8">
+                                    {{ __('Save Evaluation') }}
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>

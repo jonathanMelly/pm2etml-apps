@@ -11,6 +11,11 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\EvaluationPdfAttachment;
+use Illuminate\Support\Str;
+use App\Constants\AttachmentTypes;
+use App\Constants\MorphTargets;
 
 class EvalPulseController extends Controller
 {
@@ -312,5 +317,66 @@ class EvalPulseController extends Controller
         });
 
         return redirect()->back()->with('success', 'Evaluation saved successfully.');
+    }
+
+    public function generatePdf(Evaluation $evaluation)
+    {
+        // 1. Security Check
+        if (Auth::id() !== $evaluation->teacher_id) {
+            abort(403, 'Unauthorized');
+        }
+
+        if ($evaluation->status !== 'clos') {
+            return back()->with('error', 'Evaluation must be closed (summative) to generate PDF.');
+        }
+
+        // 2. Get Data
+        $latestVersion = $evaluation->versions()
+            ->where('evaluator_type', 'teacher')
+            ->orderByDesc('version_number')
+            ->with(['appreciations.remark', 'generalRemark'])
+            ->firstOrFail();
+
+        $criteria = Criterion::orderBy('position')->get();
+
+        // 3. Calculate Score (Replicating JS logic)
+        $values = $latestVersion->appreciations
+            ->where('is_ignored', false)
+            ->pluck('value')
+            ->toArray();
+
+        $globalScore = '-';
+        if (!empty($values)) {
+            if (in_array('NA', $values)) $globalScore = 'NA';
+            elseif (in_array('PA', $values)) $globalScore = 'PA';
+            else {
+                $laCount = count(array_filter($values, fn($v) => $v === 'LA'));
+                $globalScore = ($laCount >= 4) ? 'LA' : 'A';
+            }
+        }
+
+        // 4. Generate PDF
+        $pdf = Pdf::loadView('eval_pulse.pdf', compact('evaluation', 'latestVersion', 'criteria', 'globalScore'))
+            ->setPaper('a4', 'landscape');
+        $content = $pdf->output();
+
+        // 5. Encrypt and Store
+        $filename = 'eval-' . $evaluation->id . '-' . Str::uuid() . '.pdf';
+        $path = 'evaluations/' . $filename;
+
+        $attachment = new EvaluationPdfAttachment();
+        $attachment->name = 'Evaluation Summative - ' . now()->format('d.m.Y H:i');
+        $attachment->storage_path = $path;
+        $attachment->size = strlen($content); 
+        $attachment->type = 'application/pdf';
+        $attachment->attachable_type = MorphTargets::MORPH2_EVALUATION;
+        $attachment->attachable_id = $evaluation->id;
+        
+        if ($attachment->storeEncrypted($content, $path)) {
+            $attachment->save();
+            return $pdf->download('Evaluation-' . $evaluation->student->lastname . '.pdf');
+        }
+
+        return back()->with('error', 'Failed to save PDF.');
     }
 }
