@@ -53,12 +53,22 @@
                                 'name' => $v->version_name,
                                 'date' => $v->created_at->format('d.m.Y H:i'),
                                 'creator' => $v->creator->firstname . ' ' . $v->creator->lastname,
-                                'general_remark' => $v->generalRemark ? $v->generalRemark->body : '',
+                                'general_remark_history' => $v->generalRemark ? $v->comments->sortByDesc('created_at')->map(function($c) {
+                                    return [
+                                        'date' => $c->created_at->format('d.m.Y H:i'),
+                                        'body' => $c->body
+                                    ];
+                                })->values() : [],
                                 'appreciations' => $v->appreciations->mapWithKeys(function($a) {
                                     return [$a->criterion_id => [
                                         'value' => $a->value,
                                         'is_ignored' => $a->is_ignored ?? false,
-                                        'remark' => $a->remark ? $a->remark->body : ''
+                                        'remark_history' => $a->remark ? $a->comments->sortByDesc('created_at')->map(function($c) {
+                                            return [
+                                                'date' => $c->created_at->format('d.m.Y H:i'),
+                                                'body' => $c->body
+                                            ];
+                                        })->values() : []
                                     ]];
                                 })
                             ];
@@ -71,6 +81,13 @@
                                 'name' => $v->version_name,
                                 'date' => $v->created_at->format('d.m.Y H:i'),
                                 'creator' => $v->creator->firstname . ' ' . $v->creator->lastname,
+                                'general_remark' => $v->generalRemark ? $v->generalRemark->body : '',
+                                'general_remark_history' => $v->generalRemark ? $v->comments->sortByDesc('created_at')->map(function($c) {
+                                    return [
+                                        'date' => $c->created_at->format('d.m.Y H:i'),
+                                        'body' => $c->body
+                                    ];
+                                })->values() : [],
                                 'appreciations' => $v->appreciations->mapWithKeys(function($a) {
                                     return [$a->criterion_id => [
                                         'value' => $a->value,
@@ -84,7 +101,55 @@
                         currentUserType: '{{ $currentUserType }}',
                         otherUserType: '{{ $otherUserType }}',
                         status: '{{ $evaluation->status }}',
+                        currentUserType: '{{ $currentUserType }}',
+                        otherUserType: '{{ $otherUserType }}',
+                        status: '{{ $evaluation->status }}',
                         currentAppreciations: {},
+                        
+                        get allGeneralComments() {
+                            let comments = [];
+                            
+                            // Collect from my versions
+                            this.myVersions.forEach(v => {
+                                if (v.general_remark_history) {
+                                    v.general_remark_history.forEach(c => {
+                                        comments.push({
+                                            date: c.date,
+                                            body: c.body,
+                                            // Parse date for sorting (d.m.Y H:i)
+                                            timestamp: this.parseDate(c.date),
+                                            author: this.currentUserType === 'teacher' ? '{{ __('Teacher') }}' : '{{ __('Student') }}',
+                                            isMe: true
+                                        });
+                                    });
+                                }
+                            });
+                            
+                            // Collect from other versions
+                            this.otherVersions.forEach(v => {
+                                if (v.general_remark_history) {
+                                    v.general_remark_history.forEach(c => {
+                                        comments.push({
+                                            date: c.date,
+                                            body: c.body,
+                                            timestamp: this.parseDate(c.date),
+                                            author: this.otherUserType === 'teacher' ? '{{ __('Teacher') }}' : '{{ __('Student') }}',
+                                            isMe: false
+                                        });
+                                    });
+                                }
+                            });
+                            
+                            return comments.sort((a, b) => a.timestamp - b.timestamp);
+                        },
+                        
+                        parseDate(dateStr) {
+                            // d.m.Y H:i
+                            let parts = dateStr.split(' ');
+                            let dateParts = parts[0].split('.');
+                            let timeParts = parts[1].split(':');
+                            return new Date(dateParts[2], dateParts[1]-1, dateParts[0], timeParts[0], timeParts[1]).getTime();
+                        },
                         
                         init() {
                             if (this.myVersion < this.myMaxVersion) {
@@ -114,16 +179,29 @@
                         },
                         updateAppreciation(criterionId, field, value) {
                             if (!this.currentAppreciations[criterionId]) {
-                                this.currentAppreciations[criterionId] = { value: 'A', is_ignored: false, remark: '' };
+                                this.currentAppreciations[criterionId] = { value: 'A', is_ignored: false, remark_history: [] };
                             }
                             this.currentAppreciations[criterionId][field] = value;
                         },
                         initCriterion(criterionId, position) {
                             if (this.myVersion == this.myMaxVersion && !this.currentAppreciations[criterionId]) {
+                                let history = [];
+                                if (this.myMaxVersion > 1) {
+                                    // Get history from the latest saved version (myMaxVersion - 1)
+                                    // Array index is version number - 1, so latest saved is at index myMaxVersion - 2
+                                    let latestSaved = this.myVersions[this.myMaxVersion - 2];
+                                    if (latestSaved && latestSaved.appreciations[criterionId]) {
+                                        history = latestSaved.appreciations[criterionId].remark_history || [];
+                                        // Also add the latest remark itself if it exists and isn't already in history
+                                        // (The backend structure puts all comments in history, so this might be redundant if backend is correct,
+                                        // but let's stick to what we have: remark_history comes from comments)
+                                    }
+                                }
+                                
                                 this.currentAppreciations[criterionId] = {
                                     value: 'A',
                                     is_ignored: position === 7,
-                                    remark: ''
+                                    remark_history: history
                                 };
                             }
                         },
@@ -395,17 +473,32 @@
                                                 </div>
                                                 
                                                 <div class="relative" x-data="{ showMenu: false, top: 0, left: 0 }">
-                                                    <textarea 
-                                                        name="appreciations[{{ $criterion->id }}][remark]" 
-                                                        class="w-full h-32 p-3 rounded border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm resize-none"
-                                                        :class="{'border-red-300 bg-red-50': (currentAppreciations[{{ $criterion->id }}]?.value === 'NA' || currentAppreciations[{{ $criterion->id }}]?.value === 'PA') && myVersion == myMaxVersion}"
-                                                        :placeholder="(currentAppreciations[{{ $criterion->id }}]?.value === 'NA' || currentAppreciations[{{ $criterion->id }}]?.value === 'PA') ? '{{ __('Justification required for NA/PA...') }}' : '{{ __('Add a remark...') }}'"
-                                                        :disabled="isReadOnly"
-                                                        :required="(currentAppreciations[{{ $criterion->id }}]?.value === 'NA' || currentAppreciations[{{ $criterion->id }}]?.value === 'PA') && myVersion == myMaxVersion"
-                                                        x-text="currentAppreciations[{{ $criterion->id }}] ? currentAppreciations[{{ $criterion->id }}].remark : ''"
-                                                        @contextmenu.prevent="if(currentUserType === 'teacher') { showMenu = true; top = $event.clientY; left = $event.clientX; }"
-                                                        @click.outside="showMenu = false"
-                                                    ></textarea>
+                                                    <div class="w-full rounded border border-gray-300 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 overflow-hidden bg-white"
+                                                         :class="{'border-red-300 bg-red-50': (currentAppreciations[{{ $criterion->id }}]?.value === 'NA' || currentAppreciations[{{ $criterion->id }}]?.value === 'PA') && myVersion == myMaxVersion}">
+                                                        
+                                                        {{-- History (Read Only) --}}
+                                                        <div class="bg-gray-50 border-b border-gray-100 max-h-32 overflow-y-auto" 
+                                                             x-show="currentAppreciations[{{ $criterion->id }}]?.remark_history?.length > 0">
+                                                            <template x-for="comment in currentAppreciations[{{ $criterion->id }}]?.remark_history">
+                                                                <div class="p-2 text-xs border-b border-gray-100 last:border-0">
+                                                                    <div class="text-gray-400 mb-1" x-text="comment.date"></div>
+                                                                    <div class="text-gray-600 whitespace-pre-wrap" x-text="comment.body"></div>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+
+                                                        {{-- New Input --}}
+                                                        <textarea 
+                                                            name="appreciations[{{ $criterion->id }}][remark]" 
+                                                            class="w-full p-3 text-sm resize-none border-0 focus:ring-0 bg-transparent h-20"
+                                                            :placeholder="(currentAppreciations[{{ $criterion->id }}]?.value === 'NA' || currentAppreciations[{{ $criterion->id }}]?.value === 'PA') ? '{{ __('Justification required for NA/PA...') }}' : '{{ __('Add a new remark...') }}'"
+                                                            :disabled="isReadOnly"
+                                                            x-show="!isReadOnly"
+                                                            :required="(currentAppreciations[{{ $criterion->id }}]?.value === 'NA' || currentAppreciations[{{ $criterion->id }}]?.value === 'PA') && myVersion == myMaxVersion"
+                                                            @contextmenu.prevent="if(currentUserType === 'teacher') { showMenu = true; top = $event.clientY; left = $event.clientX; }"
+                                                            @click.outside="showMenu = false"
+                                                        ></textarea>
+                                                    </div>
                                                     
                                                     {{-- Context Menu (Teachers only) --}}
                                                     @if($currentUserType === 'teacher')
@@ -461,19 +554,41 @@
                             @endforeach
                         </div>
 
-                        {{-- General Remark --}}
+                        {{-- Shared General Remarks Zone --}}
                         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-                            <h3 class="font-bold text-gray-900 text-lg mb-4">{{ __('General Remark') }}</h3>
+                            <h3 class="font-bold text-gray-900 text-lg mb-4">{{ __('General Remarks') }}</h3>
+                            
                             <div class="relative" x-data="{ showGeneralMenu: false, top: 0, left: 0 }">
-                                <textarea 
-                                    name="general_remark" 
-                                    class="w-full h-32 p-3 rounded border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm resize-none"
-                                    placeholder="{{ __('General observation...') }}"
-                                    :disabled="isReadOnly"
-                                    x-text="myVersion < myMaxVersion ? myVersions[myVersion-1].general_remark : ''"
-                                    @contextmenu.prevent="if(currentUserType === 'teacher') { showGeneralMenu = true; top = $event.clientY; left = $event.clientX; }"
-                                    @click.outside="showGeneralMenu = false"
-                                ></textarea>
+                                <div class="w-full rounded border border-gray-300 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 overflow-hidden bg-white">
+                                    
+                                    {{-- Shared History (Read Only) --}}
+                                    <div class="bg-gray-50 border-b border-gray-100 max-h-64 overflow-y-auto" 
+                                         x-show="allGeneralComments.length > 0">
+                                        <template x-for="comment in allGeneralComments">
+                                            <div class="p-3 text-sm border-b border-gray-100 last:border-0"
+                                                 :class="comment.isMe ? 'bg-indigo-50/30' : ''">
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <span class="font-bold text-xs uppercase" 
+                                                          :class="comment.isMe ? 'text-indigo-600' : 'text-gray-500'" 
+                                                          x-text="comment.author"></span>
+                                                    <span class="text-gray-400 text-xs" x-text="'- ' + comment.date"></span>
+                                                </div>
+                                                <div class="text-gray-700 whitespace-pre-wrap" x-text="comment.body"></div>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    {{-- New Input --}}
+                                    <textarea 
+                                        name="general_remark" 
+                                        class="w-full p-3 text-sm resize-none border-0 focus:ring-0 bg-transparent h-24"
+                                        placeholder="{{ __('Add a general observation...') }}"
+                                        :disabled="isReadOnly"
+                                        x-show="!isReadOnly"
+                                        @contextmenu.prevent="if(currentUserType === 'teacher') { showGeneralMenu = true; top = $event.clientY; left = $event.clientX; }"
+                                        @click.outside="showGeneralMenu = false"
+                                    ></textarea>
+                                </div>
                                 
                                 {{-- Context Menu for General Remark (Teachers only) --}}
                                 @if($currentUserType === 'teacher')
