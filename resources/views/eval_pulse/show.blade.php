@@ -101,10 +101,27 @@
                         currentUserType: '{{ $currentUserType }}',
                         otherUserType: '{{ $otherUserType }}',
                         status: '{{ $evaluation->status }}',
-                        currentUserType: '{{ $currentUserType }}',
-                        otherUserType: '{{ $otherUserType }}',
-                        status: '{{ $evaluation->status }}',
                         currentAppreciations: {},
+                        
+                        // View Options
+                        @php
+                            $user = Auth::user();
+                            $isAdmin = $user->isAdmin();
+                            $hasCounterPart = $otherVersions->count() > 0;
+                            
+                            // Default: 2 columns (4 for Admin)
+                            $defaultMode = $isAdmin ? 4 : 2;
+                            
+                            // Exception: Default to 1 column if Teacher/Student AND Counter-part exists
+                            // (This allows side-by-side comparison by default, but user can switch)
+                            $forceOneCol = !$isAdmin && ($currentUserType === 'teacher' || $currentUserType === 'student') && $hasCounterPart;
+                            
+                            $initialViewMode = $forceOneCol ? 1 : $defaultMode;
+                            // We no longer lock the view, just change the default
+                            $isLocked = false;
+                        @endphp
+                        viewMode: {{ $initialViewMode }},
+                        isViewLocked: {{ $isLocked ? 'true' : 'false' }},
                         
                         get allGeneralComments() {
                             let comments = [];
@@ -280,20 +297,41 @@
                             </div>
                         </div>
 
-                        {{-- History Slider --}}
-                        <div class="w-full md:w-auto flex items-center gap-4 bg-gray-50 rounded-lg p-2 border border-gray-200" x-show="myMaxVersion > 1">
-                            <div class="text-xs font-semibold text-gray-500 uppercase px-2">{{ __('History') }}</div>
-                            <div class="flex-1 md:w-48 relative flex items-center">
-                                <input type="range" min="1" :max="myMaxVersion" x-model.number="myVersion" class="range range-xs range-primary w-full z-10" step="1" />
-                                <div class="w-full flex justify-between text-xs px-1 absolute top-1/2 -translate-y-1/2 pointer-events-none">
-                                    <template x-for="i in myMaxVersion">
-                                        <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
-                                    </template>
-                                </div>
+                        <div class="flex items-center gap-4">
+                            {{-- View Selector --}}
+                            <div class="flex items-center bg-gray-100 rounded-lg p-1" x-show="!isViewLocked">
+                                <button @click="viewMode = 1" 
+                                        class="p-2 rounded text-xs font-bold transition-colors"
+                                        :class="viewMode === 1 ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+                                    <i class="fa-solid fa-list"></i>
+                                </button>
+                                <button @click="viewMode = 2" 
+                                        class="p-2 rounded text-xs font-bold transition-colors"
+                                        :class="viewMode === 2 ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+                                    <i class="fa-solid fa-table-columns"></i>
+                                </button>
+                                <button @click="viewMode = 4" 
+                                        class="p-2 rounded text-xs font-bold transition-colors hidden xl:block"
+                                        :class="viewMode === 4 ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+                                    <i class="fa-solid fa-border-all"></i>
+                                </button>
                             </div>
-                            <div class="text-xs font-bold text-indigo-600 min-w-[60px] text-right">
-                                <span x-show="myVersion == myMaxVersion">{{ __('New') }}</span>
-                                <span x-show="myVersion < myMaxVersion" x-text="'v' + myVersion"></span>
+
+                            {{-- History Slider --}}
+                            <div class="w-full md:w-auto flex items-center gap-4 bg-gray-50 rounded-lg p-2 border border-gray-200" x-show="myMaxVersion > 1">
+                                <div class="text-xs font-semibold text-gray-500 uppercase px-2">{{ __('History') }}</div>
+                                <div class="flex-1 md:w-48 relative flex items-center">
+                                    <input type="range" min="1" :max="myMaxVersion" x-model.number="myVersion" class="range range-xs range-primary w-full z-10" step="1" />
+                                    <div class="w-full flex justify-between text-xs px-1 absolute top-1/2 -translate-y-1/2 pointer-events-none">
+                                        <template x-for="i in myMaxVersion">
+                                            <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="text-xs font-bold text-indigo-600 min-w-[60px] text-right">
+                                    <span x-show="myVersion == myMaxVersion">{{ __('New') }}</span>
+                                    <span x-show="myVersion < myMaxVersion" x-text="'v' + myVersion"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -382,7 +420,12 @@
                             ];
                         @endphp
 
-                        <div class="space-y-6 mb-8">
+                        <div class="grid gap-6 mb-8"
+                             :class="{
+                                'grid-cols-1': viewMode === 1,
+                                'grid-cols-1 lg:grid-cols-2': viewMode === 2,
+                                'grid-cols-1 md:grid-cols-2 xl:grid-cols-4': viewMode === 4
+                             }">
                             @foreach($criteria as $criterion)
                                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden border-b-2 {{ $criteriaBottomBorder[$criterion->position] ?? 'border-b-gray-300' }}"
                                      x-init="initCriterion({{ $criterion->id }}, {{ $criterion->position }})">
