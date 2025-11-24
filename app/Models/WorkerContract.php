@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Constants\RemediationStatus;
 use App\Enums\CustomPivotTableNames;
 use App\Enums\RequiredTimeUnit;
+use App\Enums\EvaluationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use JetBrains\PhpStorm\Pure;
@@ -17,13 +18,7 @@ class WorkerContract extends Pivot
 
     use PowerJoins;
 
-    // Evaluation result constants
-    const EVAL_NON_ACQUIS = 'na';
-    const EVAL_PARTIELLEMENT_ACQUIS = 'pa';
-    const EVAL_ACQUIS = 'a';
-    const EVAL_LARGEMENT_ACQUIS = 'la';
-
-    // Cannot use Enum... TODO Transform Enum to CONST !!!!
+    // Utiliser l'enum EvaluationStatus pour les statuts d'évaluation
 
     protected static function boot(): void
     {
@@ -105,7 +100,10 @@ class WorkerContract extends Pivot
      */
     public function isSuccess(): bool
     {
-        return in_array($this->evaluation_result, [self::EVAL_ACQUIS, self::EVAL_LARGEMENT_ACQUIS]);
+        return in_array($this->evaluation_result, [
+            EvaluationStatus::ACQUIS->value,
+            EvaluationStatus::LARGEMENT_ACQUIS->value
+        ]);
     }
 
     public function alreadyEvaluated(): bool
@@ -141,10 +139,10 @@ class WorkerContract extends Pivot
     public function getEvaluationLabel(): string
     {
         return match($this->evaluation_result) {
-            self::EVAL_LARGEMENT_ACQUIS => __('Largely Acquired'),
-            self::EVAL_ACQUIS => __('Acquired'),
-            self::EVAL_PARTIELLEMENT_ACQUIS => __('Partially Acquired'),
-            self::EVAL_NON_ACQUIS => __('Not Acquired'),
+            EvaluationStatus::LARGEMENT_ACQUIS->value => __('Largely Acquired'),
+            EvaluationStatus::ACQUIS->value => __('Acquired'),
+            EvaluationStatus::PARTIELLEMENT_ACQUIS->value => __('Partially Acquired'),
+            EvaluationStatus::NON_ACQUIS->value => __('Not Acquired'),
             default => __('Not evaluated')
         };
     }

@@ -1,3 +1,5 @@
+use App\Enums\AppColor;
+use App\Enums\EvaluationStatus;
 <?php
 
 use App\Models\Attachment;
@@ -93,7 +95,7 @@ if (! function_exists('troolHtml')) {
             return 'n/a';
         }
 
-        return spanColor($value ? 'green' : 'red', $value ? 'Ok' : 'Ko');
+        return spanColor($value ? AppColor::GREEN->value : AppColor::RED->value, $value ? 'Ok' : 'Ko');
     }
 }
 
@@ -109,18 +111,18 @@ if (! function_exists('gradeHtml')) {
 
         // Handle old boolean values (backward compatibility)
         if ($value === '1' || $value === 1 || $value === true) {
-            return spanColor('green', 'A');
+            return spanColor(AppColor::GREEN->value, 'A');
         }
         if ($value === '0' || $value === 0 || $value === false) {
-            return spanColor('red', 'NA');
+            return spanColor(AppColor::RED->value, 'NA');
         }
 
         // Handle new grade values
         return match($value) {
-            'la' => spanColor('green', 'LA'),
-            'a' => spanColor('green', 'A'),
-            'pa' => spanColor('orange', 'PA'),
-            'na' => spanColor('red', 'NA'),
+            EvaluationStatus::LARGEMENT_ACQUIS->value => spanColor(AppColor::GREEN->value, 'LA'),
+            EvaluationStatus::ACQUIS->value => spanColor(AppColor::GREEN->value, 'A'),
+            EvaluationStatus::PARTIELLEMENT_ACQUIS->value => spanColor(AppColor::ORANGE->value, 'PA'),
+            EvaluationStatus::NON_ACQUIS->value => spanColor(AppColor::RED->value, 'NA'),
             default => 'n/a'
         };
     }

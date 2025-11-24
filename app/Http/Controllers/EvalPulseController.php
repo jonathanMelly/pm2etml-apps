@@ -1,6 +1,9 @@
+
 <?php
 
 namespace App\Http\Controllers;
+
+use App\Enums\EvaluationStatus;
 
 use App\Models\AppreciationVersion;
 use App\Models\Criterion;
@@ -364,10 +367,10 @@ class EvalPulseController extends Controller
 
         $globalScore = '-';
         if (!empty($values)) {
-            if (in_array('na', $values)) $globalScore = 'NA'; // Display as Uppercase in PDF score box
-            elseif (in_array('pa', $values)) $globalScore = 'PA';
+            if (in_array(EvaluationStatus::NON_ACQUIS->value, $values)) $globalScore = 'NA'; // Display as Uppercase in PDF score box
+            elseif (in_array(EvaluationStatus::PARTIELLEMENT_ACQUIS->value, $values)) $globalScore = 'PA';
             else {
-                $laCount = count(array_filter($values, fn($v) => $v === 'la'));
+                $laCount = count(array_filter($values, fn($v) => $v === EvaluationStatus::LARGEMENT_ACQUIS->value));
                 $globalScore = ($laCount >= 4) ? 'LA' : 'A';
             }
         }

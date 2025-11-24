@@ -18,6 +18,7 @@ use App\Models\JobDefinition;
 use App\Models\JobDefinitionPart;
 use App\Models\User;
 use App\Models\WorkerContract;
+use App\Enums\EvaluationStatus;
 use App\Models\WorkerContractEvaluationLog;
 use App\SwissFrenchDateFormat;
 use Illuminate\Contracts\View\Factory;
@@ -576,7 +577,12 @@ class ContractController extends Controller
                 $evaluationResult = $request->input('evaluation_result-' . $workerContract->id);
 
                 // Validate evaluation result - abort if invalid
-                if (!in_array($evaluationResult, ['na', 'pa', 'a', 'la'])) {
+                if (!in_array($evaluationResult, [
+                    EvaluationStatus::NON_ACQUIS->value,
+                    EvaluationStatus::PARTIELLEMENT_ACQUIS->value,
+                    EvaluationStatus::ACQUIS->value,
+                    EvaluationStatus::LARGEMENT_ACQUIS->value
+                ])) {
                     return back()
                         ->withErrors(['evaluation_result-' . $workerContract->id => __('Invalid evaluation result')])
                         ->withInput();
@@ -584,7 +590,10 @@ class ContractController extends Controller
 
                 $comment = null;
                 // Require comment for failed or partially acquired evaluations
-                if (in_array($evaluationResult, ['na', 'pa'])) {
+                if (in_array($evaluationResult, [
+                    EvaluationStatus::NON_ACQUIS->value,
+                    EvaluationStatus::PARTIELLEMENT_ACQUIS->value
+                ])) {
                     $commentAttributeName = 'comment-' . $workerContract->id;
                     $comment = $request->input($commentAttributeName);
                     if (empty(trim($comment))) {
