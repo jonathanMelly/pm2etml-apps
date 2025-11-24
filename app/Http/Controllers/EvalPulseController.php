@@ -31,7 +31,7 @@ class EvalPulseController extends Controller
         $student = User::where('email', $request->worker)->firstOrFail();
 
         $evaluation = Evaluation::create([
-            'eleve_id' => $student->id,
+            'student_id' => $student->id,
             'teacher_id' => Auth::id(),
             'job_definition_id' => $request->job_definition_id,
             'start_date' => $request->start_date,
