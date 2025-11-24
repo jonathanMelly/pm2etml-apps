@@ -37,6 +37,7 @@ class EvalPulseController extends Controller
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
             'status' => 'encours',
+            'teacher_viewed_at' => now(),
         ]);
 
         return redirect()->route('eval_pulse.show', $evaluation->id);
@@ -82,6 +83,7 @@ class EvalPulseController extends Controller
                     'status' => 'encours',
                     'start_date' => $workerContract->contract->start,
                     'end_date' => $workerContract->contract->end,
+                    'teacher_viewed_at' => now(),
                 ]
             );
 
@@ -249,6 +251,15 @@ class EvalPulseController extends Controller
             ];
         }
 
+        // Update view timestamp
+        foreach ($evaluations as $evaluation) {
+            if (Auth::id() === $evaluation->student_id) {
+                $evaluation->update(['student_viewed_at' => now()]);
+            } elseif (Auth::id() === $evaluation->teacher_id) {
+                $evaluation->update(['teacher_viewed_at' => now()]);
+            }
+        }
+
         return view('eval_pulse.show', compact('evaluations', 'criteria', 'templatesData'));
     }
 
@@ -269,6 +280,17 @@ class EvalPulseController extends Controller
             if ($request->filled('status')) {
                 $evaluation->update(['status' => $request->status]);
             }
+            
+            // Touch the evaluation to update updated_at
+            $evaluation->touch();
+
+            // Update view timestamp for the current user to avoid "Modified" status for themselves
+            if (Auth::id() === $evaluation->student_id) {
+                $evaluation->student_viewed_at = $evaluation->updated_at;
+            } elseif (Auth::id() === $evaluation->teacher_id) {
+                $evaluation->teacher_viewed_at = $evaluation->updated_at;
+            }
+            $evaluation->saveQuietly(); // Save without touching updated_at again
 
             // Determine evaluator type
             $currentUserId = Auth::id();
