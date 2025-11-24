@@ -15,7 +15,6 @@ class AppreciationVersion extends Model
         'version_id',
         'criterion_id',
         'value',
-        'remark_id',
         'is_ignored',
     ];
 
@@ -29,8 +28,13 @@ class AppreciationVersion extends Model
         return $this->belongsTo(Criterion::class, 'criterion_id');
     }
 
-    public function remark()
+    public function comments()
     {
-        return $this->belongsTo(Remark::class, 'remark_id');
+        return $this->morphMany(Comment::class, 'commentable');
+    }
+
+    public function getRemarkAttribute()
+    {
+        return $this->comments()->latest()->first();
     }
 }

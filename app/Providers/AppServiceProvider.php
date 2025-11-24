@@ -49,6 +49,9 @@ class AppServiceProvider extends ServiceProvider
             MorphTargets::MORPH2_JOB_DEFINITION => JobDefinition::class,
             MorphTargets::MORPH2_USER => User::class, //Used for spatie permissions
             MorphTargets::MORPH2_WORKER_CONTRACT => WorkerContract::class,
+            MorphTargets::MORPH2_EVALUATION => \App\Models\Evaluation::class,
+            MorphTargets::MORPH2_EVALUATION_VERSION => \App\Models\EvaluationVersion::class,
+            MorphTargets::MORPH2_APPRECIATION_VERSION => \App\Models\AppreciationVersion::class,
         ]);
 
         Event::listen(function (\SocialiteProviders\Manager\SocialiteWasCalled $event) {

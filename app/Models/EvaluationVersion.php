@@ -14,7 +14,6 @@ class EvaluationVersion extends Model
         'version_number',
         'evaluator_type',
         'created_by_user_id',
-        'general_remark_id',
     ];
 
     public function evaluation()
@@ -27,9 +26,14 @@ class EvaluationVersion extends Model
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
-    public function generalRemark()
+    public function comments()
     {
-        return $this->belongsTo(Remark::class, 'general_remark_id');
+        return $this->morphMany(Comment::class, 'commentable');
+    }
+
+    public function getGeneralRemarkAttribute()
+    {
+        return $this->comments()->latest()->first();
     }
 
     public function appreciations()

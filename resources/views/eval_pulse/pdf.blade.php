@@ -142,7 +142,7 @@
 
     <div class="general-remark">
         <div class="gr-title">Remarque Générale</div>
-        <div class="gr-text">{{ $latestVersion->generalRemark ? $latestVersion->generalRemark->text : 'Aucune remarque générale.' }}</div>
+        <div class="gr-text">{{ $latestVersion->generalRemark ? $latestVersion->generalRemark->body : 'Aucune remarque générale.' }}</div>
     </div>
 
     <div class="footer">

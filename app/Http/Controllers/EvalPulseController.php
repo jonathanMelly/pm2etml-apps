@@ -6,7 +6,7 @@ use App\Models\AppreciationVersion;
 use App\Models\Criterion;
 use App\Models\Evaluation;
 use App\Models\EvaluationVersion;
-use App\Models\Remark;
+use App\Models\Comment;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -98,7 +98,7 @@ class EvalPulseController extends Controller
         }
 
         $evaluations = \Illuminate\Database\Eloquent\Collection::make($evaluations);
-        $evaluations->load(['student', 'teacher', 'jobDefinition', 'versions.appreciations.remark', 'versions.generalRemark', 'versions.creator']);
+        $evaluations->load(['student', 'teacher', 'jobDefinition', 'versions.appreciations.comments', 'versions.comments', 'versions.creator']);
         
         // Auto-correct evaluator_type if missing (migration fix)
         foreach ($evaluations as $evaluation) {
@@ -274,15 +274,6 @@ class EvalPulseController extends Controller
             $currentUserId = Auth::id();
             $evaluatorType = ($currentUserId === $evaluation->teacher_id) ? 'teacher' : 'student';
 
-            $generalRemarkId = null;
-            if ($request->filled('general_remark')) {
-                $remark = Remark::create([
-                    'text' => $request->general_remark,
-                    'author_user_id' => Auth::id(),
-                ]);
-                $generalRemarkId = $remark->id;
-            }
-
             // Calculate version number for this evaluator type
             $versionNumber = $evaluation->versions()
                 ->where('evaluator_type', $evaluatorType)
@@ -293,26 +284,29 @@ class EvalPulseController extends Controller
                 'version_number' => $versionNumber,
                 'evaluator_type' => $evaluatorType,
                 'created_by_user_id' => Auth::id(),
-                'general_remark_id' => $generalRemarkId,
             ]);
 
-            foreach ($request->appreciations as $criterionId => $data) {
-                $remarkId = null;
-                if (!empty($data['remark'])) {
-                    $remark = Remark::create([
-                        'text' => $data['remark'],
-                        'author_user_id' => Auth::id(),
-                    ]);
-                    $remarkId = $remark->id;
-                }
+            if ($request->filled('general_remark')) {
+                $version->comments()->create([
+                    'body' => $request->general_remark,
+                    'user_id' => Auth::id(),
+                ]);
+            }
 
-                AppreciationVersion::create([
+            foreach ($request->appreciations as $criterionId => $data) {
+                $appreciation = AppreciationVersion::create([
                     'version_id' => $version->id,
                     'criterion_id' => $criterionId,
                     'value' => $data['value'],
-                    'remark_id' => $remarkId,
                     'is_ignored' => isset($data['is_ignored']) ? $data['is_ignored'] : false,
                 ]);
+
+                if (!empty($data['remark'])) {
+                    $appreciation->comments()->create([
+                        'body' => $data['remark'],
+                        'user_id' => Auth::id(),
+                    ]);
+                }
             }
         });
 
@@ -334,7 +328,7 @@ class EvalPulseController extends Controller
         $latestVersion = $evaluation->versions()
             ->where('evaluator_type', 'teacher')
             ->orderByDesc('version_number')
-            ->with(['appreciations.remark', 'generalRemark'])
+            ->with(['appreciations.comments', 'comments'])
             ->firstOrFail();
 
         $criteria = Criterion::orderBy('position')->get();
