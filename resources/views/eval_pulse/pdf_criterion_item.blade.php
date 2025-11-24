@@ -2,7 +2,7 @@
     $appreciation = $latestVersion->appreciations->where('criterion_id', $criterion->id)->first();
     $isIgnored = $appreciation ? $appreciation->is_ignored : false;
     $value = $appreciation && !$isIgnored ? $appreciation->value : '-';
-    $remark = ($appreciation && !$isIgnored && $appreciation->remark) ? $appreciation->remark->text : null;
+    $remark = ($appreciation && !$isIgnored && $appreciation->remark) ? $appreciation->remark->body : null;
 @endphp
 
 <div class="criterion">

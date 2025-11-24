@@ -53,12 +53,12 @@
                                 'name' => $v->version_name,
                                 'date' => $v->created_at->format('d.m.Y H:i'),
                                 'creator' => $v->creator->firstname . ' ' . $v->creator->lastname,
-                                'general_remark' => $v->generalRemark ? $v->generalRemark->text : '',
+                                'general_remark' => $v->generalRemark ? $v->generalRemark->body : '',
                                 'appreciations' => $v->appreciations->mapWithKeys(function($a) {
                                     return [$a->criterion_id => [
                                         'value' => $a->value,
                                         'is_ignored' => $a->is_ignored ?? false,
-                                        'remark' => $a->remark ? $a->remark->text : ''
+                                        'remark' => $a->remark ? $a->remark->body : ''
                                     ]];
                                 })
                             ];
@@ -75,7 +75,7 @@
                                     return [$a->criterion_id => [
                                         'value' => $a->value,
                                         'is_ignored' => $a->is_ignored ?? false,
-                                        'remark' => $a->remark ? $a->remark->text : ''
+                                        'remark' => $a->remark ? $a->remark->body : ''
                                     ]];
                                 })
                             ];
