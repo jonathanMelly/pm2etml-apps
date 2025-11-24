@@ -268,7 +268,7 @@ class EvalPulseController extends Controller
         // Logic to add a new version
         $request->validate([
             'appreciations' => 'required|array',
-            'appreciations.*.value' => 'required|in:NA,PA,A,LA',
+            'appreciations.*.value' => 'required|in:na,pa,a,la,NA,PA,A,LA', // Allow both for robustness, but we'll save lowercase
             'appreciations.*.remark' => 'nullable|string',
             'appreciations.*.is_ignored' => 'nullable|boolean',
             'general_remark' => 'nullable|string',
@@ -319,7 +319,7 @@ class EvalPulseController extends Controller
                 $appreciation = AppreciationVersion::create([
                     'version_id' => $version->id,
                     'criterion_id' => $criterionId,
-                    'value' => $data['value'],
+                    'value' => strtolower($data['value']), // Always save as lowercase
                     'is_ignored' => isset($data['is_ignored']) ? $data['is_ignored'] : false,
                 ]);
 
@@ -359,14 +359,15 @@ class EvalPulseController extends Controller
         $values = $latestVersion->appreciations
             ->where('is_ignored', false)
             ->pluck('value')
+            ->map(fn($v) => strtolower($v)) // Normalize to lowercase
             ->toArray();
 
         $globalScore = '-';
         if (!empty($values)) {
-            if (in_array('NA', $values)) $globalScore = 'NA';
-            elseif (in_array('PA', $values)) $globalScore = 'PA';
+            if (in_array('na', $values)) $globalScore = 'NA'; // Display as Uppercase in PDF score box
+            elseif (in_array('pa', $values)) $globalScore = 'PA';
             else {
-                $laCount = count(array_filter($values, fn($v) => $v === 'LA'));
+                $laCount = count(array_filter($values, fn($v) => $v === 'la'));
                 $globalScore = ($laCount >= 4) ? 'LA' : 'A';
             }
         }

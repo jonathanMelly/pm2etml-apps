@@ -48,10 +48,10 @@
         .c-title { font-weight: bold; font-size: 12px; text-align: left; }
         .c-score { font-weight: bold; font-size: 12px; text-align: right; }
         
-        .rating-NA { color: #dc2626; }
-        .rating-PA { color: #d97706; }
-        .rating-A { color: #2563eb; }
-        .rating-LA { color: #16a34a; }
+        .rating-na, .rating-NA { color: #dc2626; }
+        .rating-pa, .rating-PA { color: #d97706; }
+        .rating-a, .rating-A { color: #2563eb; }
+        .rating-la, .rating-LA { color: #16a34a; }
         
         .criterion-body { padding: 8px 10px; min-height: 20px; }
         .remark { font-size: 11px; color: #444; font-style: italic; margin: 0; }

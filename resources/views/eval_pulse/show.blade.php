@@ -180,13 +180,13 @@
                         },
                         get score() {
                             let activeAppreciations = Object.values(this.currentAppreciations).filter(a => !a.is_ignored);
-                            let values = activeAppreciations.map(a => a.value);
+                            let values = activeAppreciations.map(a => a.value.toLowerCase()); // Ensure lowercase
                             
                             if (values.length === 0) return '-';
-                            if (values.includes('NA')) return 'NA';
-                            if (values.includes('PA')) return 'PA';
+                            if (values.includes('na')) return 'NA';
+                            if (values.includes('pa')) return 'PA';
                             
-                            let laCount = values.filter(v => v === 'LA').length;
+                            let laCount = values.filter(v => v === 'la').length;
                             if (laCount >= 4) return 'LA';
                             
                             return 'A';
@@ -196,7 +196,7 @@
                         },
                         updateAppreciation(criterionId, field, value) {
                             if (!this.currentAppreciations[criterionId]) {
-                                this.currentAppreciations[criterionId] = { value: 'A', is_ignored: false, remark_history: [] };
+                                this.currentAppreciations[criterionId] = { value: 'a', is_ignored: false, remark_history: [] };
                             }
                             this.currentAppreciations[criterionId][field] = value;
                         },
@@ -216,7 +216,7 @@
                                 }
                                 
                                 this.currentAppreciations[criterionId] = {
-                                    value: 'A',
+                                    value: 'a',
                                     is_ignored: position === 7,
                                     remark_history: history
                                 };
@@ -225,7 +225,7 @@
                         getPreviousScore(criterionId) {
                             if (this.otherMaxVersion === 0 || this.myVersion !== this.myMaxVersion) return null;
                             const latest = this.otherVersions[this.otherMaxVersion-1].appreciations[criterionId];
-                            return latest && !latest.is_ignored ? latest.value : null;
+                            return latest && !latest.is_ignored ? latest.value.toUpperCase() : null; // Display as Upper
                         },
                         getPreviousRemark(criterionId) {
                             if (this.otherMaxVersion === 0 || this.myVersion !== this.myMaxVersion) return '';
@@ -238,7 +238,7 @@
                             const previous = this.otherVersions[this.otherMaxVersion-2].appreciations[criterionId];
                             if (!latest || !previous || latest.is_ignored || previous.is_ignored) return '';
                             
-                            const scores = { 'NA': 0, 'PA': 1, 'A': 2, 'LA': 3 };
+                            const scores = { 'na': 0, 'pa': 1, 'a': 2, 'la': 3, 'NA': 0, 'PA': 1, 'A': 2, 'LA': 3 }; // Handle both
                             const currentScore = scores[latest.value];
                             const previousScore = scores[previous.value];
                             
@@ -463,11 +463,11 @@
                                                         <label class="flex-1 cursor-pointer group">
                                                             <input type="radio" 
                                                                 name="appreciations[{{ $criterion->id }}][value]" 
-                                                                value="NA" 
+                                                                value="na" 
                                                                 class="peer sr-only" 
                                                                 :disabled="isReadOnly"
-                                                                :checked="currentAppreciations[{{ $criterion->id }}] && currentAppreciations[{{ $criterion->id }}].value === 'NA'"
-                                                                @change="updateAppreciation({{ $criterion->id }}, 'value', 'NA')"
+                                                                :checked="currentAppreciations[{{ $criterion->id }}] && (currentAppreciations[{{ $criterion->id }}].value === 'na' || currentAppreciations[{{ $criterion->id }}].value === 'NA')"
+                                                                @change="updateAppreciation({{ $criterion->id }}, 'value', 'na')"
                                                                 required>
                                                             <div class="h-10 flex items-center justify-center rounded border-2 border-gray-200 bg-white text-gray-600 font-bold text-sm transition-all peer-checked:border-red-500 peer-checked:bg-red-100 peer-checked:text-red-700 peer-checked:shadow-md hover:bg-gray-50">
                                                                 NA
@@ -476,11 +476,11 @@
                                                         <label class="flex-1 cursor-pointer group">
                                                             <input type="radio" 
                                                                 name="appreciations[{{ $criterion->id }}][value]" 
-                                                                value="PA" 
+                                                                value="pa" 
                                                                 class="peer sr-only" 
                                                                 :disabled="isReadOnly"
-                                                                :checked="currentAppreciations[{{ $criterion->id }}] && currentAppreciations[{{ $criterion->id }}].value === 'PA'"
-                                                                @change="updateAppreciation({{ $criterion->id }}, 'value', 'PA')"
+                                                                :checked="currentAppreciations[{{ $criterion->id }}] && (currentAppreciations[{{ $criterion->id }}].value === 'pa' || currentAppreciations[{{ $criterion->id }}].value === 'PA')"
+                                                                @change="updateAppreciation({{ $criterion->id }}, 'value', 'pa')"
                                                                 required>
                                                             <div class="h-10 flex items-center justify-center rounded border-2 border-gray-200 bg-white text-gray-600 font-bold text-sm transition-all peer-checked:border-orange-500 peer-checked:bg-orange-100 peer-checked:text-orange-700 peer-checked:shadow-md hover:bg-gray-50">
                                                                 PA
@@ -489,11 +489,11 @@
                                                         <label class="flex-1 cursor-pointer group">
                                                             <input type="radio" 
                                                                 name="appreciations[{{ $criterion->id }}][value]" 
-                                                                value="A" 
+                                                                value="a" 
                                                                 class="peer sr-only" 
                                                                 :disabled="isReadOnly"
-                                                                :checked="currentAppreciations[{{ $criterion->id }}] && currentAppreciations[{{ $criterion->id }}].value === 'A'"
-                                                                @change="updateAppreciation({{ $criterion->id }}, 'value', 'A')"
+                                                                :checked="currentAppreciations[{{ $criterion->id }}] && (currentAppreciations[{{ $criterion->id }}].value === 'a' || currentAppreciations[{{ $criterion->id }}].value === 'A')"
+                                                                @change="updateAppreciation({{ $criterion->id }}, 'value', 'a')"
                                                                 required>
                                                             <div class="h-10 flex items-center justify-center rounded border-2 border-gray-200 bg-white text-gray-600 font-bold text-sm transition-all peer-checked:border-blue-500 peer-checked:bg-blue-100 peer-checked:text-blue-700 peer-checked:shadow-md hover:bg-gray-50">
                                                                 A
@@ -502,11 +502,11 @@
                                                         <label class="flex-1 cursor-pointer group">
                                                             <input type="radio" 
                                                                 name="appreciations[{{ $criterion->id }}][value]" 
-                                                                value="LA" 
+                                                                value="la" 
                                                                 class="peer sr-only" 
                                                                 :disabled="isReadOnly"
-                                                                :checked="currentAppreciations[{{ $criterion->id }}] && currentAppreciations[{{ $criterion->id }}].value === 'LA'"
-                                                                @change="updateAppreciation({{ $criterion->id }}, 'value', 'LA')"
+                                                                :checked="currentAppreciations[{{ $criterion->id }}] && (currentAppreciations[{{ $criterion->id }}].value === 'la' || currentAppreciations[{{ $criterion->id }}].value === 'LA')"
+                                                                @change="updateAppreciation({{ $criterion->id }}, 'value', 'la')"
                                                                 required>
                                                             <div class="h-10 flex items-center justify-center rounded border-2 border-gray-200 bg-white text-gray-600 font-bold text-sm transition-all peer-checked:border-green-500 peer-checked:bg-green-100 peer-checked:text-green-700 peer-checked:shadow-md hover:bg-gray-50">
                                                                 LA
@@ -517,7 +517,7 @@
                                                 
                                                 <div class="relative" x-data="{ showMenu: false, top: 0, left: 0 }">
                                                     <div class="w-full rounded border border-gray-300 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 overflow-hidden bg-white"
-                                                         :class="{'border-red-300 bg-red-50': (currentAppreciations[{{ $criterion->id }}]?.value === 'NA' || currentAppreciations[{{ $criterion->id }}]?.value === 'PA') && myVersion == myMaxVersion}">
+                                                         :class="{'border-red-300 bg-red-50': (currentAppreciations[{{ $criterion->id }}]?.value === 'na' || currentAppreciations[{{ $criterion->id }}]?.value === 'pa' || currentAppreciations[{{ $criterion->id }}]?.value === 'NA' || currentAppreciations[{{ $criterion->id }}]?.value === 'PA') && myVersion == myMaxVersion}">
                                                         
                                                         {{-- History (Read Only) --}}
                                                         <div class="bg-gray-50 border-b border-gray-100 max-h-32 overflow-y-auto" 
@@ -534,10 +534,10 @@
                                                         <textarea 
                                                             name="appreciations[{{ $criterion->id }}][remark]" 
                                                             class="w-full p-3 text-sm resize-none border-0 focus:ring-0 bg-transparent h-20"
-                                                            :placeholder="(currentAppreciations[{{ $criterion->id }}]?.value === 'NA' || currentAppreciations[{{ $criterion->id }}]?.value === 'PA') ? '{{ __('Justification required for NA/PA...') }}' : '{{ __('Add a new remark...') }}'"
+                                                            :placeholder="(currentAppreciations[{{ $criterion->id }}]?.value === 'na' || currentAppreciations[{{ $criterion->id }}]?.value === 'pa' || currentAppreciations[{{ $criterion->id }}]?.value === 'NA' || currentAppreciations[{{ $criterion->id }}]?.value === 'PA') ? '{{ __('Justification required for NA/PA...') }}' : '{{ __('Add a new remark...') }}'"
                                                             :disabled="isReadOnly"
                                                             x-show="!isReadOnly"
-                                                            :required="(currentAppreciations[{{ $criterion->id }}]?.value === 'NA' || currentAppreciations[{{ $criterion->id }}]?.value === 'PA') && myVersion == myMaxVersion"
+                                                            :required="(currentAppreciations[{{ $criterion->id }}]?.value === 'na' || currentAppreciations[{{ $criterion->id }}]?.value === 'pa' || currentAppreciations[{{ $criterion->id }}]?.value === 'NA' || currentAppreciations[{{ $criterion->id }}]?.value === 'PA') && myVersion == myMaxVersion"
                                                             @contextmenu.prevent="if(currentUserType === 'teacher') { showMenu = true; top = $event.clientY; left = $event.clientX; }"
                                                             @click.outside="showMenu = false"
                                                         ></textarea>

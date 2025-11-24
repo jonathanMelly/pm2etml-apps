@@ -14,7 +14,7 @@
                     @if($isIgnored)
                         <span style="color: #999; font-weight: normal;">(Ignoré)</span>
                     @else
-                        <span class="rating-{{ $value }}">{{ $value }}</span>
+                        <span class="rating-{{ $value }}">{{ strtoupper($value) }}</span>
                     @endif
                 </td>
             </tr>
