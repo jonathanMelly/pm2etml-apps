@@ -75,6 +75,35 @@
                 @endforeach
             @endif
         @endif
+        {{-- Pulse Evaluation Indicator & Button --}}
+        @php
+            // Find if there's an evaluation for this student
+            $evaluation = \App\Models\Evaluation::where('student_id', $workerContract->groupMember->user->id)
+                ->where('job_definition_id', $contract->jobDefinition->id)
+                ->first();
+
+            $pulseStatus = null;
+            if ($evaluation) {
+                if (auth()->user()->hasRole(\App\Constants\RoleName::STUDENT)) {
+                    $pulseStatus = $evaluation->getStudentStatus();
+                } elseif (auth()->user()->hasRole(\App\Constants\RoleName::TEACHER)) {
+                    $pulseStatus = $evaluation->getTeacherStatus();
+                }
+            }
+        @endphp
+
+        @if($evaluation && $pulseStatus)
+            <div class="ml-2 flex items-center" title="Pulse: {{ $pulseStatus }}">
+                @if($pulseStatus === 'new')
+                    <span class="badge badge-warning badge-xs font-bold animate-pulse">NEW</span>
+                @elseif($pulseStatus === 'modified')
+                    <i class="fa-solid fa-rotate text-info fa-sm"></i>
+                @elseif($pulseStatus === 'viewed')
+                    <i class="fa-solid fa-check text-success fa-sm"></i>
+                @endif
+            </div>
+        @endif
+
         @role(\App\Constants\RoleName::STUDENT)
         @if($workerContract->canRemediate())
             <button class="ml-2 btn btn-outline btn-xs btn-success text-xs" onclick="switchClient{{$workerContract->id}}.showModal()">
@@ -82,17 +111,26 @@
             </button>
         @endif
         
-        {{-- Self Evaluation Button --}}
-        @php
-            // Find if there's an evaluation for this student
-            $evaluation = \App\Models\Evaluation::where('student_id', $workerContract->groupMember->user->id)
-                ->where('job_definition_id', $contract->jobDefinition->id)
-                ->first();
-        @endphp
-        <a href="{{ route('eval_pulse.bulk', ['ids' => $workerContract->id]) }}" 
-           class="ml-2 btn btn-outline btn-xs btn-primary text-xs">
-            <i class="fa-solid fa-heart-pulse fa-xs"></i> {{__('Self Eval')}}
-        </a>
+        @if($evaluation)
+            <a href="{{ route('eval_pulse.bulk', ['ids' => $workerContract->id]) }}" 
+               class="ml-4 btn btn-outline btn-xs btn-primary text-xs">
+                <i class="fa-solid fa-heart-pulse fa-xs"></i> {{__('Self Eval')}}
+            </a>
+        @else
+            <a href="{{ route('eval_pulse.bulk', ['ids' => $workerContract->id]) }}" 
+               class="ml-4 btn btn-outline btn-xs btn-primary text-xs">
+                <i class="fa-solid fa-heart-pulse fa-xs"></i> {{__('Self Eval')}}
+            </a>
+        @endif
+        @endrole
+
+        @role(\App\Constants\RoleName::TEACHER)
+            @if($evaluation)
+                <a href="{{ route('eval_pulse.bulk', ['ids' => $workerContract->id]) }}" 
+                   class="ml-4 btn btn-ghost btn-xs text-primary">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </a>
+            @endif
         @endrole
 
 
