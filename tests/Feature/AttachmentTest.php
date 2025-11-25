@@ -140,13 +140,15 @@ test('Cannot upload bad file format', function (string $uri, $file) {
 
     //Then
     $response->assertStatus(415);
-})->with([
-    [fn () => route('job-definition-main-image-attachment.store'),
-        UploadedFile::fake()->image('test.arv', 499, 147)],
+})->with(function () {
+    return [
+        ['job-image-attachment',
+            UploadedFile::fake()->image('test.arv', 499, 147)],
 
-    [fn () => route('job-definition-doc-attachment.store'),
-        UploadedFile::fake()->createWithContent('test.arv', 'bad file')],
-]);
+        ['job-doc-attachment',
+            UploadedFile::fake()->createWithContent('test.arv', 'bad file')],
+    ];
+});
 
 test('Storage disks cannot be hacked using path traversal ../', function () {
 
@@ -180,7 +182,7 @@ test('Regular job attachments remain unencrypted while contract evaluation attac
     $clientAndJob = $this->createClientAndJob(1);
     $contract = $clientAndJob['client']->contractsAsAClientForJob($clientAndJob['job'], \App\Models\AcademicPeriod::current())->first();
     $wc = \App\Models\WorkerContract::query()->where('contract_id', $contract->id)->first();
-    $wc->evaluate(true, null);
+    $wc->evaluate('a', null);
 
     $evalContent = 'This is sensitive evaluation data that should be encrypted';
     $evalFile = \Illuminate\Http\UploadedFile::fake()->createWithContent('eval.pdf', $evalContent);
@@ -237,7 +239,7 @@ test('Contract evaluation PDF attachments are automatically encrypted', function
     
     // Evaluate the contract first
     $wc = \App\Models\WorkerContract::query()->where('contract_id', $contract->id)->first();
-    $wc->evaluate(true, null);
+    $wc->evaluate('a', null);
 
     // Given
     $filename = 'evaluation.pdf';

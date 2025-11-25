@@ -24,6 +24,7 @@ class Contract extends Model
     protected $fillable = [
         'start',
         'end',
+        'job_definition_id',
     ];
 
     protected function casts(): array

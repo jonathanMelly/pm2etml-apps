@@ -1,3 +1,6 @@
+# Ignorer les fichiers de test générés
+test_output_*.txt
+
 /vendor/
 node_modules/
 npm-debug.log

@@ -74,7 +74,7 @@ class EvalPulseTest extends BrowserKitTestCase
         
         $evaluation = Evaluation::first();
         $this->assertNotNull($evaluation);
-        $this->assertEquals($this->student->id, $evaluation->eleve_id); // Note: eleve_id is used in store method
+        $this->assertEquals($this->student->id, $evaluation->student_id); // Note: eleve_id is used in store method
         $this->assertEquals($this->teacher->id, $evaluation->teacher_id);
     }
 
@@ -82,7 +82,7 @@ class EvalPulseTest extends BrowserKitTestCase
     {
         // Create an evaluation first
         $evaluation = Evaluation::create([
-            'eleve_id' => $this->student->id,
+            'student_id' => $this->student->id,
             'teacher_id' => $this->teacher->id,
             'job_definition_id' => $this->job->id,
             'start_date' => now(),
@@ -125,7 +125,7 @@ class EvalPulseTest extends BrowserKitTestCase
     {
         // Create an evaluation first
         $evaluation = Evaluation::create([
-            'eleve_id' => $this->student->id,
+            'student_id' => $this->student->id,
             'teacher_id' => $this->teacher->id,
             'job_definition_id' => $this->job->id,
             'start_date' => now(),
@@ -162,5 +162,52 @@ class EvalPulseTest extends BrowserKitTestCase
                 $this->assertEquals('na', $appreciation->value);
             }
         }
+    }
+    public function test_bulk_evaluate()
+    {
+        // Setup data for bulk evaluate
+        // 1. Create Contract
+        $contract = Contract::create([
+            'job_definition_id' => $this->job->id,
+            'start' => now(),
+            'end' => now()->addMonth(),
+        ]);
+
+        // 2. Attach Teacher as Client
+        $contract->clients()->attach($this->teacher->id);
+
+        // 3. Create Group and GroupMember
+        $groupName = \App\Models\GroupName::create(['name' => 'Test Group', 'year' => 1]);
+        $academicPeriod = AcademicPeriod::firstOrFail();
+        
+        $group = \App\Models\Group::create([
+            'group_name_id' => $groupName->id,
+            'academic_period_id' => $academicPeriod->id,
+        ]);
+
+        $groupMember = \App\Models\GroupMember::create([
+            'user_id' => $this->student->id,
+            'group_id' => $group->id,
+        ]);
+        
+        // 4. Create WorkerContract (Pivot)
+        $groupMember->workerContracts()->attach($contract->id);
+        $workerContract = \App\Models\WorkerContract::where('contract_id', $contract->id)
+            ->where('group_member_id', $groupMember->id)
+            ->first();
+
+        // 5. Call bulkEvaluate
+        $this->visit(route('eval_pulse.bulk', ['ids' => $workerContract->id]));
+
+        $this->assertResponseOk();
+
+        // 6. Verify Evaluation Created
+        $evaluation = Evaluation::where('student_id', $this->student->id)
+            ->where('teacher_id', $this->teacher->id)
+            ->where('job_definition_id', $this->job->id)
+            ->first();
+
+        $this->assertNotNull($evaluation);
+        $this->assertEquals('encours', $evaluation->status);
     }
 }
