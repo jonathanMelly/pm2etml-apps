@@ -434,7 +434,7 @@
                         @endphp
                         <tr class="h-16">
                             <td class="">{{$workerContract->groupMember->user->getFirstnameL()}}</td>
-                            <td class="text-center flex" x-data="{evaluation:'{{$currentEval}}'}" class="w-auto">
+                            <td class="text-center flex-row" x-data="{evaluation:'{{$currentEval}}'}" class="w-full">
                                 <input type="hidden" name="workersContracts[]" value="{{$workerContract->id}}">
 
                                 {{-- DaisyUI Steps for grades --}}
@@ -456,7 +456,7 @@
                                     </li>
                                     <li class="step cursor-pointer"
                                         data-content="LA"
-                                        :class="evaluation === 'la' ? 'step-success' : ''"
+                                        :class="evaluation === 'la' ? 'step-info' : ''"
                                         @click="evaluation = 'la'">
                                     </li>
                                 </ul>
@@ -465,7 +465,7 @@
 
                                 {{-- Show comment field for failed/partial evaluations --}}
                                 <textarea placeholder="{{__('What must be improved')}}..."
-                                          class="textarea h-10 pl-1 border-error border text-xs @error($commentName) border-2 border-dashed @enderror"
+                                          class="textarea h-10 pl-1 border-error border text-xs @error($commentName) border-2 border-dashed @enderror w-full"
                                           name="{{$commentName}}"
                                           x-show="evaluation === 'na' || evaluation === 'pa'">{{old($commentName,$workerContract->success_comment)}}</textarea>
                                 @error($commentName)

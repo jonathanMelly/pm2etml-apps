@@ -20,7 +20,7 @@ test('Evaluation changed email contains relevant informations', function () {
     $job = $contract->jobDefinition()->first()->name;
 
     //be sure to have a log
-    $contract->workersContracts()->firstOrFail()->evaluate(true);
+    $contract->workersContracts()->firstOrFail()->evaluate(\App\Exports\EvaluationResult::ACQUIS);
     $log = \App\Models\WorkerContractEvaluationLog::query()->latest()->firstOrFail();
 
     $informations[] = [

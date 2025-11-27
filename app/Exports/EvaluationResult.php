@@ -2,9 +2,16 @@
 
 namespace App\Exports;
 
-enum EvaluationResult
+enum EvaluationResult: string
 {
-    case A;
-    case NA;
+    case NON_ACQUIS = "na";
+    case PARTIELLEMENT_ACQUIS = "pa";
+    case ACQUIS = "a";
+    case LARGEMENT_ACQUIS = "la";
+
+    function isSuccess(): bool
+    {
+        return $this === EvaluationResult::ACQUIS || $this === EvaluationResult::LARGEMENT_ACQUIS;
+    }
 
 }

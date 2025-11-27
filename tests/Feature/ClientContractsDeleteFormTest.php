@@ -102,8 +102,9 @@ class ClientContractsDeleteFormTest extends BrowserKitTestCase
             $this->visit('/contracts/evaluate/' . $wc->id)
                 ->submitForm(trans('Save evaluation results'), [
                     'workersContracts' => [$wc->id],
-                    'success-' . $wc->id => 'true',
+                    'evaluation_result-' . $wc->id => 'a',
                 ])
+                //->seeText("debug")
                 ->seePageIs('/dashboard');
 
             // Refresh attachment to get updated storage path
@@ -128,7 +129,7 @@ class ClientContractsDeleteFormTest extends BrowserKitTestCase
             $this->assertNotNull($attachment);
             $this->assertNotNull($attachment->deleted_at); // Should be soft deleted
             $this->assertTrue($attachment->shouldBeEncrypted()); // Should be encrypted type
-            
+
             // File should be moved to deleted folder (storage_path is updated by Attachment model)
             $this->assertTrue(uploadDisk()->exists($attachment->storage_path), "Encrypted attachment file should exist at: {$attachment->storage_path}");
             $this->assertStringContainsString(\App\Constants\FileFormat::ATTACHMENT_DELETED_SUBFOLDER, $attachment->storage_path, "File should be in deleted folder");
