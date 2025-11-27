@@ -66,8 +66,8 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
             //->submitForm(__('Confirm'),['password'=>config('auth.fake_password')])
             ->submitForm(trans('Save evaluation results'), [
                 'workersContracts' => $wkIds,
-                'success-'.$wkIds[0] => 'true',
-                'success-'.$wkIds[1] => 'false',
+                'evaluation_result-'.$wkIds[0] => 'a',
+                'evaluation_result-'.$wkIds[1] => 'na',
                 'comment-'.$wkIds[1] => $comment,
 
             ])
@@ -101,7 +101,7 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
 
         //Make contracts fail and asked for remediation
         $wks->each(function (WorkerContract $wc) {
-            $wc->evaluation_result='na';
+            $wc->evaluation_result=EvaluationResult::NON_ACQUIS;
             $wc->success_date = now();
             $wc->remediation_status=RemediationStatus::ASKED_BY_WORKER;
             $wc->save();
@@ -154,7 +154,7 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
         $this->visit('/contracts/evaluate/'.(implode(',', $wkIds)))
             ->submitForm(trans('Save evaluation results'), [
                 'workersContracts' => $wkIds,
-                'success-'.$wkIds[0] => 'true',
+                'evaluation_result-'.$wkIds[0] => 'a',
             ])
             ->seePageIs('/dashboard');
 
@@ -179,14 +179,18 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
             ->see($filename); // Student should also see the attachment filename
     }
 
-    public function testDummy(): void
+    public function testEvaluationLogTrigger(): void
     {
         $this->createClientAndJob(1);
         $logCount = WorkerContractEvaluationLog::query()->count();
+
         $c = WorkerContract::query()->firstOrFail();
-        $c->evaluate(true);
+        $c->evaluate(EvaluationResult::ACQUIS);
         $this->assertEquals(WorkerContract::query()->firstOrFail()->fresh()->isSuccess(), true);
-        //sleep(3);
+        // Attendre que la DB soit synchronisée (trigger...)
+        $this->waitFor(function () use ($logCount) {
+            return WorkerContractEvaluationLog::query()->count() === $logCount + 1;
+        }, 5);
         $this->assertEquals($logCount + 1, WorkerContractEvaluationLog::query()->count());
 
     }

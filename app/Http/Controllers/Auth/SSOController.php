@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use Throwable;
 
 class SSOController extends Controller
 {
@@ -92,9 +94,17 @@ class SSOController extends Controller
     public function ssoCallback()
     {
 
-        $ssoUser = sso()->user();
-        Log::debug(var_export($ssoUser, true));
-        $ssoUserInfos = $ssoUser->user;
+        try{
+            $ssoUser = sso()->user();
+            Log::debug(var_export($ssoUser, true));
+            $ssoUserInfos = $ssoUser->user;
+        }
+        catch(Throwable $e)
+        {
+            Log::error("Error in SSO callback", ['exception' => $e]);
+            abort(400, "SSO error, please try to empty your browser cache (cookies and storage for current host) and try again");
+        }
+
 
         //Avatar seems to be null ... Look at https://github.com/SocialiteProviders/Microsoft/blob/master/MicrosoftUser.php#L7
         $email = $ssoUserInfos['mail'];

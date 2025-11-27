@@ -58,7 +58,7 @@ test('Test valid teachers and students import', function () {
     //create some contracts
     /* @var $c \App\Models\WorkerContract */
     $c = $this->createClientAndJob(1, [$repetor], $period)['workerContracts'][0];
-    $c->evaluate(true); //should be later deleted
+    $c->evaluate(\App\Exports\EvaluationResult::ACQUIS); //should be later deleted
 
     //WHEN
 

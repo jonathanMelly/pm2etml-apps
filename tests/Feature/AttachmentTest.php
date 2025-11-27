@@ -170,7 +170,7 @@ test('Regular job attachments remain unencrypted while contract evaluation attac
 
     $jobResponse->assertStatus(200);
     $jobAttachment = \App\Models\JobDefinitionDocAttachment::find(json_decode($jobResponse->getContent(), true)['id']);
-    
+
     // Verify job attachment is NOT encrypted
     $this->assertFalse($jobAttachment->shouldBeEncrypted());
     $rawJobContent = uploadDisk()->get($jobAttachment->storage_path);
@@ -180,7 +180,7 @@ test('Regular job attachments remain unencrypted while contract evaluation attac
     $clientAndJob = $this->createClientAndJob(1);
     $contract = $clientAndJob['client']->contractsAsAClientForJob($clientAndJob['job'], \App\Models\AcademicPeriod::current())->first();
     $wc = \App\Models\WorkerContract::query()->where('contract_id', $contract->id)->first();
-    $wc->evaluate(true, null);
+    $wc->evaluate(\App\Exports\EvaluationResult::ACQUIS, null);
 
     $evalContent = 'This is sensitive evaluation data that should be encrypted';
     $evalFile = \Illuminate\Http\UploadedFile::fake()->createWithContent('eval.pdf', $evalContent);
@@ -194,7 +194,7 @@ test('Regular job attachments remain unencrypted while contract evaluation attac
 
     $evalResponse->assertStatus(200);
     $evalAttachment = \App\Models\ContractEvaluationAttachment::find(json_decode($evalResponse->getContent(), true)['id']);
-    
+
     // Verify evaluation attachment IS encrypted
     $this->assertTrue($evalAttachment->shouldBeEncrypted());
     $rawEvalContent = uploadDisk()->get($evalAttachment->storage_path);
@@ -234,10 +234,10 @@ test('Contract evaluation PDF attachments are automatically encrypted', function
     // Create a contract to attach PDF to
     $clientAndJob = $this->createClientAndJob(1);
     $contract = $clientAndJob['client']->contractsAsAClientForJob($clientAndJob['job'], \App\Models\AcademicPeriod::current())->first();
-    
+
     // Evaluate the contract first
     $wc = \App\Models\WorkerContract::query()->where('contract_id', $contract->id)->first();
-    $wc->evaluate(true, null);
+    $wc->evaluate(\App\Exports\EvaluationResult::ACQUIS, null);
 
     // Given
     $filename = 'evaluation.pdf';

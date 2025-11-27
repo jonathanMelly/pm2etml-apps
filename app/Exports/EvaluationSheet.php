@@ -49,8 +49,8 @@ class EvaluationSheet implements FromCollection, ShouldAutoSize, WithEvents, Wit
         $projects = collect([
             $SUMMARY => ['name' => 'bilan'],
             $PERCENTAGE => ['name' => '%'],
-            $TIME_A => ['name' => 'nb pér. '.EvaluationResult::A->name],
-            $TIME_NA => ['name' => 'nb pér. '.EvaluationResult::NA->name],
+            $TIME_A => ['name' => 'nb pér. '.EvaluationResult::ACQUIS->value.'|'.EvaluationResult::LARGEMENT_ACQUIS->value],
+            $TIME_NA => ['name' => 'nb pér. '.EvaluationResult::PARTIELLEMENT_ACQUIS->value.'|'.EvaluationResult::NON_ACQUIS->value],
             $TIME_TOTAL => ['name' => 'pér. tot.']
         ]);
 
@@ -99,9 +99,9 @@ class EvaluationSheet implements FromCollection, ShouldAutoSize, WithEvents, Wit
                     :'';
 
                 $studentsProjectsMap[$studentId][$projectNameKey][self::MAIN_DATA] =
-                    $remediationPrefix . ($studentEval[SummariesService::PI_SUCCESS_TIME] > 0 ?
-                        EvaluationResult::A->name
-                        : EvaluationResult::NA->name);
+                    $remediationPrefix . (strtoupper($studentEval[SummariesService::PI_SUCCESS_TIME] > 0 ?
+                        EvaluationResult::ACQUIS->value
+                        : EvaluationResult::NON_ACQUIS->value));
                 $studentsProjectsMap[$studentId][$projectNameKey]['date'] = $studentEval[SummariesService::PI_DATE_SWISS];
                 $studentsProjectsMap[$studentId][$projectNameKey]['clients'] = $studentEval[SummariesService::PI_CLIENTS];
                 $studentsProjectsMap[$studentId][$projectNameKey]['allocated_time'] = $studentEval[SummariesService::PI_TIME].'p';
@@ -109,9 +109,9 @@ class EvaluationSheet implements FromCollection, ShouldAutoSize, WithEvents, Wit
             }
             //Compute summary for student (fake project but still using columns...)
             //as data is sorted by date, last eval corresponds to latest status
-            $summary = $studentEval[SummariesService::PI_CURRENT_PERCENTAGE] >= SummariesService::SUCCESS_REQUIREMENT_IN_PERCENTAGE ?
-                    EvaluationResult::A->name :
-                    EvaluationResult::NA->name;
+            $summary = strtoupper([SummariesService::PI_CURRENT_PERCENTAGE] >= SummariesService::SUCCESS_REQUIREMENT_IN_PERCENTAGE ?
+                    EvaluationResult::ACQUIS->value :
+                    EvaluationResult::NON_ACQUIS->value);
             $studentsProjectsMap[$studentId][$projects[$SUMMARY]['name']][self::MAIN_DATA] = $summary;
 
             $studentsProjectsMap[$studentId][$projects[$PERCENTAGE]['name']][self::MAIN_DATA] =

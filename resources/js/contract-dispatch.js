@@ -89,16 +89,22 @@ function handleDispatchDrop(e) {
     renderDispatchPreview();
 }
 
+function normalizeString(str) {
+    return str
+        .toLowerCase()
+        .normalize('NFD')                    // Décompose les caractères accentués
+        .replace(/[\u0300-\u036f]/g, '')     // Supprime les diacritiques
+        .replace(/[_\-]+/g, ' ')             // Normalise les séparateurs
+        .trim();
+}
+
 /**
  * Match a file to a worker based on filename
  * @param {File} file - The file to match
  * @returns {Object} Match result object
  */
 function matchFileToWorker(file) {
-    const filename = file.name.toLowerCase()
-        .replace('.pdf', '')
-        .replace(/[_\-\s]+/g, ' ') // Normalize separators to spaces
-        .trim();
+    const filename = normalizeString(file.name.replace('.pdf', ''));
 
     let matchStatus = 'unmatched';
     let workerContractId = null;
@@ -107,10 +113,13 @@ function matchFileToWorker(file) {
     // Try to find matches
     workersList.forEach(worker => {
         let shouldAdd = false;
+		
+		const workerFirstname = normalizeString(worker.firstname);
+        const workerLastname = normalizeString(worker.lastname);
 
-        const firstnameMatch = filename.includes(worker.firstname);
-        const lastnameMatch = filename.includes(worker.lastname);
-        const fullnameMatch = filename.includes(worker.firstname + ' ' + worker.lastname);
+        const firstnameMatch = filename.includes(workerFirstname);
+        const lastnameMatch = filename.includes(workerLastname);
+        const fullnameMatch = filename.includes(workerFirstname + ' ' + workerLastname);
 
         if (fullnameMatch || (firstnameMatch && lastnameMatch)) {
             shouldAdd = true;
@@ -119,7 +128,7 @@ function matchFileToWorker(file) {
             shouldAdd = true;
         }
         else {
-            const nameParts = [...worker.firstname.split(' '), ...worker.lastname.split(' ')];
+            const nameParts = [...workerFirstname.split(' '), ...workerLastname.split(' ')];
             if (nameParts.some(part => part && filename.includes(part))) {
                 shouldAdd = true;
             }

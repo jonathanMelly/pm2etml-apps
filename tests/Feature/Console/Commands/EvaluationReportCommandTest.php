@@ -51,7 +51,7 @@ test('A mail is sent for each client having updated evaluations', function () {
         /* @var $wc WorkerContract */
         $wc = $contract->workersContracts[0];
 
-        $wc->evaluate($success, $success ? 'congrats' : 'missed');
+        $wc->evaluate($success?\App\Exports\EvaluationResult::ACQUIS:\App\Exports\EvaluationResult::NON_ACQUIS, $success ? 'congrats' : 'missed');
         $this->assertTrue($wc->alreadyEvaluated(), 'Contract should have been marked as evaluated');
     }
 

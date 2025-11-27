@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Constants\RoleName;
+use App\Exports\EvaluationResult;
 use App\Models\AcademicPeriod;
 use App\Models\Contract;
 use App\Models\JobDefinition;
@@ -66,7 +67,7 @@ class ContractSeeder extends Seeder
                 $contract->workers()->attach($worker->groupMember()->id); //set worker
 
                 if ($end < now() || $evaluatedCount == 0) {
-                    $success = $faker->boolean(80);
+                    $success = $faker->boolean(80)?EvaluationResult::ACQUIS:EvaluationResult::NON_ACQUIS;
                     $comment = $success ? null : 'Autonomie, respect des délais, structure du code';
                     $contract->workers()->where('user_id', '=', $worker->id)->firstOrFail()->pivot->evaluate($success, $comment);
                     $evaluatedCount++;

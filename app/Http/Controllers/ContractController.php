@@ -6,6 +6,7 @@ use App\Constants\RemediationStatus;
 use App\Constants\RoleName;
 use App\DateFormat;
 use App\Enums\RequiredTimeUnit;
+use App\Exports\EvaluationResult;
 use App\Http\Middleware\AcademicPeriodFilter;
 use App\Http\Requests\ContractEvaluationRequest;
 use App\Http\Requests\DestroyAllContractRequest;
@@ -436,7 +437,7 @@ class ContractController extends Controller
                         }
 
                         //Remediation
-                        if($workerContract->canRemediate())
+                        if($request->has('start_date', 'end_date'))
                         {
                             $start = Carbon::createFromFormat(DateFormat::HTML_FORMAT, $request->input('start_date'));
                             $end = Carbon::createFromFormat(DateFormat::HTML_FORMAT, $request->input('end_date'));
@@ -573,10 +574,11 @@ class ContractController extends Controller
         foreach ($contracts as $contract) {
             foreach ($contract->workersContracts as $workerContract) {
 
-                $evaluationResult = $request->input('evaluation_result-' . $workerContract->id);
+                /* @var $evaluationResult EvaluationResult */
+                $evaluationResult = EvaluationResult::tryFrom($request->input('evaluation_result-' . $workerContract->id));
 
                 // Validate evaluation result - abort if invalid
-                if (!in_array($evaluationResult, ['na', 'pa', 'a', 'la'])) {
+                if ($evaluationResult === null) {
                     return back()
                         ->withErrors(['evaluation_result-' . $workerContract->id => __('Invalid evaluation result')])
                         ->withInput();
@@ -584,7 +586,7 @@ class ContractController extends Controller
 
                 $comment = null;
                 // Require comment for failed or partially acquired evaluations
-                if (in_array($evaluationResult, ['na', 'pa'])) {
+                if (!$evaluationResult->isSuccess()) {
                     $commentAttributeName = 'comment-' . $workerContract->id;
                     $comment = $request->input($commentAttributeName);
                     if (empty(trim($comment))) {
@@ -713,18 +715,9 @@ class ContractController extends Controller
 
     private function finalizeEvaluationAttachments(WorkerContract $workerContract): void
     {
-        foreach ($workerContract->evaluationAttachments()->get() /*Force refresh*/ as $attachment) {
+        foreach ($workerContract->evaluationAttachments()->get() /*Force refresh bring deadlock... just continue if file isnt on disk anymore*/ as $attachment) {
             // Only process if attachment is in temporary storage
             if (str_contains($attachment->storage_path, 'pending')) {
-                // Get file extension from original path
-                $pathInfo = pathinfo($attachment->storage_path);
-                $extension = isset($pathInfo['extension']) ? '.' . $pathInfo['extension'] : '';
-
-                // Generate unique filename with contract-doc- prefix
-                do {
-                    $uuid = Guid::uuid4()->toString();
-                    $finalPath = "eval-wcid" . $workerContract->id . '-' . $uuid . "." . $extension;
-                } while (uploadDisk()->exists($finalPath));
 
                 // Get encrypted content from temporary location
                 $encryptedContent = uploadDisk()->get($attachment->storage_path);
@@ -735,9 +728,21 @@ class ContractController extends Controller
                         'storage_path' => $attachment->storage_path,
                         'attachment_id' => $attachment->id
                     ]);
+                    continue;
                 }
+
+                // Get file extension from original path
+                $pathInfo = pathinfo($attachment->storage_path);
+                $extension = isset($pathInfo['extension']) ? '.' . $pathInfo['extension'] : '';
+
+                // Generate unique filename with contract-doc- prefix
+                do {
+                    $uuid = Guid::uuid4()->toString();
+                    $finalPath = "eval-wcid" . $workerContract->id . '-' . $uuid . "." . $extension;
+                } while (uploadDisk()->exists($finalPath));
+
                 // Store in final location
-                else if (uploadDisk()->put($finalPath, $encryptedContent)) {
+                if (uploadDisk()->put($finalPath, $encryptedContent)) {
                     // Delete temporary file last (after updating path)
                     $tempPath = $attachment->storage_path;
 
