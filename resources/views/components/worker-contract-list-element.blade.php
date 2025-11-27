@@ -91,13 +91,13 @@ $remainingDays = $progress['remainingDays'];
 
                     <label class="input-group flex justify-between mt-2">
                         <div class="self-center justify-self-end">{{__('Start date')}}</div>
-                        <input type="date" name="start_date" value="{{old('start_date')??now()->format(\App\DateFormat::HTML_FORMAT)}}"
+                        <input type="date" name="start_date" value="{{old('start_date')??$contract->start->format(\App\DateFormat::HTML_FORMAT)}}"
                                class=" input input-bordered input-primary">
                     </label>
 
                     <label class="input-group flex justify-between">
                         <div class="self-center justify-self-end">{{__('End date')}}</div>
-                        <input type="date" name="end_date" value="{{old('end_date')??now()->addWeeks(3)->format(\App\DateFormat::HTML_FORMAT)}}"
+                        <input type="date" name="end_date" value="{{old('end_date')??$contract->end->format(\App\DateFormat::HTML_FORMAT)}}"
                                class=" input input-secondary input-bordered">
                     </label>
                 </form>

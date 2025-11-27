@@ -437,7 +437,7 @@ class ContractController extends Controller
                         }
 
                         //Remediation
-                        if($workerContract->canRemediate())
+                        if($request->has('start_date', 'end_date'))
                         {
                             $start = Carbon::createFromFormat(DateFormat::HTML_FORMAT, $request->input('start_date'));
                             $end = Carbon::createFromFormat(DateFormat::HTML_FORMAT, $request->input('end_date'));
