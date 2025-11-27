@@ -179,14 +179,18 @@ class ClientContractsEvaluateFormTest extends BrowserKitTestCase
             ->see($filename); // Student should also see the attachment filename
     }
 
-    public function testDummy(): void
+    public function testEvaluationLogTrigger(): void
     {
         $this->createClientAndJob(1);
         $logCount = WorkerContractEvaluationLog::query()->count();
+
         $c = WorkerContract::query()->firstOrFail();
         $c->evaluate(EvaluationResult::ACQUIS);
         $this->assertEquals(WorkerContract::query()->firstOrFail()->fresh()->isSuccess(), true);
-        //sleep(3);
+        // Attendre que la DB soit synchronisée (trigger...)
+        $this->waitFor(function () use ($logCount) {
+            return WorkerContractEvaluationLog::query()->count() === $logCount + 1;
+        }, 5);
         $this->assertEquals($logCount + 1, WorkerContractEvaluationLog::query()->count());
 
     }
