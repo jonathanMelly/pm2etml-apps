@@ -715,7 +715,7 @@ class ContractController extends Controller
 
     private function finalizeEvaluationAttachments(WorkerContract $workerContract): void
     {
-        foreach ($workerContract->evaluationAttachments()->get() /*Force refresh bring deadlock... just continue if file isnt on disk anymore*/ as $attachment) {
+        foreach ($workerContract->evaluationAttachments()->get() /*do not use cache, force reload in cas of race conditions*/ as $attachment) {
             // Only process if attachment is in temporary storage
             if (str_contains($attachment->storage_path, 'pending')) {
 
