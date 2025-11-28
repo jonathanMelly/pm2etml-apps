@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Constants\RemediationStatus;
+use App\DataObjects\EvaluationPoint;
 use App\Services\SummariesService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -56,9 +57,11 @@ class EvaluationSheet implements FromCollection, ShouldAutoSize, WithEvents, Wit
 
         //list all projects
         $this->data->each(function ($studentEvaluations) use ($projects) {
+            // $studentEvaluations is now a Collection<EvaluationPoint>
             foreach ($studentEvaluations as $studentEvaluation) {
-                $projectNameSpecific = $studentEvaluation[SummariesService::PI_PROJECT_SPECIFIC];
-                $clients = $studentEvaluation[SummariesService::PI_CLIENTS];
+                /** @var EvaluationPoint $studentEvaluation */
+                $projectNameSpecific = $studentEvaluation->projectSpecific;
+                $clients = $studentEvaluation->clients;
 
                 $query = $projects->where(fn ($p) => $p['name'] == $projectNameSpecific);
                 if ($query->count() == 0) {
@@ -82,46 +85,53 @@ class EvaluationSheet implements FromCollection, ShouldAutoSize, WithEvents, Wit
         $studentsProjectsMap = [];
         foreach ($this->data->keys() as $studentId) {
 
-            $studentEvals = $this->data[$studentId];
-            $studentEval = [];
+            $studentEvals = $this->data[$studentId]; // Collection<EvaluationPoint>
+            $lastEval = null;
 
             //Store result for each project
-            for ($i = 0; $i < count($studentEvals); $i++) {
-                $studentEval = $studentEvals[$i];
-                $projectNameKey = $studentEval[SummariesService::PI_PROJECT_SPECIFIC];
+            foreach ($studentEvals as $studentEval) {
+                /** @var EvaluationPoint $studentEval */
+                $projectNameKey = $studentEval->projectSpecific;
 
                 if (array_key_exists($studentId, $studentsProjectsMap) && array_key_exists($projectNameKey, $studentsProjectsMap[$studentId])) {
                     Log::warning("$studentId seems to have multiple evals on project ".$projectNameKey.', please check!');
                 }
 
-                $remediationPrefix = $studentEval[SummariesService::PI_REMEDIATION_STATUS] === RemediationStatus::EVALUATED ?
+                $remediationPrefix = $studentEval->remediationStatus === RemediationStatus::EVALUATED ?
                     'R'
                     :'';
 
+                // Use the actual evaluation_result value instead of converting to binary success/failure
                 $studentsProjectsMap[$studentId][$projectNameKey][self::MAIN_DATA] =
-                    $remediationPrefix . (strtoupper($studentEval[SummariesService::PI_SUCCESS_TIME] > 0 ?
-                        EvaluationResult::ACQUIS->value
-                        : EvaluationResult::NON_ACQUIS->value));
-                $studentsProjectsMap[$studentId][$projectNameKey]['date'] = $studentEval[SummariesService::PI_DATE_SWISS];
-                $studentsProjectsMap[$studentId][$projectNameKey]['clients'] = $studentEval[SummariesService::PI_CLIENTS];
-                $studentsProjectsMap[$studentId][$projectNameKey]['allocated_time'] = $studentEval[SummariesService::PI_TIME].'p';
-                $studentsProjectsMap[$studentId][$projectNameKey]['success_comment'] = $studentEval[SummariesService::PI_SUCCESS_COMMENT];
+                    $remediationPrefix . strtoupper($studentEval->evaluationResult->value);
+
+                $studentsProjectsMap[$studentId][$projectNameKey]['date'] = $studentEval->dateSwiss;
+                $studentsProjectsMap[$studentId][$projectNameKey]['clients'] = $studentEval->clients;
+                $studentsProjectsMap[$studentId][$projectNameKey]['allocated_time'] = $studentEval->time.'p';
+                $studentsProjectsMap[$studentId][$projectNameKey]['success_comment'] = $studentEval->successComment;
+
+                $lastEval = $studentEval;
             }
+
+            if ($lastEval === null) {
+                continue;
+            }
+
             //Compute summary for student (fake project but still using columns...)
             //as data is sorted by date, last eval corresponds to latest status
-            $summary = strtoupper([SummariesService::PI_CURRENT_PERCENTAGE] >= SummariesService::SUCCESS_REQUIREMENT_IN_PERCENTAGE ?
+            $summary = strtoupper($lastEval->currentPercentage >= SummariesService::SUCCESS_REQUIREMENT_IN_PERCENTAGE ?
                     EvaluationResult::ACQUIS->value :
                     EvaluationResult::NON_ACQUIS->value);
             $studentsProjectsMap[$studentId][$projects[$SUMMARY]['name']][self::MAIN_DATA] = $summary;
 
             $studentsProjectsMap[$studentId][$projects[$PERCENTAGE]['name']][self::MAIN_DATA] =
-                $studentEval[SummariesService::PI_CURRENT_PERCENTAGE].''; //force string for excel (0->'' wihout)
+                $lastEval->currentPercentage.''; //force string for excel (0->'' wihout)
 
-            $totalSuccessTime = $studentEval[SummariesService::PI_ACCUMULATED_SUCCESS_TIME].''; //force string for excel (0->'' wihout)
+            $totalSuccessTime = $lastEval->accumulatedSuccessTime.''; //force string for excel (0->'' wihout)
             $studentsProjectsMap[$studentId][$projects[$TIME_A]['name']][self::MAIN_DATA] = $totalSuccessTime;
             $studentsProjectsMap[$studentId][$projects[$TIME_NA]['name']][self::MAIN_DATA] =
-                ($studentEval[SummariesService::PI_ACCUMULATED_TIME] - $totalSuccessTime).''; //force string for excel (0->'' wihout)
-            $studentsProjectsMap[$studentId][$projects[$TIME_TOTAL]['name']][self::MAIN_DATA] = $studentEval[SummariesService::PI_ACCUMULATED_TIME];
+                ($lastEval->accumulatedTime - $totalSuccessTime).''; //force string for excel (0->'' wihout)
+            $studentsProjectsMap[$studentId][$projects[$TIME_TOTAL]['name']][self::MAIN_DATA] = $lastEval->accumulatedTime;
         }
 
         //Build excel rows

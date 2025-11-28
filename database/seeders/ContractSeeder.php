@@ -67,7 +67,9 @@ class ContractSeeder extends Seeder
                 $contract->workers()->attach($worker->groupMember()->id); //set worker
 
                 if ($end < now() || $evaluatedCount == 0) {
-                    $success = $faker->boolean(80)?EvaluationResult::ACQUIS:EvaluationResult::NON_ACQUIS;
+                    $success = $faker->boolean(60)?
+                        ($faker->boolean(50)?EvaluationResult::ACQUIS:EvaluationResult::LARGEMENT_ACQUIS):
+                        ($faker->boolean(50)?EvaluationResult::NON_ACQUIS:EvaluationResult::PARTIELLEMENT_ACQUIS);
                     $comment = $success ? null : 'Autonomie, respect des délais, structure du code';
                     $contract->workers()->where('user_id', '=', $worker->id)->firstOrFail()->pivot->evaluate($success, $comment);
                     $evaluatedCount++;

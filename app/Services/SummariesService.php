@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Constants\RoleName;
+use App\DataObjects\EvaluationPoint;
 use App\DateFormat;
 use App\Enums\RequiredTimeUnit;
+use App\Exports\EvaluationResult;
 use App\Models\AcademicPeriod;
 use App\Models\Contract;
 use App\Models\User;
@@ -12,7 +14,6 @@ use App\Models\WorkerContract;
 use App\SwissFrenchDateFormat;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
-use LaravelIdea\Helper\App\Models\_IH_WorkerContract_C;
 
 class SummariesService
 {
@@ -155,12 +156,13 @@ class SummariesService
 
             collect($groupData)->each(function ($studentData, $studentName) use (&$summaries, &$groupSuccessCount, &$groupFailureCount, &$groupSuccessDetails, &$groupFailureDetails, $groupName) {
 
-                [$studentSuccessTime,$studentTotalTime,$studentSuccessProjects, $studentFailureProjects] = collect($studentData)->reduceSpread(
-                    fn (int $totalSuccessTime, int $totalTime, array $studentSuccessProjects, array $studentFailureProjects, $pointData) => [
-                        $totalSuccessTime + $pointData[self::PI_SUCCESS_TIME],
-                        $totalTime + $pointData[self::PI_TIME],
-                        $pointData[self::PI_SUCCESS_TIME] == 0 ? $studentSuccessProjects : array_merge($studentSuccessProjects, [$pointData[self::PI_PROJECT]]),
-                        $pointData[self::PI_SUCCESS_TIME] > 0 ? $studentFailureProjects : array_merge($studentFailureProjects, [$pointData[self::PI_PROJECT]]),
+                // $studentData is now a Collection<EvaluationPoint>
+                [$studentSuccessTime,$studentTotalTime,$studentSuccessProjects, $studentFailureProjects] = $studentData->reduceSpread(
+                    fn (int $totalSuccessTime, int $totalTime, array $studentSuccessProjects, array $studentFailureProjects, EvaluationPoint $point) => [
+                        $totalSuccessTime + $point->successTime,
+                        $totalTime + $point->time,
+                        $point->successTime == 0 ? $studentSuccessProjects : array_merge($studentSuccessProjects, [$point->project]),
+                        $point->successTime > 0 ? $studentFailureProjects : array_merge($studentFailureProjects, [$point->project]),
                     ], 0, 0, [], []);
 
                 $summaries[$groupName][$studentName] = [$studentSuccessTime, $studentSuccessProjects, $studentTotalTime - $studentSuccessTime, $studentFailureProjects];
@@ -190,8 +192,18 @@ class SummariesService
         //collect($data)->flatten(2)->groupBy(fn($eval)=>$eval[2])->map(fn($project)=>$project->reduce(fn($carry,$eval2)=>[$carry[0]+$eval2[1],'bob'.$carry[1]],[0,'max']))
         if ($json) {
             if (count($seriesData) > 0) {
+                // Convert EvaluationPoint objects to arrays for JSON serialization
+                $evaluationsForJson = [];
+                foreach ($seriesData as $group => $students) {
+                    foreach ($students as $studentName => $evaluationPoints) {
+                        $evaluationsForJson[$group][$studentName] = $evaluationPoints->map(
+                            fn(EvaluationPoint $point) => $point->toArray()
+                        )->all();
+                    }
+                }
+
                 return json_encode([
-                    'evaluations' => $seriesData,
+                    'evaluations' => $evaluationsForJson,
                     'summaries' => $summaries,
                     'datesWindow' => [
                         $period->start->format(DateFormat::ECHARTS_FORMAT),
@@ -211,11 +223,12 @@ class SummariesService
     }
 
     /**
-     * Format is [cin1b][bob][[1.1.2021,55%,...,projectName,clients]]
+     * Build series data with typed objects
+     * Returns: [groupName => [studentName => Collection<EvaluationPoint>]]
      *
-     * @param  array  $seriesData
+     * @return array<string, array<string, Collection<EvaluationPoint>>>
      */
-    public function buildSeriesData(_IH_WorkerContract_C|\Illuminate\Database\Eloquent\Collection|array $wContracts,
+    public function buildSeriesData(WorkerContract|Collection|array $wContracts,
         RequiredTimeUnit $timeUnit,
         bool $fullName = false): array
     {
@@ -246,7 +259,8 @@ class SummariesService
                 }
 
                 $group = $groupMember->group->groupName->name;
-                $success = $wContract->isSuccess();
+                $evaluationResult = EvaluationResult::from($wContract->evaluation_result);
+                $success = $evaluationResult->isSuccess();
                 $project = $contract->jobDefinition->title;
 
                 $date = $wContract->success_date;
@@ -259,7 +273,7 @@ class SummariesService
 
                 $formattedDateForECharts = $date->format('Y-m-d h:i');
                 $formattedSwissDate = $date->format(SwissFrenchDateFormat::DATE_TIME);
-                $percentage = round($accumulatedSuccessTime / $accumulatedTime * 100);
+                $percentage = (int) round($accumulatedSuccessTime / $accumulatedTime * 100);
 
                 $clients = $contract->clients->transform(fn ($client) => $client->getFirstnameL())->implode(',');
 
@@ -275,27 +289,52 @@ class SummariesService
 
                 $successComment = $wContract->success_comment ?? '';
 
-                //ATTENTION: for echarts series format (as currently used), first 2 infos are X and Y ...
-                $seriesData[$group][$workerName][] = [
-                    self::PI_DATE => $formattedDateForECharts,
-                    self::PI_CURRENT_PERCENTAGE => $percentage,
-                    self::PI_SUCCESS_TIME => $successTime,
-                    self::PI_TIME => $time,
-                    self::PI_ACCUMULATED_SUCCESS_TIME => $accumulatedSuccessTime,
-                    self::PI_ACCUMULATED_TIME => $accumulatedTime,
-                    self::PI_PROJECT => $project,
-                    self::PI_CLIENTS => $clients,
-                    self::PI_PROJECT_SPECIFIC => $projectSpecific,
-                    self::PI_DATE_SWISS => $formattedSwissDate,
-                    self::PI_SUCCESS_COMMENT => $successComment,
-                    self::PI_REMEDIATION_STATUS => $wContract->remediation_status,
-                ];
+                $evaluationPoint = new EvaluationPoint(
+                    dateFormatted: $formattedDateForECharts,
+                    currentPercentage: $percentage,
+                    successTime: $successTime,
+                    time: $time,
+                    accumulatedSuccessTime: $accumulatedSuccessTime,
+                    accumulatedTime: $accumulatedTime,
+                    project: $project,
+                    clients: $clients,
+                    projectSpecific: $projectSpecific,
+                    dateSwiss: $formattedSwissDate,
+                    successComment: $successComment,
+                    remediationStatus: $wContract->remediation_status,
+                    evaluationResult: $evaluationResult,
+                );
 
-                //Idea of evolution for easier data post-processing:
-                // $seriesData[]=['group'=>$group,'worker'=>$workerName,'data'=>[$formattedDate, $percentage, $successTime, $time, $totalSuccessTime, $totalTime, $project,$clients]];
+                if (!isset($seriesData[$group][$workerName])) {
+                    $seriesData[$group][$workerName] = collect();
+                }
+                $seriesData[$group][$workerName]->push($evaluationPoint);
             }
         }
 
         return $seriesData;
+    }
+
+    /**
+     * Build series data in legacy array format (for backwards compatibility)
+     * @deprecated Use buildSeriesData() instead which returns typed objects
+     */
+    public function buildSeriesDataLegacy(WorkerContract|Collection|array $wContracts,
+        RequiredTimeUnit $timeUnit,
+        bool $fullName = false): array
+    {
+        $typedData = $this->buildSeriesData($wContracts, $timeUnit, $fullName);
+
+        // Convert typed data back to legacy array format
+        $legacyData = [];
+        foreach ($typedData as $group => $students) {
+            foreach ($students as $studentName => $evaluationPoints) {
+                $legacyData[$group][$studentName] = $evaluationPoints->map(
+                    fn(EvaluationPoint $point) => $point->toArray()
+                )->all();
+            }
+        }
+
+        return $legacyData;
     }
 }
