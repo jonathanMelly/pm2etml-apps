@@ -58,7 +58,7 @@
     </div>
 
         {{-- Show attachment icon if evaluation has supporting documents --}}
-        @if($workerContract->alreadyEvaluated())
+        @if($workerContract->alreadyEvaluated() || $workerContract->remediationInProgress())
             @php
                 $evaluationAttachments = $workerContract->evaluationAttachments;
             @endphp

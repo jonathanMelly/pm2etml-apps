@@ -106,7 +106,7 @@ class WorkerContract extends Pivot
 
     public function alreadyEvaluated(): bool
     {
-        return $this->evaluation_result !== null && !$this->hasPendingRemediation();
+        return $this->evaluation_result !== null && !$this->remediationInProgress();
     }
 
     public function canRemediate():bool
@@ -116,7 +116,7 @@ class WorkerContract extends Pivot
             && $this->remediation_status === RemediationStatus::NONE;
     }
 
-    public function hasPendingRemediation(): bool
+    public function remediationInProgress(): bool
     {
         return $this->remediation_status===RemediationStatus::CONFIRMED_BY_CLIENT;
     }
