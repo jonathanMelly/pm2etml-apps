@@ -3,7 +3,7 @@
     $multiple = $contract->workers_count > 1;
     /* @var $workerContract \App\Models\WorkerContract */
 @endphp
-<td class="text-left flex">
+<td class="text-left align-middle">
     @foreach($contract->workersContracts as $workerContract)
 
     @php
@@ -37,7 +37,7 @@
             $gradeText = strtoupper($grade);
         }
     @endphp
-    <div class="ml-5 px-2 {{$bgOpacity}} bg-{{$bgColor}} flex items-center gap-1">
+    <div class="ml-5 px-2 {{$bgOpacity}} bg-{{$bgColor}} items-center gap-1 py-1 inline-flex">
         @if($workerContract->alreadyEvaluated())
             <div class="tooltip" data-tip="{{$multiple?$workerContract->groupMember->user->getFirstnameL().': ':''}}{{$gradeLabel}} - {{$workerContract->success_date}}{{$workerContract->isSuccess()?'':' | '.$workerContract->success_comment}}">
         @endif
@@ -77,7 +77,7 @@
         @endif
         @role(\App\Constants\RoleName::STUDENT)
         @if($workerContract->canRemediate())
-            <button class="ml-2 btn btn-outline btn-xs btn-success text-xs" onclick="switchClient{{$workerContract->id}}.showModal()">
+            <button class="whitespace-nowrap ml-2 btn btn-outline btn-xs btn-success text-xs" onclick="switchClient{{$workerContract->id}}.showModal()">
                 <i class="fa-solid fa-wrench fa-xs"></i> {{__('Ask for remediation')}}
             </button>
         @endif
