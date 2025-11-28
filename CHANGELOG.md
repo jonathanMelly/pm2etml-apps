@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.58.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.57.0...v1.58.0) (2025-11-28)
+
+
+### Features
+
+* **autodispatch:** treat accents as normal letters (é=e) ([2832af9](https://github.com/jonathanMelly/pm2etml-apps/commit/2832af9b70ee06e41722822a3fda57072eb56e67))
+* **evaluation:** na,pa,a,la draft (tests to be fixed and some cleanup) ([498af8e](https://github.com/jonathanMelly/pm2etml-apps/commit/498af8ecba17b862e681745329a8305e98bf8c09))
+
+
+### Bug Fixes
+
+* **contract edit:** student can edit contract dates ([6c823d6](https://github.com/jonathanMelly/pm2etml-apps/commit/6c823d6716bfe5df6fa4194f68e11b508f77f560))
+* **napaala:** better css on eval status ([1ed76a4](https://github.com/jonathanMelly/pm2etml-apps/commit/1ed76a481d903877778bbfb4b64f0683c7f28392))
+* **sso:** report cookie issue to user ([847d023](https://github.com/jonathanMelly/pm2etml-apps/commit/847d023da99f6347511e1b0182ba827de6ce4920))
+
 ## [1.57.0](https://github.com/jonathanMelly/pm2etml-apps/compare/v1.56.0...v1.57.0) (2025-11-21)
 
 
